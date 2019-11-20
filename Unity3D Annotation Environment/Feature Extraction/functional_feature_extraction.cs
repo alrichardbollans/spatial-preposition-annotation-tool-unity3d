@@ -64,7 +64,7 @@ public class write_support_measures : EditorWindow{
 	/// Makes current Update function be run constantly
 	// Commenting out will allow testing on a single scene
 	static write_support_measures(){
-		// EditorApplication.update += Update;
+		EditorApplication.update += Update;
 	}
     
 
