@@ -1,7 +1,16 @@
 # Documentation
 Rough docs to be improved!!!
 
+## Scene Data
+Scene Data folder contains calculated features from each scene and a script for extracting conceptnet properties. This folder is used later in Post Processing
+## Assets
+Assets folder contains necessary assets for game creation and running -- scripts, scenes, meshes etc..
+
+
+
+
 ## Set Up
+Below gives info on how to amend/build the game
 ### Scenes
 main scene should contain 'mainEmpty' GameObject which holds main script
 Object names should be distinguished by using brackets as clean names are made by finding the first "("
