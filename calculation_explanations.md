@@ -4,20 +4,19 @@ Code for feature extraction appears in Feature Extraction folder of Unity3D Asse
 
 For geometric features geometric_feature_extraction.cs provides a button in Unity editor and handles iterating over all scenes. For functional features the corresponding script is functional_feature_extraction.cs.
 
-## Concepts
 
-### Mesh
 
-### Mesh Approximations
 
-### Nonconvex collider approximation
-Necessary assets are provided in Unity3D Annotation Environment folder, except NonConvexMesh Collider asset which must be [purchased](https://assetstore.unity.com/packages/tools/physics/non-convex-mesh-collider-84867). This is used for better object physics.
+
 
 
 ## Geometric Features
 Each feature is calculated between a pair of objects `e1`,`e2`. Features are **not** necessarily **symmetric**.
 
 Functions for calculations are given in geometry_calculations.cs
+
+### Mesh Approximations
+For some geometric features meshes must be approximated using "Colliders" for computational reasons. This occurs in `set_distance_properties()`. If the mesh is can be appropriately approximated by it's convex hull, a box collider or a sphere collider this is used. Else, the mesh is approximated by a collection of box colliders using the NonConvexMesh Collider script.
 
 ### Shortest Distance
 Shortest distance between `e1` and `e2` is calculated by iterating over the vertices of `e1` to find which vertex is closest to an approximation of `e2`. The shortest distance is then just the distance from this vertex to the approximation of `e2`.
@@ -52,6 +51,11 @@ To calculate `below_proportion`, the number of vertices of `e1` which are below 
 
 As simulation is used to calculate these features, the functions for calculations are given in an in-script WaitingGame_FunctionalFeatureExtraction.cs
 
+In order to the physics of falling/moving objects to work appropriately some objects need assigning an NonConvexMeshCollider approximation. All physics is handled in set_objects_at_rest.cs script.
+
+### Nonconvex collider approximation
+Necessary assets are provided in Unity3D Annotation Environment folder, except NonConvexMesh Collider asset which must be [purchased](https://assetstore.unity.com/packages/tools/physics/non-convex-mesh-collider-84867). This is used for better object physics.
+
 ### Support
 These calculations are executed in `print_support_positions()`.
 
@@ -60,6 +64,8 @@ Firstly the script gets the initial height of the centre of mass of the figure. 
 This value is then normalized by an appropriate `ground_height`. If the bottom of the figure is above the top of the ground (within a threshold), then `ground_height` is just the height of the ground object. Else, if the bottom of the figure is above the bottom of the ground(within a threshold), then `ground_height` is `fig_bottom - ground_bottom_point`. Else, if the initial centre of mass is above the bottom of the ground(within a threshold), then `ground_height` is `fig_com_y_initial - ground_bottom_point;`. In all other cases `ground_height` is just the height of the ground object.
 
 The `normalized_movement` is the raw `movement` divided by the `ground_height`. This is capped between 0 and 1.
+
+
 
 ### Location Control
 These calculations are executed in `print_lc_positions()`.
