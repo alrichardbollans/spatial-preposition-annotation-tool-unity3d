@@ -5,7 +5,7 @@ Example: https://alrichardbollans.github.io/spatial-preposition-annotation-tool-
 
 ## Study
 
-Data from the 2019 study is given in Post Processing folder
+Data from the 2019 study referenced in "Automatic Generation of Typicality Measures for Spatial Language in Grounded Settings" is given in Post Processing folder along with Python2 code for data analysis
 
 ## Software
 
