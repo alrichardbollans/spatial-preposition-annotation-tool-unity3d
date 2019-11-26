@@ -20,16 +20,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 
 from sklearn import linear_model
-from sklearn import metrics
-from sklearn.cluster import KMeans
-from sklearn.feature_selection import RFE
+
 
 from scipy.special import comb
 import math
 
-from sklearn.ensemble import ExtraTreesClassifier
-from mpl_toolkits.mplot3d import Axes3D
-from mpl_toolkits import mplot3d
+
 
 
 from relationship import *
@@ -348,23 +344,7 @@ class PrepositionModels():
 		exf.to_csv(self.exemplar_csv)
 
 
-	def work_out_importance_and_write(self):
-		Y = self.ratio_dataset[self.categorisation_feature_name]#.values#.reshape(-1,1)
-		### From https://machinelearningmastery.com/feature-selection-in-python-with-scikit-learn/
-		model = ExtraTreesClassifier(n_estimators=100)
-		model.fit(self.svFeatures,Y)
-		
-
-		out = dict()
-		
-		out[self.name] = model.feature_importances_
-
-		df = pd.DataFrame(out,feature_keys)
-		print(df)
-
-		
-		self.write_latex_table(df,"ExtraTreesClassifier")
-		self.write_csv_table(df,"ExtraTreesClassifier")
+	
 	def write_latex_table(self,dataframe,classifier):
 		with open("figures/latex_tables:"+self.name+classifier+".tex","a") as file_object:
 			
@@ -403,147 +383,8 @@ class PrepositionModels():
 
 			
 
-	def work_out_clusters(self):
-		### Improve this by doing more iterations and initiallizing with farthest
-
-		### Takes values of configurations classified as given preposition
-		### Clusters using kmeans and outputs tables
-
-		
-
-		### Initial results: we get a polyseme for in as expected:
-		### There is a cluster where fig is above ground, there is less contact and
-		### less containment but more 'support', aboveness and `location control'
-		### Furthermore, this distinction is seen for `inside' but not as strongly
-		### Location control is high for both clusters, indicating it is a CI feature
-
-		### ON
-		### We see the expected(ish) values for two separate clusters: one which is more `on top of'
-		### And one which is more hanging on/in contact with
-		### `Support' measure as we have it is not CI, as there can be instances where fall is not very far
-		### How can we amend this?
-
-		### OVER
-		### This seems to have a polyseme where the thing is in contact with the other
-
-		### IN fact, all over,above, below and under seem to have this distinction
-
-
-		### TO do: Test/Measure the effect i.e. check that it is in fact the aboveness which
-		### changes the other features and not vice versa.
-		### Check that if there is `aboveness' then other things must hold to be `in'
-		### This should be relatively easy? Are there instances where
-		### First work out if there is siginificant variance in the features of the cluster
-		### If there is not significant variance then the feature is CI (if there is significant variance from the overall norm)
-		### 
-
-		### Can we argue that the overall approach is ML + Symbolic? In the sense that
-		### we are using ML to find stuff in the data and then applying that to a more symbolic
-		### representation, with some human intuition added in
-		number_clusters = 2
-
-		# nparray = nparray.reshape(-1,1)
-		
-		km = KMeans(
-			n_clusters=number_clusters, init='random',
-			n_init=10, max_iter=300,
-			tol=1e-04, random_state=0
-		)
-		km.fit(self.affFeatures)
-
-		out = dict()
-
-		for i in range(number_clusters):
-			out["cluster_"+str(i)] = km.cluster_centers_[i]
-		
-
-
-		
-
-
-		df = pd.DataFrame(out,feature_keys)
-		print(df)
-
-		df.to_csv(self.cluster_csv)
-		self.write_latex_table(df, "KMeans Clustering")
-		self.write_csv_table(df,"KMeans Clustering")
-
-		
-		
-		
-
-		# X =self.sv_affFeatures
-		# plt.scatter(
-		#     X[km == 0, 0], X[km == 0, 1],
-		#     s=50, c='lightgreen',
-		#     marker='s', edgecolor='black',
-		#     label='cluster 1'
-		# )
-
-		# plt.scatter(
-		#     X[km == 1, 0], X[km == 1, 1],
-		#     s=50, c='orange',
-		#     marker='o', edgecolor='black',
-		#     label='cluster 2'
-		# )
-
-		# plt.scatter(
-		#     X[km == 2, 0], X[km == 2, 1],
-		#     s=50, c='lightblue',
-		#     marker='v', edgecolor='black',
-		#     label='cluster 3'
-		# )
-		x_index = 3
-		y_index = 4
-		z_index = 6
-		if self.name == "?":
-			fig = plt.figure()
-			ax = plt.axes(projection='3d')
-			ax.scatter3D(X[:, x_index], X[:, y_index], X[:, z_index],c=km.labels_);
-			ax.set_xlabel(self.relation_keys[x_index])
-			ax.set_ylabel(self.relation_keys[y_index])
-			ax.set_zlabel(self.relation_keys[z_index])
-			
-			plt.show()
-
-			plt.scatter(X[:, x_index], X[:, y_index], c=km.labels_)
-			# plot the centroids
-			plt.scatter(
-				km.cluster_centers_[:, x_index], km.cluster_centers_[:, y_index],
-				s=250, marker='*',
-				c='red', edgecolor='black',
-				label='centroids'
-			)
-			# plt.legend(scatterpoints=1)
-			plt.xlabel(self.relation_keys[x_index])
-			plt.ylabel(self.relation_keys[y_index])
-			plt.grid()
-			plt.show()
 	
-
-	#### Need to create 3D plots of all configs vs. preposition
-	def plot_selections_vs_non_selections(self):
-		 
-		X_sv =self.affFeatures
-		X_comp = self.comp_affFeatures
-		### Only plot comp values that aren't in X_sv
-		print(X_comp)
-		X_comp_to_plot = np.setdiff1d(X_comp, X_sv)
-		print(X_comp_to_plot)
-		x_index = 3
-		y_index = 4
-		z_index = 6
-		
-		fig = plt.figure()
-		ax = plt.axes(projection='3d')
-		# ax.scatter3D(all_values[:, x_index], all_values[:, y_index], all_values[:, z_index],'bo')
-		ax.scatter3D(X_sv[:, x_index], X_sv[:, y_index], X_sv[:, z_index],'bo')
-		ax.scatter3D(X_comp_to_plot[:, x_index], X_comp_to_plot[:, y_index], X_comp_to_plot[:, z_index],'r+')
-		ax.set_xlabel(self.relation_keys[x_index])
-		ax.set_ylabel(self.relation_keys[y_index])
-		ax.set_zlabel(self.relation_keys[z_index])
-		
-		plt.show()
+	
 
 class Model:
 	
@@ -635,16 +476,7 @@ class Model:
 			else:
 				top = float(semantic_similarity_sum)/counter
 
-			# counter = 0
-			# semantic_similarity_sum = 0
-			# for index, row in none_instances.iterrows():
-			# 	n = row.values
-			# 	n = np.array(n)
-			# 	counter += 1
-			# 	semantic_similarity_sum += self.semantic_similarity(preposition,point,n)
-			# bottom = float(semantic_similarity_sum)/counter
-
-			# out = top/bottom
+		
 
 			return top
 
@@ -1468,8 +1300,8 @@ def test_features():
 	m.validation()
 	m.output()
 
-def test_models():
-	m = MultipleRuns(constraint_dict,number_runs=100,k =3,compare = "y")
+def test_models(fold_size):
+	m = MultipleRuns(constraint_dict,number_runs=100,k =fold_size,compare = "y")
 	m.test_all_scenes()
 	m.validation()
 	m.output()
@@ -1481,8 +1313,10 @@ def main(constraint_dict):
 	mpl.rcParams['axes.titlesize'] = 'small'
 	mpl.rcParams['axes.labelsize'] = 'medium'
 	mpl.rcParams['ytick.labelsize'] = 'small'
-	# test_features()
-	# test_models()
+	test_features()
+	test_models(2)
+	test_models(3)
+
 	
 	
 if __name__ == '__main__':
