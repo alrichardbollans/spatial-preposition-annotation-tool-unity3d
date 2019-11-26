@@ -454,10 +454,10 @@ public class Pair{
 		float height_separation;
 
 		float projection_diff;
-		float projection_xmin;
-		float projection_xmax;
-		float projection_zmin;
-		float projection_zmax;
+		float e2_xmin;
+		float e2_xmax;
+		float e2_zmin;
+		float e2_zmax;
 
 		height_separation = get_height_seperation();
 
