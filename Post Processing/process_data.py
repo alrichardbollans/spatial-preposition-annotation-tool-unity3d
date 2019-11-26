@@ -68,7 +68,7 @@ class User():
 		self.clean_user_id = clean_id
 
 		self.list_format = [self.user_id,self.clean_user_id,self.time,self.native]
-		self.list_headings = ['User ID','Short ID','Time','Native=0, Non-Native =1']
+		self.list_headings = ['User ID','Short ID','Time','Native=1, Non-Native =0']
 
 	
 	def annotation_match(self,annotation):
@@ -81,10 +81,7 @@ class UserData():
 	def __init__(self):
 		self.raw_data_list=self.load_raw_users_from_csv()
 		self.user_list = self.get_users()
-		# self.non_duplicate_list = []
-		# self.non_duplicate_ids = []
-		# self.id_matches = []
-		# self.list_non_natives = self.get_non_natives()
+		
 	def load_raw_users_from_csv(self):
 		
 
@@ -210,10 +207,11 @@ class Data():
 		self.alldata = self.load_annotations_from_csv()
 		self.annotation_list = self.get_annotations(userdata)
 		
+		## Annotation list without non-natives
 		self.clean_data_list = self.clean_list()
 		
 		self.user_list = self.get_users()
-		
+		self.native_users = self.get_native_users()
 		self.scene_list = self.get_scenes()
 		
 		self.clean_csv_name = "all_clean_annotations.csv"
@@ -254,15 +252,13 @@ class Data():
 		for an in self.annotation_list:
 			if an.user not in out:
 				out.append(an.user)
-			# if an.clean_user_id not in out:
-			# 	# print(an.clean_user_id)
-			# 	out.append(an.clean_user_id)
+			
 		return out
 
 	def get_native_users(self):
 		out = []
 		for u in self.user_list:
-			if u.native == '1':# not in userdata.list_non_natives:
+			if u.native == '1':
 				out.append(u)
 		return out
 
@@ -428,7 +424,7 @@ class Data():
 	def write_user_agreements(self):
 		with open(BasicInfo.stats_folder_name+'/' + self.agreements_csv_name, "w") as csvfile:
 			writer = csv.writer(csvfile)
-			writer.writerow(["Task: " + self.task,'Number of users: ' + str(len(self.user_list))])
+			writer.writerow(["Task: " + self.task,'Number of Native English users: ' + str(len(self.native_users))])
 			# writer.writerow(['User1','User2', 'observed_agreement','Number of Shared Annotations', 'Number of agreements', 'Expected Number of Agreements','observed_agreement(AFF)','Number of Shared Annotations(AFF)', 'NUmber of agreements(AFF)', 'Expected Agreement(AFF)'])
 			number_of_comparisons = 0
 			total_shared_annotations = 0
@@ -446,31 +442,34 @@ class Data():
 				preposition_expected_agreement_sum = 0
 				preposition_observed_agreement_sum = 0
 				preposition_cohens_kappa_sum= 0
-				# writer.writerow(['User 1','User 2','Preposition','Number of Shared Annotations', 'Expected agreement', 'observed Agreement', 'cohens_kappa'])
-				for user1 in self.native_users:
-					for user2 in self.native_users:
-						if user1 != user2:
+				
+				user_pairs = list(itertools.combinations(self.native_users,2))
+				for user_pair in user_pairs:
+					user1 = user_pair[0]
+					user2 = user_pair[1]
+				# for user1 in self.native_users:
+				# 	for user2 in self.native_users:
+					if user1 != user2:
+						# Calculate agreements for user pair and add values to totals
+
+						x = Agreements(self.annotation_list,user1,user2,self.task,p)
+						
+						
+						if(x.shared_annotations !=0):
+							number_of_comparisons +=1
+							p_number_of_comparisons += 1
 							
-							x = Agreements(self.annotation_list,user1,user2,self.task,p)
-							# row = [user1.clean_user_id,user2.clean_user_id,x.observed_agreement, x.number_shared_annotations,x.number_agreements,x.expected_agreement,x.aff_observed_agreement,x.aff_number_shared_annotations,x.aff_number_agreements,x.aff_expected_agreement]
-							# writer.writerow(row)
-							### Write a row of agreements for each user
-							if(x.shared_annotations !=0):
-								number_of_comparisons +=1
-								p_number_of_comparisons += 1
-								row = [user1.clean_user_id,user2.clean_user_id,p,x.shared_annotations,x.expected_agreement,x.observed_agreement,x.cohens_kappa]
-								# writer.writerow(row)
 
-								preposition_shared_annotations += x.shared_annotations
-								preposition_expected_agreement_sum += x.expected_agreement * x.shared_annotations
-								preposition_observed_agreement_sum += x.observed_agreement * x.shared_annotations
-								preposition_cohens_kappa_sum += x.cohens_kappa * x.shared_annotations
+							preposition_shared_annotations += x.shared_annotations
+							preposition_expected_agreement_sum += x.expected_agreement * x.shared_annotations
+							preposition_observed_agreement_sum += x.observed_agreement * x.shared_annotations
+							preposition_cohens_kappa_sum += x.cohens_kappa * x.shared_annotations
 
 
-								total_shared_annotations += x.shared_annotations
-								total_expected_agreement_sum += x.expected_agreement * x.shared_annotations
-								total_observed_agreement_sum += x.observed_agreement * x.shared_annotations
-								total_cohens_kappa_sum += x.cohens_kappa * x.shared_annotations
+							total_shared_annotations += x.shared_annotations
+							total_expected_agreement_sum += x.expected_agreement * x.shared_annotations
+							total_observed_agreement_sum += x.observed_agreement * x.shared_annotations
+							total_cohens_kappa_sum += x.cohens_kappa * x.shared_annotations
 
 							
 
@@ -491,17 +490,7 @@ class Data():
 			row = [total_shared_annotations,total_expected_agreement,total_observed_agreement,total_cohens_kappa]
 			writer.writerow(row)
 
-			# total_observed = float(total_agreements)/float(total_shared_annotations)
-			# aff_total_observed = float(aff_total_agreements)/float(aff_total_shared_annotations)
-
-			# row = [total_observed, total_shared_annotations, total_agreements,total_expected,total_expected_with_none]
-			# writer.writerow(row)
-
-			# ###
-			# writer.writerow(['The following only counts annotations where neither user selected none,,,'])
-			# writer.writerow(['Average observed_agreement(AFF)','Total Number of Shared Annotations(AFF)', 'Total NUmber of agreements(AFF)', 'Total Expected Agreement(AFF)'])
-			# row = [aff_total_observed,aff_total_shared_annotations,aff_total_agreements,aff_total_expected]
-			# writer.writerow(row)
+			
 
 		
 
@@ -576,7 +565,7 @@ class ComparativeData(Data):
 	def output_statistics(self):
 		with open(BasicInfo.stats_folder_name+'/' + self.stats_csv_name, "w") as csvfile:
 			writer = csv.writer(csvfile)
-			writer.writerow(['Number of users: ' + str(len(self.user_list))])
+			writer.writerow(['Number of Native English users: ' + str(len(self.native_users))])
 			writer.writerow(['Scene','Number of Users Annotating', 'Selection Info'])
 			
 			
@@ -665,7 +654,7 @@ class SemanticData(Data):
 	def output_statistics(self):
 		with open(BasicInfo.stats_folder_name+'/' + self.stats_csv_name, "w") as csvfile:
 			writer = csv.writer(csvfile)
-			writer.writerow(['Number of users: ' + str(len(self.user_list))])
+			writer.writerow(['Number of Native English users: ' + str(len(self.native_users))])
 
 			writer.writerow(['Positive Selections','negative_selections'])
 			row = self.get_positive_selection_info()
@@ -691,9 +680,7 @@ class Agreements(Data):
 		self.user1_annotations = self.get_user_task_annotations(user1,task)
 		self.user2_annotations = self.get_user_task_annotations(user2,task)
 
-		# ### Affirmative annotations are where user does not select none
-		# self.user1_affirmative_annotations = self.get_user_affirmative_task_annotations(user1,task)
-		# self.user2_affirmative_annotations = self.get_user_affirmative_task_annotations(user2,task)
+		
 		self.preposition = preposition
 
 		
@@ -733,8 +720,7 @@ class Agreements(Data):
 		observed_agreement = 0
 		cohens_kappa = 0
 
-		# positive_agreements = 0
-		# negative_agreements = 0
+		
 
 		for a1 in self.user1_annotations:			
 			for a2 in self.user2_annotations:
@@ -833,7 +819,7 @@ if __name__ == '__main__':
 	d= Data(userdata)
 	
 
-	d.print_scenes_need_doing()
+	# d.print_scenes_need_doing()
 	# d.print_non_users()
 	# d.output_clean_annotation_list()
 
