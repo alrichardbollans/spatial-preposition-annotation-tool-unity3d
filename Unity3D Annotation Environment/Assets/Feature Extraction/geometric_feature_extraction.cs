@@ -113,8 +113,6 @@ public class Feature_Extraction: EditorWindow{
 		r.relation_dictionary["shortest_distance"] = p.shortest_distance;
 		r.relation_dictionary["f_covers_g"] = p.f_covers_g;
 		r.relation_dictionary["g_covers_f"] = p.g_covers_f;
-		// r.relation_dictionary["shortest_distance_normalized"] = p.shortest_distance_normalized;
-		// r.relation_dictionary["horizontal_projection_overlap_proportion"] = p.horizontal_projection_overlap_proportion;
 		
 		r.save_to_csv();
 
