@@ -110,21 +110,15 @@ public class Finalise_Scenes : EditorWindow
 
             }
             GameObject[] allObjects = Object.FindObjectsOfType<GameObject>();
-            // Add a collider so objects are clickable and remove rigidbody
+            // Edit objects
             foreach(GameObject obj in allObjects){
-                /// Removed for the moment while sorting out collider issues
-                // MeshFilter mf = obj.GetComponent(typeof(MeshFilter)) as MeshFilter;
-                // if(mf != null){
-                //     obj.isStatic =true;
-                //     // Remove all existing mesh colliders
-                //     MeshCollider[] mesh_colliders = obj.GetComponents<MeshCollider>();
-                //     foreach(MeshCollider mc in mesh_colliders){
-                //         DestroyImmediate(mc);
-                //     }
-                //     // Add one mesh collider
-                //     var meshcoll = obj.AddComponent<MeshCollider>();
-                //     meshcoll.convex = false;
-                // }
+                MeshFilter mf = obj.GetComponent(typeof(MeshFilter)) as MeshFilter;
+                if(mf != null){
+                    MeshObject mobj = new MeshObject(obj);
+                    
+                    mobj.prepare_physics_for_game();
+                }
+                
                 var waiting_script = obj.GetComponent(typeof(WaitingGame)) as WaitingGame;
                 if (waiting_script != null){
                     DestroyImmediate(waiting_script);
