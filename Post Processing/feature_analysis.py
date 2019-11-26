@@ -1234,7 +1234,7 @@ class MultipleRuns:
 			ax.set_xlabel("Preposition")
 			ax.set_ylabel("Average")
 			ax.set_yticks(np.arange(0, 1.05, 0.05))
-			plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+			plt.legend(loc='upper center', bbox_to_anchor=(0.44, -0.35), ncol=3)
 			plt.grid()
 			plt.savefig(self.scores_plots_folder+"/ScoresWithRemovedFeatures.pdf", bbox_inches='tight')
 		
