@@ -63,7 +63,7 @@ public class Entity{
 		bbox = boxColl.bounds;
 		// MeshObject class has useful methods
 		MeshObject mobj = new MeshObject(obj);
-		mobj.prepare_physics_for_positioning();
+		mobj.prepare_physics_for_game();
 
 		name =  obj.name;
 		clean_name = mobj.clean_name;
@@ -120,6 +120,8 @@ public class Entity{
 		centre_of_mass = get_com();
 		verticality = get_verticality();
 
+
+		mobj.prepare_physics_for_positioning();
 		var collidersTransform = go.transform.Find("Colliders");
         GameObject collidersGo;
         if (collidersTransform != null){
@@ -251,15 +253,19 @@ public class Pair{
 		ground_volume = e2.bbox_volume;
 
 		// Note we can comment out the heavier functions if they don't need recalculating
+		// Consider commenting out mobj.prepare_physics_for_positioning(); in Entity class
 		
 
-		size_ratio = e1.bbox_volume/e2.bbox_volume;
+		
 		set_distance_properties();
 
-		shortest_distance_normalized = shortest_distance/largest_distance;
+
 		contact_proportion = get_proportion_contact();
 		above_proportion = get_proportion_above();
 		below_proportion = get_proportion_below();
+
+		shortest_distance_normalized = shortest_distance/largest_distance;
+		size_ratio = e1.bbox_volume/e2.bbox_volume;
 		bbox_overlap = get_bbox_overlap();
 		bbox_overlap_proportion = bbox_overlap/figure_volume;
 		height_separation = get_height_seperation();
@@ -286,6 +292,7 @@ public class Pair{
 
 		r.relation_dictionary["bbox_overlap_proportion"] = bbox_overlap_proportion;
 		r.relation_dictionary["horizontal_distance"] = horizontal_distance;
+		r.relation_dictionary["horizontal_distance_normalized"] = horizontal_distance_normalized;
 
 
 		r.relation_dictionary["shortest_distance"] = shortest_distance;

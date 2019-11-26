@@ -64,6 +64,16 @@ public class Feature_Extraction: EditorWindow{
         GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
 		List<GameObject> meshObjects = new List<GameObject>();
 		List<Entity> entities = new List<Entity>();
+		// First remove unecessary colliders and recreate allobject list
+		foreach(GameObject obj in allObjects){
+			MeshFilter mf = obj.GetComponent(typeof(MeshFilter)) as MeshFilter;
+			if(mf != null){
+			    MeshObject mobj = new MeshObject(obj);
+			    
+			    mobj.prepare_physics_for_game();
+			}
+		}
+		allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
 		foreach(GameObject obj in allObjects){
 			if(!obj.name.Contains("wall") && !obj.name.Contains("ceiling") && !obj.name.Contains("floor")){
 								
