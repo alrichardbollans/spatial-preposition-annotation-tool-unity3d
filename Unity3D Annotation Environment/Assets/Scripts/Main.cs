@@ -990,7 +990,7 @@ public class Main : MonoBehaviour {
 	}
 
 	IEnumerator sendselectionToFile_coroutine(){
-        string authorization = authenticate("game", "6KK6w4EhgcrBQHKzgL");
+        string authorization = authenticate("game", "REDACTED;)");
 	    string url = "/spatial_language_study/appendannotation.php";
         yield return null;
         /// Output info
