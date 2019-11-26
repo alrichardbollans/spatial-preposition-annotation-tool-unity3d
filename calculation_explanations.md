@@ -24,15 +24,15 @@ Shortest distance between `e1` and `e2` is calculated by iterating over the vert
 ### Containment
 `containment` is calculated by first calculating the volume of overlap of the axis-aligned bounding boxes of `e1` and `e2`. This volume is then divided by the volume of the axis-aligned bounding box of `e1`.
 
-### F_covers_g (Note, could be improved)
+### F_covers_g
 
 `f_covers_g` relies on a few variables. 
 
-Firstly `projection_angle`: this is set to 10 degrees and accounts for the fact that as a covering object moves further from the object it is covering we may be more lenient about it covering the entire object. (Note: I actually think this should be changed --- we really are less lenient)
+Firstly `height_seperation`: if the bottom of `e2` is above the top of `e1` then the height seperation is `height_separation = bottom of e2 - top of e1`. Else, if the bottom of `e1` is above the top of `e2` then the height seperation is `height_separation =  bottom of e1 - top of e2`. Else the height seperation is 0.
 
-Next `height_seperation`: if the bottom of `e2` is above the top of `e1` then the height seperation is `height_separation = bottom of e2 - top of e1`. Else, if the bottom of `e1` is above the top of `e2` then the height seperation is `height_separation =  bottom of e1 - top of e2`. Else the height seperation is 0.
+Next `projection_angle`: this is set to 5 degrees and accounts for the idea that as a covering object moves further from the object it is covering, it must be larger to provide the same covering function. Imagine an umbrella moving further and further away above somebody.
 
-The projection angle and height seperation are then used to create the horizontal area that `e1` covers. The area of overlap of this area with the horizontal area of `e2` is then calculated. This overlap area is then divided by the total horizontal area of `e2`.
+The projection angle and height seperation are then used to create the horizontal area that `e1` is aiming to cover, `new_e2_area` --- the area of `e2` plus the extra. The area of overlap of this area with the horizontal area of `e1` is then calculated. This overlap area is then divided by the total horizontal area of `new_e2_area`.
 
 ### G_covers_f
 `g_covers_f` is the same as `f_covers_g` but with `e1` and `e2` swapped.
