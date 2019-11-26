@@ -14,7 +14,7 @@ Input: features calculated from unity scripts.
 Outputs to feature values folder.
 
 ## compile_instances.py
-Run process_data and preprocess_features before this
+Run process_data before this.
 
 Input: cleaned annotation, user lists and list of feature values for configurations (see Relationship class)
 Compiles annotation instances, adds feature values to them

@@ -1,4 +1,4 @@
-## Run process_data and preprocess_features before this
+## Run process_data before this
 
 ## Input: cleaned annotation, user lists and list of feature values for configurations (see Relationship class)
 ## Compiles annotation instances, adds feature values to them
@@ -19,6 +19,7 @@ from sklearn.model_selection import train_test_split
 
 
 from process_data import BasicInfo
+import preprocess_features
 
 ### Files are shared with process_data
 project_folder_name = BasicInfo.project_folder_name
@@ -484,6 +485,11 @@ class ConfigurationCollection(Collection):
 				return i
 
 if __name__ == '__main__':
+	# First preprocess features
+	f= preprocess_features.Features()
+	nd = f.standardise_values()
+	f.write_new(nd)
+	f.write_mean_std()
 	
 	### Semantic Annotations
 	### Collect annotation instances and attach values to them
