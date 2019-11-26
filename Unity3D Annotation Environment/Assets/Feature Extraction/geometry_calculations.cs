@@ -27,9 +27,7 @@ public class Entity{
 	// The vertices of the shared mesh transformed to world space
 	// i.e. vertices of instantiated mesh
 	public List<Vector3> transformed_mesh_vertices = new List<Vector3>();
-	// Gives a point cloud calculated by taking points on mesh edges
-	// This gives a better distribution of points than actual mesh vertices
-	public List<Vector3> point_cloud = new List<Vector3>();
+	
 	// Whether or not the mesh collider is marked as convex
 	public bool convex;
 	// If the mesh is too complex to be made convex
@@ -132,16 +130,7 @@ public class Entity{
 		
 		}
 
-	// public float triangle_area(){
-
-	// 	Vector3 a = mesh.vertices[mesh.triangles[0]];
-
-	// 	var rndA = Random.value;
-	// 	var rndB = Random.value;
-	// 	var rndC = Random.value;
-		 
-	// 	var rndTriPoint = (rndA * a + rndB * b + rndC * c) / (rndA + rndB + rndC);
-	// }
+	
 	
 	public Vector3 get_com(){
 		Rigidbody rb = give_rigid_body();
@@ -229,14 +218,12 @@ public class Pair{
 	// Horizontal distance between centre of masses
 	public float horizontal_distance;
 	public float horizontal_distance_normalized;
-	// The area of overlap between e1 and projection from e2
-	// public float horizontal_projection_overlap;
-	// projection angle used in above
-	public float projection_angle = 10f;
+	
+	// projection angle used in covering calculation
+	public float projection_angle = 5f;
 	public float f_covers_g;
 	public float g_covers_f;
-	// Proportion of above, dividing by horizontal area of e2
-	// public float horizontal_projection_overlap_proportion;
+	
 	// Proportion of vertices of e1 which are within a threshold distance of e2
 	// This is currently problematic for low density meshes
 	public float contact_proportion;
@@ -276,8 +263,7 @@ public class Pair{
 		horizontal_distance_normalized = horizontal_distance/largest_distance;
 		f_covers_g = get_f_covers_g();
 		g_covers_f = get_g_covers_f();
-		// horizontal_projection_overlap_proportion = get_2d_horizontal_overlap();
-		// horizontal_projection_overlap_proportion = horizontal_projection_overlap/e2.bbox_area;
+		
 		ground_verticality = e2.verticality;
 		angle_separation = get_angle_seperation();
 	}
@@ -399,26 +385,7 @@ public class Pair{
 			height_separation =  e1.bbox.min.y - e2.bbox.max.y;
 		}
 
-		// else if(e2.bbox.min.y > e1.bbox.min.y && e1.bbox.max.y > e2.bbox.max.y) {
-		// 	height_separation = 0f;
-		// }
-
-		// else if(e1.bbox.min.y > e2.bbox.min.y && e2.bbox.max.y > e1.bbox.max.y) {
-		// 	height_separation = 0f;
-		// }
-		// else if(e2.bbox.min.y > e1.bbox.min.y && e1.bbox.max.y > e2.bbox.min.y){
-		// 	height_separation = e2.bbox.min.y - e1.bbox.min.y;
-		// 	// return 0f;
-		// }
-
-		// else if(e1.bbox.min.y > e2.bbox.min.y && e2.bbox.max.y > e1.bbox.min.y){
-		// 	height_separation = e1.bbox.min.y - e2.bbox.min.y;
-		// 	// return 0f;
-		// }
 		
-		// else if (e1.bbox.min.y < e2.bbox.max.y && e2.bbox.max.y< e1.bbox.max.y) {
-		// 	height_separation = e1.bbox.max.y - e2.bbox.max.y;
-		// }
 		else{
 			height_separation = 0f;
 		}
@@ -439,7 +406,7 @@ public class Pair{
 
 	// Takes vertices in e1 which are 'close' to e2 and divides by the total number of vertices in e1
 	public float get_proportion_contact(){
-		// Vector3[] close = get_close_vertices();
+		
 		float number_of_close = (float)close_vertices.Length;
 		float number_of_e1_vertices = (float)e1.sharedMesh.vertices.Length;
 		
@@ -472,68 +439,10 @@ public class Pair{
 		return e1.bbox.SqrDistance(e2.centre_point);
 	}
 
-	// public float center_distance(Entity e1, Entity e2){
-
-	// }
+	
 	public float get_g_covers_f(){
 		return covering(e2,e1);
-		// projection_angle = projection_angle * Mathf.Deg2Rad;
-		// float height_separation;
-
-		// float projection_diff;
-		// float projection_xmin;
-		// float projection_xmax;
-		// float projection_zmin;
-		// float projection_zmax;
-
-		// height_separation = get_height_seperation();
-
-		// // height_separation = e1.centre_of_mass.y - e2.centre_of_mass.y;
-
 		
-		// projection_diff = height_separation*Mathf.Tan(projection_angle);
-
-		// projection_xmin = e2.bbox.min.x - projection_diff;
-		// projection_xmax = e2.bbox.max.x + projection_diff;
-		// projection_zmin = e2.bbox.min.z - projection_diff;
-		// projection_zmax = e2.bbox.max.z + projection_diff;
-		// // float max_area = (projection_xmax - projection_xmin) * (projection_zmax - projection_zmin);
-		// float fig_area = (e1.bbox.max.x - e1.bbox.min.x) * (e1.bbox.max.z - e1.bbox.min.z)
-		
-		// float area;
-
-
-		// area = area_overlap(e1.bbox.min.x,e1.bbox.max.x,e1.bbox.min.z,e1.bbox.max.z,projection_xmin,projection_xmax,projection_zmin,projection_zmax)
-		// if( e1.bbox.min.x >= projection_xmin && e1.bbox.max.x <= projection_xmax){
-		// 	x = e1.bbox.max.x - e1.bbox.min.x;
-		// }
-		// else if( projection_xmin >= e1.bbox.min.x && projection_xmax <= e1.bbox.max.x){
-		// 	x = projection_xmax - projection_xmin;
-		// }
-		// else if( e1.bbox.min.x <= projection_xmin && e1.bbox.max.x >= projection_xmin && e1.bbox.max.x <= projection_xmax){
-		// 	x = e1.bbox.max.x - projection_xmin;
-		// }
-		// else if( e1.bbox.min.x >= projection_xmin && e1.bbox.min.x <= projection_xmax && e1.bbox.max.x >= projection_xmax){
-		// 	x = projection_xmax - e1.bbox.min.x;
-		// 	}
-
-		// if( e1.bbox.min.z >= projection_zmin && e1.bbox.max.z <= projection_zmax){
-		// 	z = e1.bbox.max.z - e1.bbox.min.z;
-		// }
-		// else if( projection_zmin >= e1.bbox.min.z && projection_zmax <= e1.bbox.max.z){
-		// 	z = projection_zmax - projection_zmin;
-		// }
-		// else if( e1.bbox.min.z <= projection_zmin && e1.bbox.max.z >= projection_zmin && e1.bbox.max.z <= projection_zmax){
-		// 	z = e1.bbox.max.z - projection_zmin;
-		// }
-		// else if( e1.bbox.min.z >= projection_zmin && e1.bbox.min.z <= projection_zmax && e1.bbox.max.z >= projection_zmax){
-		// 	z = projection_zmax - e1.bbox.min.z;
-		// }
-
-		// area = x * z  ;
-
-		// float normalized_area =   area/fig_area;
-		// return normalized_area;
 	}
 
 	public float get_f_covers_g(){
@@ -557,20 +466,20 @@ public class Pair{
 		
 		projection_diff = height_separation*Mathf.Tan(projection_angle);
 
-		projection_xmin = e1.bbox.min.x - projection_diff;
-		projection_xmax = e1.bbox.max.x + projection_diff;
-		projection_zmin = e1.bbox.min.z - projection_diff;
-		projection_zmax = e1.bbox.max.z + projection_diff;
-		// float max_area = (projection_xmax - projection_xmin) * (projection_zmax - projection_zmin);
-		float grd_area = (e2.bbox.max.x - e2.bbox.min.x) * (e2.bbox.max.z - e2.bbox.min.z);
+		e2_xmin = e2.bbox.min.x - projection_diff;
+		e2_xmax = e2.bbox.max.x + projection_diff;
+		e2_zmin = e2.bbox.min.z - projection_diff;
+		e2_zmax = e2.bbox.max.z + projection_diff;
 		
-		float area;
+		float new_e2_area = (e2_xmax - e2_xmin) * (e2_zmax - e2_zmin);
+		
+		float overlap_area;
 
 
-		area = area_overlap(e2.bbox.min.x,e2.bbox.max.x,e2.bbox.min.z,e2.bbox.max.z,projection_xmin,projection_xmax,projection_zmin,projection_zmax);
+		overlap_area = area_overlap(e1.bbox.min.x,e1.bbox.max.x,e1.bbox.min.z,e1.bbox.max.z,e2_xmin,e2_xmax,e2_zmin,e2_zmax);
 		
 
-		float normalized_area =   area/grd_area;
+		float normalized_area =   overlap_area/new_e2_area;
 		return normalized_area;
 
 	}
