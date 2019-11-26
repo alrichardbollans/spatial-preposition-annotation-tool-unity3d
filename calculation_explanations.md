@@ -75,9 +75,9 @@ Four seperate calculations are performed for each cardinal direction. These valu
 In one cardinal direction a force is applied to the ground object. The horizontal movement in the direction of the force of the centre of mass of the figure is measured. This is then divided by the movement (in direction of force) of the centre of mass of the ground. This value is then capped between 0 and 1.
 
 # Annotator Agreement
-Annotator agreements are calculated by process_data.py in Post Processing and saved in the stats folder
+Annotator agreements are calculated by process_data.py in Post Processing and saved in the stats folder.
 
-In each task agreement is calculated for each pair of users. (Note mistake in iteration will include both u1,u2 and u2,u1, this won't affect result but should be changed.)
+In each task agreement is calculated for each pair of Native English speaking users.
 
 Cohens kappa is calculated for each pair of users and multiplied by the shared number of annotations. This is then summed for each pair and divided by the total number of shared annotations. So the average Cohens Kappa given is weighted by shared annotations.
 
