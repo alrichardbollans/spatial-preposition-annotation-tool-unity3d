@@ -22,7 +22,7 @@ For some geometric features meshes must be approximated using "Colliders" for co
 Shortest distance between `e1` and `e2` is calculated by iterating over the vertices of `e1` to find which vertex is closest to an approximation of `e2`. The shortest distance is then just the distance from this vertex to the approximation of `e2`.
 
 ### Containment
-`containment` is calculated by first calculating the volume of overlap of the axis-aligned bounding boxes of `e1` and `e2`. This volume is then divided by the volume of the axis-aligned bounding box of `e1`.
+`containment` (referred to as `bbox_overlap_proportion`) is calculated by first calculating the volume of overlap of the axis-aligned bounding boxes of `e1` and `e2`. This volume is then divided by the volume of the axis-aligned bounding box of `e1`.
 
 ### F_covers_g
 
@@ -40,7 +40,7 @@ The projection angle and height seperation are then used to create the horizonta
 `horizontal_distance` is just the horizontal distance between the centre of mass of `e1` and the centre of mass of `e2`.
 
 ### Contact
-To calculate `contact`, the number of vertices of `e1` which are under some threshold distance to the approximation of `e2` are counted. This is then divided by the total number of vertices in the mesh of `e1`.
+To calculate `contact` (referred to as `contact_proportion`), the number of vertices of `e1` which are under some threshold distance to the approximation of `e2` are counted. This is then divided by the total number of vertices in the mesh of `e1`.
 
 ### Above_proportion
 To calculate `above_proportion`, the number of vertices of `e1` which are above the highest point of `e2` are counted. This is then divided by the total number of vertices in the mesh of `e1`.
