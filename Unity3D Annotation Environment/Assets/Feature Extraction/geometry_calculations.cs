@@ -1,4 +1,4 @@
-// Provides classes which calculate geometric properties between objects
+// Provides classes which calculate geometric properties between objects and saves to csv
 
 using System.Collections.Generic;
 using System.Linq;
@@ -249,6 +249,10 @@ public class Pair{
 		names = e1.name + ":" + e2.name;
 		figure_volume = e1.bbox_volume;
 		ground_volume = e2.bbox_volume;
+
+		// Note we can comment out the heavier functions if they don't need recalculating
+		
+
 		size_ratio = e1.bbox_volume/e2.bbox_volume;
 		set_distance_properties();
 
@@ -266,6 +270,29 @@ public class Pair{
 		
 		ground_verticality = e2.verticality;
 		angle_separation = get_angle_seperation();
+
+		// Write to csv
+		Relationship r = new Relationship(e1.scene,e1.name,e2.name);
+		r.relation_dictionary["figure_volume"] = figure_volume;
+		r.relation_dictionary["ground_volume"] = ground_volume;
+		r.relation_dictionary["ground_verticality"] = ground_verticality;
+
+		r.relation_dictionary["size_ratio"] = size_ratio;
+		r.relation_dictionary["contact_proportion"] = contact_proportion;
+
+		r.relation_dictionary["above_proportion"] = above_proportion;
+
+		r.relation_dictionary["below_proportion"] = below_proportion;
+
+		r.relation_dictionary["bbox_overlap_proportion"] = bbox_overlap_proportion;
+		r.relation_dictionary["horizontal_distance"] = horizontal_distance;
+
+
+		r.relation_dictionary["shortest_distance"] = shortest_distance;
+		r.relation_dictionary["f_covers_g"] = f_covers_g;
+		r.relation_dictionary["g_covers_f"] = g_covers_f;
+		
+		r.save_to_csv();
 	}
 	 
 	// Note: e1=e2 does not give all vertices

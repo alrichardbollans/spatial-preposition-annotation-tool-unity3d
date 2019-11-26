@@ -1,6 +1,5 @@
 //Script which executes geometric feature extraction
-// Creates a relationship object for pairs of objects, then adds features to the relationship
-// Then saves to csv
+
 
 using UnityEngine;
 #if UNITY_EDITOR
@@ -81,44 +80,12 @@ public class Feature_Extraction: EditorWindow{
 		foreach(Entity e1 in entities){
 			
 			foreach(Entity e2 in entities){
+				// Create pair instance which calculates values and saves to csv
+				Pair p = new Pair(e1,e2);
+
 				
-				calculate_relations(e1,e2);
 			}
 		}
-	}
-	// Calculate relations between two entities and save to csv file
-	static public void calculate_relations(Entity e1, Entity e2){//List<Entity> ents
-		// Create relationship instance to store values
-		Relationship r = new Relationship(e1.scene,e1.name,e2.name);
-
-		
-
-		// Create pair instance which calculates values
-		Pair p = new Pair(e1,e2);
-		r.relation_dictionary["figure_volume"] = p.figure_volume;
-		r.relation_dictionary["ground_volume"] = p.ground_volume;
-		r.relation_dictionary["ground_verticality"] = p.ground_verticality;
-
-		r.relation_dictionary["size_ratio"] = p.size_ratio;
-		r.relation_dictionary["contact_proportion"] = p.contact_proportion;
-
-		r.relation_dictionary["above_proportion"] = p.above_proportion;
-
-		r.relation_dictionary["below_proportion"] = p.below_proportion;
-
-		r.relation_dictionary["bbox_overlap_proportion"] = p.bbox_overlap_proportion;
-		r.relation_dictionary["horizontal_distance"] = p.horizontal_distance;
-
-
-		r.relation_dictionary["shortest_distance"] = p.shortest_distance;
-		r.relation_dictionary["f_covers_g"] = p.f_covers_g;
-		r.relation_dictionary["g_covers_f"] = p.g_covers_f;
-		
-		r.save_to_csv();
-
-		
-		
-
 	}
 }
 #endif
