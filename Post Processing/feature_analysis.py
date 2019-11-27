@@ -69,16 +69,6 @@ def convert_index(x,number_of_columns):
 	return [i,j]
 
 
-def clear_classifier_output(classifier):
-
-	with open("figures/latex_tables:"+classifier+".tex","w") as file_object:
-		
-		file_object.write("")
-		
-	with open("figures/csv_tables:"+classifier+".csv","w") as file_object1:
-		
-		file_object1.write("")
-
 
 
 
@@ -111,10 +101,10 @@ class PrepositionModels():
 		self.dataset = dataset
 		# Remove rows from above where not training scene
 		self.train_dataset = dataset[(dataset.iloc[:,self.scene_index].isin(train_scenes))]
-		# Remove rows from above where not a preposition instance
-		self.aff_dataset = self.train_dataset[(self.train_dataset.iloc[:,self.category_index]==1)]
 		## Remove seleciton info columns and names to only have features
 		self.allFeatures = self.remove_nonfeatures(self.train_dataset)
+		
+		
 		
 		self.features_keys = self.allFeatures.columns
 		self.relation_keys = []
@@ -122,6 +112,8 @@ class PrepositionModels():
 			if f not in Relationship.context_features:
 				self.relation_keys.append(f)
 
+		# Remove rows from above where not a preposition instance
+		self.aff_dataset = self.train_dataset[(self.train_dataset.iloc[:,self.category_index]==1)]
 		### Remove seleciton info columns to only have features
 		self.affFeatures = self.remove_nonfeatures(self.aff_dataset)
 		# Only instances are the best examples -- typical instances
@@ -345,26 +337,7 @@ class PrepositionModels():
 
 
 	
-	def write_latex_table(self,dataframe,classifier):
-		with open("figures/latex_tables:"+self.name+classifier+".tex","a") as file_object:
-			
-			# r below means escape characters don't escape
-			file_object.write(r"\begin{table}[]")
-			file_object.write(r"\resizebox{\textwidth}{!}{")
-			
-			file_object.write(dataframe.to_latex())
-			file_object.write("}")
-			file_object.write("\caption{"+self.preposition+" prototype}")
-			file_object.write("\label{table:"+self.preposition+"-prototype}")
-			file_object.write("\end{table}")
-
-	def write_csv_table(self,dataframe,classifier):
-		with open("figures/csv_tables:"+self.name+classifier+".csv","a") as file_object:
-			
-			file_object.write(self.preposition+"\n")
-			file_object.write("##########\n")
-			file_object.write(dataframe.to_csv())
-			file_object.write("##########")
+	
 		
 		
 
