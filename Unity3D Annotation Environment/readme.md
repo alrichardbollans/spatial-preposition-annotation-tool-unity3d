@@ -49,20 +49,20 @@ Below gives info on how to amend/build the game
 
 Scenes must be set up following particular rules which are collected here but need organising (Note: comp = Comparative Task and sv = Preposition selection task):
 
-	* main scene should contain 'mainEmpty' GameObject which holds main script
-	* Scene file names should contain task abbreviation --  sv, pq and comp tasks are shared scenes. Currently these aren't distinguished. Main.cs handles which scenes are done for which task.
-	* Ground Objects in scenes are given tag "ground" or "figureground". Figures to compare with them are given figure or "figureground" tag.
-	* To associate a ground with a preposition for the comp task, ground are given empty objects as children with preposition tags. The tags have to correspond to given prepositions in the preposition list
-	* All grounds are compared against all figures
-	* For the screen task figures are set as above and also given a preposition tag
-	* Scene cameras must have "MainCamera" tag. camera is restricted to bounding box of room in scene template
+* main scene should contain 'mainEmpty' GameObject which holds main script
+* Scene file names should contain task abbreviation --  sv, pq and comp tasks are shared scenes. Currently these aren't distinguished. Main.cs handles which scenes are done for which task.
+* Ground Objects in scenes are given tag "ground" or "figureground". Figures to compare with them are given figure or "figureground" tag.
+* To associate a ground with a preposition for the comp task, ground are given empty objects as children with preposition tags. The tags have to correspond to given prepositions in the preposition list
+* All grounds are compared against all figures
+* For the screen task figures are set as above and also given a preposition tag
+* Scene cameras must have "MainCamera" tag. camera is restricted to bounding box of room in scene template
 
 Once all scenes have been created, they must be added to the build settings and various edits must be made. This is handled by the finalise_scenes.cs script which must be executed once all scenes have been created:
 
-	* finalise scenes.cs adds scenes to build (except example and template etc..) and must be run whenever scenes are added or removed. Sets player menu as first scene in index then iterates through scenes and bakes lighting. This script adds all scenes in the MainFolder directory to the buildsettings
-	* Also edits Main.cs to add the scenes to the scene list
-	* Also adds camera vision script to objects tagged 'MainCamera' and removes their audio listeners
-	* Bakes lighting in each scene
+* finalise scenes.cs adds scenes to build (except example and template etc..) and must be run whenever scenes are added or removed. Sets player menu as first scene in index then iterates through scenes and bakes lighting. This script adds all scenes in the MainFolder directory to the buildsettings
+* Also edits Main.cs to add the scenes to the scene list
+* Also adds camera vision script to objects tagged 'MainCamera' and removes their audio listeners
+* Bakes lighting in each scene
 
 Also, for the feature extraction when adding new scenes, need to rerun scene_info script, then commonsense properties python script and then feature calculation (see Feature Extraction)
 
