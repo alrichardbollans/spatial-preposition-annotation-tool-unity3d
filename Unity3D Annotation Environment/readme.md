@@ -16,11 +16,11 @@ Assets folder contains necessary assets for game creation and running -- scripts
 The feature extraction folder contains scripts associated with getting feature values from configurations in scenes.
 
 To extract the given features for all scenes: 
-	* Begin by creating a folder named 'Scene Data' in your project directory
-	* Run the write_scene_info.cs script by clicking the menu item 'My Tools/Write Scene Info'
-	* Run the python script commonsense_properties.py which is found in the Scene Data folder
-	* Now run "My Tools/Calculate Geometric Features", this may take some time so be patient
-	* Finally run "My Tools/Calculate Functional Features", again this may take some time
+* Begin by creating a folder named 'Scene Data' in your project directory
+* Run the write_scene_info.cs script by clicking the menu item 'My Tools/Write Scene Info'
+* Run the python script commonsense_properties.py which is found in the Scene Data folder
+* Now run "My Tools/Calculate Geometric Features", this may take some time so be patient
+* Finally run "My Tools/Calculate Functional Features", again this may take some time
 
 The menu item "My Tools/Add Feature Check Script" can be used to inspect feature values within scenes
 
