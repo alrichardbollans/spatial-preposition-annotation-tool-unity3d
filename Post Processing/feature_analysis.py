@@ -78,6 +78,9 @@ class PrepositionModels():
 	### Given training scenes, works out models for individual preposition
 	ratio_feature_name = InstanceCollection.ratio_feature_name
 	categorisation_feature_name = InstanceCollection.categorisation_feature_name
+	scene_feature_name = InstanceCollection.scene_feature_name
+	fig_feature_name = InstanceCollection.fig_feature_name
+	ground_feature_name = InstanceCollection.ground_feature_name
 	
 	ratio_index = -2
 	category_index = -1
@@ -85,8 +88,9 @@ class PrepositionModels():
 	
 
 	interval = np.array([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]).reshape(-1,1)
-	def __init__(self,preposition,train_scenes):
-		
+	def __init__(self,preposition,train_scenes, polyseme = None):
+		# Given polyseme if being used to model polyseme
+		self.polyseme = polyseme
 
 		## Use pandas dataframes for ease of importing etc..
 		# Created in compile_instances write_config_ratios()
@@ -99,8 +103,25 @@ class PrepositionModels():
 		## Row is created in dataset only if the configuration was tested
 		# Set of values with selection information
 		self.dataset = dataset
+		if self.polyseme != None:
+			# # Remove none polyseme preposition instances from dataset
+			indexes_to_drop =[]
+			for index, row in self.dataset.iterrows():
+				if polyseme.potential_instance(row[self.scene_feature_name],row[self.fig_feature_name],row[self.ground_feature_name]):
+					pass
+				elif row[self.categorisation_feature_name] ==0:
+					pass
+				else:
+					indexes_to_drop.append(index)
+
+
+			self.dataset.drop(self.dataset.index[indexes_to_drop], inplace=True )
+			
+			
+			
+				
 		# Remove rows from above where not training scene
-		self.train_dataset = dataset[(dataset.iloc[:,self.scene_index].isin(train_scenes))]
+		self.train_dataset = self.dataset[(self.dataset.iloc[:,self.scene_index].isin(train_scenes))]
 		## Remove seleciton info columns and names to only have features
 		self.allFeatures = self.remove_nonfeatures(self.train_dataset)
 		
@@ -135,19 +156,20 @@ class PrepositionModels():
 		## regression weights calculated by linear regression. stored as array
 		self.regression_weights = []
 		self.regression_weight_csv = "model info/regression weights/"+preposition+".csv"
+		self.all_features_regression_weight_csv = "model info/regression weights/allfeatures_"+preposition+".csv"
 
 		## Stores model predictions for the [0,1] interval for later plotting
 		self.interval_predictions = dict()
 
-		self.cluster_csv = "model info/clustering/clusters-"+preposition+".csv"
+		
 
 		## barycentre_prototype . stored as array
-		self.barycentre_prototype = []
+		self.barycentre_prototype = None
 		
 		self.barycentre_csv = "model info/barycentre model/"+preposition+"-prototype.csv"
 
 		## exemplar_mean . stored as array
-		self.exemplar_mean = []
+		self.exemplar_mean = None
 
 		self.exemplar_csv = "model info/exemplar/"+preposition+"-exemplar_means.csv"
 		
@@ -165,13 +187,7 @@ class PrepositionModels():
 		ax1 = axes[l[0],l[1]]
 		
 		
-		e = self.barycentre_prototype[index]
-		e = np.array([e]).reshape(-1,1)
-		end = [1]
-		end = np.array(end).reshape(-1,1)
-
-		ex = self.exemplar_mean[index]
-		ex = np.array([ex]).reshape(-1,1)
+	
 		
 		
 
@@ -187,10 +203,22 @@ class PrepositionModels():
 		ax1.plot(X, Y ,'k.')
 		# Plot regression line
 		ax1.plot(self.interval, y_pred,color='red', linewidth=2)
-		#Plot barycentre value
-		ax1.plot(end,e,markersize=10,markeredgewidth=2,marker='+')
-		#Plot exemplar mean value
-		ax1.plot(end,ex,markersize=10,markeredgewidth=2, marker=(5, 2))
+		# Plot barycentre and exemplar values
+		end = [1]
+		end = np.array(end).reshape(-1,1)
+		
+		if self.barycentre_prototype is not None:
+			b = self.barycentre_prototype[index]
+			b = np.array([b]).reshape(-1,1)
+			#Plot barycentre value
+			ax1.plot(end,b,markersize=10,markeredgewidth=2,marker='+')
+		if self.exemplar_mean is not None:
+			ex = self.exemplar_mean[index]
+			ex = np.array([ex]).reshape(-1,1)
+
+			
+			#Plot exemplar mean value
+			ax1.plot(end,ex,markersize=10,markeredgewidth=2, marker=(5, 2))
 
 	
 	def work_out_models(self):
@@ -211,7 +239,7 @@ class PrepositionModels():
 			pro_value = X[feature].mean()
 
 			out.append(pro_value)
-			# self.barycentre_prototype[feature] = pro_value
+			
 		out = np.array(out)
 		self.barycentre_prototype = out
 		return self.barycentre_prototype
@@ -223,10 +251,20 @@ class PrepositionModels():
 		for feature in self.relation_keys:
 			pro_value = X[feature].mean()
 			out.append(pro_value)
-			# self.exemplar_mean[feature] = pro_value
+			
 		out = np.array(out)
 		self.exemplar_mean = out
 		return self.exemplar_mean
+	
+	def get_plot_filename(self,file_no):
+		x = str(file_no)
+		
+		if self.polyseme != None:
+			filename = self.polyseme.plot_folder  + self.preposition+"-" + self.polyseme.polyseme_name + x +' .pdf'
+		else:
+
+			filename = "model info/plots/"+self.preposition + x+ ".pdf"
+		return filename
 		
 	def plot_models(self):
 		no_rows = 3
@@ -252,12 +290,10 @@ class PrepositionModels():
 
 			self.plot_features_ratio(no_columns,axes,feature,X,y_pred,Y)
 
-
-			x = str(file_no)
-			filename = "model info/plots/"+self.preposition + x+ ".pdf"
+			filename = self.get_plot_filename(file_no)
+			
 			## When the figure is full of plots, save figure
 			if r == 0:
-				x = str(file_no)
 				
 				plt.savefig(filename, bbox_inches='tight')
 				file_no +=1
@@ -266,10 +302,9 @@ class PrepositionModels():
 				fig, axes = plt.subplots(nrows=no_rows, ncols=no_columns, sharex=False, sharey=False)
 				fig.tight_layout()
 				fig.canvas.set_window_title('Ratio vs. Feature')
-			## Save remaining plots
-			x = str(file_no)
-			filename = "model info/plots/"+self.preposition + x+ ".pdf"
-			plt.savefig(filename, bbox_inches='tight')
+		## Save remaining plots
+		filename = self.get_plot_filename(file_no)
+		plt.savefig(filename, bbox_inches='tight')
 
 	def work_out_prototype_model(self):
 		## Work out linear regression on each feature by comparing to the ratio of times selected
@@ -289,8 +324,7 @@ class PrepositionModels():
 			X = self.dataset[self.ratio_feature_name].values.reshape(-1,1)
 			
 			model = linear_model.LinearRegression()
-			
-			
+				
 			# Fit model to data
 			model.fit(X,Y)
 			## Predict all points on interval to use later
@@ -319,21 +353,63 @@ class PrepositionModels():
 		return self.prototype
 	def output_models(self):
 		wf = pd.DataFrame(self.regression_weights, self.relation_keys)
-		# print(wf)
+		
 		wf.to_csv(self.regression_weight_csv)
 
 		pf = pd.DataFrame(self.prototype, self.relation_keys)
-		# print(pf)
+		
 		pf.to_csv(self.prototype_csv)
-		# pf.to_latex("prototypes/"+self.name+".txt")
+		
 
 		epf = pd.DataFrame(self.barycentre_prototype, self.relation_keys)
-		# print(pf)
+		
 		epf.to_csv(self.barycentre_csv)
 
 		exf = pd.DataFrame(self.exemplar_mean, self.relation_keys)
-		# print(pf)
+		
 		exf.to_csv(self.exemplar_csv)
+
+	def all_feature_weights(self):
+		## Calculates regression weights for all features
+		weights = []
+		interval_predictions = dict()
+		for feature in feature_keys:
+			
+			
+
+			## Reshape data first
+			Y = self.dataset[feature].values.reshape(-1,1)
+			X = self.dataset[self.ratio_feature_name].values.reshape(-1,1)
+			
+			model = linear_model.LinearRegression()
+			
+			
+			# Fit model to data
+			model.fit(X,Y)
+			## Predict all points on interval to use later
+			y_pred = model.predict(self.interval)
+			interval_predictions[feature] = y_pred
+			
+			coefficient = model.coef_[0][0]
+			
+			weight = abs(coefficient)
+			
+			weights.append(weight)
+			
+		
+		weights = np.array(weights)
+		
+		wf = pd.DataFrame(weights, feature_keys)
+		
+		wf.to_csv(self.all_features_regression_weight_csv)
+		return weights
+		
+	def read_all_feature_weights(self):
+		# Read regression weights for all features
+		wf = pd.read_csv(self.all_features_regression_weight_csv, index_col=0)
+
+		return wf
+
 
 
 	
@@ -364,9 +440,7 @@ class Model:
 
 	## Puts together preposition models and has various functions for testing
 	def __init__(self,name,weight_dict,train_scenes,test_scenes,constraint_dict,feature_to_remove = None,prototype_dict = None):
-		##
-
-		# print(name)
+		
 		self.name = name
 		## Dictionary containing constraints to satisfy
 		self.constraint_dict = constraint_dict
@@ -379,7 +453,7 @@ class Model:
 		self.train_scenes = train_scenes
 		# self.get_point_and_weights_arrays()
 		
-		self.scores = self.get_score()
+		
 		
 	
 	def semantic_similarity(self,preposition,x,y):
@@ -465,8 +539,7 @@ class Model:
 		weighted_average_score = 0
 		total_weight_counter = 0
 		for preposition in preposition_list:
-			# print(preposition)
-			# print(preposition_list)
+			
 			
 			allConstraints = self.constraint_dict[preposition]
 			# Constraints to test on
@@ -508,7 +581,7 @@ class Model:
 
 		self.weight_totals = weight_totals
 		self.totals = totals
-
+		self.scores = scores
 		
 		return scores
 
@@ -560,7 +633,7 @@ class Model:
 
 		return counter 
 
-class TestModels():
+class GenerateModels():
 	feature_processer = Features()
 
 	our_model_name = "Our Prototype"
@@ -571,16 +644,16 @@ class TestModels():
 	simple_model_name ="Simple"
 
 	## List of all model names
-	model_name_list = [our_model_name,exemplar_model_name,cs_model_name,best_guess_model_name,simple_model_name,proximity_model_name]
+	# model_name_list = [our_model_name,exemplar_model_name,cs_model_name,best_guess_model_name,simple_model_name,proximity_model_name]
 	
 	## List of model names except ours
 	other_name_list = [exemplar_model_name,cs_model_name,best_guess_model_name,simple_model_name,proximity_model_name]
 	
-	## Gets models and instantiates(tests) them
-	def __init__(self,train_scenes,test_scenes,constraint_dict,version_name,feature_to_remove = None,only_test_our_model = None):
+	#Generating models to test
+	def __init__(self,train_scenes,test_scenes,constraint_dict,feature_to_remove = None,only_test_our_model = None):
 		# Dictionary of constraints to satisfy
 		self.constraint_dict = constraint_dict
-		self.version_name = version_name
+		
 		# Values of prototypes and feature weights
 		self.prototypes = dict()
 		self.barycentre_prototypes = dict()
@@ -590,6 +663,8 @@ class TestModels():
 		# Scenes used to test models
 		self.test_scenes = test_scenes
 		self.feature_to_remove = feature_to_remove
+
+
 		## Get data models
 		for p in preposition_list:
 			M = PrepositionModels(p,self.train_scenes)
@@ -614,26 +689,8 @@ class TestModels():
 		else:
 			
 			models = [m]
-		out = dict()
 
-		
-		for mos in models:
-			out[mos.name] = mos.scores
-		
-		
-		out["Total Constraint Weights"] = models[0].weight_totals + ["",""]
-		# out["Number of Constraints"] = models[0].totals
-
-		df = pd.DataFrame(out,preposition_list + ["Average", "All"])
-		cols = df.columns.tolist()
-		
-		
-		
-		# df.to_latex("scores/"+self.version_name+"-model scores.tex")
-
-		self.score_dataframe = df
-		
-
+		self.models = models
 	
 	def get_proximity_model(self):
 		## 
@@ -886,6 +943,40 @@ class TestModels():
 			weight_dict[preposition]= weight_array
 		m = Model(self.simple_model_name,weight_dict,self.train_scenes,self.test_scenes,self.constraint_dict,self.feature_to_remove,prototype_dict = pro_dict)
 		return m
+
+class TestModels():
+	# Takes input set of models and outputs database of scores
+	
+	
+	def __init__(self,models,version_name):
+		
+		self.version_name = version_name
+		self.models = models
+		self.model_name_list = []
+		
+		out = dict()
+
+		
+		for model in self.models:
+			self.model_name_list.append(model.name)
+			model.get_score()
+			out[model.name] = model.scores
+		
+		
+		# out["Total Constraint Weights"] = models[0].weight_totals + ["",""]
+
+		df = pd.DataFrame(out,preposition_list + ["Average", "All"])
+		
+
+		# Reorder columns
+	 	new_column_order = self.model_name_list
+	 	reordered_df = df[new_column_order]
+
+		self.score_dataframe = reordered_df
+		
+		
+
+	
 		
 
 class MultipleRuns:
@@ -956,13 +1047,14 @@ class MultipleRuns:
 	 	
 	
  	def test_all_scenes(self):
-	 	t= TestModels(self.scene_list,self.scene_list,self.constraint_dict, "all")
+ 		generate_models = GenerateModels(self.scene_list,self.scene_list,self.constraint_dict)
+ 		models = generate_models.models
+	 	t= TestModels(models, "all")
 	 	self.all_dataframe = t.score_dataframe
-	 	new_column_order = TestModels.model_name_list
-	 	reordered_df = t.score_dataframe[new_column_order]
+	 	
 	 	
 		
-		reordered_df.to_csv(self.all_csv)
+		self.all_dataframe.to_csv(self.all_csv)
 
 		self.plot_dataframe_bar_chart(self.all_dataframe,self.all_plot,"Preposition","Score","Scores Using All Data")
 	
@@ -970,13 +1062,16 @@ class MultipleRuns:
 	def single_validation_test(self,train_scenes,test_scenes):
 		if self.features_to_test != None:
 			# Test model with no removed features
-			t= TestModels(train_scenes,test_scenes,self.constraint_dict,str(self.run_count),only_test_our_model = True)
+			generate_models = GenerateModels(train_scenes,test_scenes,self.constraint_dict,only_test_our_model = True)
+			
 		else:
 			# Test all models with no removed features
-			t= TestModels(train_scenes,test_scenes,self.constraint_dict,str(self.run_count))
+			generate_models = GenerateModels(train_scenes,test_scenes,self.constraint_dict)
+			
+		t= TestModels(generate_models.models,str(self.run_count))
 		# Get generated scores
 		dataset = t.score_dataframe
-		dataset = dataset.drop(["Total Constraint Weights"],axis=1)
+		
 
 		## Add scores to total
 		if "all_features" in self.dataframe_dict:
@@ -986,11 +1081,11 @@ class MultipleRuns:
 			self.dataframe_dict["all_features"] = dataset
 
 		## Get our score from dataframe
-		our_score = dataset.at["All",TestModels.our_model_name]
+		our_score = dataset.at["All",generate_models.our_model_name]
 
 		## Compare Models
 		if self.compare != None:
-			for other_model in TestModels.other_name_list:
+			for other_model in generate_models.other_name_list:
 				
 				# Get score
 				other_score = dataset.at["All",other_model]
@@ -1007,14 +1102,15 @@ class MultipleRuns:
 		if self.features_to_test != None:
 			
 			for feature in self.features_to_test:
-				t= TestModels(train_scenes,test_scenes,self.constraint_dict,str(self.run_count),feature,only_test_our_model = True)
+				generate_models = GenerateModels(train_scenes,test_scenes,self.constraint_dict,feature_to_remove =feature,only_test_our_model = True)
+				t= TestModels(generate_models.models,str(self.run_count))
 
 				feature_dataset = t.score_dataframe
-				feature_dataset = feature_dataset.drop(["Total Constraint Weights"],axis=1)
+				# feature_dataset = feature_dataset.drop(["Total Constraint Weights"],axis=1)
 				
 				for p in BasicInfo.preposition_list + ["Average", "All"]:
-					without_feature_score = feature_dataset.at[p,TestModels.our_model_name]
-					with_feature_score = dataset.at[p,TestModels.our_model_name]
+					without_feature_score = feature_dataset.at[p,generate_models.our_model_name]
+					with_feature_score = dataset.at[p,generate_models.our_model_name]
 
 					
 					if without_feature_score > with_feature_score:
@@ -1281,14 +1377,14 @@ def test_models(fold_size):
 def main(constraint_dict):
 	plot_preposition_graphs()
 	# Edit plot settings
-	mpl.rcParams['font.size'] = 35
-	mpl.rcParams['legend.fontsize'] = 'small'
-	mpl.rcParams['axes.titlesize'] = 'small'
-	mpl.rcParams['axes.labelsize'] = 'medium'
-	mpl.rcParams['ytick.labelsize'] = 'small'
-	test_features()
-	test_models(2)
-	test_models(3)
+	# mpl.rcParams['font.size'] = 35
+	# mpl.rcParams['legend.fontsize'] = 'small'
+	# mpl.rcParams['axes.titlesize'] = 'small'
+	# mpl.rcParams['axes.labelsize'] = 'medium'
+	# mpl.rcParams['ytick.labelsize'] = 'small'
+	# test_features()
+	# test_models(2)
+	# test_models(3)
 
 	
 	
