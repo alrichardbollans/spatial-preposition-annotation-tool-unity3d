@@ -34,8 +34,9 @@ class Features:
 	def __init__(self):
 		self.dataset = pd.read_csv(self.property_path)
 		# Remove values where fig=ground
+		
 		self.dataset = self.dataset[self.dataset.Figure!=self.dataset.Ground]
-
+		
 		## Calculate location control and append column
 		location_control_parts = ["location_control_x","location_control_-x","location_control_-z","location_control_z"]
 
@@ -50,8 +51,9 @@ class Features:
 		self.means = self.dataset.iloc[:,3:].mean()
 		self.stds = self.dataset.iloc[:,3:].std()
 
+
 	def standardise_values(self):
-		new_dataframe = self.dataset
+		new_dataframe = self.dataset.copy()
 		
 		new_dataframe.iloc[:,3:] = new_dataframe.iloc[:,3:] - self.means
 		new_dataframe.iloc[:,3:] = new_dataframe.iloc[:,3:]/(self.stds)
@@ -81,8 +83,32 @@ class Features:
 
 		return x
 
+	def get_max_value(self,feature):
+		m = self.dataset[feature].max()
+		return m
+
+	def get_min_value(self,feature):
+		m = self.dataset[feature].min()
+		return m
+	def convert_standard_df_to_normal(self,df):
+		# Need to be careful assigning new dataframe variables this way
+		# As it returns a reference to the initial dataframe UNLESS copy() is used
+		new_dataframe = df.copy()
+		for column in new_dataframe:
+
+			mean = self.means[column]
+			std = self.stds[column]
+
+			new_dataframe[column] = (new_dataframe[column] * std) + mean
+
+		
+		
+		return new_dataframe
+
+
 if __name__ == '__main__':
 	f= Features()
 	nd = f.standardise_values()
 	f.write_new(nd)
 	f.write_mean_std()
+	
