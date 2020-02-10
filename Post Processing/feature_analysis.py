@@ -16,10 +16,10 @@ import matplotlib.pyplot as plt
 
 
 ## Import validation modules
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import KFold
+from sklearn.model_selection import train_test_split, KFold
+from sklearn.preprocessing import PolynomialFeatures
 
-from sklearn import linear_model
+from sklearn.linear_model import LinearRegression, TheilSenRegressor
 
 
 from scipy.special import comb
@@ -88,7 +88,8 @@ class PrepositionModels():
 	
 
 	interval = np.array([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]).reshape(-1,1)
-	def __init__(self,preposition,train_scenes, polyseme = None):
+	def __init__(self,preposition,train_scenes, feature_to_remove = None,polyseme = None):
+		self.feature_to_remove = feature_to_remove
 		# Given polyseme if being used to model polyseme
 		self.polyseme = polyseme
 
@@ -119,11 +120,15 @@ class PrepositionModels():
 			
 			
 			
-				
+		
 		# Remove rows from above where not training scene
 		self.train_dataset = self.dataset[(self.dataset.iloc[:,self.scene_index].isin(train_scenes))]
-		## Remove seleciton info columns and names to only have features
+		
+		## Remove selection info columns and names to only have features
 		self.allFeatures = self.remove_nonfeatures(self.train_dataset)
+		
+		## Feature dataframe for regressions etc.
+		self.feature_dataframe = self.remove_nonrelations(self.allFeatures)
 		
 		
 		
@@ -147,18 +152,22 @@ class PrepositionModels():
 		### Remove seleciton info columns to only have features
 		self.neg_features = self.remove_nonfeatures(self.neg_dataset)
 
+
 		## prototype calculated using regression. Stored as array
 		self.prototype = []
 		
 
 		self.prototype_csv = "model info/prototypes/"+preposition+".csv"
 
-		## regression weights calculated by linear regression. stored as array
+		## regression weights calculated by linear regression. stored as array and dataframe
+		self.poly_regression_model = None
+		self.linear_regression_model = None
+		
 		self.regression_weights = []
 		self.regression_weight_csv = "model info/regression weights/"+preposition+".csv"
 		self.all_features_regression_weight_csv = "model info/regression weights/allfeatures_"+preposition+".csv"
 
-		## Stores model predictions for the [0,1] interval for later plotting
+		## Stores model predictions for later plotting
 		self.interval_predictions = dict()
 
 		
@@ -177,6 +186,14 @@ class PrepositionModels():
 	def remove_nonfeatures(self,d):
 		## Remove seleciton info columns and names to only have features
 		return d.drop(["Scene","Figure","Ground",self.ratio_feature_name,self.categorisation_feature_name],axis=1)
+	def remove_nonrelations(self,d):
+		## Remove features which are for identifying polysemes
+		new_d = d.drop(Relationship.context_features,axis=1)
+		if self.feature_to_remove != None:
+			## Remove features to remove
+			new_d = new_d.drop([self.feature_to_remove],axis=1)
+		return new_d
+
 	def plot_features_ratio(self,no_columns,axes,feature,X,y_pred,Y):
 		# X = Selection Ratio
 		# y_pred =  predicted Y values on unit interval
@@ -192,7 +209,14 @@ class PrepositionModels():
 		
 
 		ax1.set_xlabel("Selection Ratio")
-		ax1.set_ylabel(feature)
+		ylabel = feature
+		## Rename some features
+		if ylabel == "contact_proportion":
+			ylabel = "contact"
+		if ylabel == "bbox_overlap_proportion":
+			ylabel = "containment"
+		
+		ax1.set_ylabel(ylabel)
 		# ax1.set_xbound(0,1)
 		# ax1.set_ybound(0,1)
 		# ax1.set_xlim(-0.1,1.1)
@@ -202,7 +226,7 @@ class PrepositionModels():
 		# Plot data point scatter
 		ax1.plot(X, Y ,'k.')
 		# Plot regression line
-		ax1.plot(self.interval, y_pred,color='red', linewidth=2)
+		ax1.plot(X, y_pred,color='red', linewidth=2)
 		# Plot barycentre and exemplar values
 		end = [1]
 		end = np.array(end).reshape(-1,1)
@@ -220,11 +244,22 @@ class PrepositionModels():
 			#Plot exemplar mean value
 			ax1.plot(end,ex,markersize=10,markeredgewidth=2, marker=(5, 2))
 
+		# if self.prototype is not None:
+		# 	p = self.prototype[index]
+		# 	p = np.array([p]).reshape(-1,1)
+
+			
+		# 	#Plot exemplar mean value
+		# 	ax1.plot(p,end,markersize=10,markeredgewidth=2, marker=(4, 2))
+
 	
 	def work_out_models(self):
+		self.work_out_linear_regression_model()
+		# self.work_out_polynomial_regression_model(3)
 		self.work_out_barycentre_prototype()
 		self.work_out_exemplar_mean()
 		self.work_out_prototype_model()
+
 		
 
 		
@@ -267,6 +302,7 @@ class PrepositionModels():
 		return filename
 		
 	def plot_models(self):
+		## Plots simple linear regressions used to find prototypes
 		no_rows = 3
 		no_columns = 2
 		
@@ -283,8 +319,8 @@ class PrepositionModels():
 			r= plot_count % (no_columns * no_rows)
 			
 			## Reshape data first
-			Y = self.dataset[feature].values.reshape(-1,1)
-			X = self.dataset[self.ratio_feature_name].values.reshape(-1,1)
+			Y = self.train_dataset[feature].values.reshape(-1,1)
+			X = self.train_dataset[self.ratio_feature_name].values.reshape(-1,1)
 			## Get prediction of all points on interval
 			y_pred = self.interval_predictions[feature]
 
@@ -305,6 +341,86 @@ class PrepositionModels():
 		## Save remaining plots
 		filename = self.get_plot_filename(file_no)
 		plt.savefig(filename, bbox_inches='tight')
+	def work_out_feature_prototype(self,feature):
+		## First predict feature value given selection ratio of 1
+		## Reshape data first
+		X = self.train_dataset[self.ratio_feature_name].values.reshape(-1,1)
+		Y = self.train_dataset[feature].values.reshape(-1,1)
+		
+		
+		model1 = LinearRegression()
+		
+			
+		# Fit model to data
+		model1.fit(X,Y)
+		y_pred = model1.predict(X)
+		self.interval_predictions[feature] = y_pred
+		
+		# Get prototype for feature
+		max_point = np.array([1]).reshape(-1,1)
+
+		feature_prototype = model1.predict(max_point)
+		
+		pro_value = feature_prototype[0][0]
+		return pro_value
+
+	def work_out_linear_regression_model(self):
+		## Next get gradient when feature predicts selection ratio
+		## Reshape data first
+		
+		X = self.feature_dataframe
+		Y = self.train_dataset[self.ratio_feature_name].values.reshape(-1,1)
+		
+		
+		lin_model = LinearRegression()
+		
+			
+		# Fit model to data
+		lin_model.fit(X,Y)
+
+		self.linear_regression_model =lin_model
+		# print(self.preposition)
+		# print("Linear Score")
+		# print(lin_model.score(X,Y))
+
+		return lin_model
+
+		
+
+	def work_out_feature_weights(self):
+		if self.linear_regression_model == None:
+			model2 = self.work_out_linear_regression_model()
+		else:
+			model2 = self.linear_regression_model
+
+		
+		X = self.feature_dataframe
+
+		v = pd.DataFrame(model2.coef_,index = ["coefficient"]).transpose()
+		w = pd.DataFrame(X.columns,columns = ["feature"])
+		coeff_df = pd.concat([w,v],axis = 1,join="inner")
+		coeff_df =coeff_df.set_index("feature")
+		
+		
+		weights = []
+		
+		for feature in self.relation_keys:
+			if self.feature_to_remove != None:
+				## If the feature is removed, append 0 instead
+				if feature == self.feature_to_remove:
+					weights.append(0)
+				else:
+					w= abs(coeff_df.loc[feature,"coefficient"])
+					weights.append(w)
+			else:
+				w= abs(coeff_df.loc[feature,"coefficient"])
+				weights.append(w)
+		weights = np.array(weights)
+
+		self.regression_weights = weights
+
+		
+		
 
 	def work_out_prototype_model(self):
 		## Work out linear regression on each feature by comparing to the ratio of times selected
@@ -313,45 +429,47 @@ class PrepositionModels():
 		
 		
 		prototype = []
-		weights = []
-		interval_predictions = dict()
+		
+		
 		for feature in self.relation_keys:
-			
-			
-
-			## Reshape data first
-			Y = self.dataset[feature].values.reshape(-1,1)
-			X = self.dataset[self.ratio_feature_name].values.reshape(-1,1)
-			
-			model = linear_model.LinearRegression()
-				
-			# Fit model to data
-			model.fit(X,Y)
-			## Predict all points on interval to use later
-			y_pred = model.predict(self.interval)
-			interval_predictions[feature] = y_pred
-			# Get prototype for feature
-			max_point = np.array([1]).reshape(-1,1)
-			feature_prototype = model.predict(max_point)
-			
-			pro_value = feature_prototype[0][0]
-			coefficient = model.coef_[0][0]
-			
-			weight = abs(coefficient)
+			## First predict feature value given selection ratio of 1
+			pro_value = self.work_out_feature_prototype(feature)
 			
 			# Add to dictionary
 			prototype.append(pro_value)
-			weights.append(weight)
-			# self.prototype[feature] = pro_value
-			# self.regression_weights[feature] = weight
+			
+		self.work_out_feature_weights()
 		prototype = np.array(prototype)
-		weights = np.array(weights)
+		
 		self.prototype = prototype
-		self.regression_weights = weights
-		self.interval_predictions = interval_predictions
+		
+		
 		
 		return self.prototype
+
+	def work_out_polynomial_regression_model(self,n):
+		## Next get gradient when feature predicts selection ratio
+		## Reshape data first
+		X = self.feature_dataframe
+		Y = self.train_dataset[self.ratio_feature_name].values.reshape(-1,1)
+		
+		polynomial_features= PolynomialFeatures(degree=n)
+		x_poly = polynomial_features.fit_transform(X)
+		
+		model2 = LinearRegression()
+		
+			
+		# Fit model to data
+		model2.fit(x_poly,Y)
+
+		self.poly_regression_model =model2
+		print(self.preposition)
+		print("Polynomial Score" + str(n))
+		print(model2.score(x_poly,Y))
+
+		return model2
 	def output_models(self):
+		## Only called once when training scenes are all scenes, so these are the best model parameters
 		wf = pd.DataFrame(self.regression_weights, self.relation_keys)
 		
 		wf.to_csv(self.regression_weight_csv)
@@ -372,27 +490,10 @@ class PrepositionModels():
 	def all_feature_weights(self):
 		## Calculates regression weights for all features
 		weights = []
-		interval_predictions = dict()
-		for feature in feature_keys:
+		
+		for feature in feature_keys:		
 			
-			
-
-			## Reshape data first
-			Y = self.dataset[feature].values.reshape(-1,1)
-			X = self.dataset[self.ratio_feature_name].values.reshape(-1,1)
-			
-			model = linear_model.LinearRegression()
-			
-			
-			# Fit model to data
-			model.fit(X,Y)
-			## Predict all points on interval to use later
-			y_pred = model.predict(self.interval)
-			interval_predictions[feature] = y_pred
-			
-			coefficient = model.coef_[0][0]
-			
-			weight = abs(coefficient)
+			weight = work_out_feature_weight(feature)
 			
 			weights.append(weight)
 			
@@ -407,6 +508,11 @@ class PrepositionModels():
 	def read_all_feature_weights(self):
 		# Read regression weights for all features
 		wf = pd.read_csv(self.all_features_regression_weight_csv, index_col=0)
+
+		return wf
+	def read_regression_weights(self):
+		# Read regression weights for relations
+		wf = pd.read_csv(self.regression_weight_csv, index_col=0)
 
 		return wf
 
@@ -439,7 +545,7 @@ class Model:
 	
 
 	## Puts together preposition models and has various functions for testing
-	def __init__(self,name,weight_dict,train_scenes,test_scenes,constraint_dict,feature_to_remove = None,prototype_dict = None):
+	def __init__(self,name,weight_dict,train_scenes,test_scenes,constraint_dict,feature_to_remove = None,prototype_dict = None,regression_model_dict = None, regression_dimension = None):
 		
 		self.name = name
 		## Dictionary containing constraints to satisfy
@@ -447,11 +553,14 @@ class Model:
 		## A feature to remove from models to see how results change
 		self.feature_to_remove = feature_to_remove
 		## Input dictionarys of prototype and feature weights for each preposition, stored as arrays
+		## prototype_dict = None => exemplar model
 		self.prototype_dict = prototype_dict
 		self.weight_dict = weight_dict
 		self.test_scenes = test_scenes
 		self.train_scenes = train_scenes
-		# self.get_point_and_weights_arrays()
+		self.regression_model_dict = regression_model_dict
+		self.regression_dimension = regression_dimension
+		
 		
 		
 		
@@ -464,6 +573,7 @@ class Model:
 		
 		
 		weight_array = self.weight_dict[preposition]
+		
 		## Edit values to calculate without considering feature
 		if self.feature_to_remove != None:
 			
@@ -475,6 +585,7 @@ class Model:
 		point = np.square(point)
 		# Dot product pointwise by weights
 		summ = np.dot(point,weight_array)
+
 		# Square root to get distance
 		distance = math.sqrt(summ)
 		## Get typicality
@@ -484,7 +595,19 @@ class Model:
 	def get_typicality(self,preposition,point):
 		## Works out the typicality of the given point (1D array)
 		# Point taken as input is from one side of constraint inequality
-		
+		if self.regression_model_dict != None:
+			
+			point_array = np.array(point).reshape(1,-1)
+			if self.regression_dimension != None:
+				
+				# Must transform the point for polynomial regression
+				polynomial_features= PolynomialFeatures(degree=self.regression_dimension)
+				point_array = polynomial_features.fit_transform(point_array)
+			
+
+
+			t = self.regression_model_dict[preposition].predict(point_array)
+			return t
 		if self.prototype_dict != None:
 			
 
@@ -494,7 +617,7 @@ class Model:
 			
 			return out
 		if self.prototype_dict == None:
-			
+			## When no prototype_dict is given calculate typicality using exemplar model
 			## Load exemplars and non instancesfor preposition and remove context features
 			p = PrepositionModels(preposition,self.train_scenes)
 
@@ -613,17 +736,17 @@ class Model:
 			rhs = self.get_typicality(preposition,c.rhs)
 			if c.is_satisfied(lhs,rhs):
 				counter +=c.weight
-			else:
-				if len(self.test_scenes) == len(self.train_scenes):
-					if preposition == "under" and self.name == "Our Prototype":
+			# else:
+			# 	if len(self.test_scenes) == len(self.train_scenes):
+			# 		if preposition == "under" and self.name == "Our Prototype":
 						
-						print("#########")
-						print(c.scene)
-						print("ground:" + c.ground)
-						print("Correct Figure: " + c.f1)
-						print("Incorrectly better figure:" + c.f2)
-						cp = Comparison(c.scene,preposition,c.ground)
-						print("possible_figures:" + str(cp.possible_figures))
+			# 			print("#########")
+			# 			print(c.scene)
+			# 			print("ground:" + c.ground)
+			# 			print("Correct Figure: " + c.f1)
+			# 			print("Incorrectly better figure:" + c.f2)
+			# 			cp = Comparison(c.scene,preposition,c.ground)
+			# 			print("possible_figures:" + str(cp.possible_figures))
 					
 					
 					
@@ -635,7 +758,8 @@ class Model:
 
 class GenerateModels():
 	feature_processer = Features()
-
+	lin_model_name ="Linear Regression"
+	poly_model_name = "Polynomial Regression"
 	our_model_name = "Our Prototype"
 	exemplar_model_name = "Exemplar"
 	cs_model_name ="Conceptual Space"
@@ -644,7 +768,7 @@ class GenerateModels():
 	simple_model_name ="Simple"
 
 	## List of all model names
-	# model_name_list = [our_model_name,exemplar_model_name,cs_model_name,best_guess_model_name,simple_model_name,proximity_model_name]
+	model_name_list = [our_model_name,exemplar_model_name,cs_model_name,best_guess_model_name,simple_model_name,proximity_model_name]
 	
 	## List of model names except ours
 	other_name_list = [exemplar_model_name,cs_model_name,best_guess_model_name,simple_model_name,proximity_model_name]
@@ -658,6 +782,8 @@ class GenerateModels():
 		self.prototypes = dict()
 		self.barycentre_prototypes = dict()
 		self.all_regression_weights = dict()
+		self.poly_regression_model_dict = dict()
+		self.linear_regression_model_dict = dict()
 		# Scenes used to train models
 		self.train_scenes = train_scenes
 		# Scenes used to test models
@@ -667,24 +793,27 @@ class GenerateModels():
 
 		## Get data models
 		for p in preposition_list:
-			M = PrepositionModels(p,self.train_scenes)
+			M = PrepositionModels(p,self.train_scenes,feature_to_remove = self.feature_to_remove)
 			M.work_out_models()
 			
 			self.prototypes[p] = M.prototype
 			self.barycentre_prototypes[p] = M.barycentre_prototype
 			self.all_regression_weights[p] = M.regression_weights
+			self.linear_regression_model_dict[p] = M.linear_regression_model
+			self.poly_regression_model_dict[p] = M.poly_regression_model
 
 		m = Model(self.our_model_name,self.all_regression_weights,self.train_scenes,self.test_scenes,self.constraint_dict,feature_to_remove =  self.feature_to_remove,prototype_dict = self.prototypes)
-		
+		# linear_r_model = Model(self.lin_model_name,self.all_regression_weights,self.train_scenes,self.test_scenes,self.constraint_dict,regression_model_dict = self.linear_regression_model_dict)
+		# poly_r_model = Model(self.poly_model_name,self.all_regression_weights,self.train_scenes,self.test_scenes,self.constraint_dict,regression_model_dict = self.poly_regression_model_dict, regression_dimension = 3)
 		if only_test_our_model == None:#feature_to_remove == None:
 			
 			# Only include others if not testing features
-			m1 = Model(self.exemplar_model_name,self.all_regression_weights,self.train_scenes,self.test_scenes,self.constraint_dict,self.feature_to_remove)
+			m1 = Model(self.exemplar_model_name,self.all_regression_weights,self.train_scenes,self.test_scenes,self.constraint_dict,feature_to_remove =self.feature_to_remove)
 			m2 = Model(self.cs_model_name,self.all_regression_weights,self.train_scenes,self.test_scenes,self.constraint_dict,feature_to_remove =  self.feature_to_remove,prototype_dict = self.barycentre_prototypes)
 			m3 = self.get_proximity_model()
 			m4 = self.get_simple_model()
 			m5 = self.get_best_guess_model()
-			models = [m,m1,m2,m3,m4,m5]
+			models = [m,m1,m2,m3,m4,m5]#,linear_r_model,poly_r_model]
 			
 		else:
 			
@@ -1014,9 +1143,9 @@ class MultipleRuns:
  			self.average_plot_title = "Scores Using Repeated K-Fold Validation. K = "+str(self.k) + " N = " + str(self.number_runs)
 		
  			
- 		self.average_plot_pdf = self.scores_plots_folder +"/average" + self.file_tag+".pdf"
-		self.average_csv = self.scores_tables_folder + "/averagemodel scores "+self.file_tag+".csv"
-		self.comparison_csv = self.scores_tables_folder + "/repeatedcomparisons "+self.file_tag+".csv"
+	 		self.average_plot_pdf = self.scores_plots_folder +"/average" + self.file_tag+".pdf"
+			self.average_csv = self.scores_tables_folder + "/averagemodel scores "+self.file_tag+".csv"
+			self.comparison_csv = self.scores_tables_folder + "/repeatedcomparisons "+self.file_tag+".csv"
 		if self.features_to_test != None:
 			self.feature_removed_average_csv = dict()
 			for feature in self.features_to_test:
@@ -1030,7 +1159,7 @@ class MultipleRuns:
  		self.count_with_feature_better = dict()
  		
  		# Prepare dict
-		for other_model in TestModels.other_name_list:
+		for other_model in GenerateModels.other_name_list:
 			
 			self.count_our_model_wins[other_model] = 0
 			self.count_other_model_wins[other_model] = 0
@@ -1179,8 +1308,8 @@ class MultipleRuns:
 	 	for i in range(self.number_runs):
 	 		self.run_count = i
 
-			print("Run Number")
-	 		print(i)
+			print("Run Number:" + str(i))
+	 		
 	 		if self.test_size != None:
 	 			split = self.get_validation_scene_split()
 	 			train_scenes = split[0]
@@ -1212,7 +1341,7 @@ class MultipleRuns:
 		## Output comparison of models and p-value
 		if self.compare != None:
 			other_model_p_value = dict()
-			for other_model in TestModels.other_name_list:
+			for other_model in GenerateModels.other_name_list:
 				
 				p_value = calculate_p_value(self.total_number_runs,self.count_our_model_wins[other_model])
 				other_model_p_value[other_model] = p_value
@@ -1268,7 +1397,7 @@ class MultipleRuns:
 		self.average_dataframe = self.dataframe_dict["all_features"]
 		# Reorder columns for output
 		if self.features_to_test == None:
-			new_column_order = TestModels.model_name_list
+			new_column_order = GenerateModels.model_name_list
 			reordered_df = self.average_dataframe[new_column_order]
 			reordered_df.to_csv(self.average_csv)
 		else:
@@ -1292,20 +1421,28 @@ class MultipleRuns:
 			
 			for feature in self.features_to_test:
 				print(self.dataframe_dict[feature])
-				out[feature] = self.dataframe_dict[feature][TestModels.our_model_name]
-			out["None removed"] = self.average_dataframe[TestModels.our_model_name]
+				out[feature] = self.dataframe_dict[feature][GenerateModels.our_model_name]
+			out["None removed"] = self.average_dataframe[GenerateModels.our_model_name]
 			df = pd.DataFrame(out,BasicInfo.preposition_list + ["Average", "All"])
 			df.to_csv(self.scores_tables_folder+"/functional_feature_analysis.csv")
-			print(df)
-
-			ax = df.plot(kind='bar', title ="Average Scores With Removed Features. K = "+str(self.k) + " N = " + str(self.number_runs),figsize=(15, 10), legend=True)
 			
-			ax.set_xlabel("Preposition")
-			ax.set_ylabel("Average")
-			ax.set_yticks(np.arange(0, 1.05, 0.05))
-			plt.legend(loc='upper center', bbox_to_anchor=(0.44, -0.35), ncol=3)
-			plt.grid()
-			plt.savefig(self.scores_plots_folder+"/ScoresWithRemovedFeatures.pdf", bbox_inches='tight')
+
+			output_file = self.scores_plots_folder+"/ScoresWithRemovedFeatures.pdf"
+			x_label = "Preposition"
+			y_label = "Score"
+			plot_title = "Average Scores With Removed Features. K = "+str(self.k) + " N = " + str(self.number_runs)
+			self.plot_dataframe_bar_chart(df,output_file,x_label,y_label,plot_title)
+			# ax = df.plot(kind='bar', title ="Average Scores With Removed Features. K = "+str(self.k) + " N = " + str(self.number_runs),figsize=(15, 10), legend=True)
+			
+			# ax.set_xlabel("Preposition")
+			# ax.set_ylabel("Score")
+			# ax.set_yticks(np.arange(0, 1.05, 0.05))
+			# ax.grid(True)
+			# ax.set_axisbelow(True)
+			
+			# plt.legend(loc='upper center', bbox_to_anchor=(0.44, -0.35), ncol=3)
+			
+			# plt.savefig(self.scores_plots_folder+"/ScoresWithRemovedFeatures.pdf", bbox_inches='tight')
 		
 		
 
@@ -1313,19 +1450,26 @@ class MultipleRuns:
 
 	def plot_dataframe_bar_chart(self,dataset,file_to_save,x_label,y_label,plot_title):
 		if self.features_to_test == None:
-			new_column_order = TestModels.model_name_list
+			new_column_order = GenerateModels.model_name_list
 			reordered_df = dataset[new_column_order]
 		else:
 			reordered_df = dataset
 
 		
-		ax = reordered_df.plot(kind='bar', title =plot_title,figsize=(15, 10), legend=True)
+
+		ax = reordered_df.plot(kind='bar', width=0.85,title =plot_title,figsize=(20, 10), legend=True)
 		
-		ax.set_xlabel(x_label)
+		ax.set_xlabel(x_label, labelpad=10)
 		ax.set_ylabel(y_label)
-		ax.set_yticks(np.arange(0, 1.05, 0.05))
-		plt.legend(loc='upper center', bbox_to_anchor=(0.44, -0.35), ncol=3)
-		plt.grid()
+		ax.set_yticks(np.arange(0, 1.01, 0.05))
+		ax.set_ylim([0,1])
+		ax.set_title(plot_title, pad=10)
+		ax.grid(True)
+		ax.set_axisbelow(True)
+		
+		plt.legend(loc='upper center', bbox_to_anchor=(0.44, -0.42), ncol=3)
+
+		
 		# plt.show()
 		plt.savefig(file_to_save, bbox_inches='tight')
 	
@@ -1365,31 +1509,78 @@ def calculate_p_value(N,x):
 def test_features():
 	functional_features = ["location_control","support"]
 	m = MultipleRuns(constraint_dict,number_runs=100,k =2,features_to_test = functional_features)
-	
+	print("Test Features")
 	m.validation()
 	m.output()
 
-def test_models(fold_size):
-	m = MultipleRuns(constraint_dict,number_runs=100,k =fold_size,compare = "y")
+def initial_test():
+	m = MultipleRuns(constraint_dict)
+	print("Test on all scenes")
 	m.test_all_scenes()
+
+def test_models():
+	m = MultipleRuns(constraint_dict,number_runs=100,k =2,compare = "y")
+	print("Test Model k = 2")
 	m.validation()
 	m.output()
+
+	m = MultipleRuns(constraint_dict,number_runs=100,k =3,compare = "y")
+	print("Test Model k = 3")
+	m.validation()
+	m.output()
+
+def plot_all_csv():
+	m = MultipleRuns(constraint_dict)
+	file = m.all_csv
+	out_file = m.all_plot
+
+	# self.plot_dataframe_bar_chart(self.all_dataframe,self.all_plot,"Preposition","Score","Scores Using All Data")
+	m.plot_bar_from_csv(file,out_file,"Preposition","Score","Scores Using All Data")
+def plot_kfold_csv(k):
+	m = MultipleRuns(constraint_dict,number_runs=100,k=k)
+	file = m.average_csv
+	out_file = m.average_plot_pdf
+
+		
+	m.plot_bar_from_csv(file,out_file,"Preposition","Score",m.average_plot_title)
+	
+
+
+def plot_feature_csv(k):
+	functional_features = ["location_control","support"]
+	m = MultipleRuns(constraint_dict,number_runs=100,k =k,features_to_test = functional_features)
+	file = m.scores_tables_folder+"/functional_feature_analysis.csv"
+	output_file = m.scores_plots_folder+"/ScoresWithRemovedFeatures.pdf"
+	x_label = "Preposition"
+	y_label = "Score"
+	plot_title = "Average Scores With Removed Features. K = "+str(m.k) + " N = " + str(m.number_runs)
+	
+
+	m.plot_bar_from_csv(file,output_file,x_label,y_label,plot_title)
+
+
 def main(constraint_dict):
+	
 	plot_preposition_graphs()
 	# Edit plot settings
-	# mpl.rcParams['font.size'] = 35
-	# mpl.rcParams['legend.fontsize'] = 'small'
-	# mpl.rcParams['axes.titlesize'] = 'small'
-	# mpl.rcParams['axes.labelsize'] = 'medium'
-	# mpl.rcParams['ytick.labelsize'] = 'small'
-	# test_features()
-	# test_models(2)
-	# test_models(3)
+	mpl.rcParams['font.size'] = 40
+	mpl.rcParams['legend.fontsize'] = 37
+	mpl.rcParams['axes.titlesize'] = 'medium'
+	mpl.rcParams['axes.labelsize'] = 'medium'
+	mpl.rcParams['ytick.labelsize'] = 'small'
+	
+	initial_test()
+	test_models()
+	test_features()
 
+	# plot_all_csv()
+	# plot_kfold_csv(2)
+	# plot_feature_csv(2)
+	
 	
 	
 if __name__ == '__main__':
-	name = "n"#raw_input("Generate new constraints? y/n  ")
+	name = "y"#raw_input("Generate new constraints? y/n  ")
 	if name == "y":
 		compcollection = ComparativeCollection()
 		constraint_dict = compcollection.get_constraints()
@@ -1398,8 +1589,11 @@ if __name__ == '__main__':
 	else:
 		print("Error unrecognized input")
 
+	scene_list = BasicInfo.get_scene_list()
+	
+	
 
 
-	# plot_preposition_graphs()
+	
 	main(constraint_dict)
 	
