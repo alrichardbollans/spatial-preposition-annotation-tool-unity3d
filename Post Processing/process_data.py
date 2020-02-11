@@ -452,7 +452,7 @@ class Data():
 					if user1 != user2:
 						# Calculate agreements for user pair and add values to totals
 
-						x = Agreements(self.annotation_list,user1,user2,self.task,p)
+						x = Agreements(self.annotation_list,self.task,p,user1,user2)
 						
 						
 						if(x.shared_annotations !=0):
@@ -670,7 +670,7 @@ class SemanticData(Data):
 	
 class Agreements(Data):
 	### Looks at agreements between two users for a particular task and particular preposition
-	def __init__(self,annotation_list,user1,user2,task, preposition):
+	def __init__(self,annotation_list,task, preposition,user1,user2=None,agent_task_annotations=None):
 		self.annotation_list = annotation_list
 		self.user1 = user1
 		self.user2 = user2
@@ -678,7 +678,11 @@ class Agreements(Data):
 		self.task = task
 		### All user annotations for particular task
 		self.user1_annotations = self.get_user_task_annotations(user1,task)
-		self.user2_annotations = self.get_user_task_annotations(user2,task)
+		if user2 != None:
+			self.user2_annotations = self.get_user_task_annotations(user2,task)
+		else:
+			# We can test agent models instead of users
+			self.user2_annotations = agent_task_annotations
 
 		
 		self.preposition = preposition
@@ -693,10 +697,7 @@ class Agreements(Data):
 	## Agreement of users
 	
 	
-
-	
-	
-	def user_calculations(self):
+	def count_sem_agreements(self):
 		##Number of shared annotations by u1 and u2
 		shared_annotations = 0
 		### Times u1 says yes to preposition
@@ -707,7 +708,30 @@ class Agreements(Data):
 		n1 = 0
 		### Times u2 says no to preposition
 		n2 = 0
-
+		agreements = 0
+		for a1 in self.user1_annotations:			
+			for a2 in self.user2_annotations:
+				if self.question_match(a1,a2):
+					if a1.task in BasicInfo.semantic_abbreviations:
+						shared_annotations +=1
+						if self.preposition in a1.prepositions:
+							y1 +=1
+						else:
+							n1 +=1
+						if self.preposition in a2.prepositions:
+							y2 +=1
+						else:
+							n2 +=1
+						
+						if self.preposition in a1.prepositions and self.preposition in a2.prepositions:
+							agreements +=1
+							
+						elif self.preposition not in a1.prepositions and self.preposition not in a2.prepositions:
+							agreements +=1
+		return shared_annotations,y1,y2,n1,n2,agreements
+	def count_comp_agreements(self):
+		##Number of shared annotations by u1 and u2
+		shared_annotations = 0
 		### Number of times none selected by u1 in comp task
 		comp_none_selections1 = 0
 		### Number of times none selected by u2 in comp task
@@ -717,11 +741,6 @@ class Agreements(Data):
 		number_of_compared_figures = 0
 		# expected_agreement_with_none = 0
 		agreements = 0
-		observed_agreement = 0
-		cohens_kappa = 0
-
-		
-
 		for a1 in self.user1_annotations:			
 			for a2 in self.user2_annotations:
 				if self.question_match(a1,a2):
@@ -741,31 +760,19 @@ class Agreements(Data):
 							
 							if a1.figure == a2.figure:
 								agreements +=1
-					if a1.task in BasicInfo.semantic_abbreviations:
-						shared_annotations +=1
-						if self.preposition in a1.prepositions:
-							y1 +=1
-						else:
-							n1 +=1
-						if self.preposition in a2.prepositions:
-							y2 +=1
-						else:
-							n2 +=1
-						
-						if self.preposition in a1.prepositions and self.preposition in a2.prepositions:
-							agreements +=1
-							
-						elif self.preposition not in a1.prepositions and self.preposition not in a2.prepositions:
-							agreements +=1
+		return shared_annotations,comp_none_selections1,comp_none_selections2,number_of_compared_figures,agreements
+	
+	def calculate_sem_expected_agreement(self,shared_annotations,y1,y2,n1,n2):
 		
-		if a1.task in BasicInfo.semantic_abbreviations:
 							
-			if shared_annotations !=0:
-				
-				expected_agreement = float((y1*y2 + n1*n2))/float((shared_annotations)**2)
-			else:
-				expected_agreement = 0
-		if a1.task in BasicInfo.comparative_abbreviations:
+		if shared_annotations !=0:
+			
+			expected_agreement = float((y1*y2 + n1*n2))/float((shared_annotations)**2)
+		else:
+			expected_agreement = 0
+		return expected_agreement
+	def calculate_comp_expected_agreement(self,shared_annotations,comp_none_selections1,comp_none_selections2,number_of_compared_figures):
+		if self.task in BasicInfo.comparative_abbreviations:
 			if (shared_annotations != 0):
 				u1_p_none = float(comp_none_selections1)/shared_annotations
 				u2_p_none = float(comp_none_selections2)/shared_annotations
@@ -783,7 +790,23 @@ class Agreements(Data):
 				expected_agreement = expected_none_agreement + average_probability_agree_on_object
 			else:
 				expected_agreement = 0
+		return expected_agreement
+	def user_calculations(self):
+		observed_agreement = 0
+		cohens_kappa = 0
+		
 
+		if self.task in BasicInfo.semantic_abbreviations:
+			shared_annotations,y1,y2,n1,n2,agreements = self.count_sem_agreements()
+		elif self.task in BasicInfo.comparative_abbreviations:
+			shared_annotations,comp_none_selections1,comp_none_selections2,number_of_compared_figures,agreements = self.count_comp_agreements()
+		
+		if self.task in BasicInfo.semantic_abbreviations:
+			expected_agreement = self.calculate_sem_expected_agreement(shared_annotations,y1,y2,n1,n2)
+		elif self.task in BasicInfo.comparative_abbreviations:
+			expected_agreement =self.calculate_comp_expected_agreement(shared_annotations,comp_none_selections1,comp_none_selections2,number_of_compared_figures)
+		
+		
 		if shared_annotations != 0:
 			observed_agreement = float(agreements)/float(shared_annotations)
 
