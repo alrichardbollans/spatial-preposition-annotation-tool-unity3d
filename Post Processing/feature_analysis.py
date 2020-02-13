@@ -1300,21 +1300,7 @@ class MultipleRuns:
 				if divisor ==1:
 					folds.append(train_scenes)
 				
-			# for c in (range(self.k-1)):
-			# 	print("c")
-			# 	print(c)
-			# 	train_scenes , test_scenes = train_test_split(scenes_left,test_size=t_size)
-			# 	folds.append(test_scenes)
-				
-			# 	scenes_left = train_scenes
-			# 	new_k = self.k-c-1
-			# 	if new_k>1:
-			# 		t_size = float(1)/(new_k)
-			# 	else:
-			# 		folds.append(train_scenes)
-			print("folds")
-			for f in folds:
-				print(len(f))
+			
 			return folds
 			
 
