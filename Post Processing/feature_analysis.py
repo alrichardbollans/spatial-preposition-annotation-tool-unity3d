@@ -545,9 +545,11 @@ class Model:
 	
 
 	## Puts together preposition models and has various functions for testing
-	def __init__(self,name,weight_dict,train_scenes,test_scenes,constraint_dict,feature_to_remove = None,prototype_dict = None,regression_model_dict = None, regression_dimension = None):
+	def __init__(self,name,train_scenes,test_scenes,weight_dict=None,constraint_dict= None,feature_to_remove = None,prototype_dict = None,regression_model_dict = None, regression_dimension = None):
 		
 		self.name = name
+		# Prepositions to test
+		self.test_prepositions = preposition_list
 		## Dictionary containing constraints to satisfy
 		self.constraint_dict = constraint_dict
 		## A feature to remove from models to see how results change
@@ -565,14 +567,14 @@ class Model:
 		
 		
 	
-	def semantic_similarity(self,preposition,x,y):
+	def semantic_similarity(self,weight_array,x,y):
 		#Similarity of x to y
 		# x y are 1d arrays
 		## Works out the weighted Euclidean distance of x and y and then negative exponential
 		## Weights are given in class
 		
 		
-		weight_array = self.weight_dict[preposition]
+		
 		
 		## Edit values to calculate without considering feature
 		if self.feature_to_remove != None:
@@ -612,7 +614,8 @@ class Model:
 			
 
 			prototype_array = self.prototype_dict[preposition]
-			out = self.semantic_similarity(preposition,point,prototype_array)
+			weight_array = self.weight_dict[preposition]
+			out = self.semantic_similarity(weight_array,point,prototype_array)
 			
 			
 			return out
@@ -639,7 +642,8 @@ class Model:
 				e =np.array(e)
 				counter += 1
 				## Calculate similarity of current point to exemplar
-				semantic_similarity_sum += self.semantic_similarity(preposition,point,e)
+				weight_array = self.weight_dict[preposition]
+				semantic_similarity_sum += self.semantic_similarity(weight_array,point,e)
 			
 			if counter == 0:
 				return 0
@@ -661,7 +665,7 @@ class Model:
 		average_score = 0
 		weighted_average_score = 0
 		total_weight_counter = 0
-		for preposition in preposition_list:
+		for preposition in self.test_prepositions:
 			
 			
 			allConstraints = self.constraint_dict[preposition]
@@ -695,7 +699,7 @@ class Model:
 			# score =  round(score,3)
 			scores.append(score)
 		
-		average_score = float(average_score)/len(preposition_list)
+		average_score = float(average_score)/len(self.test_prepositions)
 		weighted_average_score = float(weighted_average_score)/total_weight_counter
 		# average_score =  round(average_score,3)
 		# weighted_average_score =  round(weighted_average_score,3)
@@ -707,6 +711,8 @@ class Model:
 		self.scores = scores
 		
 		return scores
+
+	
 
 	## First score based on number of satisfied constraints
 	def unweighted_score(self,preposition,Constraints):
@@ -802,14 +808,14 @@ class GenerateModels():
 			self.linear_regression_model_dict[p] = M.linear_regression_model
 			self.poly_regression_model_dict[p] = M.poly_regression_model
 
-		m = Model(self.our_model_name,self.all_regression_weights,self.train_scenes,self.test_scenes,self.constraint_dict,feature_to_remove =  self.feature_to_remove,prototype_dict = self.prototypes)
+		m = Model(self.our_model_name,self.train_scenes,self.test_scenes,weight_dict=self.all_regression_weights,constraint_dict=self.constraint_dict,feature_to_remove =  self.feature_to_remove,prototype_dict = self.prototypes)
 		# linear_r_model = Model(self.lin_model_name,self.all_regression_weights,self.train_scenes,self.test_scenes,self.constraint_dict,regression_model_dict = self.linear_regression_model_dict)
 		# poly_r_model = Model(self.poly_model_name,self.all_regression_weights,self.train_scenes,self.test_scenes,self.constraint_dict,regression_model_dict = self.poly_regression_model_dict, regression_dimension = 3)
 		if only_test_our_model == None:#feature_to_remove == None:
 			
 			# Only include others if not testing features
-			m1 = Model(self.exemplar_model_name,self.all_regression_weights,self.train_scenes,self.test_scenes,self.constraint_dict,feature_to_remove =self.feature_to_remove)
-			m2 = Model(self.cs_model_name,self.all_regression_weights,self.train_scenes,self.test_scenes,self.constraint_dict,feature_to_remove =  self.feature_to_remove,prototype_dict = self.barycentre_prototypes)
+			m1 = Model(self.exemplar_model_name,self.train_scenes,self.test_scenes,weight_dict=self.all_regression_weights,constraint_dict=self.constraint_dict,feature_to_remove =self.feature_to_remove)
+			m2 = Model(self.cs_model_name,self.train_scenes,self.test_scenes,weight_dict=self.all_regression_weights,constraint_dict=self.constraint_dict,feature_to_remove =  self.feature_to_remove,prototype_dict = self.barycentre_prototypes)
 			m3 = self.get_proximity_model()
 			m4 = self.get_simple_model()
 			m5 = self.get_best_guess_model()
@@ -845,7 +851,7 @@ class GenerateModels():
 			pro_dict[preposition] = pro_array
 			weight_dict[preposition] = weight_array
 			
-		m = Model(self.proximity_model_name,weight_dict,self.train_scenes,self.test_scenes,self.constraint_dict,self.feature_to_remove,prototype_dict =pro_dict)
+		m = Model(self.proximity_model_name,self.train_scenes,self.test_scenes,weight_dict=weight_dict,constraint_dict=self.constraint_dict,feature_to_remove =self.feature_to_remove,prototype_dict =pro_dict)
 		return m
 
 	def get_best_guess_model(self):
@@ -979,7 +985,7 @@ class GenerateModels():
 			weight_array = np.array(weight_array)
 			pro_dict[preposition]= pro_array
 			weight_dict[preposition]= weight_array
-		m = Model(self.best_guess_model_name,weight_dict,self.train_scenes,self.test_scenes,self.constraint_dict,self.feature_to_remove,prototype_dict = pro_dict)
+		m = Model(self.best_guess_model_name,self.train_scenes,self.test_scenes,weight_dict=weight_dict,constraint_dict=self.constraint_dict,feature_to_remove =self.feature_to_remove,prototype_dict = pro_dict)
 		return m
 
 		
@@ -1070,7 +1076,7 @@ class GenerateModels():
 			weight_array = np.array(weight_array)
 			pro_dict[preposition]= pro_array
 			weight_dict[preposition]= weight_array
-		m = Model(self.simple_model_name,weight_dict,self.train_scenes,self.test_scenes,self.constraint_dict,self.feature_to_remove,prototype_dict = pro_dict)
+		m = Model(self.simple_model_name,self.train_scenes,self.test_scenes,weight_dict=weight_dict,constraint_dict=self.constraint_dict,feature_to_remove =self.feature_to_remove,prototype_dict = pro_dict)
 		return m
 
 class TestModels():
@@ -1094,7 +1100,7 @@ class TestModels():
 		
 		# out["Total Constraint Weights"] = models[0].weight_totals + ["",""]
 
-		df = pd.DataFrame(out,preposition_list + ["Average", "All"])
+		df = pd.DataFrame(out,self.models[0].test_prepositions + ["Average", "Overall"])
 		
 
 		# Reorder columns
@@ -1122,6 +1128,7 @@ class MultipleRuns:
  		self.features_to_test = features_to_test
 
 		self.scene_list = BasicInfo.get_scene_list()
+
 		
 		self.run_count = 0
 		# Dictionary of dataframes giving scores. Indexed by removed features.
@@ -1150,7 +1157,22 @@ class MultipleRuns:
 			self.feature_removed_average_csv = dict()
 			for feature in self.features_to_test:
 				self.feature_removed_average_csv[feature] = self.scores_tables_folder + "/averagemodel scores "+self.file_tag+" "+feature +"removed.csv"
- 		
+ 		self.Generate_Models_all_scenes = self.generate_models(self.scene_list,self.scene_list)
+ 		self.test_prepositions = self.Generate_Models_all_scenes.models[0].test_prepositions
+ 		self.prepare_comparison_dicts()
+
+		if self.features_to_test != None:
+			for feature in self.features_to_test:
+				self.count_without_feature_better[feature] = dict()
+		 		self.count_with_feature_better[feature] = dict()
+				for p in self.test_prepositions + ["Average", "Overall"]:
+					self.count_without_feature_better[feature][p] = 0
+			 		self.count_with_feature_better[feature][p] = 0
+ 		# following lists help confirm all scenes get used for both training and testing
+	 	self.scenes_used_for_testing = []
+	 	self.scenes_used_for_training = []
+	 	
+	def prepare_comparison_dicts(self):
  		## Counts to compare models
  		self.count_our_model_wins = dict()
  		self.count_other_model_wins = dict()
@@ -1159,24 +1181,23 @@ class MultipleRuns:
  		self.count_with_feature_better = dict()
  		
  		# Prepare dict
-		for other_model in GenerateModels.other_name_list:
+		for other_model in self.Generate_Models_all_scenes.other_name_list:
 			
 			self.count_our_model_wins[other_model] = 0
 			self.count_other_model_wins[other_model] = 0
+ 	
+	def generate_models(self,train_scenes,test_scenes):
 		if self.features_to_test != None:
-			for feature in self.features_to_test:
-				self.count_without_feature_better[feature] = dict()
-		 		self.count_with_feature_better[feature] = dict()
-				for p in BasicInfo.preposition_list + ["Average", "All"]:
-					self.count_without_feature_better[feature][p] = 0
-			 		self.count_with_feature_better[feature][p] = 0
- 		# following lists help confirm all scenes get used for both training and testing
-	 	self.scenes_used_for_testing = []
-	 	self.scenes_used_for_training = []
-	 	
-	
- 	def test_all_scenes(self):
- 		generate_models = GenerateModels(self.scene_list,self.scene_list,self.constraint_dict)
+			# Test model with no removed features
+			generate_models = GenerateModels(train_scenes,test_scenes,self.constraint_dict,only_test_our_model = True)
+			
+		else:
+			# Test all models with no removed features
+			generate_models = GenerateModels(train_scenes,test_scenes,self.constraint_dict)
+		return generate_models
+
+	def test_all_scenes(self):
+ 		generate_models = self.Generate_Models_all_scenes
  		models = generate_models.models
 	 	t= TestModels(models, "all")
 	 	self.all_dataframe = t.score_dataframe
@@ -1187,15 +1208,8 @@ class MultipleRuns:
 
 		self.plot_dataframe_bar_chart(self.all_dataframe,self.all_plot,"Preposition","Score","Scores Using All Data")
 	
-	
 	def single_validation_test(self,train_scenes,test_scenes):
-		if self.features_to_test != None:
-			# Test model with no removed features
-			generate_models = GenerateModels(train_scenes,test_scenes,self.constraint_dict,only_test_our_model = True)
-			
-		else:
-			# Test all models with no removed features
-			generate_models = GenerateModels(train_scenes,test_scenes,self.constraint_dict)
+		generate_models = self.generate_models(train_scenes,test_scenes)
 			
 		t= TestModels(generate_models.models,str(self.run_count))
 		# Get generated scores
@@ -1210,14 +1224,14 @@ class MultipleRuns:
 			self.dataframe_dict["all_features"] = dataset
 
 		## Get our score from dataframe
-		our_score = dataset.at["All",generate_models.our_model_name]
+		our_score = dataset.at["Overall",generate_models.our_model_name]
 
 		## Compare Models
 		if self.compare != None:
 			for other_model in generate_models.other_name_list:
 				
 				# Get score
-				other_score = dataset.at["All",other_model]
+				other_score = dataset.at["Overall",other_model]
 				# Update counts
 				if our_score > other_score:
 					self.count_our_model_wins[other_model] += 1
@@ -1237,7 +1251,7 @@ class MultipleRuns:
 				feature_dataset = t.score_dataframe
 				# feature_dataset = feature_dataset.drop(["Total Constraint Weights"],axis=1)
 				
-				for p in BasicInfo.preposition_list + ["Average", "All"]:
+				for p in self.test_prepositions + ["Average", "Overall"]:
 					without_feature_score = feature_dataset.at[p,generate_models.our_model_name]
 					with_feature_score = dataset.at[p,generate_models.our_model_name]
 
@@ -1273,13 +1287,34 @@ class MultipleRuns:
 		if self.k != None:
 			# Create random folds for testing
 			folds = []
-			t_size = float(1)/self.k
+			
 			
 			scenes_left = self.scene_list
-			for c in range(self.k):
+			divisor = self.k
+			while divisor > 1:
+				t_size = float(1)/divisor
 				train_scenes , test_scenes = train_test_split(scenes_left,test_size=t_size)
 				folds.append(test_scenes)
 				scenes_left = train_scenes
+				divisor = divisor-1
+				if divisor ==1:
+					folds.append(train_scenes)
+				
+			# for c in (range(self.k-1)):
+			# 	print("c")
+			# 	print(c)
+			# 	train_scenes , test_scenes = train_test_split(scenes_left,test_size=t_size)
+			# 	folds.append(test_scenes)
+				
+			# 	scenes_left = train_scenes
+			# 	new_k = self.k-c-1
+			# 	if new_k>1:
+			# 		t_size = float(1)/(new_k)
+			# 	else:
+			# 		folds.append(train_scenes)
+			print("folds")
+			for f in folds:
+				print(len(f))
 			return folds
 			
 
@@ -1287,7 +1322,7 @@ class MultipleRuns:
 	def folds_check(self,folds):
 		# Check all folds have some constraints to test
 		for f in folds:
-			for preposition in preposition_list:
+			for preposition in self.test_prepositions:
 				
 				
 				allConstraints = self.constraint_dict[preposition]
@@ -1341,7 +1376,7 @@ class MultipleRuns:
 		## Output comparison of models and p-value
 		if self.compare != None:
 			other_model_p_value = dict()
-			for other_model in GenerateModels.other_name_list:
+			for other_model in self.Generate_Models_all_scenes.other_name_list:
 				
 				p_value = calculate_p_value(self.total_number_runs,self.count_our_model_wins[other_model])
 				other_model_p_value[other_model] = p_value
@@ -1360,7 +1395,7 @@ class MultipleRuns:
 			with_feature_better = dict()
 			without_feature_better = dict()
 			for feature in self.features_to_test:
-				for p in BasicInfo.preposition_list + ["Average", "All"]:
+				for p in self.test_prepositions + ["Average", "Overall"]:
 					p_value = calculate_p_value(self.total_number_runs,self.count_with_feature_better[feature][p])
 					feature_p_value[feature + ":" + p] = p_value
 					with_feature_better[feature + ":" + p] = self.count_with_feature_better[feature][p]
@@ -1397,7 +1432,7 @@ class MultipleRuns:
 		self.average_dataframe = self.dataframe_dict["all_features"]
 		# Reorder columns for output
 		if self.features_to_test == None:
-			new_column_order = GenerateModels.model_name_list
+			new_column_order = self.Generate_Models_all_scenes.model_name_list
 			reordered_df = self.average_dataframe[new_column_order]
 			reordered_df.to_csv(self.average_csv)
 		else:
@@ -1421,9 +1456,9 @@ class MultipleRuns:
 			
 			for feature in self.features_to_test:
 				print(self.dataframe_dict[feature])
-				out[feature] = self.dataframe_dict[feature][GenerateModels.our_model_name]
-			out["None removed"] = self.average_dataframe[GenerateModels.our_model_name]
-			df = pd.DataFrame(out,BasicInfo.preposition_list + ["Average", "All"])
+				out[feature] = self.dataframe_dict[feature][self.Generate_Models_all_scenes.our_model_name]
+			out["None removed"] = self.average_dataframe[self.Generate_Models_all_scenes.our_model_name]
+			df = pd.DataFrame(out,self.test_prepositions + ["Average", "Overall"])
 			df.to_csv(self.scores_tables_folder+"/functional_feature_analysis.csv")
 			
 
@@ -1450,7 +1485,7 @@ class MultipleRuns:
 
 	def plot_dataframe_bar_chart(self,dataset,file_to_save,x_label,y_label,plot_title):
 		if self.features_to_test == None:
-			new_column_order = GenerateModels.model_name_list
+			new_column_order = self.Generate_Models_all_scenes.model_name_list
 			reordered_df = dataset[new_column_order]
 		else:
 			reordered_df = dataset
@@ -1561,7 +1596,7 @@ def plot_feature_csv(k):
 
 def main(constraint_dict):
 	
-	plot_preposition_graphs()
+	# plot_preposition_graphs()
 	# Edit plot settings
 	mpl.rcParams['font.size'] = 40
 	mpl.rcParams['legend.fontsize'] = 37
@@ -1580,7 +1615,7 @@ def main(constraint_dict):
 	
 	
 if __name__ == '__main__':
-	name = "y"#raw_input("Generate new constraints? y/n  ")
+	name = "n"#raw_input("Generate new constraints? y/n  ")
 	if name == "y":
 		compcollection = ComparativeCollection()
 		constraint_dict = compcollection.get_constraints()
