@@ -1,4 +1,4 @@
 ,Baseline Model,Shared Prototype
-p_value,0.006016487862681736,7.95266423689307e-09
-Our model wins,63.0,78.0
-Other model wins,34.0,16.0
+p_value,0.0176001001088524,0.00020438858371340753
+Our model wins,61.0,68.0
+Other model wins,27.0,23.0
