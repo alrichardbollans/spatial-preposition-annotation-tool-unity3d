@@ -134,7 +134,7 @@ public class Finalise_Scenes : EditorWindow
                     DestroyImmediate(a);
                 }
             }
-            Debug.Log ("Saving active scene");
+            
             // Edit lighting in scene
             Light[] lights = Object.FindObjectsOfType<Light>();
             foreach(Light l in lights){
@@ -149,7 +149,7 @@ public class Finalise_Scenes : EditorWindow
             Lightmapping.realtimeGI = false; // Realtime GI does not show up on WebGL build
             Lightmapping.Bake();
             
-
+            Debug.Log ("Saving active scene");
             // EditorSceneManager.SaveOpenScenes();
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
            

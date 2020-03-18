@@ -15,9 +15,11 @@ import os
 
 def clean_name(object_name):
 		if '(' in object_name:
-			clean_name = object_name[:object_name.find(".")]
+			clean_name = object_name[:object_name.find("(")]
 		elif '_' in object_name:
 			clean_name = object_name[:object_name.find("_")]
+		elif '.' in object_name:
+			clean_name = object_name[:object_name.find(".")]
 		else: 
 			clean_name = object_name
 		return clean_name.lower()

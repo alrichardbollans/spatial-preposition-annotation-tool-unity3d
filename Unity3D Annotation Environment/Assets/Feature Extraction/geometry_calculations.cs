@@ -164,11 +164,13 @@ public class Entity{
 	}
 
 	public void reset_mesh_collider(){
-		if(convex == true){
-			meshColl.convex =true;
-		}
-		else{
-			meshColl.convex =false;
+		if(meshColl != null){
+			if(convex == true){
+				meshColl.convex =true;
+			}
+			else{
+				meshColl.convex =false;
+			}
 		}
 	}
 
@@ -332,7 +334,7 @@ public class Pair{
 
 			
 			if(!e2.convex && !e2.sphere){
-
+				// In this case e2 uses the non_convex_colliders
 				e2.meshColl.convex =false;
 				colliders = e2.non_convex_colliders.GetComponents<Collider>();
 				foreach(Collider c in colliders){

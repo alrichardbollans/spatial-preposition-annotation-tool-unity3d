@@ -24,6 +24,7 @@ public class feature_check : MonoBehaviour
     public string f_covers_g;
     public string g_covers_f;
     public string bbox_overlap_proportion;
+    public string horizontal_distance;
     
     static GameObject[] allObjects;
 	static List<GameObject> meshObjects = new List<GameObject>();
@@ -65,6 +66,7 @@ public class feature_check : MonoBehaviour
     	f_covers_g = r.relation_dictionary["f_covers_g"].ToString();
     	g_covers_f = r.relation_dictionary["g_covers_f"].ToString();
     	bbox_overlap_proportion = r.relation_dictionary["bbox_overlap_proportion"].ToString();
+        horizontal_distance = r.relation_dictionary["horizontal_distance"].ToString();
     	// Debug.Log("Figure: " + t);
     	// Debug.Log(r.relation_dictionary["support"]);
     }
@@ -84,6 +86,7 @@ public class feature_checkEditor : Editor
     SerializedProperty g_covers_f;
     SerializedProperty bbox_overlap_proportion;
     SerializedProperty above_proportion;
+    SerializedProperty horizontal_distance;
     
     
     void OnEnable()
@@ -96,6 +99,7 @@ public class feature_checkEditor : Editor
         f_covers_g = serializedObject.FindProperty("f_covers_g");
         g_covers_f = serializedObject.FindProperty("g_covers_f");
         bbox_overlap_proportion = serializedObject.FindProperty("bbox_overlap_proportion");
+        horizontal_distance = serializedObject.FindProperty("horizontal_distance");
             }
 
     public override void OnInspectorGUI()
@@ -109,6 +113,7 @@ public class feature_checkEditor : Editor
         EditorGUILayout.PropertyField(f_covers_g);
         EditorGUILayout.PropertyField(g_covers_f);
         EditorGUILayout.PropertyField(bbox_overlap_proportion);
+        EditorGUILayout.PropertyField(horizontal_distance);
         serializedObject.ApplyModifiedProperties();
     }
 }

@@ -234,7 +234,7 @@ public class Relationship{
 		// try
 		// {
 			using (StreamReader file = new StreamReader(csv_file)){
-				// Debug.Log("Reading");
+				
 				string line;
 				while((line = file.ReadLine()) != null){
 					string[] values = Array.ConvertAll(line.Split(','), p => p.Trim());
@@ -249,13 +249,13 @@ public class Relationship{
 			// Check if there is a match between our row and a row in the csv file
 			// If there is then update the values and rewrite csv
 			if (line_list.Any(rel => scene == rel[0] && figure == rel[1] && ground ==rel[2])){
-				// Debug.Log("Found match");
+				
 				using(StreamWriter file = new StreamWriter(csv_file)){
 					file.WriteLine(titles_csv_string);
 					foreach(List<string> v in line_list){
 						if(!v.Contains(titles[0])){
 							if(scene == v[0] && figure == v[1] && ground == v[2]){
-								// Debug.Log("Found exact match");
+								
 								int x = 0;
 								for (x=0; x<relation_keys.Count; x ++){
 									
@@ -263,7 +263,7 @@ public class Relationship{
 									
 
 									if(xth_value != "?"){
-										// Debug.Log(xth_value);
+										
 										if(v.Count > x + 3 ){
 											v[x+3] = xth_value;
 										}
@@ -272,12 +272,7 @@ public class Relationship{
 											
 										}
 									}
-									// if(v.Count>11){
-									// 	Debug.Log(row[1] + row[2]);
-									// 	Debug.Log(relation_keys[x]);
-									// 	Debug.Log(x);
-									// 	Debug.Log(xth_value);
-									// }
+									
 								}
 							}
 					
@@ -285,9 +280,7 @@ public class Relationship{
 
 						
 						string row_csv_string = String.Join(",", v.ToArray());
-						// Debug.Log("Replacing line");
-						// Debug.Log("Writing:");
-						// Debug.Log(row_csv_string);
+						
 						file.WriteLine(row_csv_string);
 						}
 
