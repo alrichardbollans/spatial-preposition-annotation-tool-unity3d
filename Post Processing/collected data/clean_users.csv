@@ -1,4 +1,4 @@
-User ID,Short ID,Time,"Native=0, Non-Native =1"
+User ID,Short ID,Time,"Native=1, Non-Native =0"
 d5139890-654b-4b6d-925d-3c89ab25b7d8,1,20190619-140629,0
 d99963a8-5d8a-4321-bca5-90ba0238455a,2,20190619-140637,0
 2c8cf593-0e39-4bef-8f24-ab40da9b1431,3,20190619-140605,0

@@ -1,6 +1,6 @@
-## Reads feature value file from unity project and standardises values
-## Uses "standard score"
-## Outputs in given directory
+# Reads feature value file from unity project and standardises values
+# Uses "standard score"
+# Outputs in given directory
 
 import pandas as pd
 import os
@@ -20,7 +20,7 @@ def get_project_directory():
 		return user_home + '/Dropbox/' + unity_folder_name
 
 class Features:
-	## Get path for calculated features
+	# Get path for calculated features
 	project_path = get_project_directory()
 	project_folder_name = "Data Collection Game"
 	feature_data_folder_name = "Scene Data"
@@ -28,7 +28,7 @@ class Features:
 	output_path = "feature values/standardised_values.csv"
 	human_readable_path = "feature values/human_readable_values.csv"
 	
-	## Features given in relation.csv that aren't needed for analysis
+	# Features given in relation.csv that aren't needed for analysis
 	features_to_remove = ["size_ratio","horizontal_distance_normalized","shortest_distance_normalized","location_control_-x","location_control_-z","location_control_x","location_control_z","figure_volume","ground_volume","horizontal_projection_overlap_proportion"]
 	
 	def __init__(self):
@@ -37,17 +37,17 @@ class Features:
 		
 		self.dataset = self.dataset[self.dataset.Figure!=self.dataset.Ground]
 		
-		## Calculate location control and append column
+		# Calculate location control and append column
 		location_control_parts = ["location_control_x","location_control_-x","location_control_-z","location_control_z"]
 
 		self.dataset["location_control"] = self.dataset[location_control_parts].sum(axis=1)/4
 
 		# Remove unwanted columns
 		self.dataset = self.dataset.drop(self.features_to_remove,axis=1)
-		## Output cleaned dataset
+		# Output cleaned dataset
 		self.dataset.to_csv(self.human_readable_path,index =False)
-		## Calculate means and standard deviations
-		## Can be used to convert standardised values back to real values
+		# Calculate means and standard deviations
+		# Can be used to convert standardised values back to real values
 		self.means = self.dataset.iloc[:,3:].mean()
 		self.stds = self.dataset.iloc[:,3:].std()
 

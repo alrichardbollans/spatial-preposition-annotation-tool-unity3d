@@ -1,7 +1,7 @@
 import csv
 import os
 
-from preprocess_features import *  
+from preprocess_features import Features
 
 class Relationship:
 	# Lots of this could be done with pandas. Doh :/
@@ -11,28 +11,30 @@ class Relationship:
 	output_path = property_path
 
 	# additional_features = ["location_control"]
-	## Location control is the average of the two more basic measures
+	# Location control is the average of the two more basic measures
 
 	
-	## Ground properties which we think distinguish polysemes
+	# Ground properties which we think distinguish polysemes
 	context_features = ["ground_lightsource","ground_container","ground_verticality"]
 	def __init__(self,scene,figure,ground):
 		self.scene = scene
 		self.figure = figure
 		self.ground = ground
-		## Dictionary of features and values
+		# Dictionary of features and values
 		self.set_of_features = {}
-		## Names of all features given by load_all
+		# Names of all features given by load_all
 		self.feature_keys = []
-		## Names of all features given by load_all, without above context features
+		# Names of all features given by load_all, without above context features
 		self.relation_keys = []
 
 	
 	@staticmethod
-	def load_all():
-		### Loads a list of all configurations and feature values, with some features removed
-		# feature_keys = []
-		with open(Relationship.property_path, "r") as f:
+	def load_all(path = None):
+		# Loads a list of all configurations and feature values, with some features removed
+		# Path variable optional
+		if path == None:
+			path = Relationship.property_path
+		with open(path, "r") as f:
 			reader = csv.reader(f)     # create a 'csv reader' from the file object
 			geom_relations = list( reader )  # create a list from the reader
 		
@@ -60,13 +62,14 @@ class Relationship:
 		
 		return relation_keys
 
-	def load_from_csv(self):
+	def load_from_csv(self,path= None):
 		
 		
-		# with open(self.property_path +"/relations.csv", "r") as f:
-		# 	reader = csv.reader(f)     # create a 'csv reader' from the file object
-		# 	geom_relations = list( reader )  # create a list from the reader		
-		geom_relations = Relationship.load_all()
+				
+		if path != None:
+			geom_relations = Relationship.load_all(path)
+		else:
+			geom_relations = Relationship.load_all()
 
 		for title in geom_relations[0][3:]:
 			self.feature_keys.append(title)
@@ -78,7 +81,7 @@ class Relationship:
 						self.set_of_features[r] =float(relation[self.feature_keys.index(r)+3])
 					else:
 						self.set_of_features[r] = '?'
-		# ## Add and calculate additional features
+		# # Add and calculate additional features
 		# self.feature_keys.append("location_control")
 		# self.set_of_features["location_control"] = (self.set_of_features["location_control_x"] + self.set_of_features["location_control_z"])/2
 		
@@ -108,7 +111,7 @@ class Relationship:
 						for line in reader[:]:
 							if 'scene' not in line:
 								if self.scene == line[0] and self.figure == line[1] and self.ground == line[2]:
-									### Must ofset by 3 here due to each row beginning with scene and object names
+									# Must ofset by 3 here due to each row beginning with scene and object names
 									for x in range(0,len(feature_keys)):
 										
 										if self.set_of_features[feature_keys[x]] != '?':

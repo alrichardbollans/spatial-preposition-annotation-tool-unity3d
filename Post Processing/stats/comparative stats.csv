@@ -1,4 +1,4 @@
-Number of users: 32
+Number of Native English users: 29
 Scene,Number of Users Annotating,Selection Info
 compsvi23,6,"[[['on top of', 'table', 5], ['box', 2], ['none', 3], ['box (1)', 0]], [['over', 'table', 2], ['box', 0], ['none', 2], ['box (1)', 0]], [['above', 'table', 3], ['box', 1], ['none', 2], ['box (1)', 0]], [['below', 'table', 4], ['box', 0], ['box (1)', 4]], [['on', 'table', 3], ['box', 2], ['none', 1], ['box (1)', 0]], [['against', 'table', 5], ['box', 3], ['none', 2], ['box (1)', 0]], [['inside', 'table', 4], ['box', 2], ['none', 2], ['box (1)', 0]], [['under', 'table', 4], ['box', 0], ['box (1)', 4]]]"
 compsvu23,3,"[[['on top of', 'book', 2], ['box', 0], ['table', 0], ['none', 2], ['pear', 0]], [['over', 'book', 3], ['box', 0], ['table', 0], ['none', 3], ['pear', 0]], [['above', 'book', 2], ['box', 0], ['table', 0], ['none', 2], ['pear', 0]], [['in', 'book', 1], ['box', 0], ['table', 0], ['none', 1], ['pear', 0]], [['on', 'book', 3], ['box', 0], ['table', 0], ['none', 3], ['pear', 0]], [['against', 'book', 1], ['box', 0], ['table', 0], ['none', 1], ['pear', 0]], [['inside', 'book', 3], ['box', 0], ['table', 0], ['none', 3], ['pear', 0]]]"

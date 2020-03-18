@@ -8,10 +8,7 @@
 
 import csv
 import os
-
 import numpy as np
-
-
 import uuid
 import itertools
 
@@ -20,10 +17,11 @@ from sklearn.model_selection import train_test_split
 
 from process_data import BasicInfo
 import preprocess_features
+from relationship import Relationship
+from classes import Instance, Configuration, SceneInfo, CompInstance, Constraint, Comparison
 
 ### Files are shared with process_data
 project_folder_name = BasicInfo.project_folder_name
-
 feature_data_folder_name = BasicInfo.feature_data_folder_name 
 data_folder_name = BasicInfo.data_folder_name
 stats_folder_name = BasicInfo.stats_folder_name
@@ -33,9 +31,8 @@ comp_annotations_name  =  BasicInfo.comp_annotations_name
 
 
 
-from relationship import *
-from classes import *
-# from measure import *
+
+
 
 	
 class User:
@@ -165,6 +162,9 @@ class InstanceCollection(Collection):
 	## Store some feature names for writing datasets
 	ratio_feature_name = "selection_ratio"
 	categorisation_feature_name = "selected_atleast_once"
+	scene_feature_name = 'Scene'
+	fig_feature_name = 'Figure'
+	ground_feature_name = 'Ground'
 	
 	
 	def __init__(self):
@@ -387,6 +387,8 @@ class ComparativeCollection(InstanceCollection):
 						C.append(con)
 			out[preposition] = C
 			# print(C)
+			for con in C:
+				con.write_to_csv()
 		self.constraints = out
 		return out
 		

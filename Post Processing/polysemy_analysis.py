@@ -1,24 +1,24 @@
-
-
 import math
 
 from sklearn import metrics
 from sklearn.cluster import KMeans, DBSCAN
 from scipy.spatial.distance import cdist, minkowski
 from sklearn.feature_selection import RFE
-
 from scipy.cluster.hierarchy import linkage, cut_tree, fcluster, dendrogram
 
+# Modules for plotting
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
-from feature_analysis import *
-from classes import *
+from feature_analysis import Model, Features, MultipleRuns
+from classes import Constraint
 from process_data import BasicInfo
 
 
 all_preposition_list = BasicInfo.preposition_list
-polysemous_preposition_list = ['in', 'against','on', 'under',  'over' ] # list of prepositions which exist in the data
-non_polysemous_prepositions = ["inside", "above", "below","on top of"]
+polysemous_preposition_list = ['in','on', 'under',  'over' ] # list of prepositions which exist in the data
+non_polysemous_prepositions = ["inside", "above", "below","on top of", 'against']
 base_polysemy_folder = "polysemy/"
 polyseme_data_folder = base_polysemy_folder+'polyseme data/'
 cluster_data_folder = base_polysemy_folder+'clustering/'
@@ -94,13 +94,13 @@ class Clustering():
 		self.cluster_centres_csv = kmeans_folder+"cluster centres/clusters-"+preposition+".csv"
 		self.dendrogram_pdf = hry_folder+"figures/dendrogram/dendrogram-"+preposition+".pdf"
 		self.elbow_pdf = kmeans_folder+"figures/elbow/"+preposition+".pdf"
-		
+		self.initial_inertia_csv = kmeans_folder+"initial inertia/initial_inertias.csv"
 		# The dataframe we use for clustering
 		self.instances_to_cluster = self.good_instance_relations.copy()
 		self.km_instances_to_cluster = self.possible_instances_relations.copy()
-		## Samples are weighted by selection ratio
+		# Samples are weighted by selection ratio
 		self.sample_weights = self.models.aff_dataset[self.models.ratio_feature_name]#self.good_dataset[self.models.ratio_feature_name]
-		## Output good instances to read
+		# Output good instances to read
 		self.good_instance_csv = cluster_data_folder + "good preposition instances/good instances - " + self.preposition+".csv"
 		self.instances_to_cluster.to_csv(self.good_instance_csv)
 
@@ -134,7 +134,7 @@ class Clustering():
 		
 		fig = plt.figure()
 		fig.canvas.set_window_title(self.preposition)
-		fig.suptitle("Dendrogram for '"+ self.preposition+"'", fontsize=20)
+		# fig.suptitle("Dendrogram for '"+ self.preposition+"'", fontsize=20)
 		
 		# factor = self.color_threshold[self.preposition]
 		if self.preposition== "on":
@@ -165,7 +165,7 @@ class Clustering():
 		# if self.preposition == "on":
 		# 	print(instances.iloc[25,:])
 		# 	print(instances.iloc[26,:])
-		# 	print("####")
+		# 	print("#")
 		# 	print(instances.iloc[20,:])
 		# 	print(instances.iloc[21,:])
 		# 	print(instances.iloc[12,:])
@@ -181,7 +181,7 @@ class Clustering():
 		# nparray = nparray.reshape(-1,1)
 		
 		km = KMeans(
-			n_clusters=number_clusters,
+			n_clusters=number_clusters
 			
 		)
 		km.fit(self.km_instances_to_cluster,sample_weight=self.sample_weights)
@@ -218,25 +218,7 @@ class Clustering():
 		kmodel = self.work_out_kmeans_model(k)
 		
 		self.output_cluster_info(kmodel)
-	def elbow(self):
-
-		distortions = []
-		inertias = []
-		K = range(1,10)
-		for k in K:
-		    kmeanModel = self.work_out_kmeans_model(k)			    
-		    # distortions.append(sum(np.min(cdist(self.km_instances_to_cluster, kmeanModel.cluster_centers_, 'euclidean'), axis=1)) / self.km_instances_to_cluster.shape[0])
-		    inertias.append(kmeanModel.inertia_)
-
-		# Plot the elbow
-		plt.plot(K, inertias, 'bx-')
-		plt.xlabel('k')
-		plt.ylabel('Inertia')
-		plt.title('The Elbow Method showing the optimal k - ' + self.preposition)
-		
-
-		plt.savefig(self.elbow_pdf, bbox_inches='tight')
-		plt.close()
+	
 	
 
 	def check_inertia_calculation(self):
@@ -326,32 +308,74 @@ class Clustering():
 		
 		
 		
-		axes.plot([len(polysemes)],[polysemes_inertia],markersize=10,markeredgewidth=2,marker=(5, 2))
+		axes.plot([len(polysemes)],[polysemes_inertia],markersize=15,markeredgewidth=3,linestyle = 'None',marker=(5, 2), label="Polysemes")
 		
 		
 
 		# Plot the elbow
-		axes.plot(K, inertias, 'bx-')
+		axes.plot(K, inertias, 'bx-', label="K-Means")
 		
 		# plt.annotate('This is awesome!', 
 		#              xy=(len(polysemes), polysemes_inertia),  
 		#              xycoords='data',
 		#              textcoords='offset points',
 		#              arrowprops=dict(arrowstyle="->"))
-		axes.annotate('Polysemy Inertia', xy=(len(polysemes), polysemes_inertia),  xycoords='data',
-		            xytext=(len(polysemes)-1, polysemes_inertia+10),
+		# axes.annotate('Polysemy Inertia', xy=(len(polysemes), polysemes_inertia),  xycoords='data',
+		#             xytext=(len(polysemes)-3, polysemes_inertia+15),
 		            
-		            horizontalalignment='left', verticalalignment='bottom',
-		            )
-		axes.set_xlabel('k')
+		#             horizontalalignment='left', verticalalignment='bottom',
+		#             )
+		axes.set_xlabel('Number of Clusters')
 		axes.set_ylabel('Inertia')
-		axes.set_title('Inertia from Kmeans Clusters - ' + self.preposition, pad=10)
+		axes.xaxis.set_major_locator(ticker.MultipleLocator(1))
+		# axes.set_title('Inertia from Kmeans Clusters - ' + self.preposition, pad=10)
 		
+		plt.legend(loc='upper right')
 		
 		
 		plt.savefig(self.elbow_pdf, bbox_inches='tight')
 		# plt.close()
 		
+	
+	def output_initial_inertia(self):
+		kmeanModel = self.work_out_kmeans_model(1)			    
+		inertia = kmeanModel.inertia_
+		normalised_inertia = inertia/len(self.km_instances_to_cluster.index)
+		new_csv = False
+		try:
+			
+			in_df = pd.read_csv(self.initial_inertia_csv, index_col=0)
+
+		except Exception as e:
+			in_df = pd.DataFrame(columns=['preposition','inertia','divided by number of instances'])
+			# print("unsusccefully read")
+			new_csv = True
+		
+		finally:
+			
+			
+			df_columns = in_df.columns
+			
+			row_index_in_df = in_df[in_df['preposition'] == self.preposition].index.tolist()
+
+			
+			if len(row_index_in_df)==0:
+				in_df = in_df.append({'preposition': self.preposition, 'inertia': inertia,'divided by number of instances':normalised_inertia}, ignore_index=True)
+			else:
+				
+				in_df.at[row_index_in_df[0],'inertia'] =  inertia
+				in_df.at[row_index_in_df[0],'divided by number of instances'] =  normalised_inertia
+			
+			in_df.to_csv(self.initial_inertia_csv)
+		
+
+class Cluster_in_Model():
+	def __init__(self,preposition,centre,weights,rank):
+		self.preposition = preposition
+		self.centre = centre
+		self.weights = weights
+		self.rank = rank
+
 	
 
 class Polyseme():
@@ -361,7 +385,7 @@ class Polyseme():
 		self.preposition = preposition
 		self.train_scenes = train_scenes
 
-		self.current_scenes_property_path = None
+		
 		
 		# Dictionary containing distinguishing features and their values
 		self.eq_feature_dict= eq_feature_dict
@@ -380,12 +404,10 @@ class Polyseme():
 		self.preposition_models = PrepositionModels(self.preposition,self.train_scenes,polyseme = self)
 		
 		# Assign a rank/hierarchy to polysemes
-		# Set rank to be sum of selection ratios (or maybe it should be average?)
+		
 		self.rank = self.get_rank()
+		# Number of configurations fitting polysemes which were labelled as preposition by any participant
 		self.number_of_instances = self.get_number_of_instances()
-		# if self.number_of_instances == 0:
-		# 	print("No training instances for: " + self.polyseme_name+"-"+ self.preposition)
-		# Add here that only do next bits if rank>0. Then later assign weight and prototype. This will save a lot of computing
 		
 			
 		self.preposition_models.work_out_prototype_model()
@@ -394,12 +416,12 @@ class Polyseme():
 		
 		
 
-	def potential_instance(self,scene,figure,ground, current_scenes_property_path = None):
+	def potential_instance(self,scene,figure,ground):
 		#boolean checks whether the configuration could be an instance
 		
 		r = Relationship(scene,figure,ground)
 
-		r.load_from_csv(current_scenes_property_path)
+		r.load_from_csv()
 		if self.eq_feature_dict != None:
 			for feature in self.eq_feature_dict:
 				value = round(r.set_of_features[feature],6)
@@ -428,7 +450,7 @@ class Polyseme():
 		self.prototype = self.preposition_models.prototype
 		# print("unshared")
 		# print(self.prototype)
-		## Input dictionarys of prototype and feature weights for each preposition, stored as arrays
+		# Input dictionarys of prototype and feature weights for each preposition, stored as arrays
 		if self.share_prototype:
 			preposition_models = PrepositionModels(self.preposition,self.train_scenes)
 			preposition_models.work_out_prototype_model()
@@ -439,7 +461,9 @@ class Polyseme():
 		return len(self.preposition_models.aff_dataset.index)
 	def get_rank(self):
 		ratio_feature_name = self.preposition_models.ratio_feature_name
-		mean = self.preposition_models.aff_dataset.mean(axis=0)[ratio_feature_name]
+		# mean = self.preposition_models.aff_dataset.mean(axis=0)[ratio_feature_name]
+
+		mean = self.preposition_models.train_possible_intances_dataset.mean(axis=0)[ratio_feature_name]
 		
 		self.rank = mean
 		if np.isnan(self.rank):
@@ -502,61 +526,100 @@ class Polyseme():
 
 	
 class Polyseme_Model(Model):
-	### Note we should also test the idea that polysemes affect*weight* rather than prototype. 
+	# Note we should also test the idea that polysemes affect*weight* rather than prototype. 
 	#Intuitively this seems better to me.
 
 	# Need to incorporate train_test in polyseme creation
 	# Also do better with sharing prototytpes
 	
-	## Puts together preposition models and has various functions for testing
-	def __init__(self,name,train_scenes,test_scenes,constraint_dict,polyseme_dict= None):
+	# Puts together preposition models and has various functions for testing
+	def __init__(self,name,train_scenes,test_scenes,constraint_dict,polyseme_dict= None,cluster_dict=None):
 		Model.__init__(self,name,train_scenes,test_scenes,constraint_dict=constraint_dict)
 		
 		
 		# Dictionary of polyseme instances for each preposition
 		self.polyseme_dict = polyseme_dict
 		self.test_prepositions = polysemous_preposition_list
+		self.cluster_dict = cluster_dict
 		
 		
+	def find_cluster_based_typicality(self,preposition,point):
+		# Finds most similar cluster centre to point and then multiplies by that clusters rank
+
+		clusters = self.cluster_dict[preposition]
+		# Weight array uses weights assigned to baseline model
+		# Same weights for all clusters for given preposition
+		weight_array = clusters[0].weights
+		closest_centre_typicality = 0
+		closest_cluster = 0
+		for cluster in clusters:
+			prototype_array = cluster.centre
+			
+			new = self.semantic_similarity(weight_array,point,prototype_array)
+			if new > closest_centre_typicality:
+				closest_centre_typicality = new
+				closest_cluster = cluster
 		
+		out = closest_centre_typicality * closest_cluster.rank
+
+		return out
+
+
+			
+
+
 		
-	def get_possible_polysemes(self,preposition,scene,figure,ground, current_scenes_property_path =None):
+	def get_possible_polysemes(self,preposition,scene,figure,ground):
 		out = []
 		if self.polyseme_dict != None:
 
 			for polyseme in self.polyseme_dict[preposition]:
-				if polyseme.potential_instance(scene,figure,ground,current_scenes_property_path):
+				if polyseme.potential_instance(scene,figure,ground):
 					out.append(polyseme)
 		return out
 
 	
-	def get_typicality(self,preposition,point,scene,figure,ground, current_scenes_property_path =None):
-		## Works out the typicality of the given point (1D array)
+	def get_typicality(self,preposition,point,scene,figure,ground):
+		# Works out the typicality of the given point (1D array)
 		# Point taken as input is from one side of constraint inequality
+		if self.polyseme_dict != None:
+			out = 0
+			pps = self.get_possible_polysemes(preposition,scene,figure,ground)
+			if len(pps) == 0:
+				print("Error: No polyseme given for:")
+				print(preposition)
+				print(scene)
+				print(figure)
+				print(ground)
 
-		out = 0
-		pps = self.get_possible_polysemes(preposition,scene,figure,ground,current_scenes_property_path)
-		if len(pps) == 0:
-			print("Error: No polyseme given for:")
+			for polyseme in pps:
+						
+
+				prototype_array = polyseme.prototype
+				weight_array = polyseme.weights
+				new = self.semantic_similarity(weight_array,point,prototype_array)
+				
+
+				if self.name != GeneratePolysemeModels.baseline_model_name:
+					
+					new = new * polyseme.rank#(math.pow(polyseme.rank,2))
+				
+
+				if new > out:
+					out = new
+					
+
+			
+			return out
+		elif self.cluster_dict != None:
+			out = self.find_cluster_based_typicality(preposition,point)
+			return out
+		else:
+			print("Error: No polyseme or cluster dict given for:")
 			print(preposition)
 			print(scene)
 			print(figure)
 			print(ground)
-
-		for polyseme in pps:
-					
-
-			prototype_array = polyseme.prototype
-			weight_array = polyseme.weights
-			new = self.semantic_similarity(weight_array,point,prototype_array)
-			
-			new = new * (math.pow(polyseme.rank,2))
-			if new > out:
-				out = new
-				
-
-		
-		return out
 	def weighted_score(self,preposition,Constraints):
 		# Calculates how well W and P satisfy the constraints, accounting for constraint weight
 		counter = 0
@@ -569,28 +632,55 @@ class Polyseme_Model(Model):
 
 		return counter 
 	
-	def output_typicalities(self,preposition,input_feature_list):
-		output_csv = base_polysemy_folder+ "instance typicalities/"+self.name+"-typicality_test-"+preposition+".csv"
-		dfObj = pd.DataFrame(columns=['scene', 'figure', 'ground',self.name])
-		geom_relations = Relationship.load_all(path=input_feature_list)
+	def output_typicalities(self,preposition):
+		# output_csv = base_polysemy_folder+ "config typicalities/"+self.name+"-typicality_test-"+preposition+".csv"
+		input_csv = base_polysemy_folder+ "config typicalities/typicality-"+preposition+".csv"
+		geom_relations = Relationship.load_all()
 		geom_relations.pop(0)
-		for relation in geom_relations:
-			scene = relation[0]
-			figure = relation[1]
-			ground = relation[2]
-			
-			c = Configuration(scene,figure,ground,path=input_feature_list)
-			
-		
-			# Typicality is calculated for each configuration
-			# To check whether a configuration fits a particular polyseme we need to include
-			value_array = np.array(c.relations_row)
-			typicality = self.get_typicality(preposition,value_array,c.scene,c.figure,c.ground,current_scenes_property_path= input_feature_list)
-			dfObj = dfObj.append({'scene': c.scene, 'figure': c.figure, 'ground': c.ground,'self.name': typicality}, ignore_index=True)
+		new_csv = False
 
+		try:
+			# print(self.name)
+			# print("try to read")
+			in_df = pd.read_csv(input_csv, index_col=0)
+
+		except Exception as e:
+			in_df = pd.DataFrame(columns=['scene', 'figure', 'ground',self.name])
+			# print("unsusccefully read")
+			new_csv = True
+		# else:
+		# 	pass
+		finally:
+			# pass
 		
-		
-		dfObj.to_csv(output_csv)
+			# print(in_df)
+			
+			df_columns = in_df.columns
+			for relation in geom_relations:
+				scene = relation[0]
+				figure = relation[1]
+				ground = relation[2]
+				
+				c = Configuration(scene,figure,ground)
+				
+			
+				# Typicality is calculated for each configuration
+				# To check whether a configuration fits a particular polyseme we need to include
+				value_array = np.array(c.relations_row)
+				typicality = self.get_typicality(preposition,value_array,c.scene,c.figure,c.ground)
+				if new_csv:
+					in_df = in_df.append({'scene': c.scene, 'figure': c.figure, 'ground': c.ground,self.name: typicality}, ignore_index=True)
+				else:
+					row_index_in_df = in_df[(in_df['scene'] == c.scene) & (in_df['figure'] == c.figure) & (in_df['ground'] == c.ground)].index.tolist()
+
+					
+					# if self.name in df_columns:
+						
+					in_df.at[row_index_in_df[0],self.name] = typicality
+					# else:
+						# in_df[self.name] =
+			# print(preposition)
+			in_df.to_csv(input_csv)
 
 		
 class SalientFeature():
@@ -607,12 +697,13 @@ class GeneratePolysemeModels():
 	
 	other_model_name = "Shared Prototype"
 	baseline_model_name = "Baseline Model"
+	cluster_model_name = "KMeans Model"
 
-	## List of all model names
-	model_name_list = [our_model_name,other_model_name,baseline_model_name]
+	# List of all model names
+	model_name_list = [our_model_name,other_model_name,baseline_model_name,cluster_model_name]
 	
-	## List of model names except ours
-	other_name_list = [other_model_name,baseline_model_name]
+	# List of model names except ours
+	other_name_list = [other_model_name,baseline_model_name,cluster_model_name]
 
 	def __init__(self,train_scenes,test_scenes,constraint_dict = None, preserve_rank= False):
 		# Dictionary of constraints to satisfy
@@ -626,19 +717,107 @@ class GeneratePolysemeModels():
 		self.test_scenes = test_scenes
 
 		self.baseline_model_dict = self.get_general_cases()
-		self.baseline_model = Polyseme_Model("Baseline Model",self.train_scenes,self.test_scenes,self.constraint_dict,polyseme_dict= self.baseline_model_dict)
+		self.baseline_model = Polyseme_Model(self.baseline_model_name,self.train_scenes,self.test_scenes,self.constraint_dict,polyseme_dict= self.baseline_model_dict)
+		# Cluster dictionary stores list of cluster objects for each preposition
+		self.cluster_dict = self.get_cluster_dict()
+		self.cluster_model = Polyseme_Model(self.cluster_model_name,self.train_scenes,self.test_scenes,self.constraint_dict,cluster_dict=self.cluster_dict)
+
 
 		self.non_shared_dict = self.get_non_shared_prototype_polyseme_dict()
-		self.non_shared = Polyseme_Model("Distinct Prototype",self.train_scenes,self.test_scenes,self.constraint_dict,polyseme_dict= self.non_shared_dict)
+		self.non_shared = Polyseme_Model(self.our_model_name,self.train_scenes,self.test_scenes,self.constraint_dict,polyseme_dict= self.non_shared_dict)
 		
 
 		self.shared_dict = self.get_shared_prototype_polyseme_dict()
-		self.shared = Polyseme_Model("Shared Prototype",self.train_scenes,self.test_scenes,self.constraint_dict,polyseme_dict= self.shared_dict)
+		self.shared = Polyseme_Model(self.other_model_name,self.train_scenes,self.test_scenes,self.constraint_dict,polyseme_dict= self.shared_dict)
 	
 	
-		self.models = [self.non_shared,self.shared,self.baseline_model]
+		self.models = [self.non_shared,self.shared,self.baseline_model,self.cluster_model]
 	
-		
+	def get_cluster_dict(self):
+		# Number of non-empty polysemes from polysemy model for all scenes
+		# Actually none are empty, even for on
+		cluster_numbers = {'on':8,'in':4,'under':4,'over':4}
+		out = dict()
+
+		for preposition in polysemous_preposition_list:
+			out[preposition] = []
+			number_clusters = cluster_numbers[preposition]
+			models = PrepositionModels(preposition,self.train_scenes)
+
+
+			# All selected instances
+			possible_instances = models.affFeatures
+			# Only relation features
+
+			possible_instances_relations = models.remove_nonrelations(possible_instances)
+			
+			sample_weights = models.aff_dataset[models.ratio_feature_name]
+
+			# Issue that sometimes there's more samples than clusters
+			km = KMeans(
+				n_clusters=number_clusters
+				
+			)
+			km.fit(possible_instances_relations,sample_weight=sample_weights)
+			
+
+			weights = self.baseline_model_dict[preposition][0].weights
+			# work out cluster ranks
+			# For each configuration, get closest cluster centre
+			
+			cluster_ratio_sums = []
+			cluster_number_of_instances = []
+			for i in range(len(km.cluster_centers_)):
+				cluster_ratio_sums.append(0)
+				cluster_number_of_instances.append(0)
+
+			sem_methods = SemanticMethods()
+			for index, row in models.feature_dataframe.iterrows():
+				# For each configuration add ratio to totals of closest centre
+
+				ratio_feature_name = models.ratio_feature_name
+				# Note dropping columns from dataset preserves row order i.e. row order of feature_dataframe = train_datset
+				ratio_of_instance = models.train_dataset.at[index,ratio_feature_name]
+
+				v = row.values
+				# Convert values to np array
+				v =np.array(v)
+
+				sem_distance = -1
+				chosen_centre = 0
+				chosen_index= -1
+				# Get closest centre
+				for i in range(len(km.cluster_centers_)):
+					centre = km.cluster_centers_[i]
+					
+					distance = sem_methods.semantic_distance(weights,v,centre)
+
+					if sem_distance == -1:
+						sem_distance= distance
+						chosen_centre = centre
+						chosen_index = i
+					elif distance < sem_distance:
+						sem_distance = distance
+						chosen_centre = centre
+						chosen_index = i
+				# Update sums
+				
+				cluster_ratio_sums[chosen_index] += ratio_of_instance
+				cluster_number_of_instances[chosen_index] += 1
+
+			for i in range(len(km.cluster_centers_)):
+				if cluster_number_of_instances[i] !=0:
+					rank = cluster_ratio_sums[i]/cluster_number_of_instances[i]
+				else:
+					rank =0
+				
+				
+				
+				
+				new_c = Cluster_in_Model(preposition,km.cluster_centers_[i],weights,rank)
+				out[preposition].append(new_c)
+				
+		return out
 		
 	def output_polyseme_info(self):
 		d = self.non_shared_dict
@@ -662,7 +841,11 @@ class GeneratePolysemeModels():
 	def get_general_cases(self):
 		d = dict()
 		for preposition in all_preposition_list:
-			d[preposition] = [Polyseme(preposition,"general_case",self.train_scenes)]
+			general_polyseme = Polyseme(preposition,"general_case",self.train_scenes)
+			d[preposition] = [general_polyseme]
+			# print(preposition)
+			# print(general_polyseme.prototype)
+			# print(general_polyseme.weights)
 		return d
 
 
@@ -681,8 +864,8 @@ class GeneratePolysemeModels():
 
 	
 	def generate_polysemes(self,preposition,salient_features):
-		## Generates polysemes based on ideal meaning discusion
-		## Give salient features and their threshold values
+		# Generates polysemes based on ideal meaning discusion
+		# Give salient features and their threshold values
 		polysemes = []
 		
 		g_dict = dict()
@@ -695,12 +878,12 @@ class GeneratePolysemeModels():
 			
 
 
-		## Canon
+		# Canon
 		
 		p1 = Polyseme(preposition,"canon",self.train_scenes,greater_feature_dict=g_dict,less_feature_dict=l_dict)
 		polysemes.append(p1)
 
-		## Nearly canon
+		# Nearly canon
 		x= len(salient_features) - 1
 		while x>=0:
 			
@@ -741,7 +924,7 @@ class GeneratePolysemeModels():
 		out = dict()
 		
 
-		## Non-polysemous prepositions
+		# Non-polysemous prepositions
 		# general_cases = self.get_general_cases()
 		# out["inside"] = general_cases["inside"]
 		
@@ -749,7 +932,7 @@ class GeneratePolysemeModels():
 		# out["below"] = general_cases["below"]
 		# out["on top of"] = general_cases["on top of"]
 
-		## greater and lessthan dictionaries are greater/less than OR EQUAL to
+		# greater and lessthan dictionaries are greater/less than OR EQUAL to
 		# On
 		
 		contact03 = self.feature_processer.convert_normal_value_to_standardised("contact_proportion", 0.3)
@@ -832,15 +1015,14 @@ class GeneratePolysemeModels():
 		# out["above"] = self.generate_polysemes("above",above_salient_features)
 
 		# Against
-		f1 = SalientFeature("contact_proportion",contact03,"g")
-		f2 = SalientFeature("support",sup01,"g")
-		f3 = SalientFeature("above_proportion",above01,"l")
-		# f5 = SalientFeature("horizontal_distance",hd01,"l")
-		# f4 = SalientFeature("location_control",lc08,"g")
+		# f1 = SalientFeature("contact_proportion",contact03,"g")
+		# f2 = SalientFeature("support",sup01,"g")
+		# f3 = SalientFeature("above_proportion",above01,"l")
 		
-		against_salient_features = [f1,f2,f3]
 		
-		out["against"] = self.generate_polysemes("against",against_salient_features)
+		# against_salient_features = [f1,f2,f3]
+		
+		# out["against"] = self.generate_polysemes("against",against_salient_features)
 		
 		general_cases = self.baseline_model_dict
 		
@@ -848,7 +1030,7 @@ class GeneratePolysemeModels():
 			pass
 		else:
 			for prep in out:
-				# print(prep)
+				
 				for poly in out[prep]:
 					
 					if poly.number_of_instances == 0:
@@ -887,10 +1069,12 @@ class MultipleRunsPolysemyModels(MultipleRuns):
 	 		self.average_plot_pdf = self.scores_plots_folder +"/average" + self.file_tag+".pdf"
 			self.average_csv = self.scores_tables_folder + "/averagemodel scores "+self.file_tag+".csv"
 			self.comparison_csv = self.scores_tables_folder + "/repeatedcomparisons "+self.file_tag+".csv"
+			self.km_comparison_csv = self.scores_tables_folder + "/km_repeatedcomparisons "+self.file_tag+".csv"
 	
 	
 	def generate_models(self,train_scenes,test_scenes):
 		generated_polyseme_models = GeneratePolysemeModels(train_scenes,test_scenes,self.constraint_dict)
+		
 		return generated_polyseme_models
 
 	
@@ -924,38 +1108,32 @@ def test_models():
 	mpl.rcParams['axes.labelsize'] = 'medium'
 	mpl.rcParams['ytick.labelsize'] = 'small'
 
-	# m = MultipleRunsPolysemyModels(constraint_dict,number_runs=100,k =2,compare = "y")
-	# print("Test Model k = 2")
-	# m.validation()
-	# m.output()
-
-	# m = MultipleRunsPolysemyModels(constraint_dict,number_runs=100,k =3,compare = "y")
-	# print("Test Model k = 3")
-	# m.validation()
-	# m.output()
+	
 	test_on_all_scenes()
-	# test_model(2,2)
-	# test_model(10,10)
+	test_model(2,2)
+	test_model(10,10)
 
 def output_typicality():
 	generated_polyseme_models = GeneratePolysemeModels(Clustering.all_scenes,Clustering.all_scenes)
+	p_models= generated_polyseme_models.models
+	for model in p_models:
 	
-	model= generated_polyseme_models.non_shared
-	for preposition in all_preposition_list:
-		# Using Features.output_path as the path is the default anyway?
-		model.output_typicalities(preposition,Features.output_path)
-def work_out_all_kmeans_clusters():
-	for preposition in polysemous_preposition_list:
-		c = Clustering(preposition)
-		# km = c.work_out_kmeans_model(3)
-		# c.output_clusters(km)
-		c.elbow()
+		for preposition in polysemous_preposition_list:
+			
+			model.output_typicalities(preposition)
+		
+
 def compare_kmeans():
+	mpl.rcParams['font.size'] = 15
+	mpl.rcParams['legend.fontsize'] = 12
 	for preposition in polysemous_preposition_list:
 		c = Clustering(preposition)
 		
 		c.plot_elbow_polyseme_inertia()
-	
+def output_initial_inertias():
+	for preposition in preposition_list:
+		c =Clustering(preposition)
+		c.output_initial_inertia()
 def work_out_all_dbsccan_clusters():
 	for preposition in polysemous_preposition_list:
 		print(preposition)
@@ -975,14 +1153,23 @@ def work_out_kmeans_clusters():
 		c.output_expected_kmeans_model()
 
 def main(constraint_dict):
+	# Clustering
 	# work_out_kmeans_clusters()
-	# compare_kmeans()
+	# output_initial_inertias()
 	# work_out_all_kmeans_clusters()
-	work_out_all_hry_clusters()
+	# work_out_all_hry_clusters()
+
+	# Polysemes and performance
 	# output_all_polyseme_info()
 	
 	# output_typicality()
-	# test_models()
+	test_models()
+
+
+	# mpl.rcParams['axes.titlesize'] = 'large'
+	# mpl.rcParams['axes.labelsize'] = 'large'
+	# compare_kmeans()
+
 
 if __name__ == '__main__':
 	

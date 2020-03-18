@@ -6,7 +6,7 @@ import pandas as pd
 import math
 import ast
 
-from relationship import *
+from relationship import get_project_directory, Relationship
 
 preposition_list=['in', 'inside', 'against','on','on top of', 'under',  'below',  'over','above']
 
@@ -27,12 +27,12 @@ def remove_dot_unity(scene_name):
 	return clean_name
 class Constraint:
 	
-	### A constraint is a linear inequality
-	## Left hand side is more typical than right hand side
-	## LHS is values of first config
-	## RHS is values of second config
-	
-	output_path = "constraint data/constraints.csv"
+	# A constraint is a linear inequality
+	# Left hand side is more typical than right hand side
+	# LHS is values of first config
+	# RHS is values of second config
+	folder_path = "constraint data/"
+	output_path = folder_path +"constraints.csv"
 	titles = ["scene","preposition","ground","f1","f2","weight","parity","weak","lhs","rhs"]
 
 	def __init__(self,scene,preposition,ground,f1,f2,weight,parity,weak,lhs,rhs):
@@ -43,22 +43,22 @@ class Constraint:
 		# f1 should be more typical than f2 to satisfy constraint
 		self.f1 = f1
 		self.f2 = f2
-		## lhs and rhs are arrays of coefficients for the problem
-		## coefficients are ordered by Relationship.feature_keys/relation_keys
-		## These are configuration values for the instances being compared
-		self.lhs = lhs##np.array([lhs])
-		self.rhs = rhs##np.array([rhs])
+		# lhs and rhs are arrays of coefficients for the problem
+		# coefficients are ordered by Relationship.feature_keys/relation_keys
+		# These are configuration values for the instances being compared
+		self.lhs = lhs#np.array([lhs])
+		self.rhs = rhs#np.array([rhs])
 		
-		## Weight given to constraint
+		# Weight given to constraint
 		self.weight = weight
 
-		## We have two types of constraints
-		## Some arise from difference in the data and some from similarity
+		# We have two types of constraints
+		# Some arise from difference in the data and some from similarity
 		
 		self.parity = parity
 		
 		# If True, this constraint is for weak instances i.e. LHS is some distance from prototype
-		## RHS is not important
+		# RHS is not important
 		self.weak = weak
 
 		self.csv_row = [self.scene,self.preposition,self.ground,self.f1,self.f2,self.weight,str(parity),str(weak), lhs.tolist(), rhs.tolist()]
@@ -67,11 +67,14 @@ class Constraint:
 
 	# def row_match(self,row):
 	# 	if self.scene== row[0] and self.f1 == row[1] and self.f2 == row[2]
-	def write_to_csv(self):
-		
+	def write_to_csv(self,name = None):
+		if name == None:
+			path = self.output_path
+		else:
+			path = self.folder_path + name + ".csv"
 
 		
-		with open(self.output_path, 'a') as csvfile:
+		with open(path, 'a') as csvfile:
 			outputwriter = csv.writer(csvfile)
 			outputwriter.writerow(self.csv_row)
 	@staticmethod
@@ -94,17 +97,21 @@ class Constraint:
 			out[c.preposition].append(c)
 		return out
 	@staticmethod
-	def clear_csv():
-		with open(Constraint.output_path, 'w') as csvfile:
+	def clear_csv(name = None):
+		if name == None:
+			path = Constraint.output_path
+		else:
+			path = Constraint.folder_path + name + ".csv"
+		with open(path, 'w') as csvfile:
 			outputwriter = csv.writer(csvfile)
 			outputwriter.writerow(Constraint.titles)
 			# csvfile.truncate()
 	# def get_values(self,W,P):
-	# 	## Works out the Similarity of LHS and RHS to prototype,P, given feature weights W
-	# 	## Works out the Euclidean distance of the instance represented by LHS and RHS to the prototype
-	# 	## W is a 1D array, an assignment of weights and P, Prototype
-	# 	## First take away P from lhs and rhs values
-	# 	## Then do dot product
+	# 	# Works out the Similarity of LHS and RHS to prototype,P, given feature weights W
+	# 	# Works out the Euclidean distance of the instance represented by LHS and RHS to the prototype
+	# 	# W is a 1D array, an assignment of weights and P, Prototype
+	# 	# First take away P from lhs and rhs values
+	# 	# Then do dot product
 
 		
 	# 	lhs = np.subtract(self.lhs,P)
@@ -123,11 +130,11 @@ class Constraint:
 
 	# 	return [lhs_value,rhs_value]
 
-	## Returns True if X satisfies C
-	## False otherwise
+	# Returns True if X satisfies C
+	# False otherwise
 
 	def is_satisfied(self,lhs_value,rhs_value):
-		## Values get calculated elsewhere depending on model
+		# Values get calculated elsewhere depending on model
 		# values = self.get_values(W,P)
 		# lhs_value = values[0]
 		# rhs_value = values[1]
@@ -148,7 +155,7 @@ class Constraint:
 			else:
 				return False
 
-	## Returns the value of RHS-LHS, with values from X
+	# Returns the value of RHS-LHS, with values from X
 	def separation(self,X):
 		lhs_value = np.dot(self.lhs,X)
 		rhs_value = np.dot(self.rhs,X)
@@ -168,18 +175,18 @@ class Comparison():
 		# self.annotations = self.get_annotations(datalist)
 		# self.figure_selection_number = self.get_choices()
 		self.possible_figures = self.get_possible_figures()
-		### Note the following doesn't account for the fact that users can select none
+		# Note the following doesn't account for the fact that users can select none
 		self.chance_agreement = 1/float(len(self.possible_figures))
 		self.chance_agreement_with_none = 1/float(len(self.possible_figures) + 1)
 
 	def generate_constraints(self,instancelist):
 		
-		### Takes an annotation list
-		### Generates constraints and outputs a list
+		# Takes an annotation list
+		# Generates constraints and outputs a list
 		C = []
 		instances = self.get_instances(instancelist)
 		# For the moment the metric constraint are commented out
-		## Don't want to generate constraints when no tests have been done!
+		# Don't want to generate constraints when no tests have been done!
 		if len(instances) > 0:
 			
 			figure_selection_number = self.get_choices(instancelist)
@@ -231,7 +238,7 @@ class Comparison():
 
 				
 			
-			## Deal with case that figure is not ever selected
+			# Deal with case that figure is not ever selected
 			# for fig in figure_selection_number:
 			# 	x1 = figure_selection_number[fig]
 			# 	if x1 == 0:
@@ -249,8 +256,7 @@ class Comparison():
 
 			# 		C.append(con)
 		# if len(none_instances) > 0:
-		for con in C:
-			con.write_to_csv()
+		
 		return C
 	def get_instances(self,instancelist):
 		out = []
@@ -294,10 +300,10 @@ class Comparison():
 			
 			if s.name == self.scene:
 				
-				## Selectable objects in scene
+				# Selectable objects in scene
 				selectable_objects = s.selectable_objects
 				
-				## Remove ground
+				# Remove ground
 				for g in selectable_objects[:]:
 					if g == self.ground:
 						selectable_objects.remove(g)
@@ -309,9 +315,9 @@ class Comparison():
 
 
 class MyScene:
-	## Class to store info about scenes
+	# Class to store info about scenes
 	unselectable_scene_objects = ["wall","floor","ceiling"]
-	## This is given in MyScene class in Unity
+	# This is given in MyScene class in Unity
 
 	example_scenes = ["example","finish","instruction","template","main","player","screen","test"]
 
@@ -346,10 +352,10 @@ class MyScene:
 		
 
 class SceneInfo:
-	### A class to store info on the scenes
-	### scene_list is a collection of MyScene objects
-	### Relies on creating a csv file in Unity Editor using write_scene_info.cs script
-	### Then also run commonsense properties script to get ground info
+	# A class to store info on the scenes
+	# scene_list is a collection of MyScene objects
+	# Relies on creating a csv file in Unity Editor using write_scene_info.cs script
+	# Then also run commonsense properties script to get ground info
 	project_path = get_project_directory()
 	output_path = project_path + "/Data Collection Game"+ "/Scene Data/";
 	filename = "scene_info.csv";
@@ -397,28 +403,28 @@ class SceneInfo:
 
 
 class Configuration:
-	def __init__(self,scene,figure,ground):
+	def __init__(self,scene,figure,ground,path = Relationship.property_path):
 		self.scene = scene
 		self.figure = figure
 		self.ground = ground
 		# Row of feature values for outputing to csv
 		self.row = []
-		### Row beginning with names
+		# Row beginning with names
 		self.full_row = [self.scene,self.figure,self.ground]
-		### Row without ground properties
+		# Row without context features
 		self.relations_row =[]
 		if self.figure != "none":
-			self.append_values()
+			self.append_values(path)
 
 	def __str__(self):
 		return "["+str(self.scene)+","+str(self.figure)+","+str(self.ground)+"]"
 	
-	def append_values(self):
+	def append_values(self,path):
 		# print(self.figure)
 		# print(self.ground)
 		# print(self.scene)
 		r = Relationship(self.scene,self.figure,self.ground)
-		r.load_from_csv()
+		r.load_from_csv(path = path)
 
 		for key in  r.feature_keys:
 
@@ -443,7 +449,7 @@ class Configuration:
 				counter += 1
 		return counter
 	def number_of_tests(self,annotationlist):
-		## Need to use annotation list here as instances are separated by preposition
+		# Need to use annotation list here as instances are separated by preposition
 		counter = 0
 		for an in annotationlist:
 			
@@ -462,7 +468,7 @@ class Configuration:
 		else:
 			return 0
 	def annotation_row_match(self,row):
-		## If configuration matches with annotation in raw data list
+		# If configuration matches with annotation in raw data list
 		if self.scene == row[3] and self.figure == row[5] and self.ground == row[6]:
 			return True
 		else:
@@ -510,9 +516,9 @@ class Instance(Configuration):
 
 class CompInstance(Configuration):
 	
-	###Figure is the selected figure
-	### We can consider this as a usual preposition instance and plot it
-	### /compare with selection instances
+	#Figure is the selected figure
+	# We can consider this as a usual preposition instance and plot it
+	# /compare with selection instances
 	def __init__(self,ID,user,task,scene,preposition,figure,ground,possible_figures):
 		Configuration.__init__(self,scene,figure,ground)
 		self.possible_figures = possible_figures

@@ -1,22 +1,22 @@
-## Script to run for newly collected data files which:
+# Script to run for newly collected data files which:
 # Input: annotation and user info csv from data collection
 # Output: Clean annotation lists. Basic stats. User agreement calculations
 # Feature values are included later
 
 import csv
+import itertools
 
-
-from classes import *
+from classes import Comparison
 
 
 
 
 class BasicInfo:
-	## Class containing basic info related to data collection
+	# Class containing basic info related to data collection
 
 	
 
-	###paths and filenames
+	#paths and filenames
 	project_folder_name = "Data Collection Game"
 
 	feature_data_folder_name = "Scene Data"
@@ -31,7 +31,7 @@ class BasicInfo:
 
 	raw_annotation_list = "annotationlist.csv"
 
-	### Prepositions Used
+	# Prepositions Used
 	preposition_list=['in', 'inside', 'against','on','on top of', 'under',  'below',  'over','above'] # list of prepositions which exist in the data
 
 	semantic_preposition_list = preposition_list
@@ -39,13 +39,13 @@ class BasicInfo:
 	comparative_preposition_list = preposition_list
 
 
-	### Task abbreviations
+	# Task abbreviations
 
 	semantic_abbreviations = ["sv","pq"]
 
 	comparative_abbreviations = ["comp"]
 
-	### Dictionary giving the index of each value in annotations
+	# Dictionary giving the index of each value in annotations
 
 	a_index = {'id':0,'userid':1,'time':2,'figure':3,'ground':4,'task':5,'scene':6,'preposition':7,'prepositions':8,'cam_rot':9,'cam_loc':10}
 	@staticmethod
@@ -56,7 +56,7 @@ class BasicInfo:
 		for scene in s.scene_list:
 			scene_list.append(scene.name)
 		return scene_list
-# create a dictionary to make it easier?
+
 class User():
 
 	def __init__(self,clean_id,user_id,time,native): #The order of this should be the same as in writeuserdata.php
@@ -121,7 +121,7 @@ class UserData():
 		return out
 				
 class Annotation:
-	### Gets annotations from the raw data
+	# Gets annotations from the raw data
 	
 
 	def __init__(self,userdata,annotation):#ID,UserID,now,selectedFigure,selectedGround,task,scene,preposition,prepositions,cam_rot,cam_loc):
@@ -165,7 +165,7 @@ class ComparativeAnnotation(Annotation):
 	# Users selects a figure given a ground and preposition
 	def __init__(self,userdata,annotation):#ID,UserID,now,selectedFigure,selectedGround,scene,preposition,prepositions,cam_rot,cam_loc):
 		Annotation.__init__(self,userdata,annotation)
-		## list format is used to write rows of csv
+		# list format is used to write rows of csv
 		c = Comparison(self.scene,self.preposition,self.ground)
 		self.possible_figures = c.possible_figures
 		# Need to append possible figures to list format and then deal with this in compile_instances
@@ -194,10 +194,6 @@ class SemanticAnnotation(Annotation):
 		return x
 
 
-		
-
-	 
-
 class Data():
 	
 	
@@ -207,7 +203,7 @@ class Data():
 		self.alldata = self.load_annotations_from_csv()
 		self.annotation_list = self.get_annotations(userdata)
 		
-		## Annotation list without non-natives
+		# Annotation list without non-natives
 		self.clean_data_list = self.clean_list()
 		
 		self.user_list = self.get_users()
@@ -272,7 +268,7 @@ class Data():
 
 	def get_scenes_done_x_times(self,x):
 		out = []
-		### This only counts native speakers
+		# This only counts native speakers
 		for sc in self.scene_list:
 			y = self.number_of_users_per_scene(sc)
 			if y >= x:
@@ -280,7 +276,7 @@ class Data():
 		return out
 	
 	def print_scenes_done_x_times(self,x,task):
-		### This only counts native speakers
+		# This only counts native speakers
 		for sc in self.scene_list:
 			y = self.number_of_users_per_scene(sc,task)
 			if y >= x:
@@ -289,7 +285,7 @@ class Data():
 		sl = BasicInfo.get_scene_list()
 		print("Total number of scenes:" + str(len(sl)))
 		out = []
-		### This only counts native speakers
+		# This only counts native speakers
 		for sc in self.scene_list:
 			x = self.number_of_users_per_scene(sc,"sv")
 			y = self.number_of_users_per_scene(sc,"comp")
@@ -302,7 +298,7 @@ class Data():
 	def print_scenes_need_removing(self):
 		print("To remove")
 		out = []
-		### This only counts native speakers
+		# This only counts native speakers
 		for sc in self.scene_list:
 			x = self.number_of_users_per_scene(sc,"sv")
 			y = self.number_of_users_per_scene(sc,"comp")
@@ -374,7 +370,7 @@ class Data():
 		
 		return out
 
-	### Gets user annotations for a particular task
+	# Gets user annotations for a particular task
 	def get_user_task_annotations(self,user1,task):
 		out = []
 		for a in self.annotation_list:
@@ -383,7 +379,7 @@ class Data():
 					out.append(a)
 		return out
 
-	### Gets user annotations for a particular task where they didn't select none
+	# Gets user annotations for a particular task where they didn't select none
 	def get_user_affirmative_task_annotations(self,user1,task):
 		out = []
 		for a in self.annotation_list:
@@ -400,7 +396,7 @@ class Data():
 		return out
 	
 
-	### Compares two annotations. Returns true if the same question is being asked of the annotators.
+	# Compares two annotations. Returns true if the same question is being asked of the annotators.
 	def question_match(self,a1,a2):
 		if a1.task == a2.task:
 			if a1.task in BasicInfo.comparative_abbreviations:
@@ -476,7 +472,7 @@ class Data():
 				p_expected_agreement = float(preposition_expected_agreement_sum)/(preposition_shared_annotations)
 				p_observed_agreement = float(preposition_observed_agreement_sum)/(preposition_shared_annotations)
 				p_cohens_kappa = float(preposition_cohens_kappa_sum)/(preposition_shared_annotations)
-				## Write a row for each preposition
+				# Write a row for each preposition
 				
 				row = [p,preposition_shared_annotations,p_expected_agreement,p_observed_agreement,p_cohens_kappa]
 				writer.writerow(row)
@@ -485,13 +481,10 @@ class Data():
 			total_observed_agreement = float(total_observed_agreement_sum)/(total_shared_annotations)
 			total_cohens_kappa = float(total_cohens_kappa_sum)/(total_shared_annotations)
 
-			### Write a row of total averages
+			# Write a row of total averages
 			writer.writerow(['Total Number of Shared Annotations', 'Average Expected Agreements','Average observed agreements', 'Average Cohens Kappa'])
 			row = [total_shared_annotations,total_expected_agreement,total_observed_agreement,total_cohens_kappa]
 			writer.writerow(row)
-
-			
-
 		
 
 class ComparativeData(Data):
@@ -560,8 +553,8 @@ class ComparativeData(Data):
 
 		return out
 
-	### This is a very basic list of information about the task
-	### compile_instances gives a better overview
+	# This is a very basic list of information about the task
+	# compile_instances gives a better overview
 	def output_statistics(self):
 		with open(BasicInfo.stats_folder_name+'/' + self.stats_csv_name, "w") as csvfile:
 			writer = csv.writer(csvfile)
@@ -576,13 +569,6 @@ class ComparativeData(Data):
 				writer.writerow(row)
 	
 	
-
-	
-
-
-	
-	
-
 class SemanticData(Data):
 	def __init__(self,userdata):
 		#The object from this class will be a list containing all the semantic annotations
@@ -636,7 +622,7 @@ class SemanticData(Data):
 					print(p)
 	
 
-	### Identifies number of times prepositions are selected or left blank
+	# Identifies number of times prepositions are selected or left blank
 	def get_positive_selection_info(self):
 		positive_selections = 0
 		negative_selections = 0
@@ -649,8 +635,8 @@ class SemanticData(Data):
 					negative_selections += 1
 		return[positive_selections,negative_selections]
 
-	### This is a very basic list of information about the task
-	### compile_instances gives a better overview
+	# This is a very basic list of information about the task
+	# compile_instances gives a better overview
 	def output_statistics(self):
 		with open(BasicInfo.stats_folder_name+'/' + self.stats_csv_name, "w") as csvfile:
 			writer = csv.writer(csvfile)
@@ -665,18 +651,17 @@ class SemanticData(Data):
 			for s in self.scene_list:
 				writer.writerow([s,self.number_of_users_per_scene(s,self.task),self.get_prepositions_for_scene(s)])
 
-			
 
 	
 class Agreements(Data):
-	### Looks at agreements between two users for a particular task and particular preposition
+	# Looks at agreements between two users for a particular task and particular preposition
 	def __init__(self,annotation_list,task, preposition,user1,user2=None,agent_task_annotations=None):
 		self.annotation_list = annotation_list
 		self.user1 = user1
 		self.user2 = user2
 		
 		self.task = task
-		### All user annotations for particular task
+		# All user annotations for particular task
 		self.user1_annotations = self.get_user_task_annotations(user1,task)
 		if user2 != None:
 			self.user2_annotations = self.get_user_task_annotations(user2,task)
@@ -694,19 +679,19 @@ class Agreements(Data):
 		
 
 
-	## Agreement of users
+	# Agreement of users
 	
 	
 	def count_sem_agreements(self):
-		##Number of shared annotations by u1 and u2
+		#Number of shared annotations by u1 and u2
 		shared_annotations = 0
-		### Times u1 says yes to preposition
+		# Times u1 says yes to preposition
 		y1 = 0
-		### Times u2 says yes to preposition
+		# Times u2 says yes to preposition
 		y2 = 0
-		### Times u1 says no to preposition
+		# Times u1 says no to preposition
 		n1 = 0
-		### Times u2 says no to preposition
+		# Times u2 says no to preposition
 		n2 = 0
 		agreements = 0
 		for a1 in self.user1_annotations:			
@@ -730,11 +715,11 @@ class Agreements(Data):
 							agreements +=1
 		return shared_annotations,y1,y2,n1,n2,agreements
 	def count_comp_agreements(self):
-		##Number of shared annotations by u1 and u2
+		#Number of shared annotations by u1 and u2
 		shared_annotations = 0
-		### Number of times none selected by u1 in comp task
+		# Number of times none selected by u1 in comp task
 		comp_none_selections1 = 0
-		### Number of times none selected by u2 in comp task
+		# Number of times none selected by u2 in comp task
 		comp_none_selections2 = 0
 
 
@@ -780,8 +765,8 @@ class Agreements(Data):
 
 				expected_none_agreement = float(u1_p_none * u2_p_none)
 
-				## As there are a different number of distractors in each scene and the distractors change
-				## We make an approximation here and work out there overall chance of agreeing on an object
+				# As there are a different number of distractors in each scene and the distractors change
+				# We make an approximation here and work out there overall chance of agreeing on an object
 			
 				
 				average_probability_agree_on_object = float(shared_annotations * (1-u1_p_none) * (1-u2_p_none))/number_of_compared_figures
@@ -829,16 +814,16 @@ class Agreements(Data):
 
 		
 if __name__ == '__main__':
-	#### Begin by loading users  
+	# Begin by loading users  
 	userdata = UserData()
 
 
 
 
-	## Output user list
+	# Output user list
 	userdata.output_clean_user_list()
 
-	#### Load all csv
+	# Load all csv
 	d= Data(userdata)
 	
 
@@ -846,26 +831,25 @@ if __name__ == '__main__':
 	# d.print_non_users()
 	# d.output_clean_annotation_list()
 
-	###### 
+	# 
 	# Load and process semantic annotations
 	semantic_data = SemanticData(userdata)
 
 
 
-	### Output semantic csv
+	# Output semantic csv
 	semantic_data.output_clean_annotation_list()
 
 	semantic_data.output_statistics()
 
 	semantic_data.write_user_agreements()
-	###########
-	######## 
+	
 	#Load and process comparative annotations
 	comparative_data = ComparativeData(userdata)
 
 
 
-	### output comparative csv
+	# output comparative csv
 
 	comparative_data.output_clean_annotation_list()
 

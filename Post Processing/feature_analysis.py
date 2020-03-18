@@ -1,60 +1,47 @@
 # First run compile_instances.py
 
 #Input: Configuration selection info from compile_instances. Constraints from Comp task
-## Looks at how features relate to categorisation and likelihood of selection
-## Outputs prototypes and plots
-## Can be run after compile_instances
+# Looks at how features relate to categorisation and likelihood of selection
+# Outputs prototypes and plots
+# Can be run after compile_instances
 
+# Standard imports
 import csv
 import pandas as pd  
-import numpy as np 
-import matplotlib as mpl
-
-import matplotlib.pyplot as plt
-
-
-
-
-## Import validation modules
-from sklearn.model_selection import train_test_split, KFold
-from sklearn.preprocessing import PolynomialFeatures
-
-from sklearn.linear_model import LinearRegression, TheilSenRegressor
-
-
-from scipy.special import comb
+import numpy as np
 import math
 
+# Modules for plotting
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
+# Modules for testing and model making
+from sklearn.model_selection import train_test_split, KFold
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression, TheilSenRegressor
+from scipy.special import comb
 
-
-from relationship import *
-from preprocess_features import *  
+# Local module imports
+from relationship import Relationship
+from preprocess_features import Features
 from compile_instances import InstanceCollection
 from compile_instances import ComparativeCollection
-from classes import *
+from classes import Constraint
 from process_data import BasicInfo
 
 
-	
-sv_filetag = 'semantic'
-comp_filetag = 'comparative'
-
-
-
+# Useful global variables
+sv_filetag = 'semantic' # Tag for sv task files
+comp_filetag = 'comparative'# Tag for comp task files
 preposition_list = BasicInfo.preposition_list
-## Feature keys are all features
-feature_keys = Relationship.get_feature_keys()
-
-## keys are feature keys with some features removed e.g. properties of ground
-relation_keys = Relationship.get_relation_keys()
+feature_keys = Relationship.get_feature_keys() # Feature keys are all features
+relation_keys = Relationship.get_relation_keys() # Relation keys are feature keys with some features removed e.g. properties of ground
 print("# of Relation Features = "+ str(len(relation_keys)))
-#To do
-### Need to update filenames and plot/look at comparative graphs
+
 
 
 def convert_index(x,number_of_columns):
-	### Function used to convert index to place in row/columns for plots
+	"""Converts index to place in row/columns for plots"""
 	if x==0 or x ==6 or x == 12:
 		i = 0
 		j=0
@@ -69,13 +56,38 @@ def convert_index(x,number_of_columns):
 	return [i,j]
 
 
+class SemanticMethods():
+	"""Class for reusable methods related to semantic measurements"""
+	def semantic_distance(self,weight_array,x,y,feature_to_remove=None):
+		"""
+		Parameters:
+			weight_array: 1-D Array of feature weights
+			x,y: 1-D arrays. Points to compare
+			feature_to_remove: Feature to remove from consideration
+		Returns:
+			distance: Float representing semantic distance from x to y
+		"""
 
+		if feature_to_remove != None:
+			
+			i = relation_keys.index(feature_to_remove)
+			weight_array[i] = 0
+		
+		point  = np.subtract(x,y) # Subtract arrays point wise
+		
+		point = np.square(point) # Square pointwise
+		
+		summ = np.dot(point,weight_array) # Dot product pointwise by weights
+
+		distance = math.sqrt(summ) # Square root to get distance
+		
+		return distance
 
 
 
 
 class PrepositionModels():
-	### Given training scenes, works out models for individual preposition
+	# Given training scenes, works out models for individual preposition
 	ratio_feature_name = InstanceCollection.ratio_feature_name
 	categorisation_feature_name = InstanceCollection.categorisation_feature_name
 	scene_feature_name = InstanceCollection.scene_feature_name
@@ -89,45 +101,53 @@ class PrepositionModels():
 
 	interval = np.array([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]).reshape(-1,1)
 	def __init__(self,preposition,train_scenes, feature_to_remove = None,polyseme = None):
+		self.train_scenes= train_scenes
 		self.feature_to_remove = feature_to_remove
 		# Given polyseme if being used to model polyseme
 		self.polyseme = polyseme
 
-		## Use pandas dataframes for ease of importing etc..
+		# Use pandas dataframes for ease of importing etc..
 		# Created in compile_instances write_config_ratios()
 		dataset = pd.read_csv('preposition data/semantic-ratio-list' + preposition + ' .csv')
 		
 		# self.name = name
 		self.preposition = preposition
-		## Use pandas dataframes for ease of importing etc..
+		# Use pandas dataframes for ease of importing etc..
 		# Created in compile_instances write_config_ratios()
-		## Row is created in dataset only if the configuration was tested
+		# Row is created in dataset only if the configuration was tested
 		# Set of values with selection information
 		self.dataset = dataset
+		self.possible_instances_dataset = self.dataset.copy()
 		if self.polyseme != None:
 			# # Remove none polyseme preposition instances from dataset
 			indexes_to_drop =[]
+			indexes_to_drop_pid = []
 			for index, row in self.dataset.iterrows():
 				if polyseme.potential_instance(row[self.scene_feature_name],row[self.fig_feature_name],row[self.ground_feature_name]):
 					pass
 				elif row[self.categorisation_feature_name] ==0:
-					pass
+					indexes_to_drop_pid.append(index)
+
 				else:
 					indexes_to_drop.append(index)
+					indexes_to_drop_pid.append(index)
 
-
+			# Dataset to train polyseme on (configurations not yet removed for training)
 			self.dataset.drop(self.dataset.index[indexes_to_drop], inplace=True )
-			
+			# Dataset of configurations that fit polyseme conditions
+			self.possible_instances_dataset.drop(self.possible_instances_dataset.index[indexes_to_drop_pid], inplace=True )
+			# Remove non-training instances
+			self.train_possible_intances_dataset = self.remove_nontrainingscenes(self.possible_instances_dataset)#self.possible_instances_dataset[(self.possible_instances_dataset.iloc[:,self.scene_index].isin(train_scenes))]
 			
 			
 		
 		# Remove rows from above where not training scene
-		self.train_dataset = self.dataset[(self.dataset.iloc[:,self.scene_index].isin(train_scenes))]
+		self.train_dataset = self.remove_nontrainingscenes(self.dataset)#[(self.dataset.iloc[:,self.scene_index].isin(train_scenes))]
 		
-		## Remove selection info columns and names to only have features
+		# Remove selection info columns and names to only have features
 		self.allFeatures = self.remove_nonfeatures(self.train_dataset)
 		
-		## Feature dataframe for regressions etc.
+		# Feature dataframe for regressions etc.
 		self.feature_dataframe = self.remove_nonrelations(self.allFeatures)
 		
 		
@@ -140,26 +160,29 @@ class PrepositionModels():
 
 		# Remove rows from above where not a preposition instance
 		self.aff_dataset = self.train_dataset[(self.train_dataset.iloc[:,self.category_index]==1)]
-		### Remove seleciton info columns to only have features
+		
+		# Remove seleciton info columns to only have features
 		self.affFeatures = self.remove_nonfeatures(self.aff_dataset)
+		# Remove seleciton info columns to only have features
+		self.affRelations = self.remove_nonrelations(self.affFeatures)
 		# Only instances are the best examples -- typical instances
 		ratio_max = self.train_dataset[self.ratio_feature_name].max()
 		self.typical_dataset = self.train_dataset[(self.train_dataset.iloc[:,self.ratio_index]==ratio_max)]
-		### Remove seleciton info columns to only have features
+		# Remove seleciton info columns to only have features
 		self.typical_features = self.remove_nonfeatures(self.typical_dataset)
 		# Ratio dataset with non-instances - nobody selected the preposition
 		self.neg_dataset = self.train_dataset[(self.train_dataset.iloc[:,self.category_index]==0)]
-		### Remove seleciton info columns to only have features
+		# Remove seleciton info columns to only have features
 		self.neg_features = self.remove_nonfeatures(self.neg_dataset)
 
 
-		## prototype calculated using regression. Stored as array
+		# prototype calculated using regression. Stored as array
 		self.prototype = []
 		
 
 		self.prototype_csv = "model info/prototypes/"+preposition+".csv"
 
-		## regression weights calculated by linear regression. stored as array and dataframe
+		# regression weights calculated by linear regression. stored as array and dataframe
 		self.poly_regression_model = None
 		self.linear_regression_model = None
 		
@@ -167,30 +190,32 @@ class PrepositionModels():
 		self.regression_weight_csv = "model info/regression weights/"+preposition+".csv"
 		self.all_features_regression_weight_csv = "model info/regression weights/allfeatures_"+preposition+".csv"
 
-		## Stores model predictions for later plotting
+		# Stores model predictions for later plotting
 		self.interval_predictions = dict()
 
 		
 
-		## barycentre_prototype . stored as array
+		# barycentre_prototype . stored as array
 		self.barycentre_prototype = None
 		
 		self.barycentre_csv = "model info/barycentre model/"+preposition+"-prototype.csv"
 
-		## exemplar_mean . stored as array
+		# exemplar_mean . stored as array
 		self.exemplar_mean = None
 
 		self.exemplar_csv = "model info/exemplar/"+preposition+"-exemplar_means.csv"
 		
-		
+	def remove_nontrainingscenes(self,d):
+		copy_d = d.copy()
+		return copy_d[(copy_d.iloc[:,self.scene_index].isin(self.train_scenes))]
 	def remove_nonfeatures(self,d):
-		## Remove seleciton info columns and names to only have features
+		# Remove seleciton info columns and names to only have features
 		return d.drop(["Scene","Figure","Ground",self.ratio_feature_name,self.categorisation_feature_name],axis=1)
 	def remove_nonrelations(self,d):
-		## Remove features which are for identifying polysemes
+		# Remove features which are for identifying polysemes
 		new_d = d.drop(Relationship.context_features,axis=1)
 		if self.feature_to_remove != None:
-			## Remove features to remove
+			# Remove features to remove
 			new_d = new_d.drop([self.feature_to_remove],axis=1)
 		return new_d
 
@@ -199,7 +224,7 @@ class PrepositionModels():
 		# y_pred =  predicted Y values on unit interval
 		# Y =  feature value
 		index = self.relation_keys.index(feature)
-		## Get position to  display, by index
+		# Get position to  display, by index
 		l = convert_index(index,no_columns)
 		ax1 = axes[l[0],l[1]]
 		
@@ -210,7 +235,7 @@ class PrepositionModels():
 
 		ax1.set_xlabel("Selection Ratio")
 		ylabel = feature
-		## Rename some features
+		# Rename some features
 		if ylabel == "contact_proportion":
 			ylabel = "contact"
 		if ylabel == "bbox_overlap_proportion":
@@ -302,7 +327,7 @@ class PrepositionModels():
 		return filename
 		
 	def plot_models(self):
-		## Plots simple linear regressions used to find prototypes
+		# Plots simple linear regressions used to find prototypes
 		no_rows = 3
 		no_columns = 2
 		
@@ -318,32 +343,32 @@ class PrepositionModels():
 			
 			r= plot_count % (no_columns * no_rows)
 			
-			## Reshape data first
+			# Reshape data first
 			Y = self.train_dataset[feature].values.reshape(-1,1)
 			X = self.train_dataset[self.ratio_feature_name].values.reshape(-1,1)
-			## Get prediction of all points on interval
+			# Get prediction of all points on interval
 			y_pred = self.interval_predictions[feature]
 
 			self.plot_features_ratio(no_columns,axes,feature,X,y_pred,Y)
 
 			filename = self.get_plot_filename(file_no)
 			
-			## When the figure is full of plots, save figure
+			# When the figure is full of plots, save figure
 			if r == 0:
 				
 				plt.savefig(filename, bbox_inches='tight')
 				file_no +=1
 
-				## Clear plots for new figure
+				# Clear plots for new figure
 				fig, axes = plt.subplots(nrows=no_rows, ncols=no_columns, sharex=False, sharey=False)
 				fig.tight_layout()
 				fig.canvas.set_window_title('Ratio vs. Feature')
-		## Save remaining plots
+		# Save remaining plots
 		filename = self.get_plot_filename(file_no)
 		plt.savefig(filename, bbox_inches='tight')
 	def work_out_feature_prototype(self,feature):
-		## First predict feature value given selection ratio of 1
-		## Reshape data first
+		# First predict feature value given selection ratio of 1
+		# Reshape data first
 		X = self.train_dataset[self.ratio_feature_name].values.reshape(-1,1)
 		Y = self.train_dataset[feature].values.reshape(-1,1)
 		
@@ -365,8 +390,8 @@ class PrepositionModels():
 		return pro_value
 
 	def work_out_linear_regression_model(self):
-		## Next get gradient when feature predicts selection ratio
-		## Reshape data first
+		# Next get gradient when feature predicts selection ratio
+		# Reshape data first
 		
 		X = self.feature_dataframe
 		Y = self.train_dataset[self.ratio_feature_name].values.reshape(-1,1)
@@ -406,7 +431,7 @@ class PrepositionModels():
 		
 		for feature in self.relation_keys:
 			if self.feature_to_remove != None:
-				## If the feature is removed, append 0 instead
+				# If the feature is removed, append 0 instead
 				if feature == self.feature_to_remove:
 					weights.append(0)
 				else:
@@ -423,16 +448,16 @@ class PrepositionModels():
 		
 
 	def work_out_prototype_model(self):
-		## Work out linear regression on each feature by comparing to the ratio of times selected
+		# Work out linear regression on each feature by comparing to the ratio of times selected
 		
-		### This step gives prototypes for later steps, which are saved to prototypes folder
+		# This step gives prototypes for later steps, which are saved to prototypes folder
 		
 		
 		prototype = []
 		
 		
 		for feature in self.relation_keys:
-			## First predict feature value given selection ratio of 1
+			# First predict feature value given selection ratio of 1
 			pro_value = self.work_out_feature_prototype(feature)
 			
 			# Add to dictionary
@@ -448,8 +473,8 @@ class PrepositionModels():
 		return self.prototype
 
 	def work_out_polynomial_regression_model(self,n):
-		## Next get gradient when feature predicts selection ratio
-		## Reshape data first
+		# Next get gradient when feature predicts selection ratio
+		# Reshape data first
 		X = self.feature_dataframe
 		Y = self.train_dataset[self.ratio_feature_name].values.reshape(-1,1)
 		
@@ -469,7 +494,7 @@ class PrepositionModels():
 
 		return model2
 	def output_models(self):
-		## Only called once when training scenes are all scenes, so these are the best model parameters
+		# Only called once when training scenes are all scenes, so these are the best model parameters
 		wf = pd.DataFrame(self.regression_weights, self.relation_keys)
 		
 		wf.to_csv(self.regression_weight_csv)
@@ -488,7 +513,7 @@ class PrepositionModels():
 		exf.to_csv(self.exemplar_csv)
 
 	def all_feature_weights(self):
-		## Calculates regression weights for all features
+		# Calculates regression weights for all features
 		weights = []
 		
 		for feature in feature_keys:		
@@ -544,18 +569,18 @@ class PrepositionModels():
 class Model:
 	
 
-	## Puts together preposition models and has various functions for testing
+	# Puts together preposition models and has various functions for testing
 	def __init__(self,name,train_scenes,test_scenes,weight_dict=None,constraint_dict= None,feature_to_remove = None,prototype_dict = None,regression_model_dict = None, regression_dimension = None):
 		
 		self.name = name
 		# Prepositions to test
 		self.test_prepositions = preposition_list
-		## Dictionary containing constraints to satisfy
+		# Dictionary containing constraints to satisfy
 		self.constraint_dict = constraint_dict
-		## A feature to remove from models to see how results change
+		# A feature to remove from models to see how results change
 		self.feature_to_remove = feature_to_remove
-		## Input dictionarys of prototype and feature weights for each preposition, stored as arrays
-		## prototype_dict = None => exemplar model
+		# Input dictionarys of prototype and feature weights for each preposition, stored as arrays
+		# prototype_dict = None => exemplar model
 		self.prototype_dict = prototype_dict
 		self.weight_dict = weight_dict
 		self.test_scenes = test_scenes
@@ -568,34 +593,20 @@ class Model:
 		
 	
 	def semantic_similarity(self,weight_array,x,y):
+		sem_methods = SemanticMethods()
 		#Similarity of x to y
 		# x y are 1d arrays
-		## Works out the weighted Euclidean distance of x and y and then negative exponential
-		## Weights are given in class
+		# Works out the weighted Euclidean distance of x and y and then negative exponential
+		# Weights are given in class
 		
-		
-		
-		
-		## Edit values to calculate without considering feature
-		if self.feature_to_remove != None:
-			
-			i = relation_keys.index(self.feature_to_remove)
-			weight_array[i] = 0
-		# Subtract arrays point wise 
-		point  = np.subtract(x,y)
-		# Square pointwise
-		point = np.square(point)
-		# Dot product pointwise by weights
-		summ = np.dot(point,weight_array)
-
 		# Square root to get distance
-		distance = math.sqrt(summ)
-		## Get typicality
+		distance = sem_methods.semantic_distance(weight_array,x,y,feature_to_remove=self.feature_to_remove)
+		# Get typicality
 		out = math.exp(-distance)
 		return out
 
 	def get_typicality(self,preposition,point):
-		## Works out the typicality of the given point (1D array)
+		# Works out the typicality of the given point (1D array)
 		# Point taken as input is from one side of constraint inequality
 		if self.regression_model_dict != None:
 			
@@ -620,8 +631,8 @@ class Model:
 			
 			return out
 		if self.prototype_dict == None:
-			## When no prototype_dict is given calculate typicality using exemplar model
-			## Load exemplars and non instancesfor preposition and remove context features
+			# When no prototype_dict is given calculate typicality using exemplar model
+			# Load exemplars and non instancesfor preposition and remove context features
 			p = PrepositionModels(preposition,self.train_scenes)
 
 			
@@ -632,16 +643,16 @@ class Model:
 			counter = 0
 			semantic_similarity_sum = 0
 			
-			## Iterate over rows in exemplar dataframe
+			# Iterate over rows in exemplar dataframe
 			for index, row in exemplars.iterrows():
 				
-				## Get row values
+				# Get row values
 				e = row.values
 				
-				## Convert values to np array
+				# Convert values to np array
 				e =np.array(e)
 				counter += 1
-				## Calculate similarity of current point to exemplar
+				# Calculate similarity of current point to exemplar
 				weight_array = self.weight_dict[preposition]
 				semantic_similarity_sum += self.semantic_similarity(weight_array,point,e)
 			
@@ -656,8 +667,8 @@ class Model:
 
 
 	def get_score(self):
-		### Calculates scores on all constraints for particular model
-		### Prototype dict is a dictionary of prototypes (1D arrays) for each preposition
+		# Calculates scores on all constraints for particular model
+		# Prototype dict is a dictionary of prototypes (1D arrays) for each preposition
 		
 		scores = [] # Scores for each preposition to be averaged later
 		weight_totals = [] # Total constraint weights for each preposition
@@ -714,7 +725,7 @@ class Model:
 
 	
 
-	## First score based on number of satisfied constraints
+	# First score based on number of satisfied constraints
 	def unweighted_score(self,preposition,Constraints):
 		# Calculates how well W and P satisfy the constraints, NOT accounting for constraint weight
 		# W and P are 1D arrays
@@ -746,7 +757,7 @@ class Model:
 			# 	if len(self.test_scenes) == len(self.train_scenes):
 			# 		if preposition == "under" and self.name == "Our Prototype":
 						
-			# 			print("#########")
+			# 			print("#")
 			# 			print(c.scene)
 			# 			print("ground:" + c.ground)
 			# 			print("Correct Figure: " + c.f1)
@@ -773,10 +784,10 @@ class GenerateModels():
 	best_guess_model_name = "Best Guess"
 	simple_model_name ="Simple"
 
-	## List of all model names
+	# List of all model names
 	model_name_list = [our_model_name,exemplar_model_name,cs_model_name,best_guess_model_name,simple_model_name,proximity_model_name]
 	
-	## List of model names except ours
+	# List of model names except ours
 	other_name_list = [exemplar_model_name,cs_model_name,best_guess_model_name,simple_model_name,proximity_model_name]
 	
 	#Generating models to test
@@ -797,7 +808,7 @@ class GenerateModels():
 		self.feature_to_remove = feature_to_remove
 
 
-		## Get data models
+		# Get data models
 		for p in preposition_list:
 			M = PrepositionModels(p,self.train_scenes,feature_to_remove = self.feature_to_remove)
 			M.work_out_models()
@@ -828,7 +839,7 @@ class GenerateModels():
 		self.models = models
 	
 	def get_proximity_model(self):
-		## 
+		# 
 		pro_dict = dict()
 		weight_dict = dict()
 		
@@ -855,7 +866,7 @@ class GenerateModels():
 		return m
 
 	def get_best_guess_model(self):
-		## best guess model uses intuition
+		# best guess model uses intuition
 		pro_dict = dict()
 		weight_dict = dict()
 
@@ -991,7 +1002,7 @@ class GenerateModels():
 		
 
 	def get_simple_model(self):
-		## Simple model uses simple geometric features which are equally weighted
+		# Simple model uses simple geometric features which are equally weighted
 		
 		pro_dict = dict()
 		weight_dict = dict()
@@ -1153,6 +1164,7 @@ class MultipleRuns:
 	 		self.average_plot_pdf = self.scores_plots_folder +"/average" + self.file_tag+".pdf"
 			self.average_csv = self.scores_tables_folder + "/averagemodel scores "+self.file_tag+".csv"
 			self.comparison_csv = self.scores_tables_folder + "/repeatedcomparisons "+self.file_tag+".csv"
+			
 		if self.features_to_test != None:
 			self.feature_removed_average_csv = dict()
 			for feature in self.features_to_test:
@@ -1173,19 +1185,28 @@ class MultipleRuns:
 	 	self.scenes_used_for_training = []
 	 	
 	def prepare_comparison_dicts(self):
- 		## Counts to compare models
+		# Dealing with these values could be improved..
+ 		# Counts to compare models
+ 		self.count_cluster_model_wins = dict()
+ 		self.count_other_model_beats_cluster = dict()
+ 		# Counts to compare models
  		self.count_our_model_wins = dict()
  		self.count_other_model_wins = dict()
- 		## Counts to compare features
+ 		# Counts to compare features
  		self.count_without_feature_better = dict()
  		self.count_with_feature_better = dict()
  		
- 		# Prepare dict
+ 		# Prepare dicts
 		for other_model in self.Generate_Models_all_scenes.other_name_list:
 			
 			self.count_our_model_wins[other_model] = 0
 			self.count_other_model_wins[other_model] = 0
- 	
+		# To compare kmeans cluster model
+ 		if hasattr(self.Generate_Models_all_scenes,"cluster_model_name"):
+	 		for other_model in self.Generate_Models_all_scenes.model_name_list:
+	 			if other_model != self.Generate_Models_all_scenes.cluster_model_name:
+		 			self.count_cluster_model_wins[other_model] = 0
+					self.count_other_model_beats_cluster[other_model] = 0
 	def generate_models(self,train_scenes,test_scenes):
 		if self.features_to_test != None:
 			# Test model with no removed features
@@ -1216,17 +1237,17 @@ class MultipleRuns:
 		dataset = t.score_dataframe
 		
 
-		## Add scores to total
+		# Add scores to total
 		if "all_features" in self.dataframe_dict:
 			self.dataframe_dict["all_features"] = self.dataframe_dict["all_features"].add(dataset)
 			
 		else:
 			self.dataframe_dict["all_features"] = dataset
 
-		## Get our score from dataframe
+		# Get our score from dataframe
 		our_score = dataset.at["Overall",generate_models.our_model_name]
 
-		## Compare Models
+		# Compare Models
 		if self.compare != None:
 			for other_model in generate_models.other_name_list:
 				
@@ -1238,7 +1259,18 @@ class MultipleRuns:
 		
 				if other_score > our_score:
 					self.count_other_model_wins[other_model] +=1
-			
+			if hasattr(generate_models,"cluster_model_name"):
+				k_means_score = dataset.at["Overall",generate_models.cluster_model_name]
+				for other_model in generate_models.model_name_list:
+					if other_model != self.Generate_Models_all_scenes.cluster_model_name:
+						# Get score
+						other_score = dataset.at["Overall",other_model]
+						# Update counts
+						if k_means_score > other_score:
+							self.count_cluster_model_wins[other_model] += 1
+					
+						if other_score > k_means_score:
+							self.count_other_model_beats_cluster[other_model] +=1
 
 		
 		# Add scores to dataframe
@@ -1275,7 +1307,7 @@ class MultipleRuns:
  		if self.test_size != None:
 			train_scenes , test_scenes = train_test_split(self.scene_list,test_size=self.test_size)
 
-			## Update scene lists
+			# Update scene lists
 			for sc in train_scenes:
 				if sc not in self.scenes_used_for_training:
 					self.scenes_used_for_training.append(sc)
@@ -1324,12 +1356,12 @@ class MultipleRuns:
 		
 	def validation(self):
  	
-	 	## Perform Repeated random sub-sampling validation
-	 	## Either using k-fold or standard method
+	 	# Perform Repeated random sub-sampling validation
+	 	# Either using k-fold or standard method
 	 	for i in range(self.number_runs):
 	 		self.run_count = i
 
-			print("Run Number:" + str(i))
+			print("Run Number:" + str(i+1))
 	 		
 	 		if self.test_size != None:
 	 			split = self.get_validation_scene_split()
@@ -1337,12 +1369,13 @@ class MultipleRuns:
 	 			test_scenes =split[1]
 	 			self.single_validation_test(train_scenes,test_scenes)
 	 		if self.k != None:
-		 		## This handles the case where test_scenes do not produce any constraints
+		 		# This handles the case where test_scenes do not produce any constraints
 		 		while True:
 		 			folds = self.get_validation_scene_split()
 
 		 			if self.folds_check(folds):
 		 				for f in folds:
+		 					print("Fold Number:" + str(folds.index(f)))
 				 			test_scenes = f
 				 			train_scenes = []
 				 			for s in self.scene_list:
@@ -1351,7 +1384,8 @@ class MultipleRuns:
 				 			self.single_validation_test(train_scenes,test_scenes)
 			 			break
 			 		else:
-			 			print("Fold with no constraints to test. Retrying...")
+			 			pass
+			 			# print("Fold with no constraints to test. Retrying...")
 			 		
 		 		
 		# First update value of number of runs to account for folds
@@ -1359,7 +1393,7 @@ class MultipleRuns:
 			self.total_number_runs = self.number_runs * self.k
 		else:
 			self.total_number_runs = self.number_runs
-		## Output comparison of models and p-value
+		# Output comparison of models and p-value
 		if self.compare != None:
 			other_model_p_value = dict()
 			for other_model in self.Generate_Models_all_scenes.other_name_list:
@@ -1367,14 +1401,28 @@ class MultipleRuns:
 				p_value = calculate_p_value(self.total_number_runs,self.count_our_model_wins[other_model])
 				other_model_p_value[other_model] = p_value
 
-			### Create dataframes to output
+			# Create dataframes to output
 			p_value_df = pd.DataFrame(other_model_p_value,["p_value"])
 			our_model_win_count = pd.DataFrame(self.count_our_model_wins,["Our model wins"])
 			other_model_win_count = pd.DataFrame(self.count_other_model_wins,["Other model wins"])
-			### Append dataframes into one
+			# Append dataframes into one
 			new_df = p_value_df.append([our_model_win_count,other_model_win_count], sort=False)
 			self.comparison_df = new_df
 			
+			kmeans_other_model_p_value = dict()
+			if hasattr(self.Generate_Models_all_scenes,"cluster_model_name"):
+				
+				for other_model in self.Generate_Models_all_scenes.model_name_list:
+					if other_model != self.Generate_Models_all_scenes.cluster_model_name:
+						p_value = calculate_p_value(self.total_number_runs,self.count_cluster_model_wins[other_model])
+						kmeans_other_model_p_value[other_model] = p_value
+			# Create dataframes to output
+			km_p_value_df = pd.DataFrame(kmeans_other_model_p_value,["p_value"])
+			cluster_model_win_count = pd.DataFrame(self.count_cluster_model_wins,["Cluster model wins"])
+			km_other_model_win_count = pd.DataFrame(self.count_other_model_beats_cluster,["Other model wins"])
+			# Append dataframes into one
+			km_new_df = km_p_value_df.append([cluster_model_win_count,km_other_model_win_count], sort=False)
+			self.km_comparison_df = km_new_df
 
 		if self.features_to_test != None:
 			feature_p_value = dict()
@@ -1387,11 +1435,11 @@ class MultipleRuns:
 					with_feature_better[feature + ":" + p] = self.count_with_feature_better[feature][p]
 					without_feature_better[feature + ":" + p] = self.count_without_feature_better[feature][p]
 
-			### Create dataframes to output
+			# Create dataframes to output
 			p_value_df = pd.DataFrame(feature_p_value,["p_value"])
 			win_count = pd.DataFrame(with_feature_better,["With feature wins"])
 			lose_count = pd.DataFrame(without_feature_better,["Without feature wins"])
-			### Append dataframes into one
+			# Append dataframes into one
 			new_df = p_value_df.append([win_count,lose_count], sort=False)
 			self.feature_comparison_df = new_df
 			
@@ -1429,6 +1477,7 @@ class MultipleRuns:
 
 			# Output to csv
 			self.comparison_df.to_csv(self.comparison_csv)
+			self.km_comparison_df.to_csv(self.km_comparison_csv)
 		if self.features_to_test != None:
 
 			# Output to csv
@@ -1582,7 +1631,7 @@ def plot_feature_csv(k):
 
 def main(constraint_dict):
 	
-	# plot_preposition_graphs()
+	plot_preposition_graphs()
 	# Edit plot settings
 	mpl.rcParams['font.size'] = 40
 	mpl.rcParams['legend.fontsize'] = 37
