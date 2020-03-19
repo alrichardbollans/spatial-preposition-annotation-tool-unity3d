@@ -96,6 +96,7 @@ class BasicInfo:
 
 
 class Relationship:
+	"""class which is used to read feature values"""
 	# Lots of this could be done with pandas. Doh :/
 
 	

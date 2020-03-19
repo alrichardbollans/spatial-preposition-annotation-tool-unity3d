@@ -31,9 +31,6 @@ Can be run after compile_instances
 ## classes.py
 Collection of classes used in above
 
-## relationship.py
-Contains Relationship class which is used to read feature values
-
 # Folders
 
 ## Collected Data
