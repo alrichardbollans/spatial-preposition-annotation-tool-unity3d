@@ -6,7 +6,6 @@ import pandas as pd
 import math
 import ast
 
-from relationship import get_project_directory, Relationship
 
 preposition_list=['in', 'inside', 'against','on','on top of', 'under',  'below',  'over','above']
 
@@ -25,6 +24,209 @@ def remove_dot_unity(scene_name):
 		clean_name = scene_name[:scene_name.find(".unity")]
 	
 	return clean_name
+def get_project_directory():
+		'''Returns path to base unity project folder'''
+		unity_folder_name = "Unity Projects"
+		repo_name = "spatial-preposition-annotation-tool-unity3d"
+		current_directory = os.getcwd()
+		user_home = os.path.expanduser("~")
+
+		if os.path.basename(current_directory) == repo_name:
+			return current_directory
+		elif os.path.basename(os.path.dirname(current_directory)) == repo_name:
+			return os.path.dirname(current_directory)
+		else:
+			return user_home + '/Dropbox/' + unity_folder_name + "/" + repo_name
+class BasicInfo:
+	# Class containing basic info related to data collection
+
+	
+
+	#paths and filenames
+	project_folder_name = "Unity3D Annotation Environment"
+
+	feature_data_folder_name = "Scene Data"
+	
+	project_path = get_project_directory()
+
+	feature_data_folder_path = project_path + "/"+project_folder_name+ "/"+feature_data_folder_name;
+
+
+	feature_output_csv = "feature values/standardised_values.csv" # Path for outputting feature values
+	human_readable_feature_output_csv = "feature values/human_readable_values.csv" # Path for outputting human-readable feature values
+	
+	data_folder_name = "collected data"
+	stats_folder_name = "stats"
+	sem_annotations_name  = "clean semantic annotation list.csv"
+	comp_annotations_name  = "clean comparative annotation list.csv"
+
+	
+
+	raw_user_list = "userlist.csv"
+
+	raw_annotation_list = "annotationlist.csv"
+
+	# Prepositions Used
+	preposition_list=['in', 'inside', 'against','on','on top of', 'under',  'below',  'over','above'] # list of prepositions which exist in the data
+
+	semantic_preposition_list = preposition_list
+
+	comparative_preposition_list = preposition_list
+
+
+	# Task abbreviations
+
+	semantic_abbreviations = ["sv","pq"]
+
+	comparative_abbreviations = ["comp"]
+
+	# Dictionary giving the index of each value in annotations
+
+	a_index = {'id':0,'userid':1,'time':2,'figure':3,'ground':4,'task':5,'scene':6,'preposition':7,'prepositions':8,'cam_rot':9,'cam_loc':10}
+	@staticmethod
+	def get_scene_list():
+		scene_list = []
+		
+		s= SceneInfo()
+		for scene in s.scene_list:
+			scene_list.append(scene.name)
+		return scene_list
+	
+	
+
+
+class Relationship:
+	# Lots of this could be done with pandas. Doh :/
+
+	
+	property_path = BasicInfo.feature_output_csv
+	output_path = property_path
+
+	# additional_features = ["location_control"]
+	# Location control is the average of the two more basic measures
+
+	
+	# Ground properties which we think distinguish polysemes
+	context_features = ["ground_lightsource","ground_container","ground_verticality"]
+	def __init__(self,scene,figure,ground):
+		self.scene = scene
+		self.figure = figure
+		self.ground = ground
+		# Dictionary of features and values
+		self.set_of_features = {}
+		# Names of all features given by load_all
+		self.feature_keys = []
+		# Names of all features given by load_all, without above context features
+		self.relation_keys = []
+
+	
+	@staticmethod
+	def load_all(path = None):
+		# Loads a list of all configurations and feature values, with some features removed
+		# Path variable optional
+		if path == None:
+			path = Relationship.property_path
+		with open(path, "r") as f:
+			reader = csv.reader(f)     # create a 'csv reader' from the file object
+			geom_relations = list( reader )  # create a list from the reader
+		
+		return geom_relations
+		
+
+	@staticmethod
+	def get_feature_keys():
+		feature_keys = []
+		
+		geom_relations = Relationship.load_all()
+		for title in geom_relations[0][3:]:
+			feature_keys.append(title)
+		
+		return feature_keys
+
+	@staticmethod
+	def get_relation_keys():
+		relation_keys = []
+		
+		geom_relations = Relationship.load_all()
+		for title in geom_relations[0][3:]:
+			if title not in Relationship.context_features:
+				relation_keys.append(title)
+		
+		return relation_keys
+
+	def load_from_csv(self,path= None):
+		
+		
+				
+		if path != None:
+			geom_relations = Relationship.load_all(path)
+		else:
+			geom_relations = Relationship.load_all()
+
+		for title in geom_relations[0][3:]:
+			self.feature_keys.append(title)
+		for relation in geom_relations:
+			if self.scene == relation[0] and self.figure == relation[1] and self.ground == relation[2]:
+				# print(geom_relations.index(relation))
+				for r in self.feature_keys:
+					if relation[self.feature_keys.index(r)+3] != '?':
+						self.set_of_features[r] =float(relation[self.feature_keys.index(r)+3])
+					else:
+						self.set_of_features[r] = '?'
+		# # Add and calculate additional features
+		# self.feature_keys.append("location_control")
+		# self.set_of_features["location_control"] = (self.set_of_features["location_control_x"] + self.set_of_features["location_control_z"])/2
+		
+
+	def save_to_csv(self):
+		
+
+		row = [self.scene,self.figure,self.ground]
+
+		for r in feature_keys:
+			if r in self.set_of_features:
+				row.append(self.set_of_features[r])
+			else:
+				row.append('?')
+				self.set_of_features[r] = '?'
+		
+		with open(Relationship.output_path) as incsvfile:
+			read = csv.reader(incsvfile) #.readlines())
+			reader = list(read)
+
+			if any(self.scene == line[0] and self.figure == line[1] and self.ground == line[2] for line in reader):
+				try:
+					with open(Relationship.output_path, "w") as csvfile:
+						outputwriter = csv.writer(csvfile)
+						titles = ['scene','figure','ground'] + feature_keys
+						outputwriter.writerow(titles)
+						for line in reader[:]:
+							if 'scene' not in line:
+								if self.scene == line[0] and self.figure == line[1] and self.ground == line[2]:
+									# Must ofset by 3 here due to each row beginning with scene and object names
+									for x in range(0,len(feature_keys)):
+										
+										if self.set_of_features[feature_keys[x]] != '?':
+											if len(line) > x+3:
+												line[x+3] = self.set_of_features[feature_keys[x]]
+											else:
+												line.append(self.set_of_features[feature_keys[x]])
+									
+									
+
+								outputwriter.writerow(line)
+				except Exception as e:
+
+					print('Writing to CSV Failed')
+					print('Figure: ' + self.figure)
+					print('Ground:' + self.ground)
+					print(e)
+			else:
+				with open(Relationship.output_path, "a") as csvfile:
+					outputwriter = csv.writer(csvfile)
+					outputwriter.writerow(row)
+
+
 class Constraint:
 	
 	# A constraint is a linear inequality
@@ -356,10 +558,10 @@ class SceneInfo:
 	# scene_list is a collection of MyScene objects
 	# Relies on creating a csv file in Unity Editor using write_scene_info.cs script
 	# Then also run commonsense properties script to get ground info
-	project_path = get_project_directory()
-	output_path = project_path + "/Data Collection Game"+ "/Scene Data/";
+	
+	output_path = BasicInfo.feature_data_folder_path
 	filename = "scene_info.csv";
-	csv_file = output_path + filename; 
+	csv_file = output_path +"/" + filename; 
 
 	
 	def __init__(self):
@@ -371,7 +573,7 @@ class SceneInfo:
 	def get_list(self):
 		
 
-		with open(self.output_path + self.filename, "r") as f: 
+		with open(self.csv_file, "r") as f: 
 			reader = csv.reader(f)     
 			datalist = list( reader )
 		return datalist

@@ -5,28 +5,15 @@
 import pandas as pd
 import os
 
+from classes import BasicInfo
 
-def get_project_directory():
-	unity_folder_name = "Unity Projects"
 
-	current_directory = os.getcwd()
-	user_home = os.path.expanduser("~")
-
-	if os.path.basename(current_directory) == unity_folder_name:
-		return current_directory
-	elif os.path.basename(os.path.dirname(current_directory)) == unity_folder_name:
-		return os.path.dirname(current_directory)
-	else:
-		return user_home + '/Dropbox/' + unity_folder_name
 
 class Features:
 	# Get path for calculated features
-	project_path = get_project_directory()
-	project_folder_name = "Data Collection Game"
-	feature_data_folder_name = "Scene Data"
-	property_path = project_path +"/"+ project_folder_name + "/" + feature_data_folder_name +"/relations.csv"
-	output_path = "feature values/standardised_values.csv"
-	human_readable_path = "feature values/human_readable_values.csv"
+	property_path = BasicInfo.feature_data_folder_path +"/relations.csv"
+	output_path = BasicInfo.feature_output_csv
+	human_readable_path = BasicInfo.human_readable_feature_output_csv
 	
 	# Features given in relation.csv that aren't needed for analysis
 	features_to_remove = ["size_ratio","horizontal_distance_normalized","shortest_distance_normalized","location_control_-x","location_control_-z","location_control_x","location_control_z","figure_volume","ground_volume","horizontal_projection_overlap_proportion"]

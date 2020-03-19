@@ -22,12 +22,11 @@ from sklearn.linear_model import LinearRegression, TheilSenRegressor
 from scipy.special import comb
 
 # Local module imports
-from relationship import Relationship
 from preprocess_features import Features
 from compile_instances import InstanceCollection
 from compile_instances import ComparativeCollection
-from classes import Constraint
-from process_data import BasicInfo
+from classes import Constraint, Relationship, BasicInfo
+
 
 
 # Useful global variables

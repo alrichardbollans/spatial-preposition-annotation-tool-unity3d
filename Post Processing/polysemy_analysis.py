@@ -12,8 +12,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
 from feature_analysis import Model, Features, MultipleRuns
-from classes import Constraint
-from process_data import BasicInfo
+from classes import Constraint, BasicInfo
 
 
 all_preposition_list = BasicInfo.preposition_list

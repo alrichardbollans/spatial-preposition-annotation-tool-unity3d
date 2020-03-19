@@ -1,4 +1,4 @@
-## Run process_data before this
+## Run process_data and preprocess_features before this
 
 ## Input: cleaned annotation, user lists and list of feature values for configurations (see Relationship class)
 ## Compiles annotation instances, adds feature values to them
@@ -15,10 +15,9 @@ import itertools
 from sklearn.model_selection import train_test_split
 
 
-from process_data import BasicInfo
+
 import preprocess_features
-from relationship import Relationship
-from classes import Instance, Configuration, SceneInfo, CompInstance, Constraint, Comparison
+from classes import Instance, Configuration, SceneInfo, CompInstance, Constraint, Comparison, Relationship, BasicInfo
 
 ### Files are shared with process_data
 project_folder_name = BasicInfo.project_folder_name

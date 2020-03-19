@@ -6,61 +6,17 @@
 import csv
 import itertools
 
-from classes import Comparison
+from classes import Comparison, BasicInfo
 
 
 
 
-class BasicInfo:
-	# Class containing basic info related to data collection
 
-	
-
-	#paths and filenames
-	project_folder_name = "Data Collection Game"
-
-	feature_data_folder_name = "Scene Data"
-	data_folder_name = "collected data"
-	stats_folder_name = "stats"
-	sem_annotations_name  = "clean semantic annotation list.csv"
-	comp_annotations_name  = "clean comparative annotation list.csv"
-
-	
-
-	raw_user_list = "userlist.csv"
-
-	raw_annotation_list = "annotationlist.csv"
-
-	# Prepositions Used
-	preposition_list=['in', 'inside', 'against','on','on top of', 'under',  'below',  'over','above'] # list of prepositions which exist in the data
-
-	semantic_preposition_list = preposition_list
-
-	comparative_preposition_list = preposition_list
-
-
-	# Task abbreviations
-
-	semantic_abbreviations = ["sv","pq"]
-
-	comparative_abbreviations = ["comp"]
-
-	# Dictionary giving the index of each value in annotations
-
-	a_index = {'id':0,'userid':1,'time':2,'figure':3,'ground':4,'task':5,'scene':6,'preposition':7,'prepositions':8,'cam_rot':9,'cam_loc':10}
-	@staticmethod
-	def get_scene_list():
-		scene_list = []
-		
-		s= SceneInfo()
-		for scene in s.scene_list:
-			scene_list.append(scene.name)
-		return scene_list
 
 class User():
 
 	def __init__(self,clean_id,user_id,time,native): #The order of this should be the same as in writeuserdata.php
-		# self.name = name
+		
 		self.user_id = user_id
 		self.time = time
 		
