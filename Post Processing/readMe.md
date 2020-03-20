@@ -14,7 +14,7 @@ Input: features calculated from unity scripts.
 Outputs to feature values folder.
 
 ## compile_instances.py
-Run process_data before this.
+Run process_data and preprocess_features before this.
 
 Input: cleaned annotation, user lists and list of feature values for configurations (see Relationship class)
 Compiles annotation instances, adds feature values to them
@@ -28,12 +28,16 @@ Looks at how features relate to categorisation and likelihood of selection
 Outputs prototypes and plots
 Can be run after compile_instances
 
+## polysemy_analysis.py
+First run compile_instances.py
+Generates polysemy models, outputs parameters and tests them.
+
 ## classes.py
 Collection of classes used in above
 
 # Folders
 
-## Collected Data
+## collected data
 Collection of raw and cleaned data from 2019 study
 
 ## constraint data
@@ -43,7 +47,10 @@ List of constraints generated from data. This is created using compile_instances
 Contains information on feature values from configurations in all scenes. Standardised values are created by preprocess_features.py and read in compile_instances.py
 
 ## model info
-Collection of model parameters when trained on all scenes
+Collection of baseline model parameters when trained on all scenes
+
+## polysemy
+Collection of outputs related to polysemy model, see the readme in the folder for more info
 
 ## preposition data
 Data related to specific prepositions. Giving configurations and how often they are selected with a given preposition in sv_task

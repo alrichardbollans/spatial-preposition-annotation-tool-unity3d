@@ -1152,6 +1152,7 @@ def work_out_kmeans_clusters():
 		c.output_expected_kmeans_model()
 
 def main(constraint_dict):
+	"""Un/comment functions to run tests and outputs"""
 	# Clustering
 	# work_out_kmeans_clusters()
 	# output_initial_inertias()
