@@ -1,8 +1,4 @@
-/// This script adds all scenes in the MainFolder directory to the buildsettings
-// Should be run after all scenes have been created
-/// Also edits Main.cs to add the scenes to the scene list
-/// Also adds camera vision script to objects tagged 'MainCamera' and removes their audio listeners
-// Bakes lighting in each scene
+// This script finalises scenes and should be executed via menuitem once all scenes have been finished.
 
 using UnityEngine;
 #if UNITY_EDITOR
@@ -18,7 +14,6 @@ public class Finalise_Scenes : EditorWindow
 {   
     
     static string MainFolder   = "Assets/Scenes";
-    static string MainScene = MainFolder + "/main.unity";
     static string first_scene_name = "player_menu";
     // Store names of any scenes that shouldn't be included in build.
     static List<string> non_test_scenes = new List<string> {"example", "scene_template", "test"};
@@ -76,7 +71,13 @@ public class Finalise_Scenes : EditorWindow
    
     /// <summary>
     /// Adds all scenes in "Assets/Scenes" to build. Player menu is set as first scene.
-    /// 
+    /// Iterates through all scenes to make edits.
+    /// Adds camera_vision script and edit some settings of each object with MainCamera tag.
+    /// For each object, removes rigid body, animator and WaitingGame script. If object is mesh object
+    /// edits physics properties for in-game.
+    /// Bakes lighting.
+    /// Then saves scene.
+    /// Edits "Main.cs" script to include scenes in scene input list.
     /// </summary>
     /// <remarks>
     /// Should add a check if main scenes contain any objects of same name.
@@ -124,7 +125,7 @@ public class Finalise_Scenes : EditorWindow
         
         GameObject[] cameras;
 
-        // Iterate through all scenes to make edits
+        // Iterate through all scenes to make edits.
         for (i = 0; i < SceneList.Count; i ++)
         {
             string scenePath = get_scene_path(SceneList[i]);
@@ -134,16 +135,15 @@ public class Finalise_Scenes : EditorWindow
             
             EditorSceneManager.SetActiveScene(EditorSceneManager.GetSceneByName(scene_name));
             
+            // Edit Main camera properties
             cameras = GameObject.FindGameObjectsWithTag("MainCamera");
-            // Add camera vision script  and remove audio listener
+            
             foreach(GameObject camera in cameras){
-                Debug.Log ("camera = " + camera.name);
+                
                 if (camera.GetComponent<camera_vision>() == null){
                     camera.AddComponent<camera_vision>();
                 }
-                // Destroy(camera.GetComponent<AudioListener>());
-                // Camera c;
-                // c = camera.GetComponent<Camera>();
+                
                 camera.GetComponent<AudioListener>().enabled = false;
 
                 Camera camera_component;
@@ -153,8 +153,9 @@ public class Finalise_Scenes : EditorWindow
                
 
             }
+            // Make edits to objects
             GameObject[] allObjects = Object.FindObjectsOfType<GameObject>();
-            // Edit objects
+            
             foreach(GameObject obj in allObjects){
                 MeshFilter mf = obj.GetComponent(typeof(MeshFilter)) as MeshFilter;
                 if(mf != null){
@@ -223,7 +224,7 @@ public class Finalise_Scenes : EditorWindow
 
         for (i=0; i<SceneList.Count; i ++)
         {  
-            string scenename = SceneList[i].Substring(0,SceneList[i].LastIndexOf(".unity"));
+            string scenename =  simplify_scene_name(SceneList[i]);
             newscenetext = newscenetext + '"'+ scenename + '"' + ",";
         }
 
