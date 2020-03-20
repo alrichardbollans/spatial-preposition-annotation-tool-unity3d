@@ -26,7 +26,7 @@ public class WaitingGame : MonoBehaviour
 	/// Then quits game and sets write_transforms.written to true.
 	/// </summary>	
 	IEnumerator print_positions(){
-		using(StreamWriter file1 = new StreamWriter("old positions.csv")){
+		using(StreamWriter file1 = new StreamWriter(old_positions_csv)){
 			foreach(GameObject obj in meshObjects){
 				string p = obj.transform.position.ToString();
 				string r = obj.transform.rotation.ToString();
@@ -38,10 +38,10 @@ public class WaitingGame : MonoBehaviour
 				file1.WriteLine(row_csv_string);
 			}
 		}
-		// Wait 10 seconds
+		// Wait 5 seconds
 		yield return new WaitForSeconds(5);
 		
-		using(StreamWriter file = new StreamWriter("positions.csv")){
+		using(StreamWriter file = new StreamWriter(new_positions_csv)){
 			foreach(GameObject obj in meshObjects){
 				string p = obj.transform.position.ToString("G6");
 				string r = obj.transform.rotation.ToString("G6");

@@ -20,9 +20,9 @@ public class camera_vision : MonoBehaviour
 		WASD/Arrows:    Movement
 		          Q:    Climb
 		          E:    Drop
-                      Shift:    Move faster
-                    Control:    Move slower
-                        End:    Toggle cursor locking to screen (you can also press Ctrl+P to toggle play mode on and off).
+                  Shift:    Move faster
+                  Control:    Move slower
+                  End:    Toggle cursor locking to screen (you can also press Ctrl+P to toggle play mode on and off).
 	*/
  	
 	public static float cameraSensitivity = 0;
@@ -34,12 +34,12 @@ public class camera_vision : MonoBehaviour
 	private float rotationX = 0.0f;
 	private float rotationY = 0.0f;
 
-	 float bound_top = 4.88f;
-	 float bound_bottom = 0.05f;
-	 float bound_x_l = -4.78f;
-	 float bound_x_r = 4.78f;
-	 float bound_z_b = -4.78f;
-	 float bound_z_f = 4.78f;
+	float bound_top = 4.88f;
+	float bound_bottom = 0.05f;
+	float bound_x_l = -4.78f;
+	float bound_x_r = 4.78f;
+	float bound_z_b = -4.78f;
+	float bound_z_f = 4.78f;
 
 	Camera camera_component;
  
@@ -61,35 +61,32 @@ public class camera_vision : MonoBehaviour
 
 	}
  	
-
-	public static void kill_movement(){
-		cameraSensitivity = 0;
-		climbSpeed = 0;
-		normalMoveSpeed = 0;
-		slowMoveFactor = 0f;
-		fastMoveFactor = 0;
-	}
-
-	public static void restart_movement(){
-		cameraSensitivity = 90;
-		climbSpeed = 2;
-		normalMoveSpeed = 5;
-		slowMoveFactor = 0.25f;
-		fastMoveFactor = 3;
-	}
-
+	
+	/// <summary>
+	/// Allow mouse to move camera.
+	/// </summary>
 	public static void allow_mouse_look_around(){
 		cameraSensitivity = 60;
 		Cursor.lockState = CursorLockMode.Locked;
 		
 	}
 
+	/// <summary>
+	/// Disable camera movement from mouse.
+	/// </summary>
 	public static void stop_mouse_look_around(){
 		cameraSensitivity = 0;
 		Cursor.lockState = CursorLockMode.None;
 		
 	}
 
+	/// <summary>
+	/// Get transform to increment position by.
+	/// </summary>
+	/// <param name="direction">Horizontal direction to consider</param>
+	/// <returns>
+	/// Vector3 to transform distance by.
+	/// </returns>
 	Vector3 get_new_transform_plus(string direction){
 		Vector3 transform_new = new Vector3(0f,0f,0f);
 		
@@ -129,14 +126,19 @@ public class camera_vision : MonoBehaviour
 				}
 			}
 
-			
-			
-			
-		
-
 		return transform_new;
 	}
 
+	/// <summary>
+	/// Get transform to increment position by.
+	/// </summary>
+	/// <param name="direction">Horizontal direction to consider</param>
+	/// <returns>
+	/// Vector3 to transform distance by.
+	/// </returns>
+	/// <remarks>
+	/// Differs from get_new_transform_plus by how it manages bounding the camera.
+	/// </remarks>
 	Vector3 get_new_transform_minus(string direction){
 		Vector3 transform_new = new Vector3(0f,0f,0f);
 		
@@ -176,18 +178,14 @@ public class camera_vision : MonoBehaviour
 				}
 			}
 
-			
-			
-			
-		
 
 		return transform_new;
 	}
 
 	void Update ()
 	{	
-		// Mouse viewing
 		
+		// If cameraSensitivity not zero, allow movement with mouse.
 		if(cameraSensitivity !=0){
 			
 
@@ -241,6 +239,8 @@ public class camera_vision : MonoBehaviour
 			
 			transform.position -= transform_new * normalMoveSpeed * Time.deltaTime;
 		}
+
+		// 0 toggles allowing moust to look around.
  		if (Input.GetKey (KeyCode.Alpha0) || Input.GetKey (KeyCode.Keypad0)){
 
 			
