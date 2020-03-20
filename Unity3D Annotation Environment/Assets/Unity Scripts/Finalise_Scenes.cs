@@ -15,26 +15,87 @@ using System.Collections;
 using System.Collections.Generic;
  #if UNITY_EDITOR
 public class Finalise_Scenes : EditorWindow
-{  
+{   
+    
+    static string MainFolder   = "Assets/Scenes";
+    static string MainScene = MainFolder + "/main.unity";
+    static string first_scene_name = "player_menu";
+    // Store names of any scenes that shouldn't be included in build.
+    static List<string> non_test_scenes = new List<string> {"example", "scene_template", "test"};
+
+    /// <summary>
+    /// Standardises scene name by removing ".unity".
+    /// </summary>
+    /// <param name="scene">The name of the scene.</param>
+    /// <returns>
+    /// String with ".unity" removed.
+    /// </returns>
+    static string simplify_scene_name(string scene){
+        string simplified_scene = scene;
+        if(scene.Contains(".unity")){
+            simplified_scene = scene.Substring(0,scene.LastIndexOf(".unity"));
+        }
+        return simplified_scene;
+    }
+
+    /// <summary>
+    /// Checks if scene should be added to build, based on declared non_test_scenes.
+    /// </summary>
+    /// <param name="scene">The name of the scene.</param>
+    /// <returns>
+    /// True, if should be included, otherwise False.
+    /// </returns>
+    static bool is_scene_to_add_to_build(string scene){
+        string simplified_scene = simplify_scene_name(scene);
+        
+        if (!non_test_scenes.Contains(simplified_scene)){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Gets scenepath of a given scene.
+    /// </summary>
+    /// <param name="scene_file">The name of the scene.</param>
+    /// <returns>
+    /// String path for scene.
+    /// </returns>
+    static string get_scene_path(string scene_file){
+        string simplified_scene = simplify_scene_name(scene_file);
+
+        return MainFolder + "/" + simplified_scene+ ".unity";
+        
+    }
+
+    // Add menu item in editor.
     [MenuItem ("My Tools/Add Scenes To Build !!SAVE Scripts FIRST!!")]
    
    
-
+    /// <summary>
+    /// Adds all scenes in "Assets/Scenes" to build. Player menu is set as first scene.
+    /// 
+    /// </summary>
+    /// <remarks>
+    /// Should add a check if main scenes contain any objects of same name.
+    /// 
+    /// </remarks>
     static void Init ()
     {   
+        // Give user chance to save scenes.
         EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
-        // Should add a check if main scenes contain any objects of same name
-        // Add all scenes in folder to build settings
+        
+        // Add all scenes in main folder to build settings.
         List<EditorBuildSettingsScene> editorBuildSettingsScenes = new List<EditorBuildSettingsScene>();
         List<string> SceneList =  new List<string> ();
-        List<string> ScenePathList =  new List<string> ();
-        string MainFolder   = "Assets/Scenes";
-        string MainScene = MainFolder + "/main.unity";
         
-
+        //Getting unity files.
         DirectoryInfo d = new DirectoryInfo(@MainFolder);
-        FileInfo[] Files = d.GetFiles("*.unity"); //Getting unity files
+        FileInfo[] Files = d.GetFiles("*.unity"); 
         
+        // Create scene list of scene names.
         foreach(FileInfo file in Files )
         {
             
@@ -43,35 +104,21 @@ public class Finalise_Scenes : EditorWindow
             
         }
         
+        // Add player menu first.
+        string firstscenePath = get_scene_path(first_scene_name);
+        editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(firstscenePath, true));
         
-       
-       
         int i = 0;
-        // Add player menu first
+        // Add the rest to build menu.
         for (i = 0; i < SceneList.Count; i ++)
         {
-            if (SceneList[i].Contains("player_menu")){
-                string scenePath = MainFolder + "/" + SceneList[i];
-                ScenePathList.Add(scenePath);
-                // Debug.Log ("i = " + i);
-                // Debug.Log("scene path:" + scenePath);
+            if (is_scene_to_add_to_build(SceneList[i]) && !SceneList[i].Contains(first_scene_name)){
+                string scenePath = get_scene_path(SceneList[i]);
                 editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(scenePath, true));
             }
            
         }
-        // Add the rest to build menu
-        for (i = 0; i < SceneList.Count; i ++)
-        {
-            if (!SceneList[i].Contains("example") &&!SceneList[i].Contains("template") &&!SceneList[i].Contains("test") && !SceneList[i].Contains("player menu")){
-                string scenePath = MainFolder + "/" + SceneList[i];
-                ScenePathList.Add(scenePath);
-                // Debug.Log ("i = " + i);
-                // Debug.Log("scene path:" + scenePath);
-                editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(scenePath, true));
-            }
-           
-        }
-       
+        // Finally, modify build settings.
         EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
     
         
@@ -80,11 +127,8 @@ public class Finalise_Scenes : EditorWindow
         // Iterate through all scenes to make edits
         for (i = 0; i < SceneList.Count; i ++)
         {
-            string scenePath = MainFolder + "/" + SceneList[i];
-            Debug.Log ("i = " + i);
-            Debug.Log("scene path:" + scenePath);
-            string scene_name;
-            scene_name = SceneList[i].Substring(0,SceneList[i].LastIndexOf(".unity"));
+            string scenePath = get_scene_path(SceneList[i]);
+            string scene_name =  simplify_scene_name(SceneList[i]);
             
             EditorSceneManager.OpenScene(scenePath);
             
@@ -156,7 +200,7 @@ public class Finalise_Scenes : EditorWindow
         }
         
 
-    // Edit main script to add scenes
+        // Edit main script to add scenes.
         string ScriptFolder = "Assets/Scripts";
         string ScriptName = "Main.cs";
         string ScriptFile = ScriptFolder + "/" + ScriptName;

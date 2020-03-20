@@ -8,7 +8,9 @@ using UnityEngine;
 public class CustomImportSettings : AssetPostprocessor
 {	
 	
-
+	/// <summary>
+	/// Modifies model import settings.
+	/// </summary>
     void OnPreprocessModel()
     {
         ModelImporter modelImporter = assetImporter as ModelImporter;

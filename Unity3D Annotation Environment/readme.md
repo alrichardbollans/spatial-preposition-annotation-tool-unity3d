@@ -1,6 +1,9 @@
 # Documentation
 Rough docs to be improved!!!
 
+## Simple Set-Up
+
+
 ## Requirements
 
 Note that some scripts require the NonConvexMeshCollider Asset, which is available on the Unity Store.
