@@ -83,6 +83,10 @@ Scenes need removing from build and removing from scene list in main.cs. To do t
 
 ### Object Tags
 * MainCamera: There should be one camera in each scene given the tag "MainCamera"
+* ground:
+* figure:
+* figureground:
+
 
 ### Objects added to scripts
 

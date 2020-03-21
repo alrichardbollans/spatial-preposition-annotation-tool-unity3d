@@ -1,6 +1,7 @@
-// Script added to empty which deals with selecting and highlighting objects and moving camera to see them
+// Script added to mainEmpty in main scene.
 
-// This scene is open during all data collection with other scenes loaded on top. In this way the 'Main' instance is never destroyed
+// This scene is open during all data collection with other scenes loaded on top. 
+// In this way the 'Main' instance is never destroyed
 
 // This script forms the base.
 // Implements various tasks
@@ -27,13 +28,15 @@
 // To associate a ground with a preposition for the comp task, ground are given empty objects as children with preposition tags
 // For the screen task figures are set as above and given a preposition tag
 
-// Scene cameras must have "MainCamera" tag
+// Scene cameras must have "MainCamera" tag.
 
-// be careful using PlayerPrefs.GetString("selectedGround","");. In general objects have different names but sometimes this will not be the case in added scenes
+// Be careful using PlayerPrefs.GetString("selectedGround","");. 
+// In general objects have different names but sometimes this will 
+// not be the case in added scenes.
 
-// pay attention to task.set_task
-//When naming objects in game be careful with strings inc. "sv" "pq" "comp" "game" "panel" "insruction" "toggle"
-
+// Pay attention to task.set_task.
+// When naming objects in game be careful with strings 
+// inc. "sv" "pq" "comp" "game" "panel" "insruction" "toggle".
 
 using System.Collections;
 using System.Collections.Generic;
@@ -46,16 +49,12 @@ using UnityEngine.EventSystems;
 using System.IO;
 using System.Text;
 using System.Linq;
-// using System;
-
-//
-
 
 public class TaskScene {
-	// Task Scene class acts like the usual Scene except more information is stored regarding configurations
+	// TaskScene class acts like the usual Scene object except 
+	// more information is stored regarding object configurations.
 	public string name; //Scene Name
-	public string task_type;
-	public Scene scene;
+	public string task_type; 
 	public List<GameObject> ground_list = new List<GameObject>();
 	public List<GameObject> figure_list = new List<GameObject>();
 	// Camera needed for raycasting
@@ -64,40 +63,63 @@ public class TaskScene {
 	public List<GameObject[]> configuration_list = new List<GameObject[]>();
 	public List<List<object>> comparison_list = new List<List<object>>(); // list of ground/preposition pairs
 	public string screening_preposition;
-	public GameObject[] active_configuration; // Figure Ground pairs
-	public List<object> active_comparison; // Ground preposition pairs
+	public GameObject[] active_configuration; // Figure Ground pair
+	public List<object> active_comparison; // Ground preposition pair
+	// Preposition list for comp task.
 	List<string> comp_preposition_list = new List<string> {"on","on top of", "in", "inside","against","over","below","above","under"};
 
 	Material fig_mat = Resources.Load("figure_material", typeof(Material)) as Material;
 	Material grd_mat = Resources.Load("ground_material", typeof(Material)) as Material;
 
+	// Stores materials to undo highlighting.
 	Material[] stored_fig_mats;
 	Material[] stored_grd_mats;
 
+	// Strings for storing values in PlayerPrefs
+	static string selectedFig_playerpref = "selectedFigure";
+	static string selectedgrd_playerpref = "selectedGround";
+	static string prep_playerpref = "preposition";
+
+	// Tag names.
+	static string ground_tag = "ground";
+	static string figure_tag = "figure";
+	static string fig_grd_tag = "figureground";
+	// Random instance for generating random integers.
 	static System.Random rnd = new System.Random();
 
+	/// <summary>
+    /// Create class instance.
+    /// </summary>
+    /// <param name="n">Scene name.</param>
+    /// <param name="type">task abbreviation.</param>
 	public TaskScene(string n, string type){
-		name = n; //scene name
-		task_type = type; // task abbreviation
-		// Instantiate scene variable
-		// scene = s;
-		}
+		name = n;
+		task_type = type;
+		
+	}
 
+	/// <summary>
+    /// Stores figure name in playerprefs and highlights figure.
+    /// </summary>
+    /// <param name="fig">Figure to set.</param>
 	public void set_figure(GameObject fig){ 
 		
-			//Stores figure and highlights it
-			PlayerPrefs.SetString("selectedFigure", fig.name);
+		PlayerPrefs.SetString(selectedFig_playerpref, fig.name);
 
-			highlight_figure(fig);
-			Debug.Log("new figure:");
-			Debug.Log(fig.name);
+		highlight_figure(fig);
+		Debug.Log("new figure:");
+		Debug.Log(fig.name);
 		
 		
 	}
 
+	/// <summary>
+    /// Stores ground name in playerprefs and highlights ground.
+    /// </summary>
+    /// <param name="gr">Ground to set.</param>
 	public void set_ground(GameObject gr){
-		//Stores ground and highlights it
-		PlayerPrefs.SetString("selectedGround", gr.name);
+		
+		PlayerPrefs.SetString(selectedgrd_playerpref, gr.name);
 		highlight_ground(gr);
 		Debug.Log("new ground:");
 		Debug.Log(gr.name);
@@ -106,47 +128,49 @@ public class TaskScene {
 		
 	}
 
+	/// <summary>
+    /// Stores preposition in playerprefs.
+    /// </summary>
+    /// <param name="preposition">preposition to set.</param>
 	public void set_preposition(string preposition){
 		
-		
-		PlayerPrefs.SetString("preposition", preposition);
-		// p_label.text = "Preposition: " + preposition;
+		PlayerPrefs.SetString(prep_playerpref, preposition);
 
 	}
 
 	
-
+	/// <summary>
+    /// Unhighlights figure and updates player prefs.
+    /// </summary>
 	public void deselect_figure(){
-		// Unhighlights figure and updates player prefs
+		
 		// Get old figure
-		string old_figure_name = PlayerPrefs.GetString("selectedFigure","");
+		string old_figure_name = PlayerPrefs.GetString(selectedFig_playerpref,"");
 		// Note find objects can be heavy process (see docs if needs calling every frame)
 		GameObject old_figure = GameObject.Find(old_figure_name);
 		//If there was actually a figure, undo highlighting
 		if (old_figure != null){
 			Debug.Log("Unhighlighting figure: " + old_figure_name);
 			unhighlight_figure(old_figure);
-			// Debug.Log("stored_fig_mat " + stored_fig_mat.name );
-			// old_figure.GetComponent<Renderer>().material = stored_fig_mat;
 			
 		}
-		// Remove fig form player prefs
-		PlayerPrefs.SetString("selectedFigure", "");
-		// Remove fig from HUD
 		
-		// f_label.text = "Figure:";
+		PlayerPrefs.SetString(selectedFig_playerpref, "");
+		
 	}
 
 	
-	
+	/// <summary>
+    /// Unhighlights ground and updates player prefs.
+    /// </summary>	
 	public void deselect_ground(){
-		// Unhighlights ground and updates player prefs
+		
 		Debug.Log("Deselect ground is called");
-		string old_grd_name = PlayerPrefs.GetString("selectedGround","");
+		string old_grd_name = PlayerPrefs.GetString(selectedgrd_playerpref,"");
 		Debug.Log("old_grd_name is " + old_grd_name);
 		// Note find objects can be heavy process (see docs if needs calling every frame)
 		GameObject old_grd = GameObject.Find(old_grd_name);
-		//If there was actually a figure, undo highlighting
+		//If there was actually a ground, undo highlighting
 		if (old_grd != null){
 			Debug.Log("Unhighlighting ground: " + old_grd_name);
 
@@ -154,15 +178,21 @@ public class TaskScene {
 
 		}
 		// Remove fig form player prefs
-		PlayerPrefs.SetString("selectedGround", "");
+		PlayerPrefs.SetString(selectedgrd_playerpref, "");
 		
 		// g_label.text = "Ground:";
 	}
 	
+	/// <summary>
+    /// Highlights figure.
+    /// First stores figures materials then changes them all to highlight material.
+    /// </summary>
+    /// <param name="fig">Figure to highlight.</param>
 	public void highlight_figure(GameObject fig){
 		// Stores old figure materials
 		stored_fig_mats = fig.GetComponent<Renderer>().materials;
 		// Create a new array with same number of fig mat instances
+		// All materials in array are the fig_mat for highlighting
 		List<Material> new_mats_list = new List<Material>();
 		foreach(Material m in stored_fig_mats){
 			new_mats_list.Add(fig_mat);
@@ -170,17 +200,18 @@ public class TaskScene {
 
 		Material[] new_mats =new_mats_list.ToArray();
 
-		fig.GetComponent<Renderer>().materials = new_mats;
-		// Adds fig mat to list of object materials
-		// highlight(fig,fig_mat);
-		
+		fig.GetComponent<Renderer>().materials = new_mats;		
 
 	}
 
 	
-
+	/// <summary>
+    /// Highlights ground.
+    /// First stores grounds materials then changes them all to highlight material.
+    /// </summary>
+    /// <param name="grd">Ground to highlight.</param>
 	public void highlight_ground(GameObject grd){
-		// Stores old grdure materials
+		// Stores old ground materials
 		stored_grd_mats = grd.GetComponent<Renderer>().materials;
 		// Create a new array with same number of grd mat instances
 		List<Material> new_mats_list = new List<Material>();
@@ -191,23 +222,32 @@ public class TaskScene {
 		Material[] new_mats =new_mats_list.ToArray();
 
 		grd.GetComponent<Renderer>().materials = new_mats;
-		// Adds grd mat to list of object materials
-		// highlight(grd,grd_mat);
+
 	}
+	/// <summary>
+    /// Removes highlighting from ground.
+    /// </summary>
+    /// <param name="grd">Ground to unhighlight.</param>
 	public void unhighlight_ground(GameObject grd){
 		grd.GetComponent<Renderer>().materials = stored_grd_mats;
 	}
 
+	/// <summary>
+    /// Removes highlighting from figure.
+    /// </summary>
+    /// <param name="fig">Figure to unhighlight.</param>
 	public void unhighlight_figure(GameObject fig){
 		fig.GetComponent<Renderer>().materials = stored_fig_mats;
 	}
 	
 
-
+	/// <summary>
+    /// Populates ground and figure lists to generate configurations to test.
+    /// </summary>
 	void populate_fig_ground_list(){
-		GameObject[] g_list = GameObject.FindGameObjectsWithTag("ground");
-		GameObject[] f_list = GameObject.FindGameObjectsWithTag("figure");
-		GameObject[] fg_list = GameObject.FindGameObjectsWithTag("figureground");
+		GameObject[] g_list = GameObject.FindGameObjectsWithTag(ground_tag);
+		GameObject[] f_list = GameObject.FindGameObjectsWithTag(figure_tag);
+		GameObject[] fg_list = GameObject.FindGameObjectsWithTag(fig_grd_tag);
 
 		foreach(GameObject gobj in g_list){
 			ground_list.Add(gobj);
@@ -223,8 +263,11 @@ public class TaskScene {
 		}
 	}
 	
+	/// <summary>
+    /// Loads scene and finds configurations to test.
+    /// </summary>
 	public IEnumerator set_scene_coroutine(){
-		//Loads scene and finds configurations
+		
 
 		// Needs to be set up as a coroutine so that it only continues after scene is fully loaded
 		SceneManager.LoadScene(name,LoadSceneMode.Additive);
@@ -256,12 +299,12 @@ public class TaskScene {
 						string p = emp.gameObject.tag;
 						if (comp_preposition_list.Contains(p)){
 							screening_preposition = p;
-							//Debug.Log("preposition: " + p);
+							
 						}
 					}
 				}
 				
-				}
+			}
 		}
 
 		
@@ -277,7 +320,7 @@ public class TaskScene {
 				add_new_comp_config(ground);
 				add_new_comp_config(ground);
 			}
-			//// Next part can be uncommented when want to use later
+			//// Next part can be uncommented if want to use later
 
 			// 	foreach (Transform emp in ground.transform){
 			// 		string p = emp.gameObject.tag;
@@ -295,7 +338,10 @@ public class TaskScene {
 		
 	}
 	
-	
+    /// <summary>
+    /// Adds preposition-ground pair to comparison list.
+    /// Preposition is randomly selected and removed from list.
+    /// </summary>	
 	void add_new_comp_config(GameObject ground){
 		int r = rnd.Next(comp_preposition_list.Count);
 		string p = comp_preposition_list[r];
@@ -310,9 +356,13 @@ public class TaskScene {
 		comparison_list.Add(config);
 	}
 	
-	public bool set_new_example(){ //sets new configuration
-		// returns true if a new configuration can be set in the scene
-		// returns false if not
+	/// <summary>
+    /// Sets new configuration to test.
+    /// </summary>
+    /// <returns>
+	/// true if a new configuration can be set in the scene, otherwise False.
+	/// </returns>
+	public bool set_new_example(){
 		if (task_type == "sv" || task_type == "pq" || task_type == "screen"){
 
 
@@ -438,14 +488,16 @@ public class TaskScene {
 	
 
 public class Task {
-	// Be careful editing below list. It is edited by a script (finalise_scenes.cs) (button in the editor)
+	// Be careful editing below list. It is edited by a script (finalise_scenes.cs) 
+	// (button in the editor)
     public static string[] input_list_of_scenes = {"compsva12","compsva13","compsva14","compsva23","compsva24","compsva25","compsvi12","compsvi13","compsvi14","compsvi14a","compsvi15","compsvi23","compsvi24","compsvi25","compsvi26","compsvi26a","compsvi3","compsvi34","compsvi46","compsvo12","compsvo12v","compsvo13v","compsvo14","compsvo14v","compsvo16","compsvo17","compsvo19","compsvo23v","compsvo26","compsvo27","compsvo28","compsvo29","compsvo34v","compsvo67","compsvo68","compsvo68a","compsvo78","compsvo79","compsvu23","compsvu34","compsvu63","compsvula","example","finish","instruction","main","player_menu","scene_template","screen0","screen1","screening_fail","test"};
-	///
+	//
 	public string name;
 	public string instruction; //Instruction to give in each scene
 
 	string new_instruction;  //Instruction to give in each scene
-	List<string> scene_abbreviations =  new List<string>(); //task name abbreviations with shared scenes
+	//task name abbreviations with shared scenes
+	List<string> scene_abbreviations =  new List<string>(); 
 
 	public string[] instruction_list; // List of instructions to give before starting
 	public string instruction_title; //Title for instruction scene
@@ -468,29 +520,17 @@ public class Task {
 	public List<string> list_of_scenes_to_do = new List<string> (); // List of scenes where done scenes are removed 
 
 	public int number_scenes_to_do;
-
-	// IEnumerator ReadFileAsync(string fileUrL){
-	// 	WWW fileWWW = new WWW(fileUrL)
-	// 	yield return fileWWW;
-
-
-	// 	string textFileContents = fileWWW.text;
-
-		
-		
-	// }
 	
+	/// <summary>
+	/// Gets scene lists for task.
+	/// Any scene name which contains any of the scene_abbreviations for the task is added.
+	/// </summary>
 	public void get_scenes(){
-		//Debug.Log("getting scenes");
-		
-
-		
 		// Adds scenes to task
 		for (int n = 0; n < input_list_of_scenes.Length; ++n){
 			string s;
 			s = input_list_of_scenes[n];
-			// Debug.Log(n);
-			// Debug.Log(s);
+
 			foreach(string abv in scene_abbreviations){
 				if (s.Contains(abv) && !s.Contains("fail")){
 					list_of_scenes.Add(s);
@@ -500,9 +540,14 @@ public class Task {
 			}
 			
 		}
-		//Debug.Log("end of getting scenes");
+		
 	}
-
+	/// <summary>
+	/// Instantiate Task.
+	/// </summary>
+	/// <param name="n">Task name.</param>
+	/// <param name="instructions">List of instructions for task.</param>
+	/// <param name="title">Task title.</param>
 	public Task(string n,string[] instructions,string title){
 		
 		
@@ -560,8 +605,8 @@ public class Task {
 				foreach(Transform got in obj.transform){
 					active_objects.Add(got.gameObject);
 				}
-				}
 			}
+		}
 		if (selected_figure_panel != null){
 			foreach (Transform obj in selected_figure_panel.transform){
 				
@@ -593,10 +638,10 @@ public class Task {
 
 				if(!t.gameObject.name.Contains("none")){
 					preposition_toggles.Add(t);
-			}
+				}
 			}
 		}
-		}
+	}
 
 
 		
