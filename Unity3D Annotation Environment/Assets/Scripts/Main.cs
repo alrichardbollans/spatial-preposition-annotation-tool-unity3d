@@ -50,6 +50,17 @@ using System.IO;
 using System.Text;
 using System.Linq;
 
+public static class SharedStrings{
+	public static string selectedFig_playerpref = "selectedFigure";
+	public static string selectedgrd_playerpref = "selectedGround";
+	public static string prep_playerpref = "preposition";
+	public static string task_player_pref = "task";
+
+	public static string ground_tag = "ground";
+	public static string figure_tag = "figure";
+	public static string fig_grd_tag = "figureground";
+}
+
 public class TaskScene {
 	// TaskScene class acts like the usual Scene object except 
 	// more information is stored regarding object configurations.
@@ -76,14 +87,14 @@ public class TaskScene {
 	Material[] stored_grd_mats;
 
 	// Strings for storing values in PlayerPrefs
-	static string selectedFig_playerpref = "selectedFigure";
-	static string selectedgrd_playerpref = "selectedGround";
-	static string prep_playerpref = "preposition";
+	static string selectedFig_playerpref = SharedStrings.selectedFig_playerpref;
+	static string selectedgrd_playerpref = SharedStrings.selectedgrd_playerpref;
+	static string prep_playerpref = SharedStrings.prep_playerpref;
 
 	// Tag names.
-	static string ground_tag = "ground";
-	static string figure_tag = "figure";
-	static string fig_grd_tag = "figureground";
+	static string ground_tag = SharedStrings.ground_tag;
+	static string figure_tag = SharedStrings.figure_tag;
+	static string fig_grd_tag =  SharedStrings.fig_grd_tag;
 	// Random instance for generating random integers.
 	static System.Random rnd = new System.Random();
 
@@ -520,7 +531,9 @@ public class Task {
 	public List<string> list_of_scenes_to_do = new List<string> (); // List of scenes where done scenes are removed 
 
 	public int number_scenes_to_do;
-	
+
+	static string task_player_pref = SharedStrings.task_player_pref;
+
 	/// <summary>
 	/// Gets scene lists for task.
 	/// Any scene name which contains any of the scene_abbreviations for the task is added.
@@ -544,6 +557,7 @@ public class Task {
 	}
 	/// <summary>
 	/// Instantiate Task.
+	/// Sets panels and toggles for task.
 	/// </summary>
 	/// <param name="n">Task name.</param>
 	/// <param name="instructions">List of instructions for task.</param>
@@ -571,8 +585,6 @@ public class Task {
 			
 			if (task_panel_names.Contains(obj.name)){
 				task_panels.Add(obj);
-				//Debug.Log("obj.name");
-				//Debug.Log(obj.name);
 				}
 			}
 			
@@ -582,19 +594,15 @@ public class Task {
 
 		// Set panel
 		foreach (GameObject g in task_panels){
-			// Debug.Log("g.name");
-			// 	Debug.Log(g.name);
+
 			if (g.name.Contains(name)){
 				panel = g;
-				// Debug.Log("panel.name");
-				// Debug.Log(panel.name);
+
 			}
 		}
 		foreach(GameObject g in allObjects){
 			if (g.name.Contains("selected_figure")){
 				selected_figure_panel = g;
-				// Debug.Log("panel.name");
-				// Debug.Log(panel.name);
 			}
 		}
 		// Populate list of active objects by what's in panel hierarchy
@@ -625,7 +633,7 @@ public class Task {
 			}
 
 			if(g.name.Contains("selected_figure_text")){
-				//Debug.Log("Adding text GetComponent");
+				
 				selected_figure_text_obj = g;
 				selected_figure_panel_text_component = selected_figure_text_obj.GetComponent<Text>();
 			}
@@ -646,13 +654,18 @@ public class Task {
 
 		
 
-		
+	/// <summary>
+	/// Turn off non-preposition toggles.
+	/// </summary>
 	public void turn_off_toggles(){
 		foreach (Toggle t in list_of_toggles){
 				t.isOn =false;
 			}
 	}
 
+	/// <summary>
+	/// Turn off preposition toggles.
+	/// </summary>
 	public void turn_off_preposition_toggles(){
 		foreach (Toggle t in preposition_toggles){
 			
@@ -661,7 +674,11 @@ public class Task {
 			}
 	}
 	
-
+	/// <summary>
+	/// Prepares for task.
+	/// Set necessary panels to be active.
+	/// Turn off toggles.
+	/// </summary>
 	public void set_task(){
 		
 		// De/Activate Objects
@@ -684,11 +701,17 @@ public class Task {
 		turn_off_toggles();
 		
 		// Set player prefs
-		PlayerPrefs.SetString("task", name);
+		PlayerPrefs.SetString(task_player_pref, name);
 
 		
 	}
-
+	/// <summary>
+	/// Gets clean name from object name, supposing "(" is first offending character	.
+	/// </summary>
+	/// <param name="name">Object name.</param>
+	/// <returns>
+	/// Clean name.
+	/// </returns>
 	string clean_name(string name){
 		if (name.Contains("(")){
 			string newName = name.Substring(0,name.LastIndexOf("("));
@@ -701,9 +724,9 @@ public class Task {
 	}
 
 	public void set_text(){
-		string p = PlayerPrefs.GetString("preposition","");
-		string f = PlayerPrefs.GetString("selectedFigure","");
-		string g = PlayerPrefs.GetString("selectedGround","");
+		string p = PlayerPrefs.GetString(SharedStrings.prep_playerpref,"");
+		string f = PlayerPrefs.GetString(SharedStrings.selectedFig_playerpref,"");
+		string g = PlayerPrefs.GetString(SharedStrings.selectedgrd_playerpref,"");
 		
 		new_instruction = instruction.Replace(":preposition:","<b>" + p + "</b>");
 		new_instruction = new_instruction.Replace(":figure:","<color=green><b>" + clean_name(f) + "</b></color>");
@@ -725,13 +748,6 @@ public class Task {
 		instruction_text_component.text = new_instruction;
 		selected_figure_panel_text_component.text = "Selected Object: ";
 
-		//Debug.Log("setting new text");
-
-		//Debug.Log("preposition: "+p);
-		//Debug.Log("figure: " +f);
-		//Debug.Log("ground: " + g);
-		//Debug.Log("task instruction template: " + instruction);
-		//Debug.Log("new instruction: " + new_instruction);
 	}
 
 	
