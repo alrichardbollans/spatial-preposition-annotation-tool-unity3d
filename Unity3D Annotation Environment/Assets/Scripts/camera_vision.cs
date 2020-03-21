@@ -61,7 +61,6 @@ public class camera_vision : MonoBehaviour
 
 	}
  	
-	
 	/// <summary>
 	/// Allow mouse to move camera.
 	/// </summary>

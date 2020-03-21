@@ -1,4 +1,5 @@
-﻿// Writes user data and loads first scene
+﻿// Attached to Canvas in player_menu scene
+// Writes user data and loads first scene
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,79 +9,62 @@ using System;
 using System.IO;
 
 public class Player_Menu_Main : MonoBehaviour {
-    // These objects need creating in Unity and assigning in the canvas object that this script is attached to
-    // public GameObject loadingImage;
-  
-    public GameObject nativeCheck;
-    public GameObject nonnativeCheck;
+    public GameObject nativeCheck; //Native toggle
+    public GameObject nonnativeCheck; // NonNative toggle
+    public GameObject instructions; // Instructions
 
-    public GameObject instructions;
+    static string main_scene_name = "main";
+    static string auth_username = "game";
+    static string auth_password =  "6KK6w4EhgcrBQHKzgL";
+    static string url_writeuserdata = "/spatial_language_study/writeuserdata.php";
 
-
-    // Create Permanent variables --- available in all contexts
     string userID;
 
-  
-    
-   
     Toggle toggle_native;
     Toggle toggle_nonnative;
  
     Text instruction;
 
-    // Variables to store values
     int scene_index;
     
     string now;
-    
-    
-    
 
+    /// <summary>
+    /// Initialise permanent variables.
+    /// Set userID. Gets components and sets input toggles to false.
+    /// </summary>
 	void Start () {
-        // loadingImage.SetActive(false);
-        // Initialise permanent variables (Needs to be done in start function for some reason)
+
         userID = System.Guid.NewGuid().ToString();
         PlayerPrefs.SetString("UserID", userID); // Sets player ID to use later
  
         toggle_native = nativeCheck.GetComponent<Toggle>();
         toggle_nonnative = nonnativeCheck.GetComponent<Toggle>();
-        // sceneInput = sceneMenu.GetComponent<Dropdown>();
         instruction = instructions.GetComponent<Text>();
         
-        // Set toggles to false
-		 // set toggle to false
+        // Set toggles to false		
 		toggle_native.isOn = false;
-		 // set toggle to false
 		toggle_nonnative.isOn = false;
-
-		////// Set dropdown menu to list of scenes
-		// string[] fileEntries = Directory.GetFiles("Assets/Scenes");
-		// var info = new DirectoryInfo("Assets/Scenes");
-		// var fileInfo = info.GetFiles();
-
-		// sceneInput.options.Clear();
-		// sceneInput.options.Add(new Dropdown.OptionData("Select scene..."));
-		// foreach (string option in fileEntries)
-		// {//Need to edit these a bit here
-		// 	if (option.Contains("scene") && !option.Contains("meta")){
-		//     sceneInput.options.Add(new Dropdown.OptionData(option));
-		// }
-		// }
-
 
 	}
     
-    void set_form_values(){ // set variables to current value of form
+    /// <summary>
+    /// Set now to current time.
+    /// </summary>
+    void set_form_values(){
        
         now = DateTime.UtcNow.ToString("yyyyMMdd-HHMMss");
     }
 
+    /// <summary>
+    /// Checks if form elements have been filled in.
+    /// </summary>
+    /// <returns>
+    /// True if form is ready to submit, otherwise False.
+    /// </returns>
     bool check_form(){ 
-        //Checks if form elements have been filled in
-       
-
+        
         set_form_values();
-
         
         if (toggle_native.isOn == false && toggle_nonnative.isOn == false) {
         	// pobInput.placeholder.color = Color.red;
@@ -92,6 +76,14 @@ public class Player_Menu_Main : MonoBehaviour {
         else { return true;}
     }
 
+    /// <summary>
+    /// Gets string for authentication from username and password.
+    /// </summary>
+    /// <param name="username">The username.</param>
+    /// <param name="password">The password.</param>
+    /// <returns>
+    /// Authentication string.
+    /// </returns>
     string authenticate(string username, string password)
     {
         string auth = username + ":" + password;
@@ -100,29 +92,25 @@ public class Player_Menu_Main : MonoBehaviour {
         return auth;
     }
 
+    /// <summary>
+    /// Writes user info to file then loads main scene.
+    /// </summary>
+    /// <returns>
+    /// Authentication string.
+    /// </returns>
     IEnumerator sendUserTextToFile_then_loadscene(){
-        string authorization = authenticate("game", "6KK6w4EhgcrBQHKzgL");
-        string url = "/spatial_language_study/writeuserdata.php";
+        string authorization = authenticate(auth_username, auth_password);
         yield return null;
         /// Set details
         set_form_values();
         
-        
-        
-        
-      
-        
-
-
         bool successful = true; //Not yet used here
 
-        WWWForm form = new WWWForm(); //create web form to talk with
-        // form.AddField("name",user_name);
-        // form.AddField("pob",pob);
+        //create web form to talk with
+        WWWForm form = new WWWForm(); 
         form.AddField("userid",userID);
-        // form.AddField("year",year);
         form.AddField("now",now);
-        // form.AddField("gender",gender);
+        
         if (toggle_native.isOn == true && toggle_nonnative.isOn == false)
         {
             form.AddField("native","1");
@@ -131,9 +119,9 @@ public class Player_Menu_Main : MonoBehaviour {
         {
             form.AddField("native","0");
         }
-        // Send the form to the php script
+        // Send the form to the php script to write to server
         // Upload to a cgi script
-        using (var w = UnityWebRequest.Post(url, form))
+        using (var w = UnityWebRequest.Post(url_writeuserdata, form))
         {
             w.SetRequestHeader("AUTHORIZATION",authorization);
             yield return w.SendWebRequest();
@@ -143,20 +131,21 @@ public class Player_Menu_Main : MonoBehaviour {
             
         }
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene("main");
+        UnityEngine.SceneManagement.SceneManager.LoadScene(main_scene_name);
     }
 	
-    // Add to start button in editor
+    /// <summary>
+    /// Starts Coroutine to write user info.
+    /// Added to StartButton in player_menu.
+    /// </summary>
     public void WriteandLoadScene() 
     {
         
     	set_form_values();
     	if (check_form()){
-            // loadingImage.SetActive(true); // Show 'Loading' image
 
             StartCoroutine(sendUserTextToFile_then_loadscene()); //Need startcoroutine (not sure yet what it does)
-            
-             // Load scene at given level variable
+
     	}
     	
     }

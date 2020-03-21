@@ -13,11 +13,10 @@ using System.Text;
 using System.Linq;
 
 public class Instruction : MonoBehaviour {
-	public GameObject title_obj;
-	public GameObject instruction_obj;
-	public GameObject ButtonText;
-
-	public GameObject loadingImage;
+	public GameObject title_obj; // Title
+	public GameObject instruction_obj; // InstructionText
+	public GameObject ButtonText; // Text
+	public GameObject loadingImage; // loadingimage
 
 	Text title_obj_text_component;
 	Text instruction_text_component;
