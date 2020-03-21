@@ -55,10 +55,16 @@ public static class SharedStrings{
 	public static string selectedgrd_playerpref = "selectedGround";
 	public static string prep_playerpref = "preposition";
 	public static string task_player_pref = "task";
+	public static string scene_player_pref = "scene";
+	public static string userid_player_pref = "UserID";
 
 	public static string ground_tag = "ground";
 	public static string figure_tag = "figure";
 	public static string fig_grd_tag = "figureground";
+
+    public static string auth_username = "game";
+    public static string auth_password =  "6KK6w4EhgcrBQHKzgL";
+	public static string appendannotation_url = "/spatial_language_study/appendannotation.php";
 }
 
 public class TaskScene {
@@ -944,7 +950,7 @@ public class Main : MonoBehaviour {
 			StartCoroutine(task_scene.set_scene_coroutine());
 			Debug.Log("EndCoroutine");
 			
-			PlayerPrefs.SetString("scene", scene_name);
+			PlayerPrefs.SetString(SharedStrings.scene_player_pref, scene_name);
 
 			new_example();
 		
@@ -1016,9 +1022,8 @@ public class Main : MonoBehaviour {
 			task_scene.deselect_figure();
 			task_scene.deselect_ground();
 		}
-		// PlayerPrefs.SetString("selectedFigure", "");
-		// PlayerPrefs.SetString("selectedGround", "");
-		PlayerPrefs.SetString("preposition", "");
+		
+		PlayerPrefs.SetString(SharedStrings.prep_playerpref, "");
 		
 
 	}
@@ -1026,19 +1031,19 @@ public class Main : MonoBehaviour {
 	public void reset_task_values(){
 		number_scenes_done = 0;
 		reset_input_values();
-		PlayerPrefs.SetString("task", "");
+		PlayerPrefs.SetString(SharedStrings.task_player_pref, "");
 
 	}
 
 	public void reset_scene_values(){
 		reset_input_values();
-		PlayerPrefs.SetString("scene", "");
+		PlayerPrefs.SetString(SharedStrings.scene_player_pref, "");
 	}
 	
 	public void clear_object_player_prefs(){
 		// Game was loading with these set to an object which was causing unhighlighting of them
-		PlayerPrefs.SetString("selectedFigure", "");
-		PlayerPrefs.SetString("selectedGround", "");
+		PlayerPrefs.SetString(SharedStrings.selectedFig_playerpref, "");
+		PlayerPrefs.SetString(SharedStrings.selectedgrd_playerpref, "");
 	}
 
 	string authenticate(string username, string password)
@@ -1050,16 +1055,16 @@ public class Main : MonoBehaviour {
 	}
 
 	IEnumerator sendselectionToFile_coroutine(){
-        string authorization = authenticate("game", "6KK6w4EhgcrBQHKzgL");
-	    string url = "/spatial_language_study/appendannotation.php";
+        string authorization = authenticate(SharedStrings.auth_username, SharedStrings.auth_password);
+	    string url = SharedStrings.appendannotation_url;
         yield return null;
         /// Output info
-		string f = PlayerPrefs.GetString("selectedFigure","");
-		string g = PlayerPrefs.GetString("selectedGround","");
-		string p = PlayerPrefs.GetString("preposition","");
-		string ta = PlayerPrefs.GetString("task","");
-		string u = PlayerPrefs.GetString("UserID","");
-		string sc = PlayerPrefs.GetString("scene","");
+		string f = PlayerPrefs.GetString(SharedStrings.selectedFig_playerpref,"");
+		string g = PlayerPrefs.GetString(SharedStrings.selectedgrd_playerpref,"");
+		string p = PlayerPrefs.GetString(SharedStrings.prep_playerpref,"");
+		string ta = PlayerPrefs.GetString(SharedStrings.task_player_pref,"");
+		string u = PlayerPrefs.GetString(SharedStrings.userid_player_pref,"");
+		string sc = PlayerPrefs.GetString(SharedStrings.scene_player_pref,"");
 		string now = System.DateTime.UtcNow.ToString("yyyyMMdd-HHMMss");
 		string ID = System.Guid.NewGuid().ToString();
 		string prepositions = "";
@@ -1189,7 +1194,7 @@ public class Main : MonoBehaviour {
 
 	public void submit(){
 		if(task.name == "screen"){
-			string f = PlayerPrefs.GetString("selectedFigure","");
+			string f = PlayerPrefs.GetString(SharedStrings.selectedFig_playerpref,"");
 			GameObject fig = task_scene.active_configuration[0];
 			
 			if (f==fig.name){
