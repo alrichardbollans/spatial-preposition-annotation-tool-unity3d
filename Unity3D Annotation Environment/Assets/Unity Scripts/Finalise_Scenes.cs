@@ -17,7 +17,7 @@ public class Finalise_Scenes : EditorWindow
     static string first_scene_name = "player_menu";
     // Store names of any scenes that shouldn't be included in build.
     static List<string> non_test_scenes = new List<string> {"example", "scene_template", "test"};
-
+    static string main_camera_tag= "MainCamera";
     /// <summary>
     /// Standardises scene name by removing ".unity".
     /// </summary>
@@ -136,7 +136,7 @@ public class Finalise_Scenes : EditorWindow
             EditorSceneManager.SetActiveScene(EditorSceneManager.GetSceneByName(scene_name));
             
             // Edit Main camera properties
-            cameras = GameObject.FindGameObjectsWithTag("MainCamera");
+            cameras = GameObject.FindGameObjectsWithTag(main_camera_tag);
             
             foreach(GameObject camera in cameras){
                 

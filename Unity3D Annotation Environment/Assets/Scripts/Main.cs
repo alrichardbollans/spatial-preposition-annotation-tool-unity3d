@@ -719,7 +719,6 @@ public class Main : MonoBehaviour {
 	public GameObject loadingImage;
 	// public GameObject pointer;
 
-	public bool instructions_loaded; // bool to know if instruction scene is loaded
 	public bool fail_loaded; // bool to know if fail scene is loaded
 	
 	

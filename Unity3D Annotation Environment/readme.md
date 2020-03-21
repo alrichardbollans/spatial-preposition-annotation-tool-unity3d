@@ -51,7 +51,7 @@ Below gives info on how to amend/build the game
 ### Scenes
 
 Scenes must be set up following particular rules which are collected here but need organising (Note: comp = Comparative Task and sv = Preposition selection task):
-
+* player_menu scene is loaded first, added to build order by
 * main scene should contain 'mainEmpty' GameObject which holds main script
 * Scene file names should contain task abbreviation --  sv, pq and comp tasks are shared scenes. Currently these aren't distinguished. Main.cs handles which scenes are done for which task.
 * Ground Objects in scenes are given tag "ground" or "figureground". Figures to compare with them are given figure or "figureground" tag.
@@ -80,6 +80,11 @@ Don't use red or green objects
 
 #### Removing Scenes
 Scenes need removing from build and removing from scene list in main.cs. To do this, open the project, delete the scenes and then run finalise_scenes.cs. Then build (to same folder name!)
+
+### Object Tags
+* MainCamera: There should be one camera in each scene given the tag "MainCamera"
+
+### Objects added to scripts
 
 ### Other Assets
 figure_material and ground_material need to be in Resources folder
