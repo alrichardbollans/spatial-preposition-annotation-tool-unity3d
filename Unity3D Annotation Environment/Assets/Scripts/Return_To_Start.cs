@@ -1,4 +1,4 @@
-﻿// Writes user data and loads first scene
+﻿// Script added to Canvas in screening_fail
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,29 +10,28 @@ public class Return_To_Start : MonoBehaviour {
     GameObject main_empty;
 	Main main_empty_script;
 
-	
+	static string first_scene_name = "player_menu";
 
 	public void Awake(){
 		main_empty = GameObject.Find("mainEmpty");
 		if(main_empty !=null){
 			main_empty_script = main_empty.GetComponent<Main>();
 		}
-	
-		
 			
 	}
     
-    // Add to start button in editor
+    /// <summary>
+    /// Loads first scene.
+    /// Added to Button in screening_fail.
+    /// </summary>
     public void Return() 
     {
         
-    	
-       // main_empty_script.begin();
-       UnityEngine.SceneManagement.SceneManager.LoadScene("player_menu"); // Load scene at given level variable
+       UnityEngine.SceneManagement.SceneManager.LoadScene(first_scene_name);
     	
     	
     }
     
 
-   }
+  }
 
