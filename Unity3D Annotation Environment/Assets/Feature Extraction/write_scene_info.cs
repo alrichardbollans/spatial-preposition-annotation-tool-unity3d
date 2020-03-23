@@ -19,9 +19,7 @@ public class SceneInfoButton: EditorWindow{
 		
 		foreach(MyScene s in scene_info.SceneList)
 		{
-			
-		    
-		    
+			  
 		    Debug.Log("scene path:" + s.path);
 		    
 		    EditorSceneManager.OpenScene(s.path);
