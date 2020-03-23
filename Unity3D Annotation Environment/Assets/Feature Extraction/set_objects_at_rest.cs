@@ -1,9 +1,9 @@
 // This script makes edits to the positions of objects in the scene so that 
-// they are naturally at rest
+// they are naturally at rest.
 
 // It does this by adding/removing colliders, giving the objects rigidbody,
 // playing the scene writing positions (using an added in-game script) 
-// and then reading the positions and editing transforms
+// and then reading the positions and editing transforms.
 #if UNITY_EDITOR
 using UnityEngine;
 
@@ -15,26 +15,28 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-// MeshObject class to hold some extra information about gameobjects with a mesh
-public class MeshObject{
-	public static string[] convex_objects = { "pencil",
-        	
-        	"cube",
-        	"apple",
-        	"pear",
-        	"chair",
-        	
-        	"box", // Need to be careful here as there are two types of boxes
-        	"wall",
-        	"floor", 
-        	"ceiling",
-        	"book",
-        	"jar",
-        	"picture"
-        }; // objects which can be simplified with a convex collider
 
-    public static string[] sphere_objects = { "sphere", "ball"}; // objects that need giving a sphere collider
-	
+/// <summary>
+//// MeshObject class to hold some extra information about gameobjects with a mesh.
+/// </summary>
+public class MeshObject{
+	// Objects which can be simplified with a convex collider.
+	public static string[] convex_objects = { "pencil",
+    	"cube",
+    	"apple",
+    	"pear",
+    	"chair",
+    	"box", // Need to be careful here as there are two types of boxes
+    	"wall",
+    	"floor", 
+    	"ceiling",
+    	"book",
+    	"jar",
+    	"picture"
+    }; 
+    // Objects that need giving a sphere collider.
+    public static string[] sphere_objects = { "sphere", "ball"};
+    // Objects which gravity doesn't affect.
     static string[] floating_objects = {"balloon"};
 	static Dictionary<string,float> mass_dictionary;
 	public GameObject go;
@@ -91,13 +93,15 @@ public class MeshObject{
 			Debug.Log("Weight Missing for: " + go.name );
 		}
 	}
+
+	/// <summary>
+	/// Prepare object physics for positioning --- like real life.
+	/// </summary>
 	public void prepare_physics_for_positioning(){
 		
 			if (go != null){
 				remove_colliders();
-				give_rigid_body();
-		        
-		                
+				give_rigid_body();  
 		        add_non_convex_collider();
 			}
 			else{
@@ -106,6 +110,9 @@ public class MeshObject{
 		
 	}
 
+	/// <summary>
+	/// Prepare object physics for game --- static, colliders for clicking etc...
+	/// </summary>
 	public void prepare_physics_for_game(){
 		remove_colliders();
 		remove_rigid_body();
@@ -114,16 +121,19 @@ public class MeshObject{
 		remove_scripts();
 	}
 
+	/// <summary>
+	/// If necessary, give object a rigid body.
+	/// </summary>
 	public void give_rigid_body(){
 		
-		// Make sure has rigidbody
+		// Make sure has rigidbody.
         Rigidbody r = go.GetComponent(typeof(Rigidbody)) as Rigidbody;
         if (r == null){
             r = go.AddComponent<Rigidbody>() as Rigidbody;
         }
         r.mass = mass;
         
-        if (go.name.Contains("wall") || go.name.Contains("floor") || go.name.Contains("ceiling")){
+        if(Main.unselectable_scene_objects.Any(x => go.name.Contains(x))){
         	r = go.GetComponent(typeof(Rigidbody)) as Rigidbody;
         	
         	Object.DestroyImmediate(r);
@@ -138,6 +148,9 @@ public class MeshObject{
 
 	}
 
+	/// <summary>
+	/// If one is there, remove rigid body.
+	/// </summary>
 	public void remove_rigid_body(){
 		Rigidbody r = go.GetComponent(typeof(Rigidbody)) as Rigidbody;
 		if (r != null){
@@ -145,9 +158,11 @@ public class MeshObject{
 		}
 	}
 
+	/// <summary>
+	//// Disable all colliders attached to object.
+	/// </summary>
 	public void disable_colliders(){
-		// Disable all colliders
-        
+
         foreach (Collider c in colliders){
         	if(c!= null){
 	        	c.enabled = false;
@@ -155,9 +170,10 @@ public class MeshObject{
         }
 	}
 
+	/// <summary>
+	//// Enable all colliders attached to object.
+	/// </summary>
 	public void enable_colliders(){
-		// enable all colliders
-        
         foreach (Collider c in colliders){
         	if(c!= null){
 	        	c.enabled = true;
@@ -165,6 +181,9 @@ public class MeshObject{
         }
 	}
 
+	/// <summary>
+	//// Destory all colliders attached to object.
+	/// </summary>
 	public void remove_colliders(){
 		
         foreach (Collider c in go.GetComponents<Collider>()){
@@ -174,6 +193,9 @@ public class MeshObject{
         }
 	}
 
+	/// <summary>
+	//// Add a mesh collider.
+	/// </summary>
 	public void add_convex_mesh_collider(){
 
 		MeshFilter mf = go.GetComponent(typeof(MeshFilter)) as MeshFilter;
@@ -184,6 +206,9 @@ public class MeshObject{
         }
 	}
 
+	/// <summary>
+	//// Add a sphere collider.
+	/// </summary>
 	public void add_sphere_collider(){
 
 		MeshFilter mf = go.GetComponent(typeof(MeshFilter)) as MeshFilter;
@@ -195,6 +220,10 @@ public class MeshObject{
         }
 	}
 
+	/// <summary>
+	//// Add a mesh collider for in game.
+	/// Checks various properties to add correct collider for game, as this can cause issues.
+	/// </summary>
 	public void add_mesh_collider_for_game(){
 		if(sphere_objects.Contains(clean_name)){
 			
@@ -227,6 +256,13 @@ public class MeshObject{
 		    }
 		}
 	}
+
+	/// <summary>
+	//// Add a nonconvex collider if necessary.
+	/// </summary>
+	/// <remarks>
+	/// Relies on NonConvexCollider asset.
+	/// </remarks>
 	public void add_non_convex_collider(){
 		// Make floor, wall and ceiling simple colliders first
 		if (sphere_objects.Contains(clean_name)){
@@ -252,16 +288,14 @@ public class MeshObject{
 			non_convex_script.boxesPerEdge = 20;
 			non_convex_script.avoidExceedingMesh = false;
 			non_convex_script.Calculate();
-			// if (non_convex_script.mergedBoxes_count < 2){
-			// 	Debug.Log("mergedBoxes_count < 2");
-	  //       	Debug.Log(go.name);
-			// 	non_convex_script.avoidExceedingMesh = false;
-			// 	non_convex_script.Calculate();
-			// }
+
 		}
 
 	}
 	
+	/// <summary>
+	/// Remove all colliders from non-convex collider.
+	/// </summary>
 	public void remove_non_convex_colliders(){
 		var collidersTransform = go.transform.Find("Colliders");
         GameObject collidersGo;
@@ -271,7 +305,9 @@ public class MeshObject{
         }
 	}
 
-	// Removes all scripts attached to game objects which may interfere
+	/// <summary>
+	/// Removes all scripts attached to game objects which may interfere.
+	/// </summary>
 	public void remove_scripts(){
 		var waiting_script = go.GetComponent(typeof(WaitingGame)) as WaitingGame;
 		if (waiting_script != null){
@@ -294,8 +330,14 @@ public class MeshObject{
 }
 
 
-//Initialize on load means update is constantly running
-// [InitializeOnLoad]
+/// <summary>
+/// Prepares object physics then runs game so that object positions are written once fallen.
+/// Then sets new object positions. User must save new scene themselves.
+/// </summary>
+/// <remarks>
+/// Initialize on load means Update method of this class is constantly running.
+/// </remarks>
+[InitializeOnLoad]
 public class write_transforms : EditorWindow{
 	static GameObject[] allObjects;
 	static List<MeshObject> meshObjects = new List<MeshObject>();
@@ -304,11 +346,7 @@ public class write_transforms : EditorWindow{
 		EditorApplication.update += Update;
 	}
 	
-    
-    
-	
-	
-	
+
 	static public void main(){
 
 		// Add wait script to an object
@@ -324,19 +362,11 @@ public class write_transforms : EditorWindow{
 		// Edit physics
         foreach(MeshObject obj in meshObjects){
         		
-        		obj.prepare_physics_for_positioning();
+    		obj.prepare_physics_for_positioning();    
+        }
 
-                
-            }
-        
-    
-
-        
 		// start game
-        EditorApplication.isPlaying = true;
-
-        
-       	
+        EditorApplication.isPlaying = true;  	
         
 	}
 
@@ -345,7 +375,7 @@ public class write_transforms : EditorWindow{
 		string line;
 		using(StreamReader file =  new StreamReader("positions.csv")){
 			while((line = file.ReadLine()) != null)
-               {
+            {
 
                 string[] values = line.Split(';');
                 // Remove " and (
@@ -384,7 +414,9 @@ public class write_transforms : EditorWindow{
 		}
 	}
 
-	// Update constantly checks and once main has completed update object properties and revert physics
+	/// <summary>
+	/// Update constantly checks and once main has completed update object properties and revert physics.
+	/// </summary>
 	static void Update(){
 		
 		if(written && !EditorApplication.isPlaying){
@@ -401,31 +433,15 @@ public class write_transforms : EditorWindow{
 	                meshObjects.Add(mobj);
 	            }
 	        }
-			
-			
+	
 			read_and_update_positions();
 
 			//Revert properties
 			foreach(MeshObject obj in meshObjects){
         		
-        		obj.prepare_physics_for_game();
-                
-                
+        		obj.prepare_physics_for_game();    
             }
-      //       foreach(GameObject gobj in allObjects){
-            
-      //       	var waiting_script = gobj.GetComponent(typeof(WaitingGame)) as WaitingGame;
-    		// 	if (waiting_script != null){
-    		// 	    DestroyImmediate(waiting_script);
-    		// 	}
-    		// 	var non_convex_script = gobj.GetComponent(typeof(NonConvexMeshCollider)) as NonConvexMeshCollider;
-    		// 	if (non_convex_script != null){
-    		// 	    DestroyImmediate(non_convex_script);
-    		// 	}
-    		// }
-			
 
-			// Save scene?
 		}
 	}
 	[MenuItem ("My Tools/Set Objects At Rest")]
@@ -445,7 +461,6 @@ public class write_transforms : EditorWindow{
         }
 
 		main();
-
 		
 	}
 }

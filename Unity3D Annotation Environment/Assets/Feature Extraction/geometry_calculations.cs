@@ -268,7 +268,7 @@ public class Pair{
 		
 		set_distance_properties();
 
-
+		// Get feature values.
 		contact_proportion = get_proportion_contact();
 		above_proportion = get_proportion_above();
 		below_proportion = get_proportion_below();

@@ -1,3 +1,5 @@
+// In game script which is used to calculate functional relations and also set objects at rest.
+
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
@@ -14,9 +16,6 @@ public class WaitingGame_FunctionalFeatureExtraction : MonoBehaviour
 {	
 	GameObject[] allObjects; 
 	static List<GameObject> meshObjects = new List<GameObject>();
-	
-	
-	
 	public Dictionary<string,Vector3> initial_position_dictionary = new  Dictionary<string,Vector3>();
 	public Dictionary<string,Quaternion> initial_rotation_dictionary = new  Dictionary<string,Quaternion>();
 	
@@ -31,7 +30,8 @@ public class WaitingGame_FunctionalFeatureExtraction : MonoBehaviour
     public static Vector3 xforce = new Vector3(1f,0f,0f);
     public static Vector3 zforce = new Vector3(0f,0f,1f);
     
-
+    public static int fall_time = 2;
+    public static int lc_move_time = 2;
 
     GameObject get_new_ground(){
     	//Get new ground from csv and update file
@@ -46,45 +46,36 @@ public class WaitingGame_FunctionalFeatureExtraction : MonoBehaviour
             new_ground_name = grounds[0];
             
 			go = GameObject.Find(new_ground_name);
-				
-       		
 
-			
 		}
 
 		// Rewrite csv without new ground
-           using(StreamWriter filen = new StreamWriter(write_support_measures.groundstodo_file)){
-           	List<String> row = new List<String>();
-   			foreach(String g in grounds){
-   				if(g != new_ground_name){
-   					row.Add(g);
-   				}
-   				
-
-   				
-   			}
-   			string[] row1 = row.ToArray();
-   			string row_csv_string = String.Join(",", row1);
-   			filen.WriteLine(row_csv_string);
-       		}
+        using(StreamWriter filen = new StreamWriter(write_support_measures.groundstodo_file)){
+	       	List<String> row = new List<String>();
+			foreach(String g in grounds){
+				if(g != new_ground_name){
+					row.Add(g);
+				}
+	
+			}
+			string[] row1 = row.ToArray();
+			string row_csv_string = String.Join(",", row1);
+			filen.WriteLine(row_csv_string);
+   		}
 		
 
 		return go;
 	}
 
-	static void reset_grounds_to_do(){
-		
-        // Write grounds down
+	static void reset_grounds_to_do(){	
+        // Write all grounds for scene to csv.
         using(StreamWriter file = new StreamWriter(write_support_measures.groundstodo_file)){
         	List<String> row = new List<String>();
 			foreach(GameObject obj in meshObjects){
-				// Debug.Log(obj.name);
-				if(!obj.name.Contains("wall") && !obj.name.Contains("ceiling") && !obj.name.Contains("floor")){
+				
+				if(!Main.unselectable_scene_objects.Any(x => obj.name.Contains(x))){
 					row.Add(obj.name);
-				}
-				
-
-				
+				}		
 			}
 			string[] row1 = row.ToArray();
 			string row_csv_string = String.Join(",", row1);
@@ -135,7 +126,7 @@ public class WaitingGame_FunctionalFeatureExtraction : MonoBehaviour
 		        }
 	        }
 	    }
-	    // make the ground not fall. This is inconsiquential
+	    // make the ground not fall. This is inconsiquential.
         Rigidbody r = ground.GetComponent(typeof(Rigidbody)) as Rigidbody;
 		if (r != null){
 			r.useGravity = false;
@@ -143,7 +134,7 @@ public class WaitingGame_FunctionalFeatureExtraction : MonoBehaviour
 	}
 
 	static void add_ground_back(){
-		// Adds colliders back to scene
+		// Adds colliders for ground back to scene.
 		foreach (Collider c in ground.GetComponents<Collider>()){
         	if(c!= null){
 	        	c.enabled = true;
@@ -169,7 +160,6 @@ public class WaitingGame_FunctionalFeatureExtraction : MonoBehaviour
 
 	IEnumerator reset_positions(){
 		// Reloads scene to reset positions
-		
 		Scene active_scene = SceneManager.GetActiveScene();
 		SceneManager.LoadScene(active_scene.name);//,LoadSceneMode.Additive);
 		yield return null;
@@ -184,7 +174,7 @@ public class WaitingGame_FunctionalFeatureExtraction : MonoBehaviour
 
 		remove_ground();
 		// Wait 10 seconds for objects to fall
-		yield return new WaitForSeconds(2);
+		yield return new WaitForSeconds(fall_time);
 		string[] ground_info;
 		using(StreamWriter file = new StreamWriter(write_support_measures.csv_file, true)){
 			
@@ -369,7 +359,7 @@ public class WaitingGame_FunctionalFeatureExtraction : MonoBehaviour
 		// Apply force to ground
 		apply_force();
 		// Wait 5 seconds for objects to move
-		yield return new WaitForSeconds(1);
+		yield return new WaitForSeconds(lc_move_time);
 		string fname = "";
 		if(write_support_measures.type.Contains("x")){
 			fname = write_support_measures.lc1_csv_file;
@@ -398,7 +388,7 @@ public class WaitingGame_FunctionalFeatureExtraction : MonoBehaviour
 				// Debug.Log(Time.time);
 
 				// Wait 20 seconds for above to execute
-				yield return new WaitForSeconds(4);
+				yield return new WaitForSeconds(fall_time+2);
 				// Reset Positions
 				StartCoroutine(reset_positions());
 				
@@ -408,7 +398,7 @@ public class WaitingGame_FunctionalFeatureExtraction : MonoBehaviour
 				// Run LC calculations and print positions
 				StartCoroutine(lc_positions());
 				// Wait to execute
-				yield return new WaitForSeconds(2);
+				yield return new WaitForSeconds(lc_move_time+2);
 
 				StartCoroutine(reset_positions());
 			}
