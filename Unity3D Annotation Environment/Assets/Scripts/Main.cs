@@ -1,4 +1,5 @@
 // Script added to mainEmpty in main scene.
+// Must be called "Main.cs" and stored in "Assets/Scripts".
 
 // This scene is open during all data collection with other scenes loaded on top. 
 // In this way the 'Main' instance is never destroyed
@@ -9,14 +10,6 @@
 // pq =  predicational question
 // comp =  comparative task
 // game = game
-
-///
-// PlayerPref values are named as follows:
-// selectedFigure = "selectedFigure";
-// selectedGround
-// task
-// preposition
-// scene
 
 // Active ground can't be selected in comp task
 
@@ -36,7 +29,7 @@
 
 // Pay attention to task.set_task.
 // When naming objects in game be careful with strings 
-// inc. "sv" "pq" "comp" "game" "panel" "insruction" "toggle".
+// including any of the strings given by Main class.
 
 using System.Collections;
 using System.Collections.Generic;
@@ -50,22 +43,6 @@ using System.IO;
 using System.Text;
 using System.Linq;
 
-public static class SharedStrings{
-	public static string selectedFig_playerpref = "selectedFigure";
-	public static string selectedgrd_playerpref = "selectedGround";
-	public static string prep_playerpref = "preposition";
-	public static string task_player_pref = "task";
-	public static string scene_player_pref = "scene";
-	public static string userid_player_pref = "UserID";
-
-	public static string ground_tag = "ground";
-	public static string figure_tag = "figure";
-	public static string fig_grd_tag = "figureground";
-
-    public static string auth_username = "game";
-    public static string auth_password =  "6KK6w4EhgcrBQHKzgL";
-	public static string appendannotation_url = "/spatial_language_study/appendannotation.php";
-}
 
 public class TaskScene {
 	// TaskScene class acts like the usual Scene object except 
@@ -93,14 +70,14 @@ public class TaskScene {
 	Material[] stored_grd_mats;
 
 	// Strings for storing values in PlayerPrefs
-	static string selectedFig_playerpref = SharedStrings.selectedFig_playerpref;
-	static string selectedgrd_playerpref = SharedStrings.selectedgrd_playerpref;
-	static string prep_playerpref = SharedStrings.prep_playerpref;
+	static string selectedFig_playerpref = Main.selectedFig_playerpref;
+	static string selectedgrd_playerpref = Main.selectedgrd_playerpref;
+	static string prep_playerpref = Main.prep_playerpref;
 
 	// Tag names.
-	static string ground_tag = SharedStrings.ground_tag;
-	static string figure_tag = SharedStrings.figure_tag;
-	static string fig_grd_tag =  SharedStrings.fig_grd_tag;
+	static string ground_tag = Main.ground_tag;
+	static string figure_tag = Main.figure_tag;
+	static string fig_grd_tag =  Main.fig_grd_tag;
 	// Random instance for generating random integers.
 	static System.Random rnd = new System.Random();
 
@@ -538,7 +515,7 @@ public class Task {
 
 	public int number_scenes_to_do;
 
-	static string task_player_pref = SharedStrings.task_player_pref;
+	static string task_player_pref = Main.task_player_pref;
 
 	/// <summary>
 	/// Gets scene lists for task.
@@ -730,9 +707,9 @@ public class Task {
 	}
 
 	public void set_text(){
-		string p = PlayerPrefs.GetString(SharedStrings.prep_playerpref,"");
-		string f = PlayerPrefs.GetString(SharedStrings.selectedFig_playerpref,"");
-		string g = PlayerPrefs.GetString(SharedStrings.selectedgrd_playerpref,"");
+		string p = PlayerPrefs.GetString(Main.prep_playerpref,"");
+		string f = PlayerPrefs.GetString(Main.selectedFig_playerpref,"");
+		string g = PlayerPrefs.GetString(Main.selectedgrd_playerpref,"");
 		
 		new_instruction = instruction.Replace(":preposition:","<b>" + p + "</b>");
 		new_instruction = new_instruction.Replace(":figure:","<color=green><b>" + clean_name(f) + "</b></color>");
@@ -764,6 +741,43 @@ public class Task {
 
 
 public class Main : MonoBehaviour {
+	// Strings reused across scripts.
+	// PlayerPrefs
+	public static string selectedFig_playerpref = "selectedFigure";
+	public static string selectedgrd_playerpref = "selectedGround";
+	public static string prep_playerpref = "preposition";
+	public static string task_player_pref = "task";
+	public static string scene_player_pref = "scene";
+	public static string userid_player_pref = "UserID";
+
+	// Tags
+	public static string ground_tag = "ground";
+	public static string figure_tag = "figure";
+	public static string fig_grd_tag = "figureground";
+	public static string main_camera_tag= "MainCamera";
+
+	// Scene names
+	public static string first_scene_name = "player_menu";
+	public static string main_scene_name = "main";
+	public static string instruction_scene_name = "instruction";
+	// Store names of any scenes that shouldn't be included in build.
+	public static List<string> non_test_scenes = new List<string> {"example", "scene_template", "test"};
+	public static List<string> unselectable_scene_objects = new List<string> {"wall","floor","ceiling"};
+
+	// Directory Info
+	public static string MainFolder   = "Assets/Scenes";
+	
+	// Server strings
+    public static string auth_username = "game";
+    public static string auth_password =  "6KK6w4EhgcrBQHKzgL";
+	public static string appendannotation_url = "/spatial_language_study/appendannotation.php";
+	public static string writeuserdata_url = "/spatial_language_study/writeuserdata.php";
+
+	// Task Abbreviations
+	public static string sv_abv = "sv";
+	public static string comp_abv = "comp";
+	public static string screen_abv = "screen";
+
 	Task sv_task;
 	Task pq_task;
 	Task comp_task;
@@ -794,7 +808,7 @@ public class Main : MonoBehaviour {
 	// Create random object for random number generation later
 	static System.Random rnd = new System.Random();
 	
-	List<string> unselectable_scene_objects = new List<string> {"wall","floor","ceiling"};
+	
 
 	GameObject[] allObjects;
 	// List of all objects to output later
@@ -881,12 +895,6 @@ public class Main : MonoBehaviour {
 	void Start () 
 		{	
 		
-		begin();
-		
-		
-	}
-
-	public void begin(){
 		// Set which task to begin
 		task = screen_task;
 
@@ -895,6 +903,8 @@ public class Main : MonoBehaviour {
 		task.set_task();
 		load_instructions();
 		help_panel.SetActive(false);
+		
+		
 	}
 
 
@@ -950,7 +960,7 @@ public class Main : MonoBehaviour {
 			StartCoroutine(task_scene.set_scene_coroutine());
 			Debug.Log("EndCoroutine");
 			
-			PlayerPrefs.SetString(SharedStrings.scene_player_pref, scene_name);
+			PlayerPrefs.SetString(scene_player_pref, scene_name);
 
 			new_example();
 		
@@ -1023,7 +1033,7 @@ public class Main : MonoBehaviour {
 			task_scene.deselect_ground();
 		}
 		
-		PlayerPrefs.SetString(SharedStrings.prep_playerpref, "");
+		PlayerPrefs.SetString(prep_playerpref, "");
 		
 
 	}
@@ -1031,19 +1041,19 @@ public class Main : MonoBehaviour {
 	public void reset_task_values(){
 		number_scenes_done = 0;
 		reset_input_values();
-		PlayerPrefs.SetString(SharedStrings.task_player_pref, "");
+		PlayerPrefs.SetString(task_player_pref, "");
 
 	}
 
 	public void reset_scene_values(){
 		reset_input_values();
-		PlayerPrefs.SetString(SharedStrings.scene_player_pref, "");
+		PlayerPrefs.SetString(scene_player_pref, "");
 	}
 	
 	public void clear_object_player_prefs(){
 		// Game was loading with these set to an object which was causing unhighlighting of them
-		PlayerPrefs.SetString(SharedStrings.selectedFig_playerpref, "");
-		PlayerPrefs.SetString(SharedStrings.selectedgrd_playerpref, "");
+		PlayerPrefs.SetString(selectedFig_playerpref, "");
+		PlayerPrefs.SetString(selectedgrd_playerpref, "");
 	}
 
 	string authenticate(string username, string password)
@@ -1055,16 +1065,16 @@ public class Main : MonoBehaviour {
 	}
 
 	IEnumerator sendselectionToFile_coroutine(){
-        string authorization = authenticate(SharedStrings.auth_username, SharedStrings.auth_password);
-	    string url = SharedStrings.appendannotation_url;
+        string authorization = authenticate(auth_username, auth_password);
+	    string url = appendannotation_url;
         yield return null;
         /// Output info
-		string f = PlayerPrefs.GetString(SharedStrings.selectedFig_playerpref,"");
-		string g = PlayerPrefs.GetString(SharedStrings.selectedgrd_playerpref,"");
-		string p = PlayerPrefs.GetString(SharedStrings.prep_playerpref,"");
-		string ta = PlayerPrefs.GetString(SharedStrings.task_player_pref,"");
-		string u = PlayerPrefs.GetString(SharedStrings.userid_player_pref,"");
-		string sc = PlayerPrefs.GetString(SharedStrings.scene_player_pref,"");
+		string f = PlayerPrefs.GetString(selectedFig_playerpref,"");
+		string g = PlayerPrefs.GetString(selectedgrd_playerpref,"");
+		string p = PlayerPrefs.GetString(prep_playerpref,"");
+		string ta = PlayerPrefs.GetString(task_player_pref,"");
+		string u = PlayerPrefs.GetString(userid_player_pref,"");
+		string sc = PlayerPrefs.GetString(scene_player_pref,"");
 		string now = System.DateTime.UtcNow.ToString("yyyyMMdd-HHMMss");
 		string ID = System.Guid.NewGuid().ToString();
 		string prepositions = "";
@@ -1194,7 +1204,7 @@ public class Main : MonoBehaviour {
 
 	public void submit(){
 		if(task.name == "screen"){
-			string f = PlayerPrefs.GetString(SharedStrings.selectedFig_playerpref,"");
+			string f = PlayerPrefs.GetString(selectedFig_playerpref,"");
 			GameObject fig = task_scene.active_configuration[0];
 			
 			if (f==fig.name){

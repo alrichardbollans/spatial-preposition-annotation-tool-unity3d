@@ -13,11 +13,6 @@ using System.Collections.Generic;
 public class Finalise_Scenes : EditorWindow
 {   
     
-    static string MainFolder   = "Assets/Scenes";
-    static string first_scene_name = "player_menu";
-    // Store names of any scenes that shouldn't be included in build.
-    static List<string> non_test_scenes = new List<string> {"example", "scene_template", "test"};
-    static string main_camera_tag= "MainCamera";
     /// <summary>
     /// Standardises scene name by removing ".unity".
     /// </summary>
@@ -43,7 +38,7 @@ public class Finalise_Scenes : EditorWindow
     static bool is_scene_to_add_to_build(string scene){
         string simplified_scene = simplify_scene_name(scene);
         
-        if (!non_test_scenes.Contains(simplified_scene)){
+        if (!Main.non_test_scenes.Contains(simplified_scene)){
             return true;
         }
         else{
@@ -61,7 +56,7 @@ public class Finalise_Scenes : EditorWindow
     static string get_scene_path(string scene_file){
         string simplified_scene = simplify_scene_name(scene_file);
 
-        return MainFolder + "/" + simplified_scene+ ".unity";
+        return Main.MainFolder + "/" + simplified_scene+ ".unity";
         
     }
 
@@ -93,7 +88,7 @@ public class Finalise_Scenes : EditorWindow
         List<string> SceneList =  new List<string> ();
         
         //Getting unity files.
-        DirectoryInfo d = new DirectoryInfo(@MainFolder);
+        DirectoryInfo d = new DirectoryInfo(@Main.MainFolder);
         FileInfo[] Files = d.GetFiles("*.unity"); 
         
         // Create scene list of scene names.
@@ -106,14 +101,14 @@ public class Finalise_Scenes : EditorWindow
         }
         
         // Add player menu first.
-        string firstscenePath = get_scene_path(first_scene_name);
+        string firstscenePath = get_scene_path(Main.first_scene_name);
         editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(firstscenePath, true));
         
         int i = 0;
         // Add the rest to build menu.
         for (i = 0; i < SceneList.Count; i ++)
         {
-            if (is_scene_to_add_to_build(SceneList[i]) && !SceneList[i].Contains(first_scene_name)){
+            if (is_scene_to_add_to_build(SceneList[i]) && !SceneList[i].Contains(Main.first_scene_name)){
                 string scenePath = get_scene_path(SceneList[i]);
                 editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(scenePath, true));
             }
@@ -136,7 +131,7 @@ public class Finalise_Scenes : EditorWindow
             EditorSceneManager.SetActiveScene(EditorSceneManager.GetSceneByName(scene_name));
             
             // Edit Main camera properties
-            cameras = GameObject.FindGameObjectsWithTag(main_camera_tag);
+            cameras = GameObject.FindGameObjectsWithTag(Main.main_camera_tag);
             
             foreach(GameObject camera in cameras){
                 

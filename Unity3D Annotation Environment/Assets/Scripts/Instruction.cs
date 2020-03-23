@@ -81,7 +81,7 @@ public class Instruction : MonoBehaviour {
 	public void load(){
 		Debug.Log("load");
 		
-		UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync("instruction");
+		UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(Main.instruction_scene_name);
 		main_empty_script.load_next_scene();
 		
 	}

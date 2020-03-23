@@ -13,11 +13,6 @@ public class Player_Menu_Main : MonoBehaviour {
     public GameObject nonnativeCheck; // NonNative toggle
     public GameObject instructions; // Instructions
 
-    static string main_scene_name = "main";
-    static string auth_username = "game";
-    static string auth_password =  "6KK6w4EhgcrBQHKzgL";
-    static string url_writeuserdata = "/spatial_language_study/writeuserdata.php";
-
     string userID;
 
     Toggle toggle_native;
@@ -36,7 +31,7 @@ public class Player_Menu_Main : MonoBehaviour {
 	void Start () {
 
         userID = System.Guid.NewGuid().ToString();
-        PlayerPrefs.SetString("UserID", userID); // Sets player ID to use later
+        PlayerPrefs.SetString(Main.userid_player_pref, userID); // Sets player ID to use later
  
         toggle_native = nativeCheck.GetComponent<Toggle>();
         toggle_nonnative = nonnativeCheck.GetComponent<Toggle>();
@@ -99,7 +94,7 @@ public class Player_Menu_Main : MonoBehaviour {
     /// Authentication string.
     /// </returns>
     IEnumerator sendUserTextToFile_then_loadscene(){
-        string authorization = authenticate(auth_username, auth_password);
+        string authorization = authenticate(Main.auth_username, Main.auth_password);
         yield return null;
         /// Set details
         set_form_values();
@@ -121,7 +116,7 @@ public class Player_Menu_Main : MonoBehaviour {
         }
         // Send the form to the php script to write to server
         // Upload to a cgi script
-        using (var w = UnityWebRequest.Post(url_writeuserdata, form))
+        using (var w = UnityWebRequest.Post(Main.writeuserdata_url, form))
         {
             w.SetRequestHeader("AUTHORIZATION",authorization);
             yield return w.SendWebRequest();
@@ -131,7 +126,7 @@ public class Player_Menu_Main : MonoBehaviour {
             
         }
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene(main_scene_name);
+        UnityEngine.SceneManagement.SceneManager.LoadScene(Main.main_scene_name);
     }
 	
     /// <summary>
