@@ -276,7 +276,7 @@ public class TaskScene {
 		}
 		populate_fig_ground_list();
 		// Add in configurations
-		if (task_type == "sv" || task_type == "pq" || task_type == "screen"){
+		if (task_type == Main.sv_abv || task_type == "pq" || task_type == Main.screen_abv){
 			// Create list of grounds by tag
 			
 			// Add configurations to list by taking children of ground
@@ -288,7 +288,7 @@ public class TaskScene {
 					}
 				}
 
-				if(task_type == "screen"){
+				if(task_type == Main.screen_abv){
 					foreach(Transform emp in ground.transform){
 						string p = emp.gameObject.tag;
 						if (comp_preposition_list.Contains(p)){
@@ -303,7 +303,7 @@ public class TaskScene {
 
 		
 
-		if (task_type == "comp"){
+		if (task_type == Main.comp_abv){
 			// Create list of grounds by tag
 			
 			
@@ -357,7 +357,7 @@ public class TaskScene {
 	/// true if a new configuration can be set in the scene, otherwise False.
 	/// </returns>
 	public bool set_new_example(){
-		if (task_type == "sv" || task_type == "pq" || task_type == "screen"){
+		if (task_type == Main.sv_abv || task_type == "pq" || task_type == Main.screen_abv){
 
 
 			// Unselect figure and ground
@@ -375,7 +375,7 @@ public class TaskScene {
 					GameObject f = active_configuration[0];
 				
 					GameObject g = active_configuration[1];
-					if(task_type != "screen"){
+					if(task_type != Main.screen_abv){
 						set_figure(f);
 					}
 					
@@ -383,7 +383,7 @@ public class TaskScene {
 					Debug.Log("New example:");
 					Debug.Log("New Figure:" + f.name);
 					Debug.Log("New Ground:" + g.name);
-					if (task_type == "screen"){
+					if (task_type == Main.screen_abv){
 						Debug.Log("setting preposition: " + screening_preposition);
 						set_preposition(screening_preposition);
 					}
@@ -404,11 +404,11 @@ public class TaskScene {
 			
 				GameObject g = active_configuration[1];
 
-				if(task_type != "screen"){
+				if(task_type != Main.screen_abv){
 						set_figure(f);
 					}
 				set_ground(g);
-				if (task_type == "screen"){
+				if (task_type == Main.screen_abv){
 					Debug.Log("setting preposition: " + screening_preposition);
 					set_preposition(screening_preposition);
 				}
@@ -425,7 +425,7 @@ public class TaskScene {
 
 
 		
-		if (task_type == "comp"){
+		if (task_type == Main.comp_abv){
 			deselect_figure();
 			deselect_ground();
 			
@@ -554,11 +554,11 @@ public class Task {
 		scene_abbreviations.Add(n);
 		number_scenes_to_do = 10;
 
-		// if(name == "sv" || name == "comp" || name == "pq"){
+		// if(name == Main.sv_abv || name == Main.comp_abv || name == "pq"){
 		// 	//These tasks share scenes
-		// 	scene_abbreviations.Add("sv");
+		// 	scene_abbreviations.Add(Main.sv_abv);
 		// 	scene_abbreviations.Add("pq");
-		// 	scene_abbreviations.Add("comp");
+		// 	scene_abbreviations.Add(Main.comp_abv);
 
 		// }
 		GameObject[] allObjects = Object.FindObjectsOfType<GameObject>();
@@ -674,7 +674,7 @@ public class Task {
 				g.SetActive(false);
 			}
 
-			if(g.name.Contains("selected_figure_panel") && (name == "comp" || name == "screen")){
+			if(g.name.Contains("selected_figure_panel") && (name == Main.comp_abv || name == Main.screen_abv)){
 				g.SetActive(true);
 			}
 		}
@@ -760,6 +760,9 @@ public class Main : MonoBehaviour {
 	public static string first_scene_name = "player_menu";
 	public static string main_scene_name = "main";
 	public static string instruction_scene_name = "instruction";
+	public static string fail_scene_name = "screening_fail";
+	public static string finish_scene_name = "finish";
+	
 	// Store names of any scenes that shouldn't be included in build.
 	public static List<string> non_test_scenes = new List<string> {"example", "scene_template", "test"};
 	public static List<string> unselectable_scene_objects = new List<string> {"wall","floor","ceiling"};
@@ -783,11 +786,9 @@ public class Main : MonoBehaviour {
 	Task comp_task;
 	Task game_task;
 	Task screen_task;
-	static public Task task; // Set the task type "sv", "comp" or "game"
+	static public Task task;
 
 	TaskScene task_scene;
-
-	// public GameObject selectableObjectsEmpty; //All selectable objects should come under here
 
 	public GameObject confirm_text;
 	public GameObject confirmQuit_text;
@@ -795,13 +796,10 @@ public class Main : MonoBehaviour {
 
 	public GameObject None_toggle_obj;
 	Toggle None_toggle;
-
 	
 	public GameObject loadingImage;
-	// public GameObject pointer;
 
-	public bool fail_loaded; // bool to know if fail scene is loaded
-	
+	public bool fail_loaded; // bool to know if fail scene is loaded.
 	
 	public int number_scenes_done = 0;
 
@@ -818,7 +816,10 @@ public class Main : MonoBehaviour {
 	bool confirm = false;
 	bool confirm_quit = false;
 
-	// Use this for initialization
+	/// <summary>
+	/// Awake is used to initialize any variables or game state before the game starts.
+	/// Awake is called only once during the lifetime of the script instance.
+	/// </summary>
 	void Awake(){
 		
 		// Get list of all game objects
@@ -849,11 +850,11 @@ public class Main : MonoBehaviour {
 		string[] game_instructions = {};
 		
 		// Instantiate tasks now lists have been created
-		sv_task = new Task("sv",sv_instructions,sv_instruction_title);
+		sv_task = new Task(sv_abv,sv_instructions,sv_instruction_title);
 		pq_task = new Task("pq",sv_instructions,sv_instruction_title);
-		comp_task = new Task("comp",comp_instructions,comp_instruction_title);
+		comp_task = new Task(comp_abv,comp_instructions,comp_instruction_title);
 		game_task = new Task("game",game_instructions,game_instruction_title);
-		screen_task = new Task("screen",screen_instructions,screen_instruction_title);
+		screen_task = new Task(screen_abv,screen_instructions,screen_instruction_title);
 		
 		// Set instructions (this should probably happen on instatiation?)
 		comp_task.instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
@@ -927,7 +928,7 @@ public class Main : MonoBehaviour {
         }
 	}
 	public bool player_in_game(){
-		if(! is_scene_loaded("instruction") && ! is_scene_loaded("screening_fail") && ! is_scene_loaded("finish")){
+		if(! is_scene_loaded(instruction_scene_name) && ! is_scene_loaded(fail_scene_name) && ! is_scene_loaded(finish_scene_name)){
 			return true;
 		}
 		else{
@@ -939,7 +940,7 @@ public class Main : MonoBehaviour {
 		reset_scene_values();
 		Scene active_scene = SceneManager.GetActiveScene();
 		Debug.Log("Unloading Scene:" + active_scene.name);
-		if(active_scene.name != "main"){
+		if(active_scene.name != main_scene_name){
 			SceneManager.UnloadSceneAsync(active_scene);
 		}
 	}
@@ -1129,17 +1130,17 @@ public class Main : MonoBehaviour {
 		Debug.Log("Changing Task"); //Add to change task button in editor
 		reset_task_values();
 
-		if (task.name == "screen"){
+		if (task.name == screen_abv){
 			task = sv_task;
 			
 		}
 		
-		else if (task.name == "sv"){
+		else if (task.name == sv_abv){
 			task = comp_task;
 			
 		}
 
-		else if (task.name == "comp"){
+		else if (task.name == comp_abv){
 
 			Debug.Log("Finished");
 			finish();
@@ -1155,7 +1156,7 @@ public class Main : MonoBehaviour {
 		load_instructions();
 	}
 	public void load_instructions(){
-		UnityEngine.SceneManagement.SceneManager.LoadScene("instruction",LoadSceneMode.Additive);
+		UnityEngine.SceneManagement.SceneManager.LoadScene(instruction_scene_name,LoadSceneMode.Additive);
 		
 	}
 	public void fail(){
@@ -1173,7 +1174,7 @@ public class Main : MonoBehaviour {
 
 
 	
-		UnityEngine.SceneManagement.SceneManager.LoadScene("screening_fail",LoadSceneMode.Additive);
+		UnityEngine.SceneManagement.SceneManager.LoadScene(fail_scene_name,LoadSceneMode.Additive);
 		
 	}
 
@@ -1181,7 +1182,7 @@ public class Main : MonoBehaviour {
 	public void finish(){
 		clear_object_player_prefs();
 		unload_current_scene();
-		UnityEngine.SceneManagement.SceneManager.LoadScene("finish");
+		UnityEngine.SceneManagement.SceneManager.LoadScene(finish_scene_name);
 	}
 
 	void NoneToggleValueChanged(){
@@ -1203,7 +1204,7 @@ public class Main : MonoBehaviour {
 	}
 
 	public void submit(){
-		if(task.name == "screen"){
+		if(task.name == screen_abv){
 			string f = PlayerPrefs.GetString(selectedFig_playerpref,"");
 			GameObject fig = task_scene.active_configuration[0];
 			
@@ -1218,7 +1219,7 @@ public class Main : MonoBehaviour {
 				fail();
 			}
 		}
-		else if(task.name == "sv"){
+		else if(task.name == sv_abv){
 			if(task.list_of_toggles.All(x => x.isOn ==false)){
 
 			}
@@ -1286,7 +1287,7 @@ public class Main : MonoBehaviour {
 
 			  	Debug.Log("hit: " + hit.transform.name);
 			  	GameObject g;
-			  	if (task.name == "screen"){
+			  	if (task.name == screen_abv){
 				  	g = task_scene.active_configuration[1];
 				  }
 				 else{
@@ -1369,7 +1370,7 @@ public class Main : MonoBehaviour {
 	    }
 		if(player_in_game()){
 			
-			if (task.name == "comp" || task.name == "screen"){
+			if (task.name == comp_abv || task.name == screen_abv){
 				if (Input.GetMouseButtonDown(0)){ // if left button pressed...
 					if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
 					        {
