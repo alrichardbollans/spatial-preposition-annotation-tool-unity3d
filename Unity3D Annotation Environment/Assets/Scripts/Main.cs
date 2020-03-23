@@ -762,7 +762,7 @@ public class Main : MonoBehaviour {
 	public static string instruction_scene_name = "instruction";
 	public static string fail_scene_name = "screening_fail";
 	public static string finish_scene_name = "finish";
-	
+
 	// Store names of any scenes that shouldn't be included in build.
 	public static List<string> non_test_scenes = new List<string> {"example", "scene_template", "test"};
 	public static List<string> unselectable_scene_objects = new List<string> {"wall","floor","ceiling"};
@@ -784,7 +784,6 @@ public class Main : MonoBehaviour {
 	Task sv_task;
 	Task pq_task;
 	Task comp_task;
-	Task game_task;
 	Task screen_task;
 	static public Task task;
 
@@ -819,6 +818,7 @@ public class Main : MonoBehaviour {
 	/// <summary>
 	/// Awake is used to initialize any variables or game state before the game starts.
 	/// Awake is called only once during the lifetime of the script instance.
+	/// Creates tasks. Adds listeners to toggles. Deactivates some objects.
 	/// </summary>
 	void Awake(){
 		
@@ -829,11 +829,6 @@ public class Main : MonoBehaviour {
 			all_objects.Add(obj.name);
 			all_objects_string += obj.name + ",";
 		}
-
-		
-
-		
-
 		// Set intructions
 		string screen_instruction_title = "Instructions";
 		string[] screen_instructions = {"Before beginning you will be given <b>two quick examples</b> to complete\n \n \nClick Next..",	"You will be shown an indoor scene and a description of an object will be provided at the bottom of the screen. \n \n Click on the object that best fits the description.\n \n You will be prompted to press enter or click accept to confirm your selection. \n \nIf you are correct you will move on to the next stage.",
@@ -846,14 +841,13 @@ public class Main : MonoBehaviour {
 		string comp_instruction_title = "Task 2 Instructions";
 		string[] comp_instructions = {"In this task you will be asked to select the object which <b>best fits</b> a given description.", "An object will be described by its relation to another object which will be <color=red><b>highlighted in red</b></color>, e.g. 'the object <b>on</b> the <color=red><b>table</b></color>'. You need to <b>click</b> on the object <b>which best fits the description</b>.\n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.", "The object you select will turn <color=green><b>green</b></color>. Once you have selected an object you must press 'Enter' or click 'Accept' to confirm your selection. \n\n You <b>cannot select</b> the room, floor, ceiling or walls; but remember that you <b>can select</b> the table. \n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.","All important objects in the scene will be immediately in view; but remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
 			
-		string game_instruction_title = "Game Instructions";
-		string[] game_instructions = {};
+		// string game_instruction_title = "Game Instructions";
+		// string[] game_instructions = {};
 		
 		// Instantiate tasks now lists have been created
 		sv_task = new Task(sv_abv,sv_instructions,sv_instruction_title);
 		pq_task = new Task("pq",sv_instructions,sv_instruction_title);
 		comp_task = new Task(comp_abv,comp_instructions,comp_instruction_title);
-		game_task = new Task("game",game_instructions,game_instruction_title);
 		screen_task = new Task(screen_abv,screen_instructions,screen_instruction_title);
 		
 		// Set instructions (this should probably happen on instatiation?)
@@ -875,15 +869,11 @@ public class Main : MonoBehaviour {
         });
 
         foreach(Toggle t in sv_task.preposition_toggles){
-        	// Debug.Log("adding listeners");
-        	// Debug.Log(t.gameObject.name);
         	//Add listener for when the state of the Toggle changes, to take action
 	        t.onValueChanged.AddListener(delegate {
 	            PrepToggleValueChanged();
 	        });
         }
-
-		// Initialize variables
 		
 		// Set states
 		// reset_input_values();
@@ -893,6 +883,9 @@ public class Main : MonoBehaviour {
 		
 
 	}
+	/// <summary>
+	/// Sets first task. Deactivates some objects. Clears PlayerPrefs and loads instructions.
+	/// </summary>
 	void Start () 
 		{	
 		
@@ -908,7 +901,13 @@ public class Main : MonoBehaviour {
 		
 	}
 
-
+	/// <summary>
+	/// Checks is scene is loaded.
+	/// </summary>
+	/// <param name="sceneName">String. Scene name.</param>
+	/// <returns>
+	/// True, if scene is loaded, otherwise False.
+	/// </returns>
 	public bool is_scene_loaded(string sceneName){
 		int countLoaded = SceneManager.sceneCount;
         Scene[] loadedScenes = new Scene[countLoaded];
@@ -927,6 +926,12 @@ public class Main : MonoBehaviour {
         	return false;
         }
 	}
+	/// <summary>
+	/// Checks if player is currently being tested.
+	/// </summary>
+	/// <returns>
+	/// True, if no scenes are loaded which indicate being outside test, otherwise False.
+	/// </returns>
 	public bool player_in_game(){
 		if(! is_scene_loaded(instruction_scene_name) && ! is_scene_loaded(fail_scene_name) && ! is_scene_loaded(finish_scene_name)){
 			return true;
@@ -935,6 +940,10 @@ public class Main : MonoBehaviour {
 			return false;
 		}
 	}
+
+	/// <summary>
+	/// Clears some playerprefs and unloads active scene.
+	/// </summary>
 	public void unload_current_scene(){
 		// Unloads the active scene
 		reset_scene_values();
@@ -945,33 +954,31 @@ public class Main : MonoBehaviour {
 		}
 	}
 
-
-	
-
-	public void load_scene(string scene_name){
+	/// <summary>
+	/// Sets some playerprefs and loads scene and sets new example.
+	/// </summary>
+	/// <param name="sceneName">String. Scene name.</param>
+	public void load_scene(string sceneName){
 			loadingImage.SetActive(true);
 			// takes a scene name and loads it for the task
 			
-			task_scene = new TaskScene(scene_name,task.name);
-			// StartCoroutine("task_scene.set_scene_coroutine");
-			Debug.Log("New Scene:" + scene_name);
-			// This needs to be here to make use of the monobehaviour method 'startcoroutine'
-			Debug.Log("StartCoroutine");
+			task_scene = new TaskScene(sceneName,task.name);
 			
 			StartCoroutine(task_scene.set_scene_coroutine());
-			Debug.Log("EndCoroutine");
 			
-			PlayerPrefs.SetString(scene_player_pref, scene_name);
+			PlayerPrefs.SetString(scene_player_pref, sceneName);
 
 			new_example();
 		
 		
 	}
 
+	/// <summary>
+	/// If user has done enough scenes for task, changes task.
+	/// Else, unloads current scene and loads new random scene.
+	/// </summary>
 	public void load_next_scene(){
 		
-		
-			
 		if (number_scenes_done == task.number_scenes_to_do || task.list_of_scenes_to_do.Count==0){
 			change_task();
 			task.set_task();
@@ -987,32 +994,26 @@ public class Main : MonoBehaviour {
 			string new_scene = task.list_of_scenes_to_do[r];
 			load_scene(new_scene);
 
-			//Debug.Log("list of scenes pre remove");
-			// foreach(string s in task.list_of_scenes_to_do){
-			// 	//Debug.Log(s);
-			// }
 			task.list_of_scenes_to_do.Remove(new_scene);
-			// Debug.Log("list of scenes post remove");
-			// foreach(string s in task.list_of_scenes_to_do){
-			// 	Debug.Log(s);
-			// }
-			number_scenes_done += 1;
-		}
 
-		
-		
-		
-		
-		
+			number_scenes_done += 1;
+		}	
 
 	}
 
+	/// <summary>
+	/// Runs new_example_coroutine.
+	/// </summary>
 	public void new_example(){
 
 		// This needs to be a coroutine as we need to wait for task_scene lists to be populated
 		StartCoroutine(new_example_coroutine());
 	}
 
+	/// <summary>
+	/// Coroutine. If there are remaining examples to do in the scene, sets new example.
+	/// Else, changes scene.
+	/// </summary>
 	public IEnumerator new_example_coroutine(){
 		yield return null;
 		bool x = task_scene.set_new_example();
@@ -1028,6 +1029,10 @@ public class Main : MonoBehaviour {
 			
 		}
 	}
+
+	/// <summary>
+	/// Clears playerprefs for fig, ground and preposition. Unhighlights/deselects fig and ground.
+	/// </summary>
 	public void reset_input_values(){
 		if(task_scene != null){
 			task_scene.deselect_figure();
@@ -1039,6 +1044,9 @@ public class Main : MonoBehaviour {
 
 	}
 
+	/// <summary>
+	/// Clears playerprefs for task, fig, ground and preposition. Unhighlights/deselects fig and ground.
+	/// </summary>
 	public void reset_task_values(){
 		number_scenes_done = 0;
 		reset_input_values();
@@ -1046,17 +1054,31 @@ public class Main : MonoBehaviour {
 
 	}
 
+	/// <summary>
+	/// Clears playerprefs for scene, fig, ground and preposition. Unhighlights/deselects fig and ground.
+	/// </summary>
 	public void reset_scene_values(){
 		reset_input_values();
 		PlayerPrefs.SetString(scene_player_pref, "");
 	}
 	
+	/// <summary>
+	/// Clears playerprefs for fig, ground.
+	/// </summary>
 	public void clear_object_player_prefs(){
 		// Game was loading with these set to an object which was causing unhighlighting of them
 		PlayerPrefs.SetString(selectedFig_playerpref, "");
 		PlayerPrefs.SetString(selectedgrd_playerpref, "");
 	}
 
+	/// <summary>
+	/// Gets string for authentication from username and password.
+	/// </summary>
+	/// <param name="username">The username.</param>
+	/// <param name="password">The password.</param>
+	/// <returns>
+	/// Authentication string.
+	/// </returns>
 	string authenticate(string username, string password)
 	{
 	    string auth = username + ":" + password;
@@ -1064,7 +1086,10 @@ public class Main : MonoBehaviour {
 	    auth = "Basic " + auth;
 	    return auth;
 	}
-
+    
+    /// <summary>
+    /// Writes annotation info to file.
+    /// </summary>
 	IEnumerator sendselectionToFile_coroutine(){
         string authorization = authenticate(auth_username, auth_password);
 	    string url = appendannotation_url;
@@ -1126,6 +1151,9 @@ public class Main : MonoBehaviour {
         }
     }
 	
+	/// <summary>
+	/// Resets some playerpref values then sets new task, unloads current scene and loads instructions.
+	/// </summary>
 	public void change_task(){
 		Debug.Log("Changing Task"); //Add to change task button in editor
 		reset_task_values();
@@ -1149,22 +1177,25 @@ public class Main : MonoBehaviour {
 		}
 		unload_current_scene();
 		
-		
-		// // Load first scene
-		// string s = task.list_of_scenes_to_do[0];
-		// load_scene(s);
 		load_instructions();
 	}
+
+	/// <summary>
+	/// Load instruction scene.
+	/// </summary>
 	public void load_instructions(){
 		UnityEngine.SceneManagement.SceneManager.LoadScene(instruction_scene_name,LoadSceneMode.Additive);
 		
 	}
+	/// <summary>
+	/// Unloads current scene. Resets list_of_scenes to do. Loads fail scene.
+	/// </summary>
 	public void fail(){
 		
 		unload_current_scene();
 		
-
-		var result = task.list_of_scenes.Except(task.list_of_scenes_to_do); // Find scenes in listofscenes not in listofscenesto do
+		// Find scenes in listofscenes not in listofscenesto do
+		var result = task.list_of_scenes.Except(task.list_of_scenes_to_do); 
 		foreach(string s in result){
 			task.list_of_scenes_to_do.Add(s); // Add them back into list of scnes to do
 		}
@@ -1178,13 +1209,18 @@ public class Main : MonoBehaviour {
 		
 	}
 
-	
+	/// <summary>
+	/// Unloads current scene. Clears fig,ground player prefs. Loads finish scene.
+	/// </summary>
 	public void finish(){
 		clear_object_player_prefs();
 		unload_current_scene();
 		UnityEngine.SceneManagement.SceneManager.LoadScene(finish_scene_name);
 	}
 
+	/// <summary>
+	/// Unloads current scene. Clears fig,ground player prefs. Loads finish scene.
+	/// </summary>
 	void NoneToggleValueChanged(){
 
 		if(None_toggle.isOn){

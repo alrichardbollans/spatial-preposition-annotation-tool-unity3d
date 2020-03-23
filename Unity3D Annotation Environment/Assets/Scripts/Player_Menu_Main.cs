@@ -90,9 +90,6 @@ public class Player_Menu_Main : MonoBehaviour {
     /// <summary>
     /// Writes user info to file then loads main scene.
     /// </summary>
-    /// <returns>
-    /// Authentication string.
-    /// </returns>
     IEnumerator sendUserTextToFile_then_loadscene(){
         string authorization = authenticate(Main.auth_username, Main.auth_password);
         yield return null;
