@@ -1,7 +1,9 @@
-// This script makes edits to the positions of objects in the scene so that they are naturally at rest
+// This script makes edits to the positions of objects in the scene so that 
+// they are naturally at rest
 
-// It does this by adding/removing colliders, giving the objects rigidbody, playing the scene
-// writing positions (using an added in-game script) and then reading the positions and editing transforms
+// It does this by adding/removing colliders, giving the objects rigidbody,
+// playing the scene writing positions (using an added in-game script) 
+// and then reading the positions and editing transforms
 #if UNITY_EDITOR
 using UnityEngine;
 

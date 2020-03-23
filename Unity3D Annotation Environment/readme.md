@@ -9,7 +9,7 @@ Rough docs to be improved!!!
 Note that some scripts require the NonConvexMeshCollider Asset, which is available on the Unity Store.
 
 ## Scene Data
-Scene Data folder contains calculated features from each scene and a script for extracting conceptnet properties. This folder is used later in /Post Processing/Analysis
+Scene Data folder contains calculated features from each scene and a script for extracting conceptnet properties. This folder is used later in analysis.
 
 ## Assets
 Assets folder contains necessary assets for game creation and running -- scripts, scenes, meshes etc..

@@ -9,8 +9,10 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// Class containg scene info.
+/// </summary>
 public class MyScene{
-	// Class containing scene info making it easier to print
 	public string name;
 	public string filename;
 	public string path;
@@ -18,7 +20,7 @@ public class MyScene{
 	static string[] non_scenes = {"example","finish","instruction","template","main","player","screen","test"};
 	public bool study_scene;
 	
-	static string MainFolder   = "Assets/Scenes";
+	static string MainFolder   = Main.MainFolder;
 	
 	public MyScene(string _filename){
 		filename = _filename;
@@ -34,7 +36,9 @@ public class MyScene{
 		
 	}
 
-	
+	/// <summary>
+	/// Open scene and make it active.
+	/// </summary>
 	public void open_set_active(){
 		EditorSceneManager.OpenScene(path);
 	    
@@ -43,15 +47,14 @@ public class MyScene{
 
 }
 
+/// <summary>
+/// Class to hold information about all scenes.
+/// </summary>
 public class Scenes{
-	// Class to hold information about all scenes
-
 	public List<MyScene> SceneList =  new List<MyScene> ();
     
-    static string MainFolder   = "Assets/Scenes";
-    
-	
-	static string output_path = "Scene Data/";
+    static string MainFolder   = Main.MainFolder;
+	static string output_path = Relationship.output_path;
 	static string filename = "scene_info.csv";
 	string csv_file = output_path + filename;
 
@@ -67,6 +70,9 @@ public class Scenes{
     	get_scenes_lists();
     }
 
+    /// <summary>
+    /// Get list of study scenes.
+    /// </summary>
 	void get_scenes_lists (){
         DirectoryInfo d = new DirectoryInfo(@MainFolder);
         FileInfo[] Files = d.GetFiles("*.unity"); //Getting unity files
@@ -75,23 +81,16 @@ public class Scenes{
         {
             MyScene s = new MyScene(file.Name);
             if(s.study_scene){
-            // Debug.Log ("file name:" + file.Name);
 	            SceneList.Add(s);
-	            // if (!SceneList[i].Contains("example") &&!SceneList[i].Contains("template") &&!SceneList[i].Contains("test") && !SceneList[i].Contains("player menu")){
-	            // 	ScenePathList.Add(s.path);
-	            // }
-	            
-	            
 	        	number_of_scenes += 1;
             }
-
-            
-        }
-      
-        
-        
+    
+        }     
     }
 
+    /// <summary>
+    /// Save scene info to csv.
+    /// </summary>
     public void save_to_csv(){
     	using(StreamWriter file = new StreamWriter(csv_file)){
     		string x = "number_of_scenes: " + number_of_scenes.ToString();
@@ -118,6 +117,9 @@ public class Scenes{
 
 }
 
+/// <summary>
+/// Class for storing information about configuration feature values.
+/// </summary>
 public class Relationship{
 	static string output_path = "Scene Data/";
 	static string filename = "relations.csv";
@@ -145,13 +147,13 @@ public class Relationship{
 		string line;
 		using(StreamReader file =  new StreamReader(commonsense_csv_file)){
             while((line = file.ReadLine()) != null)
-               {
-                	string[] values = line.Split(',');
+           {
+            	string[] values = line.Split(',');
 
-                	if(ground.Contains(values[0])){
-                		relation_dictionary["ground_container"] = float.Parse(values[1]);
-                		relation_dictionary["ground_lightsource"] = float.Parse(values[2]);
-                	}
+            	if(ground.Contains(values[0])){
+            		relation_dictionary["ground_container"] = float.Parse(values[1]);
+            		relation_dictionary["ground_lightsource"] = float.Parse(values[2]);
+            	}
         	}
         }
 
@@ -160,15 +162,18 @@ public class Relationship{
 
 	}
 
+	/// <summary>
+	/// Load relationship values from csv.
+	/// </summary>
 	public void load_from_csv(){
-		// Loads values for the relation from the csv file
+		
 		string line;
 		using(StreamReader file =  new StreamReader(csv_file)){
             while((line = file.ReadLine()) != null)
                {
-                  string[] values = line.Split(',');
+                string[] values = line.Split(',');
 
-                  if(values[0] == scene && values[1] == figure && values[2] == ground){
+                if(values[0] == scene && values[1] == figure && values[2] == ground){
                   	foreach(string relation in relation_keys){
                   		string v = values[relation_keys.IndexOf(relation) + 3]; // Add 3 to account for scene,fig,ground
                   		if(v != "?"){
@@ -179,16 +184,18 @@ public class Relationship{
 	                  	}
 
                   	}
-                  }
-               }
+                }
             }
+        }
 	}
 
-	// Writes relationship to csv file
-	// First creates row to write by getting values associated with relations given in relation_keys
-	// If the configuration doesn't already exist in csv it appends the row
-	// If the configuration does exist it updates values in the csv using new values in the row
-	// Note that if features are removed the row that gets written may have additional unnecessary values
+	/// <summary>
+	/// Writes relationship to csv file
+	/// First creates row to write by getting values associated with relations given in relation_keys
+	/// If the configuration doesn't already exist in csv it appends the row
+	/// If the configuration does exist it updates values in the csv using new values in the row
+	/// Note that if features are removed the row that gets written may have additional unnecessary values
+	/// </summary>
 	public void save_to_csv(){
 		// Writes relation values to csv
 		List<string> row = new List<string>();
@@ -196,33 +203,32 @@ public class Relationship{
 		row.Add(figure);
 		row.Add(ground);
 		// Begin by creating a row which stores the values of each relation
-		// If a value is not assigned, "?" is assigned, which later means those feature values are not changed
+		// If a value is not assigned, "?" is assigned, 
+		// which later means those feature values are not changed.
 		foreach(string key in relation_keys){
 			object val;
 			if(relation_dictionary.TryGetValue(key, out val)){
 				
-				// if the key exists try to cast value as string
-
+				// if the key exists try to cast value as string.
 				string v = val as string;
 
-				// If null is returned the object is a float so output that
+				// If null is returned the object is a float so output that.
 				if(v==null){
 					string s = string.Format("{0:F9}",val);
 					row.Add(s);
 					
 
 				}
-				// if a non-null value is returned add the string to the row
+				// if a non-null value is returned add the string to the row.
 				else {
 					row.Add("?");
-					
 				}
 
 			}
 			else{
-				// Add default string to row
+				// Add default string to row.
 				row.Add("?");
-				// Add key value pair to dictionary
+				// Add key value pair to dictionary.
 				relation_dictionary[key] = "?";
 			}
 			
@@ -231,98 +237,72 @@ public class Relationship{
 		
 
 		List<List<string>> line_list = new List<List<string>>();
-		// try
-		// {
-			using (StreamReader file = new StreamReader(csv_file)){
+
+		using (StreamReader file = new StreamReader(csv_file)){
+			
+			string line;
+			while((line = file.ReadLine()) != null){
+				string[] values = Array.ConvertAll(line.Split(','), p => p.Trim());
 				
-				string line;
-				while((line = file.ReadLine()) != null){
-					string[] values = Array.ConvertAll(line.Split(','), p => p.Trim());
-					
 
-					line_list.Add(values.ToList());
+				line_list.Add(values.ToList());
 
-				}
 			}
+		}
 			
 
-			// Check if there is a match between our row and a row in the csv file
-			// If there is then update the values and rewrite csv
-			if (line_list.Any(rel => scene == rel[0] && figure == rel[1] && ground ==rel[2])){
-				
-				using(StreamWriter file = new StreamWriter(csv_file)){
-					file.WriteLine(titles_csv_string);
-					foreach(List<string> v in line_list){
-						if(!v.Contains(titles[0])){
-							if(scene == v[0] && figure == v[1] && ground == v[2]){
-								
-								int x = 0;
-								for (x=0; x<relation_keys.Count; x ++){
-									
-									string xth_value = relation_dictionary[relation_keys[x]].ToString();
-									
+		// Check if there is a match between our row and a row in the csv file
+		// If there is then update the values and rewrite csv
+		if (line_list.Any(rel => scene == rel[0] && figure == rel[1] && ground ==rel[2])){
+			
+			using(StreamWriter file = new StreamWriter(csv_file)){
+				file.WriteLine(titles_csv_string);
+				foreach(List<string> v in line_list){
+					if(!v.Contains(titles[0])){
+						if(scene == v[0] && figure == v[1] && ground == v[2]){
+							
+							int x = 0;
+							for (x=0; x<relation_keys.Count; x ++){								
+								string xth_value = relation_dictionary[relation_keys[x]].ToString();
 
-									if(xth_value != "?"){
-										
-										if(v.Count > x + 3 ){
-											v[x+3] = xth_value;
-										}
-										else{
-											v.Add(xth_value);
-											
-										}
+								if(xth_value != "?"){									
+									if(v.Count > x + 3 ){
+										v[x+3] = xth_value;
 									}
-									
-								}
+									else{
+										v.Add(xth_value);										
+									}
+								}	
 							}
-					
-					
-
-						
-						string row_csv_string = String.Join(",", v.ToArray());
-						
-						file.WriteLine(row_csv_string);
 						}
 
+					string row_csv_string = String.Join(",", v.ToArray());
+					
+					file.WriteLine(row_csv_string);
 					}
 				}
 			}
-			// If there is no match, just append line to csv
-			else{
-				Debug.Log("No match found");
+		}
 
-				using(StreamWriter file = new StreamWriter(csv_file,true)){
-					string row_csv_string = String.Join(",", row.ToArray());
-					file.WriteLine(row_csv_string);
+		// If there is no match, just append line to csv.
+		else{
+			Debug.Log("No match found");
 
-					Debug.Log(row_csv_string);
-									
-								
-
-				}
+			using(StreamWriter file = new StreamWriter(csv_file,true)){
+				string row_csv_string = String.Join(",", row.ToArray());
+				file.WriteLine(row_csv_string);
+				Debug.Log(row_csv_string);
 			}
-
-
-		// }
-		// catch(Exception ex){
-		// 	Debug.Log("Writing to csv failed");
-		// 	Debug.Log(ex.ToString());
-		// }
-		// finally
-		// {
-		// 	// This statement is executed before function exits.
-  //           // ... It is reached when an exception is thrown.
-  //           // ... It is reached after the return.
-  //           // ... It is reached in other cases.
-			
-		// }
-
-		
+		}	
 	}
 }
-// Property class is currently obsolete
+
+/// <summary>
+/// Class for storing information about object feature values.
+/// Property class is currently obsolete
+/// </summary>
 public class Property{
-	static string output_path = "Scene Data/";
+	static string output_path = Relationship.output_path;
 	static string filename = "properties.csv";
 	string csv_file = output_path + filename;
 	// Manages relationships between entities and read/writing

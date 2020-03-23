@@ -40,7 +40,7 @@ public class write_support_measures : EditorWindow{
 	static public int scene_index = 0;
 
 	static public List<GameObject> ground_list = new List<GameObject>();
-	static  public string output_path = "Scene Data/";
+	static  public string output_path = Relationship.output_path;
 	static public string calculations_file = "support_measures.csv";
 	static public string csv_file = output_path + calculations_file;
 
