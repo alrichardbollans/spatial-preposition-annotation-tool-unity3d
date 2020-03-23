@@ -43,10 +43,12 @@ using System.IO;
 using System.Text;
 using System.Linq;
 
-
+/// <summary>
+/// TaskScene class acts like the usual Scene object except 
+/// more information is stored regarding object configurations.
+/// </summary>
 public class TaskScene {
-	// TaskScene class acts like the usual Scene object except 
-	// more information is stored regarding object configurations.
+
 	public string name; //Scene Name
 	public string task_type; 
 	public List<GameObject> ground_list = new List<GameObject>();
@@ -480,7 +482,10 @@ public class TaskScene {
 	}
 
 	
-
+/// <summary>
+/// The main Task class.
+/// Contains information on what is displayed for the task.
+/// </summary>
 public class Task {
 	// Be careful editing below list. It is edited by a script (finalise_scenes.cs) 
 	// (button in the editor)
@@ -739,9 +744,12 @@ public class Task {
 
 
 
-
+/// <summary>
+/// The main game monobehaviour class.
+/// Begins game, loads scenes, handles user inputs etc..
+/// </summary>
 public class Main : MonoBehaviour {
-	// Strings reused across scripts.
+	// Strings and values reused across scripts.
 	// PlayerPrefs
 	public static string selectedFig_playerpref = "selectedFigure";
 	public static string selectedgrd_playerpref = "selectedGround";
@@ -780,6 +788,10 @@ public class Main : MonoBehaviour {
 	public static string sv_abv = "sv";
 	public static string comp_abv = "comp";
 	public static string screen_abv = "screen";
+
+	// Input keys
+	static public KeyCode ShowHelpKey = KeyCode.Delete;
+	static public KeyCode quitKey = KeyCode.Escape;
 
 	Task sv_task;
 	Task pq_task;
@@ -1219,7 +1231,7 @@ public class Main : MonoBehaviour {
 	}
 
 	/// <summary>
-	/// Unloads current scene. Clears fig,ground player prefs. Loads finish scene.
+	/// If Nonetoggle is on, turns off all preposition toggles.
 	/// </summary>
 	void NoneToggleValueChanged(){
 
@@ -1231,6 +1243,9 @@ public class Main : MonoBehaviour {
 	
 	}
 
+	/// <summary>
+	/// If any preposition toggle is on, turns off nonetoggle.
+	/// </summary>
 	void PrepToggleValueChanged(){
 		Debug.Log("Prep change");
 		if(task.preposition_toggles.Any(x => x.isOn ==true)){
@@ -1238,12 +1253,19 @@ public class Main : MonoBehaviour {
 			None_toggle.isOn = false;
 		}
 	}
-
+	
+	/// <summary>
+	/// Handles annotation submission.
+	/// </summary>
+	/// <remarks>
+	/// Attached to submit button.
+	/// </remarks>
 	public void submit(){
 		if(task.name == screen_abv){
 			string f = PlayerPrefs.GetString(selectedFig_playerpref,"");
 			GameObject fig = task_scene.active_configuration[0];
 			
+			// Check selection is correct.
 			if (f==fig.name){
 
 				/// Set new example
@@ -1262,36 +1284,49 @@ public class Main : MonoBehaviour {
 			else{
 				StartCoroutine(sendselectionToFile_coroutine());
 
-			/// Set new example
+				// Set new example.
 				new_example();
 			}
 		}
 		else{
 			StartCoroutine(sendselectionToFile_coroutine());
 
-			/// Set new example
+			/// Set new example.
 			new_example();
 		}
 	}
 	
-	
-	// Note this is called in output controller
+	/// <summary>
+	/// Sets object as figure for associated raycast object.
+	/// </summary>
 	void click_figure(RaycastHit fig){
 		task_scene.set_figure(fig.transform.gameObject);
 		
 	}
 
 	
-	
+	/// <summary>
+	/// Shows confirm click dialogue.
+	/// </summary>
 	void show_confirm_click(){
 		confirm = true;
 		confirm_text.SetActive(true);
 	}
+
+	/// <summary>
+	/// Hides confirm click dialogue.
+	/// </summary>
 	void hide_confirm_click(){
 		confirm = false;
 		confirm_text.SetActive(false);
 	}
 
+	/// <summary>
+	/// If confirm click dialogue is shown, hides confirm click dialogue and submits annotation.
+	/// </summary>
+	/// <remarks>
+	/// Attached to accept button.
+	/// </remarks>
 	public void accept(){
 		if(confirm){
 		  	hide_confirm_click();
@@ -1300,52 +1335,61 @@ public class Main : MonoBehaviour {
 		
 	}
 
+	/// <summary>
+	/// Handles user clicking select none.
+	/// </summary>
+	/// <remarks>
+	/// Attached to select none button.
+	/// </remarks>
 	public void select_none(){
 		task_scene.deselect_figure();
 		hide_confirm_click();
 		submit();
 	}
 
+	/// <summary>
+	/// Handles user what to do when user clicks or touches screen.
+	/// </summary>
 	void handle_click_touch(){
-			//Debug.Log("comp click");
-			// Deselect old figure object
-			task_scene.deselect_figure();
-			hide_confirm_click();
 			
+		// Deselect old figure object.
+		task_scene.deselect_figure();
+		hide_confirm_click();
+		
 
-			// Find hit object
-		    Ray ray = task_scene.main_camera.ScreenPointToRay(Input.mousePosition);
-		    RaycastHit hit;
-		    // Debug.Log(Input.mousePosition);
-			if (Physics.Raycast(ray, out hit)){
-			    // the object identified by hit.transform was clicked
-			    // do whatever you want
+		// Find hit object.
+	    Ray ray = task_scene.main_camera.ScreenPointToRay(Input.mousePosition);
+	    RaycastHit hit;
+	  	// If something is hit.
+		if (Physics.Raycast(ray, out hit)){
+		    // The object identified by hit.transform was clicked.
+		  	GameObject g;
+		  	// Get current ground object from task_scene.
+		  	if (task.name == screen_abv){
+			  	g = task_scene.active_configuration[1];
+			}
+			else{
+				g = task_scene.active_comparison[0] as GameObject;
+			}
+			  
+			// If hit.transform is a selectable object, set figure and show confirm click.
+		  	if (hit.transform.name != g.name && !unselectable_scene_objects.Any(x => hit.transform.name.Contains(x))){
+		  		task.selected_figure_panel_text_component.text = "Selected Object: " + "<b>" + hit.transform.name + "</b>";
+			  	click_figure(hit);
+			  	show_confirm_click();
+			}
 
-			  	Debug.Log("hit: " + hit.transform.name);
-			  	GameObject g;
-			  	if (task.name == screen_abv){
-				  	g = task_scene.active_configuration[1];
-				  }
-				 else{
-				  	g = task_scene.active_comparison[0] as GameObject;
-				  }
-				  
-				  
-			  	if (hit.transform.name != g.name && !unselectable_scene_objects.Any(x => hit.transform.name.Contains(x))){
-			  		task.selected_figure_panel_text_component.text = "Selected Object: " + "<b>" + hit.transform.name + "</b>";
-				  	click_figure(hit);
-				  	show_confirm_click();
-				  }
-
-				else{
-					task.selected_figure_panel_text_component.text = "Selected Object: ";
-				}
-		  	}
+			else{
+				task.selected_figure_panel_text_component.text = "Selected Object: ";
+			}
+	  	}
 	}
-	// Update is called once per frame
-	void Update () {
-		// if()
-		if (Input.GetKeyDown (KeyCode.Delete)){
+
+	/// <summary>
+	/// Toggles displaying help panel.
+	/// </summary>
+	void toggle_help_panel(){
+		if (Input.GetKeyDown (ShowHelpKey)){
 			if(player_in_game()){
 				if(!help_panel.activeSelf){
 					help_panel.SetActive(true);
@@ -1354,91 +1398,78 @@ public class Main : MonoBehaviour {
 					help_panel.SetActive(false);
 				}
 			}
-			// clear_all();
-			// new_example();
-			// load_next_scene();
-
 		}
-		// if (Input.GetKeyDown (KeyCode.M)){
-		// 	// change_preposition();
-		// 	// set_new_pair();
-		// 	un_lock_cursor();
-			
+	}
 
-		// }
-
-		// if (Input.GetKey (KeyCode.Alpha0) || Input.GetKey (KeyCode.Keypad0)){
-		// 	// change_preposition();
-		// 	// set_new_pair();
-		// 	use_cursor();
-			
-
-		// }
-
-		// if (!(Input.GetKey (KeyCode.Alpha0) || Input.GetKey (KeyCode.Keypad0))){
-		// 	// change_preposition();
-		// 	// set_new_pair();
-		// 	stop_cursor();
-			
-
-		// }
-		if(Input.GetKeyDown (KeyCode.Escape)) {//When a key is pressed down it see if it was the escape key if it was it will execute the code
-		    
+	/// <summary>
+	/// Checks if user is pressing quit key and takes action.
+	/// </summary>
+	void quit_input(){
+		
+		if(Input.GetKeyDown (quitKey)) {
 		    confirmQuit_text.SetActive(true);
 		    confirm_quit = true;
-		    
-		    
+
+		}
+	}
+
+
+	/// <summary>
+	/// Update is called once per frame.
+	/// </summary>
+	void Update(){
+		// Show/hide help panel on key press.
+		toggle_help_panel();
+
+		quit_input();
+
+		// Finish if user confirms quit.
+		if (Input.GetKeyDown (KeyCode.Return) && confirm_quit == true){
+		  	finish();
+		  	#if UNITY_EDITOR
+	        //Stop playing the scene
+	        UnityEditor.EditorApplication.isPlaying = false;
+		    #endif
 		}
 
-		if (Input.GetKeyDown (KeyCode.Return) && confirm_quit == true){
-			  	finish();
-			  	#if UNITY_EDITOR
-		        //Stop playing the scene
-		        UnityEditor.EditorApplication.isPlaying = false;
-			    #endif
-			  }
-
+		// Remove panels if user clicks.
 	    if (Input.GetMouseButtonDown(0)){
 	    	confirmQuit_text.SetActive(false);
 		    confirm_quit = false;
 
 		    help_panel.SetActive(false);
 	    }
+
+	    // When player is in testing scenario..
+	    // Handle clicks and "return" presses.
 		if(player_in_game()){
 			
 			if (task.name == comp_abv || task.name == screen_abv){
-				if (Input.GetMouseButtonDown(0)){ // if left button pressed...
-					if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
-					        {
-					        	Debug.Log("touch");
-					            // Check if finger is over a UI element
-					            if (!EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
-					            {
-					                handle_click_touch();
-					            }
-					        }
+				// If left mouse button pressed...
+				if (Input.GetMouseButtonDown(0)){ 
+					if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began){
+			        	Debug.Log("touch");
+			            // Check if finger is over a UI element
+			            if (!EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
+			            {
+			                handle_click_touch();
+			            }
+			        }
 					else if (!EventSystem.current.IsPointerOverGameObject()){
 						
-				            Debug.Log("No touch and not over UI");
-			                handle_click_touch();
-				            
-							
-						  
-					  }
+			            Debug.Log("No touch and not over UI");
+		                handle_click_touch();
+				        
+				    }
 
-
-			  }
-			  if (Input.GetKeyDown (KeyCode.Return)){
-			  	accept();
-			  }
-
-
+				}
+				// If return is pressed.
+				if (Input.GetKeyDown (KeyCode.Return)){
+			  		accept();
+				}
 			}
 		}
-
-		
-		
-		}
 	}
+}
 
 	   
