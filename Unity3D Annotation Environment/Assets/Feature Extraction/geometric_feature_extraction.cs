@@ -1,5 +1,4 @@
-//Script which executes geometric feature extraction
-
+// Script which executes geometric feature extraction.
 
 using UnityEngine;
 #if UNITY_EDITOR
@@ -19,13 +18,17 @@ using System.Collections.Generic;
 
 public class Feature_Extraction: EditorWindow{
 	
+	/// <summary>
+	/// Iterate through all scenes and calculate all relations.
+	/// </summary>
+	/// <remarks>
+	/// Proviodes editor button.
+	/// </remarks>
 	[MenuItem ("My Tools/Calculate Geometric Features")]
-
 	static void init(){
 		Scenes scene_info = new Scenes();
 
-
-		// Iterate through all scenes
+		// Iterate through all scenes and calculate all relations.
       	int i;
         
         for (i = 0; i < scene_info.SceneList.Count; i ++)
@@ -44,22 +47,9 @@ public class Feature_Extraction: EditorWindow{
         Debug.Log("Calculating geometric features done");
 	}
 
-	public void calculate_properties(List<Entity> ents){
-		foreach(Entity ent in ents){
-			string name = ent.name;
-			string scene = ent.scene;
-
-			Property p = new Property(scene,name);
-
-			p.property_dictionary["bbox_volume"] = ent.bbox_volume;
-			// p.property_dictionary[""] = ent.lowest_point;
-
-			p.save_to_csv();
-
-		}
-
-	}
-	// Run calculate_relations for all pairs of objects
+	/// <summary>
+	/// Calculates relations for all pairs of mesh objects.
+	/// </summary>
 	static public void calculate_all_relations(){
         GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
 		List<GameObject> meshObjects = new List<GameObject>();
@@ -86,14 +76,12 @@ public class Feature_Extraction: EditorWindow{
             }
         }
 		
-
+        // Create pair instance for each pair of objects, which calculates values and saves to csv.
 		foreach(Entity e1 in entities){
 			
 			foreach(Entity e2 in entities){
-				// Create pair instance which calculates values and saves to csv
-				Pair p = new Pair(e1,e2);
-
 				
+				Pair p = new Pair(e1,e2);	
 			}
 		}
 	}

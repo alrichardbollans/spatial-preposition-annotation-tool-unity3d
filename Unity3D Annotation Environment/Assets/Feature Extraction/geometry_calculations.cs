@@ -1,9 +1,12 @@
-// Provides classes which calculate geometric properties between objects and saves to csv
+// Provides classes which calculate geometric properties between objects and saves to csv.
 
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// Class which contains various geometric properties of a gameobject.
+/// </summary>
 public class Entity{
 	
 
@@ -194,6 +197,10 @@ public class Entity{
 
 	
 }
+
+/// <summary>
+/// Class which contains various geometric properties of a pair of gameobjects.
+/// </summary>
 public class Pair{
 	// Largest distance in scenes (used for normalizing)
 	static float largest_distance = 14f;
@@ -246,7 +253,9 @@ public class Pair{
 	// Angle from vertical
 	public float angle_separation;
 
-
+	/// <summary>
+	/// Instantiates Pair, calculates relations and writes to csv.
+	/// </summary>
 	public Pair(Entity ent1, Entity ent2){
 		e1 = ent1;
 		e2 = ent2;
@@ -256,8 +265,6 @@ public class Pair{
 
 		// Note we can comment out the heavier functions if they don't need recalculating
 		// Consider commenting out mobj.prepare_physics_for_positioning(); in Entity class
-		
-
 		
 		set_distance_properties();
 
@@ -313,10 +320,7 @@ public class Pair{
 		List<Vector3> bvs1 = new List<Vector3>();
 		
 		Collider[] colliders;
-		
-		
-		
-		
+
 		foreach(Vector3 v1 in e1.transformed_mesh_vertices){
 			
 			// Check if v1 is an 'above' or 'below' vertex
@@ -496,9 +500,6 @@ public class Pair{
 		float e2_zmax;
 
 		height_separation = get_height_seperation();
-
-		
-
 		
 		projection_diff = height_separation*Mathf.Tan(projection_angle);
 

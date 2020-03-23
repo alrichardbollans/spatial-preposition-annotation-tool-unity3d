@@ -13,17 +13,6 @@ using System.Collections.Generic;
 
 public class Placeholder: EditorWindow{
 	
-	
-
-	static string clean_name(string name){
-		if (name.Contains("(")){
-			
-			return name.Substring(0,name.LastIndexOf("("));
-		}
-		else {
-			return name;
-		}
-	}
 	[MenuItem ("My Tools/Tests")]
 	static void init(){
 		GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();

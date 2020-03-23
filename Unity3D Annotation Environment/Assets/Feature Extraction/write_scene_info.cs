@@ -12,23 +12,6 @@ using System.Collections.Generic;
 
 
 public class SceneInfoButton: EditorWindow{
-
-	static string clean_name_(string name){
-		string newName;
-		newName = name;
-		if (name.Contains("(")){
-			newName = name.Substring(0,name.LastIndexOf("("));
-			
-		}
-		if(name.Contains("_")) {
-			newName = name.Substring(0,name.LastIndexOf("_"));
-			
-		}
-		newName = newName.ToLower();
-		newName = newName.Trim();
-		return newName;
-	}
-
 	
 	[MenuItem ("My Tools/Write Scene Info")]
 	static void init(){
@@ -53,7 +36,7 @@ public class SceneInfoButton: EditorWindow{
 		        MeshFilter mf = obj.GetComponent(typeof(MeshFilter)) as MeshFilter;
 		        if(mf != null){
 		        	s.mesh_object_list.Add(obj.name);
-		        	string cn = clean_name_(obj.name);
+		        	string cn = Main.clean_name(obj.name);
 		        	if (!Scenes.allObjectcleannames.Contains(cn)){
 		        		
 		        		Scenes.allObjectcleannames.Add(cn);		    

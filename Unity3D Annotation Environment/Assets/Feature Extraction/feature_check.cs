@@ -1,6 +1,6 @@
-// This is to make it easy to check features in the editor
-// Adds script to each mesh object. Each object is treated as a ground and can change the given figure to see value
-// Currently only shows 'support'
+// Script to make it easier to check features in the editor.
+// Adds script to each mesh object. 
+// Each object is treated as a ground and can change the given figure to see value.
 
 using UnityEngine;
 #if UNITY_EDITOR
@@ -39,8 +39,7 @@ public class feature_check : MonoBehaviour
 								
                 MeshFilter mf = obj.GetComponent(typeof(MeshFilter)) as MeshFilter;
                 if(mf != null){
-                    meshObjects.Add(obj);
-                    
+                    meshObjects.Add(obj);                    
                     
                 }
             }
@@ -56,7 +55,7 @@ public class feature_check : MonoBehaviour
         
         string ground = this.gameObject.name;
         
-     //    Create relationship instance to read values
+        //    Create relationship instance to read values
     	Relationship r = new Relationship(this.gameObject.scene.name,figure.name,ground);
     	r.load_from_csv();
     	support = r.relation_dictionary["support"].ToString();
@@ -123,13 +122,6 @@ public class add_check_script : EditorWindow{
 	static GameObject[] allObjects;
 	static List<GameObject> meshObjects = new List<GameObject>();
 	
-	
-	
-    
-    
-	
-	
-	
 	static public void main(){
 
 		meshObjects.Clear();
@@ -171,37 +163,18 @@ public class add_check_script : EditorWindow{
 public class remove_check_script : EditorWindow{
 	static GameObject[] allObjects;
 	
-	
-	
-	
-    
-    
-	
-	
-	
-	static public void main(){
-
-		
-		allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
-		
-        foreach(GameObject go in allObjects){
-        	var check_script = go.GetComponent(typeof(feature_check)) as feature_check;
-			if (check_script != null){
-			    UnityEngine.Object.DestroyImmediate(check_script);
-			}
-        }
- 	
-        
-	}
-
-	
 	[MenuItem ("My Tools/Remove Feature Check Script")]
 
 	static void init(){
-		
-		
-
-		main();
+        // Search for script and destroy.
+		allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
+                
+        foreach(GameObject go in allObjects){
+            var check_script = go.GetComponent(typeof(feature_check)) as feature_check;
+            if (check_script != null){
+                UnityEngine.Object.DestroyImmediate(check_script);
+            }
+        }
 
 		
 	}

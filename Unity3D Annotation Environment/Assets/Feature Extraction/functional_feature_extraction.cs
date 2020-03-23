@@ -1,11 +1,13 @@
-// This script gives unity button which runs functional feature calculations
+// This script gives unity button which runs functional feature calculations.
 
-// The actual calculations are done in a runtime script WaitingGame_F....cs
+// The actual calculations are done in a runtime script WaitingGame_F....cs.
 
-// It does this by adding/removing colliders, giving the objects rigidbody, playing the scene
-// writing positions (using an added in-game script) and then reading the positions and editing transforms
+// It does this by adding/removing colliders, giving the objects rigidbody, playing the scene.
+// writing positions (using an added in-game script) and then reading the positions and 
+// editing transforms.
 
-/// Makes use of csv files to store important variables as going between run time and editor resets variables stored by some classes :(
+/// Makes use of csv files to store important variables as going between run time and 
+// editor resets variables stored by some classes :(
 #if UNITY_EDITOR
 using UnityEngine;
 
@@ -20,8 +22,12 @@ using System.Linq;
 
 
 
-
-//Initialize on load means update is constantly running
+/// <summary>
+/// Prepares object physics, writes initial positions then runs game so that values are output.
+/// </summary>
+/// <remarks>
+/// Initialize on load means Update method of this class is constantly running.
+/// </remarks>
 [InitializeOnLoad]
 public class write_support_measures : EditorWindow{
 	// Lists of gameobjects and mesh objects
@@ -58,38 +64,45 @@ public class write_support_measures : EditorWindow{
 
 	static public string groundstodo_file = ".groundstodo.csv";
 
-	// This tells waiting_game_FF script which feature to calculate. Gets updated in waiting_game_FF script
+	// This tells waiting_game_FF script which feature to calculate.
+	// Gets updated in waiting_game_FF script.
 	static public string type = "support";
 
-	/// Makes current Update function be run constantly
-	// Commenting out will allow testing on a single scene
+	/// <summary>
+	/// Makes current Update function be run constantly.
+	/// Commenting out will allow testing on a single scene.
+	/// </summary>
 	static write_support_measures(){
 		EditorApplication.update += Update;
 	}
     
-
+	/// <summary>
+	/// Adds a box collider to work out highest and lowest points.
+	/// </summary>
+	/// <returns>
+	/// Height difference between highest and lowest points of bounding box.
+	/// </returns>
     static float get_object_height(GameObject go){
-		// Adds a box collider to work out highest and lowest points
         var meshcoll = go.AddComponent<BoxCollider>();
         
         float x = meshcoll.bounds.max.y - meshcoll.bounds.min.y;
 
         return x;
     }
-	
+
+	/// <summary>
+	/// Write csv file of grounds to do.
+	/// </summary>	
 	static public void set_grounds_to_do(){
 		
-        // Write grounds down
+        // Write grounds to csv.
         using(StreamWriter file = new StreamWriter(groundstodo_file)){
         	List<String> row = new List<String>();
 			foreach(GameObject obj in ground_list){
-			
-				if(!obj.name.Contains("wall") && !obj.name.Contains("ceiling") && !obj.name.Contains("floor")){
+				// Don't include unselectable objects.
+				if(!Main.unselectable_scene_objects.Any(x => obj.name.Contains(x))){
 					row.Add(obj.name);
-				}
-				
-
-				
+				}	
 			}
 			string[] row1 = row.ToArray();
 			string row_csv_string = String.Join(",", row1);
@@ -97,8 +110,18 @@ public class write_support_measures : EditorWindow{
 		}
 	}
 	
+	/// <summary>
+	/// Gets intial properties of objects.
+	/// Writes grounds to do.
+	/// Adds run time script to an object.
+	/// Prepares physics for positioning.
+	/// Then runs game.
+	/// </summary>
+	/// <remarks>
+	/// Called each time scene is re/loaded.
+	/// </remarks>
 	static public void main(){
-		// Called each time scene is re/loaded
+		
 		Debug.Log("Check initialiseonload is uncommented");
 		written = false;
 		meshObjects.Clear();
@@ -119,40 +142,30 @@ public class write_support_measures : EditorWindow{
         using(StreamWriter file = new StreamWriter(ground_heights_file)){
 	        foreach(MeshObject obj in meshObjects){
 	        		
-	        		
-	        		
-			        
+		        // Adds a box collider to work out highest and lowest points
+		        var meshcoll = obj.go.AddComponent<BoxCollider>();
+		        			        
+		        float top = meshcoll.bounds.max.y;
+		        float bottom = meshcoll.bounds.min.y;
+		        float h =top - bottom;
 
-			        // Adds a box collider to work out highest and lowest points
-			        var meshcoll = obj.go.AddComponent<BoxCollider>();
-			        
-			        
-			        float top = meshcoll.bounds.max.y;
-			        float bottom = meshcoll.bounds.min.y;
-			        float h =top - bottom;
+                obj_height_dictionary[obj.go.name] = h;
+            	
 
-	                obj_height_dictionary[obj.go.name] = h;
-	            	
-
-	            	string hs = h.ToString("G6");
-	            	string tops = top.ToString("G6");
-	            	string bottoms = bottom.ToString("G6");
-					
-
-					string[] row = {obj.go.scene.name, obj.go.name, hs,tops,bottoms};
-					string row_csv_string = String.Join(",", row);
-					file.WriteLine(row_csv_string);
-	            }
-
+            	string hs = h.ToString("G6");
+            	string tops = top.ToString("G6");
+            	string bottoms = bottom.ToString("G6");
 				
-					
-				
+
+				string[] row = {obj.go.scene.name, obj.go.name, hs,tops,bottoms};
+				string row_csv_string = String.Join(",", row);
+				file.WriteLine(row_csv_string);
+	            }	
 		}
+
         set_grounds_to_do();
 		
 		// Add wait script to an object
-       
-        
         var waiting_script = meshObjects[0].go.GetComponent(typeof(WaitingGame_FunctionalFeatureExtraction)) as WaitingGame_FunctionalFeatureExtraction;
 		if (waiting_script == null){
 		    waiting_script = meshObjects[0].go.AddComponent<WaitingGame_FunctionalFeatureExtraction>();
@@ -161,30 +174,27 @@ public class write_support_measures : EditorWindow{
 		}
 		
 
-
 		// Edit physics
         foreach(MeshObject obj in meshObjects){
         		
         		obj.prepare_physics_for_positioning();
-
                 
             }
-        
-    
 
-        
 		// start game
-        EditorApplication.isPlaying = true;
-
-        
-       	
+        EditorApplication.isPlaying = true;      	
         
 	}
 
 	
-
+	/// <summary>
+	/// Once measures have been written, resets scene, a new scene is opened and feature extraction
+	/// runs again.
+	/// </summary>
+	/// <remarks>
+	/// Called each time scene is re/loaded.
+	/// </remarks>
 	static void Update(){
-		// Once measures have been written update function is called which opens new scene and runs again
 		
 		if(written && !EditorApplication.isPlaying){
 			Debug.Log("passed");
@@ -194,23 +204,14 @@ public class write_support_measures : EditorWindow{
 			obj_height_dictionary.Clear();
 			ground_list.Clear();
 
+			// Prepare object physics for game.
 			foreach(MeshObject obj in meshObjects){
         		
         		obj.prepare_physics_for_game();
-
                 
             }
-            Scenes scene_info = new Scenes();
-			foreach(MyScene s in scene_info.SceneList)
-			{
-				
-				// if(!s.path == EditorApplication.currentScene){
-					scene_list.Add(s);
-					// Debug.Log("Adding scene:" + s.name);
-				// }
-			}
             
-			// Get scene index
+			// Get scene index from file.
 			using(StreamReader file =  new StreamReader(scene_index_file)){
 				string line = file.ReadLine();
 	            if(line == null){
@@ -219,45 +220,49 @@ public class write_support_measures : EditorWindow{
 	            else{
 	            	scene_index = int.Parse(line.Split(',')[0]);
 	            }
-	            
-					
-	       		
+
 	            Debug.Log("Scene Index:");
 	            Debug.Log(scene_index);
 				
 			}
 
-			// Rewrite csv with new index
+			// Rewrite csv with new index.
 	        using(StreamWriter filen = new StreamWriter(scene_index_file)){
 	           	List<String> row = new List<String>();
 	           	int n = scene_index + 1;
 	   			row.Add(n.ToString());
-	   				
 
-	   				
-	   			
 	   			string[] row1 = row.ToArray();
 	   			string row_csv_string = String.Join(",", row1);
 	   			filen.WriteLine(row_csv_string);
        		}
 		
-
-		
+       		// Get next scene.
+            Scenes scene_info = new Scenes();
+			foreach(MyScene s in scene_info.SceneList)
+			{
+				scene_list.Add(s);
+			}
             MyScene next_scene = scene_list[scene_index];
             //load new scene and then call init
             Debug.Log("Next Scene:");
             Debug.Log(next_scene.path);
 
+            // Open next scene.
 			next_scene.open_set_active();
 
-		    // scene_index +=1;
-
+			// Run main.		   
 		    main();
 	    }
 	}
-	
-	[MenuItem ("My Tools/Calculate Functional Features")]
 
+	/// <summary>
+	/// Prepares csv files then runs main.
+	/// </summary>
+	/// <remarks>
+	/// Provides editor button to run all this.
+	/// </remarks>	
+	[MenuItem ("My Tools/Calculate Functional Features")]
 	static void init(){
 		
 		
@@ -289,10 +294,7 @@ public class write_support_measures : EditorWindow{
    			filen.WriteLine(row_csv_string);
    		}
 		main();
-		
-		
-
-		
+			
 	}
 }
 #endif

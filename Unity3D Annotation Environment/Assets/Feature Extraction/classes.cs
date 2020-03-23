@@ -121,7 +121,7 @@ public class Scenes{
 /// Class for storing information about configuration feature values.
 /// </summary>
 public class Relationship{
-	static string output_path = "Scene Data/";
+	static public string output_path = "Scene Data/";
 	static string filename = "relations.csv";
 	string csv_file = output_path + filename;
 	static string commonsensefilename = "commonsense properties.csv";

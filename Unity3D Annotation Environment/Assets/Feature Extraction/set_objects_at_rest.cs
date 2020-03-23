@@ -79,7 +79,7 @@ public class MeshObject{
              };
         
         // Find clean name
-		clean_name = clean_name_(obj.name);
+		clean_name = Main.clean_name(obj.name);
 		// Add weight
 		float val;
 
@@ -112,16 +112,6 @@ public class MeshObject{
 		remove_non_convex_colliders();
 		add_mesh_collider_for_game();
 		remove_scripts();
-	}
-	string clean_name_(string name){
-		if (name.Contains("(")){
-			string newName = name.Substring(0,name.LastIndexOf("("));
-			newName = newName.Trim();
-			return newName;
-		}
-		else {
-			return name.Trim();
-		}
 	}
 
 	public void give_rigid_body(){

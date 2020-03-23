@@ -693,23 +693,6 @@ public class Task {
 
 		
 	}
-	/// <summary>
-	/// Gets clean name from object name, supposing "(" is first offending character	.
-	/// </summary>
-	/// <param name="name">Object name.</param>
-	/// <returns>
-	/// Clean name.
-	/// </returns>
-	string clean_name(string name){
-		if (name.Contains("(")){
-			string newName = name.Substring(0,name.LastIndexOf("("));
-			newName = newName.Trim();
-			return newName;
-		}
-		else {
-			return name.Trim();
-		}
-	}
 
 	public void set_text(){
 		string p = PlayerPrefs.GetString(Main.prep_playerpref,"");
@@ -717,14 +700,14 @@ public class Task {
 		string g = PlayerPrefs.GetString(Main.selectedgrd_playerpref,"");
 		
 		new_instruction = instruction.Replace(":preposition:","<b>" + p + "</b>");
-		new_instruction = new_instruction.Replace(":figure:","<color=green><b>" + clean_name(f) + "</b></color>");
-		new_instruction = new_instruction.Replace(":ground:","<color=red><b>" + clean_name(g) + "</b></color>");
+		new_instruction = new_instruction.Replace(":figure:","<color=green><b>" + Main.clean_name(f) + "</b></color>");
+		new_instruction = new_instruction.Replace(":ground:","<color=red><b>" + Main.clean_name(g) + "</b></color>");
 		string[] vowels = new  string[] {"a", "e", "i", "o", "u", "h"};
 		
 		if (f != ""){
 			Debug.Log("setting fig text");
-			string l = clean_name(f)[0].ToString();
-			if (vowels.Contains(l)){//Any(s => s.Equals(clean_name(f)[0]))){
+			string l = Main.clean_name(f)[0].ToString();
+			if (vowels.Contains(l)){//Any(s => s.Equals(Main.clean_name(f)[0]))){
 				
 				new_instruction = new_instruction.Replace(":a:","an");
 			}
@@ -911,6 +894,29 @@ public class Main : MonoBehaviour {
 		help_panel.SetActive(false);
 		
 		
+	}
+
+	/// <summary>
+	/// Gets clean name from object name, supposing "(" is first offending character	.
+	/// </summary>
+	/// <param name="name">Object name.</param>
+	/// <returns>
+	/// Clean name.
+	/// </returns>
+	static public string clean_name(string name){
+		string newName;
+		newName = name;
+		if (name.Contains("(")){
+			newName = name.Substring(0,name.LastIndexOf("("));
+			
+		}
+		if(name.Contains("_")) {
+			newName = name.Substring(0,name.LastIndexOf("_"));
+			
+		}
+		
+		newName = newName.Trim();
+		return newName;
 	}
 
 	/// <summary>

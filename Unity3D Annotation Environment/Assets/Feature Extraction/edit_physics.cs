@@ -1,5 +1,5 @@
-// This more or less works. Needs some editing to only select objects with meshes. Need to make saving work properly and check loading
-/// Something wrong with writing values in sacve_csv
+// Provides buttons which prepares physics for all objects in scene for either positioning or game.
+
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -12,12 +12,11 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
-// To calculate closest distance use nonconvex colliders and Collider.ClosestPoint 
-/// --- search points on one mesh (with least vertices) and for each vertex find the closest point on each collider of other object
-// Using this find the distance and therefore the shortest distance for each point and therefore the shortest overall distance
-
 #if UNITY_EDITOR
 
+/// <summary>
+/// Class which provides button which prepares all objects in scene for positioning.
+/// </summary>
 public class edit_physics_for_positioning: EditorWindow{
 	
 	
@@ -39,6 +38,9 @@ public class edit_physics_for_positioning: EditorWindow{
 		
 }
 
+/// <summary>
+/// Class which provides button which prepares all objects in scene for game.
+/// </summary>
 public class edit_physics_for_game: EditorWindow{
 	
 	
