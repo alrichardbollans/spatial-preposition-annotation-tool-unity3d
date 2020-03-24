@@ -373,6 +373,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bc4c28290c1845eca7d1d1c8cb10d24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  comp_main_panel: {fileID: 2046560294}
+  sv_main_panel: {fileID: 929900003}
+  selected_fig_text: {fileID: 448523168}
+  comp_instruction_text: {fileID: 291068815}
+  sv_instruction_text: {fileID: 758412706}
   confirm_text: {fileID: 351963653}
   confirmQuit_text: {fileID: 1453740736}
   help_panel: {fileID: 1248149812}

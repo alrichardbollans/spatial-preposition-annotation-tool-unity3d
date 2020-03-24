@@ -502,13 +502,9 @@ public class Task {
 	public string instruction_title; //Title for instruction scene
 	
 	public GameObject panel;
-	public GameObject selected_figure_panel;
-	public GameObject selected_figure_text_obj;
-	public Text selected_figure_panel_text_component;
-	public GameObject instruction_obj;
+	public Text selected_figure_text;
 	public Text instruction_text_component;
-	public static string[] task_panel_names = {"comp_screen_panel","sv_panel"}; // names of UI elements specific to tasks
-	public List<GameObject> task_panels =  new List<GameObject>();
+	List<GameObject> task_panels;
 
 
 	public List<GameObject> active_objects =  new List<GameObject>(); // list of all objects in panel hieracrchy
@@ -550,7 +546,11 @@ public class Task {
 	/// <param name="n">Task name.</param>
 	/// <param name="instructions">List of instructions for task.</param>
 	/// <param name="title">Task title.</param>
-	public Task(string n,string[] instructions,string title){
+	/// <param name="task_pans">All task specific panels.</param>
+	/// <param name="main_panel">Main task panel.</param>
+	/// <param name="selected_fig_text">Text component for displaying selected object.</param>
+	/// <param name="instruction_text">Text component of instruction panel.</param>
+	public Task(string n,string[] instructions,string title,List<GameObject> task_pans, GameObject main_panel, Text selected_fig_text, Text instruction_text){
 		
 		
 		name = n;
@@ -558,6 +558,10 @@ public class Task {
 		instruction_title = title;
 		scene_abbreviations.Add(n);
 		number_scenes_to_do = 10;
+		panel = main_panel;
+		selected_figure_text = selected_fig_text;
+		instruction_text_component = instruction_text;
+		task_panels = task_pans;
 
 		// if(name == Main.sv_abv || name == Main.comp_abv || name == "pq"){
 		// 	//These tasks share scenes
@@ -568,63 +572,14 @@ public class Task {
 		// }
 		GameObject[] allObjects = Object.FindObjectsOfType<GameObject>();
 		
-		if (task_panels.Count == 0){
-			foreach (GameObject obj in allObjects){
-			
-			if (task_panel_names.Contains(obj.name)){
-				task_panels.Add(obj);
-				}
-			}
-			
-		}
-		
 		get_scenes();
 
-		// Set panel
-		foreach (GameObject g in task_panels){
-
-			if (g.name.Contains(name)){
-				panel = g;
-
-			}
-		}
-		foreach(GameObject g in allObjects){
-			if (g.name.Contains("selected_figure")){
-				selected_figure_panel = g;
-			}
-		}
 		// Populate list of active objects by what's in panel hierarchy
-		if (panel != null){
-			foreach (Transform obj in panel.transform){
-				
-				active_objects.Add(obj.gameObject);
-				foreach(Transform got in obj.transform){
-					active_objects.Add(got.gameObject);
-				}
-			}
-		}
-		if (selected_figure_panel != null){
-			foreach (Transform obj in selected_figure_panel.transform){
-				
-				active_objects.Add(obj.gameObject);
-				}
-		}
-		
+		add_all_descendants(panel);
+
 		// Assign various objects
 		foreach (GameObject g in active_objects){
-			
 
-			//Assign instruction obj
-			if (g.name.Contains("instruction")){
-				instruction_obj = g;
-				instruction_text_component = instruction_obj.GetComponent<Text>();
-			}
-
-			if(g.name.Contains("selected_figure_text")){
-				
-				selected_figure_text_obj = g;
-				selected_figure_panel_text_component = selected_figure_text_obj.GetComponent<Text>();
-			}
 			//Add to toggle list
 			
 			Toggle t = g.GetComponent(typeof(Toggle)) as Toggle;
@@ -639,7 +594,16 @@ public class Task {
 		}
 	}
 
-
+	/// <summary>
+	/// Add all descendants to active_objects.
+	/// </summary>
+	void add_all_descendants(GameObject go){
+		foreach (Transform obj in go.transform){
+			
+			active_objects.Add(obj.gameObject);
+			add_all_descendants(obj.gameObject);
+		}
+	}
 		
 
 	/// <summary>
@@ -671,17 +635,13 @@ public class Task {
 		
 		// De/Activate Objects
 		foreach (GameObject g in task_panels){
-			if (g == panel){
-				g.SetActive(true);
-			}
+			g.SetActive(false);
+			
+		}
 
-			else {
-				g.SetActive(false);
-			}
-
-			if(g.name.Contains("selected_figure_panel") && (name == Main.comp_abv || name == Main.screen_abv)){
-				g.SetActive(true);
-			}
+		panel.SetActive(true);
+		foreach (GameObject g in active_objects){
+			g.SetActive(true);
 		}
 
 		// Turn off toggles
@@ -693,7 +653,7 @@ public class Task {
 		
 	}
 
-	public void set_text(){
+	public void set_text(Main main){
 		string p = PlayerPrefs.GetString(Main.prep_playerpref,"");
 		string f = PlayerPrefs.GetString(Main.selectedFig_playerpref,"");
 		string g = PlayerPrefs.GetString(Main.selectedgrd_playerpref,"");
@@ -716,7 +676,7 @@ public class Task {
 			}
 		}
 		instruction_text_component.text = new_instruction;
-		selected_figure_panel_text_component.text = "Selected Object: ";
+		selected_figure_text.text = "Selected Object: ";
 
 	}
 
@@ -783,6 +743,13 @@ public class Main : MonoBehaviour {
 
 	TaskScene task_scene;
 
+	
+	// Gameobjects to assign
+	public GameObject comp_main_panel;
+	public GameObject sv_main_panel;
+	public Text selected_fig_text;
+	public Text comp_instruction_text;
+	public Text sv_instruction_text;
 	public GameObject confirm_text;
 	public GameObject confirmQuit_text;
 	public GameObject help_panel;
@@ -840,11 +807,15 @@ public class Main : MonoBehaviour {
 		// string game_instruction_title = "Game Instructions";
 		// string[] game_instructions = {};
 		
+		// Populate task_panels list.
+		List<GameObject> task_panels = new List<GameObject>();
+		task_panels.Add(sv_main_panel);
+		task_panels.Add(comp_main_panel);
 		// Instantiate tasks now lists have been created
-		sv_task = new Task(sv_abv,sv_instructions,sv_instruction_title);
-		pq_task = new Task("pq",sv_instructions,sv_instruction_title);
-		comp_task = new Task(comp_abv,comp_instructions,comp_instruction_title);
-		screen_task = new Task(screen_abv,screen_instructions,screen_instruction_title);
+		sv_task = new Task(sv_abv,sv_instructions,sv_instruction_title,task_panels,sv_main_panel,selected_fig_text,sv_instruction_text);
+		pq_task = new Task("pq",sv_instructions,sv_instruction_title,task_panels,sv_main_panel,selected_fig_text,sv_instruction_text);
+		comp_task = new Task(comp_abv,comp_instructions,comp_instruction_title,task_panels,comp_main_panel,selected_fig_text,comp_instruction_text);
+		screen_task = new Task(screen_abv,screen_instructions,screen_instruction_title,task_panels,comp_main_panel,selected_fig_text,comp_instruction_text);
 		
 		// Set instructions (this should probably happen on instatiation?)
 		comp_task.instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
@@ -1043,7 +1014,7 @@ public class Main : MonoBehaviour {
 		bool x = task_scene.set_new_example();
 		if (x){
 			task.turn_off_toggles();
-			task.set_text();
+			task.set_text(this);
 			yield return new WaitForSeconds(1);
 			loadingImage.SetActive(false);
 			
@@ -1388,13 +1359,13 @@ public class Main : MonoBehaviour {
 			  
 			// If hit.transform is a selectable object, set figure and show confirm click.
 		  	if (hit.transform.name != g.name && !unselectable_scene_objects.Any(x => hit.transform.name.Contains(x))){
-		  		task.selected_figure_panel_text_component.text = "Selected Object: " + "<b>" + hit.transform.name + "</b>";
+		  		task.selected_figure_text.text = "Selected Object: " + "<b>" + hit.transform.name + "</b>";
 			  	click_figure(hit);
 			  	show_confirm_click();
 			}
 
 			else{
-				task.selected_figure_panel_text_component.text = "Selected Object: ";
+				task.selected_figure_text.text = "Selected Object: ";
 			}
 	  	}
 	}
