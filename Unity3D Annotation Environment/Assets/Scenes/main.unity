@@ -378,7 +378,6 @@ MonoBehaviour:
   help_panel: {fileID: 1248149812}
   None_toggle_obj: {fileID: 939690510}
   loadingImage: {fileID: 406088930}
-  SceneCounter: {fileID: 0}
   SceneCounter_Text: {fileID: 703833770}
   fail_loaded: 0
   number_scenes_done: 0
@@ -5538,7 +5537,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2120322309
 RectTransform:
   m_ObjectHideFlags: 0
