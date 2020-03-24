@@ -1,6 +1,3 @@
-# Documentation
-Rough docs to be improved!!!
-
 # Simple Set-Up
 
 Below gives brief information on how to amend/build the game.
@@ -75,8 +72,7 @@ The menu item "My Tools/Add Feature Check Script" can be used to inspect feature
 
 
 Also, for the feature extraction when adding new scenes, need to rerun scene_info script, then commonsense properties python script and then feature calculation (see Feature Extraction)
-## Scene Data
-Scene Data folder contains calculated features from each scene and a script for extracting conceptnet properties. This folder is used later in analysis.
+
 
 # Assets
 Assets folder contains necessary assets for game creation and running -- scripts, scenes, meshes etc..
@@ -97,9 +93,29 @@ The menu item "My Tools/Add Feature Check Script" can be used to inspect feature
 ## Unity Scripts
 Contains useful scripts for Unity Editor
 
-## Scripts
 
-Contains script used in-game
+## Game Scripts
+In-game scripts are stored in Assets/Scripts and must be attached to the correct game objects in the editor.
+
+Some of these scripts require gameobjects to be assigned in the editor. These are already done in the templates, also comments in scripts describe which objects should be attached.
+
+### Camera vision
+Manages movement of camera. Gets attached to main camera in each scene automatically by "Finalise scenes.cs".
+
+### Instruction
+
+This handles the first scene shown for each task. Instructions are displayed and then the task scenes are loaded. Exact instructions are handled by "main.cs". Is added to  canvas in instruction scene.
+
+### Main
+
+Script which brings everything together. Includes 'Task' and 'TaskScene' classes.
+
+Script added to mainEmpty in main scene. This scene is open during all data collection with other scenes loaded on top. In this way the 'Main' instance is never destroyed
+
+### Player Menu Main
+
+Writes user data and loads first scene. Is added to  canvas in player_menu scene.
+
 
 ## Materials Meshes and Prefabs
 
@@ -112,33 +128,6 @@ Contains scenes and lighting information
 ## Resources
 
 Contains resources (e.g. materials) which can be accessed in game
-
-
-
-# Game Scripts
-In-game scripts are stored in Assets/Scripts and must be attached to the correct game objects in the editor.
-
-Some of these scripts require gameobjects to be assigned in the editor. These are already done in the templates, also comments in scripts describe which objects should be attached.
-
-## Camera vision
-Manages movement of camera. Gets attached to main camera in each scene automatically by "Finalise scenes.cs".
-
-## Instruction
-
-This handles the first scene shown for each task. Instructions are displayed and then the task scenes are loaded. Exact instructions are handled by "main.cs". Is added to  canvas in instruction scene.
-
-## Main
-
-Script which brings everything together. Includes 'Task' and 'TaskScene' classes.
-
-Script added to mainEmpty in main scene. This scene is open during all data collection with other scenes loaded on top. In this way the 'Main' instance is never destroyed
-
-## Player Menu Main
-
-Writes user data and loads first scene. Is added to  canvas in player_menu scene.
-
-
-
 
 
 
