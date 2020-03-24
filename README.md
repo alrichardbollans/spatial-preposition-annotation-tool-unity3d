@@ -1,11 +1,11 @@
 # spatial-preposition-annotation-tool-unity3d
 Spatial Preposition Annotation Tool for Virtual Environments
 
-Example: https://alrichardbollans.github.io/spatial-preposition-annotation-tool-unity3d/
+Basic example: https://alrichardbollans.github.io/spatial-preposition-annotation-tool-unity3d/
 
 ## Study
 
-Data from the 2019 study referenced in "Automatic Generation of Typicality Measures for Spatial Language in Grounded Settings" is given in Post Processing folder along with Python2 code for data analysis
+Data from the 2019 study referenced in "Automatic Generation of Typicality Measures for Spatial Language in Grounded Settings" is given in Post Processing folder along with Python2 code for data analysis. This is also formally archived at: https://doi.org/10.5518/764
 
 ## Software
 

@@ -685,7 +685,6 @@ public class Task {
 		}
 
 		// Turn off toggles
-
 		turn_off_toggles();
 		
 		// Set player prefs
@@ -792,6 +791,8 @@ public class Main : MonoBehaviour {
 	Toggle None_toggle;
 	
 	public GameObject loadingImage;
+	public Text SceneCounter_Text;
+	string SceneCountertext = "Scenes left: :int:";
 
 	public bool fail_loaded; // bool to know if fail scene is loaded.
 	
@@ -869,7 +870,7 @@ public class Main : MonoBehaviour {
 	            PrepToggleValueChanged();
 	        });
         }
-		
+
 		// Set states
 		// reset_input_values();
 		confirm_text.SetActive(false);
@@ -963,6 +964,7 @@ public class Main : MonoBehaviour {
 	/// Clears some playerprefs and unloads active scene.
 	/// </summary>
 	public void unload_current_scene(){
+		hide_confirm_click();
 		// Unloads the active scene
 		reset_scene_values();
 		Scene active_scene = SceneManager.GetActiveScene();
@@ -986,6 +988,12 @@ public class Main : MonoBehaviour {
 			
 			PlayerPrefs.SetString(scene_player_pref, sceneName);
 
+			// Update scene counter.
+			int number_scenes_left = task.number_scenes_to_do - number_scenes_done;
+			string count = number_scenes_left.ToString();
+			string newtext = SceneCountertext.Replace(":int:",count);
+			SceneCounter_Text.text = newtext;
+
 			new_example();
 		
 		
@@ -999,8 +1007,6 @@ public class Main : MonoBehaviour {
 		
 		if (number_scenes_done == task.number_scenes_to_do || task.list_of_scenes_to_do.Count==0){
 			change_task();
-			task.set_task();
-			
 		}
 
 		else{
@@ -1196,6 +1202,8 @@ public class Main : MonoBehaviour {
 		unload_current_scene();
 		
 		load_instructions();
+
+		task.set_task();
 	}
 
 	/// <summary>
