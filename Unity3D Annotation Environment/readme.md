@@ -10,38 +10,38 @@ Below gives brief information on how to amend/build the game.
 Note that some scripts require the NonConvexMeshCollider Asset, which is available on the Unity Store.
 
 ## Scenes
+To create new scenes to test on, it is easiest to begin with the given scene_template. Scenes should be saved in 'Assets/Scenes'.
 
 ### Naming
 * `Main` class contains names of various non-testing scenes which need referencing in scripts. If names of any of the non-test scenes are changed, make sure they are also updated here. `first_scene_name` is also set here which defines which scene is opened first.
 
-* Scene file names should contain task abbreviation --  sv, pq and comp tasks are shared scenes. Currently these aren't distinguished. Main.cs handles which scenes are done for which task.
+* In order to be included, the test scene name should contain the task abbreviation --  sv, pq and comp tasks are shared scenes. Currently these aren't distinguished. Main.cs handles which scenes are done for which task.
 
 ### Adding Objects
-* Setting at rest: Physics is dealt with by MeshObject class in set_objects_at_rest.cs. Some objects names will need adding to attributes of this class if adding new objects
+Any number of objects may be added and the tags given to the objects handle which configurations are tested. Some points to consider when adding new objects:
 
-* Make sure to not share naming of objects eg. "box" issue as may want to have different physics properties
+* Make sure to not share naming of different objects across scenes as physics properties may need handling slightly differently and appropriate naming helps to distinguish them. Also, when commonsense features are extracted object names are important.
 
-* Object names should be distinguished by using brackets as clean names are made by finding the first "("
+* Object names should be distinguished by using brackets as clean names are made by finding the first "(".
 
-* Don't use red or green objects
+* Don't use red or green objects as it will be difficult to see highlighting.
 
-### Object Tags
-* `MainCamera`: There should be one camera in each scene given the tag "MainCamera"
-* `ground`:
-* `figure`:
-* `figureground`:
-* prepositions:
+* Setting at rest: Once objects have been added to a scene and roughly positioned, objects can be set at rest using the `set_objects_at_rest.cs` script (using associated editor button). Some objects names will need adding to attributes of this script if adding new types of objects.
 
-* Ground Objects in scenes are given tag `ground` or `figureground`. Figures to compare with them are given `figure` or `figureground` tag.
+#### Object Tags
+Object tags handle which objects are tested and how they are tested.
 
-* All grounds are compared against all figures
+* Ground Objects in scenes are given tag `ground` or `figureground`.
+* Figures to compare with them are given `figure` or `figureground` tag.
 
-* For the screen task, the ground is given a `ground` tag and a child object which contains a preposition tag. The correct figure (for ground-preposition pair) is given the `figure` tag.
+* All grounds are compared against all figures.
 
-* Scene cameras must have "MainCamera" tag. camera is restricted to bounding box of room in scene template
+* For the screen task, the ground is given a `ground` tag and a child object which contains a preposition tag e.g. `in` (scene one of the screen scenes for how this is done). The correct figure (for ground-preposition pair) is given the `figure` tag.
+
+* Scene cameras must have `MainCamera` tag. Camera movement is restricted to bounding box of room in scene template.
 
 ### Removing Scenes
-Scenes need removing from build and removing from scene list in main.cs. To do this, open the project, delete the scenes and then run finalise_scenes.cs. Then build (to same folder name!)
+Scenes need removing from build and removing from scene list in main.cs. To do this, open the project, delete the scenes and then run finalise_scenes.cs. Then build.
 
 
 ## Other Assets
@@ -49,17 +49,12 @@ figure_material and ground_material need to be in Resources folder
 
 ## Build
 
-Once all scenes have been created, they must be added to the build settings and various edits must be made. This is handled by the finalise_scenes.cs script which must be executed once all scenes have been created:
-
-* finalise scenes.cs adds scenes to build (except example and template etc..) and must be run whenever scenes are added or removed. Sets player menu as first scene in index then iterates through scenes and bakes lighting. This script adds all scenes in the MainFolder directory to the buildsettings
-* Also edits Main.cs to add the scenes to the scene list
-* Also adds camera vision script to objects tagged 'MainCamera' and removes their audio listeners
-* Bakes lighting in each scene
+Once all scenes have been created, they must be added to the build settings and various edits must be made. This is handled by the finalise_scenes.cs script which must be executed once all scenes have been created via the given editor button.
 
 ## Notes
 
 
-To set up tasks and/or change order of tasks, Main.cs must be edited. 'begin()' method describes which is the first task to do and 'change_task()' defines which tasks are done after the first. To create a new task all, new task instance must be created in Main class where its behaviour is defined in TaskScene.
+To set up tasks and/or change order of tasks, Main.cs must be edited. `Start()` method describes which is the first task to do and `change_task()` defines which tasks are done after the first. To create a new task, an instance must be created in `Main` class where its behaviour is defined in TaskScene.
 
 Annotations are output via a http post to a php script on the server. Associated strings are given in the `Main` class and *passwords for http post are exposed here*.
 
