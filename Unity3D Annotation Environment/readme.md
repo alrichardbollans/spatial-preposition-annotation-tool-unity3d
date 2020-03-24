@@ -5,26 +5,28 @@ Rough docs to be improved!!!
 
 Below gives brief information on how to amend/build the game.
 
+## Requirements
+
+Note that some scripts require the NonConvexMeshCollider Asset, which is available on the Unity Store.
+
 ## Scenes
 
-### Names
+### Naming
 * `Main` class contains names of various non-testing scenes which need referencing in scripts. If names of any of the non-test scenes are changed, make sure they are also updated here. `first_scene_name` is also set here which defines which scene is opened first.
 
 * Scene file names should contain task abbreviation --  sv, pq and comp tasks are shared scenes. Currently these aren't distinguished. Main.cs handles which scenes are done for which task.
 
-Also, for the feature extraction when adding new scenes, need to rerun scene_info script, then commonsense properties python script and then feature calculation (see Feature Extraction)
-
 ### Adding Objects
-Setting at rest: Physics is dealt with by MeshObject class in set_objects_at_rest.cs. Some objects names will need adding to attributes of this class if adding new objects
+* Setting at rest: Physics is dealt with by MeshObject class in set_objects_at_rest.cs. Some objects names will need adding to attributes of this class if adding new objects
 
-Make sure to not share naming of objects eg. "box" issue as may want to have different physics properties
+* Make sure to not share naming of objects eg. "box" issue as may want to have different physics properties
 
-Object names should be distinguished by using brackets as clean names are made by finding the first "("
+* Object names should be distinguished by using brackets as clean names are made by finding the first "("
 
-Don't use red or green objects
+* Don't use red or green objects
 
 ### Object Tags
-* MainCamera: There should be one camera in each scene given the tag "MainCamera"
+* `MainCamera`: There should be one camera in each scene given the tag "MainCamera"
 * `ground`:
 * `figure`:
 * `figureground`:
@@ -77,10 +79,7 @@ To extract the given features for all scenes:
 The menu item "My Tools/Add Feature Check Script" can be used to inspect feature values within scenes
 
 
-## Requirements
-
-Note that some scripts require the NonConvexMeshCollider Asset, which is available on the Unity Store.
-
+Also, for the feature extraction when adding new scenes, need to rerun scene_info script, then commonsense properties python script and then feature calculation (see Feature Extraction)
 ## Scene Data
 Scene Data folder contains calculated features from each scene and a script for extracting conceptnet properties. This folder is used later in analysis.
 
