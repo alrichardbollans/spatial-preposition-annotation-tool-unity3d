@@ -1,5 +1,6 @@
 // Manages camera
 // Is set to not be able to move outside of the room given in the scene template
+// Is added to main camera is scenes by Finalise_scenes.cs
 
 using UnityEngine;
 using System.Collections;
