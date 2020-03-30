@@ -15,31 +15,40 @@ public class Placeholder: EditorWindow{
 	
 	[MenuItem ("My Tools/Tests")]
 	static void init(){
-		GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
-		List<GameObject> meshObjects = new List<GameObject>();
-		List<Entity> entities = new List<Entity>();
-		foreach(GameObject obj in allObjects){
-			if(!obj.name.Contains("wall") && !obj.name.Contains("ceiling") && !obj.name.Contains("floor")){
+		Light[] lights = UnityEngine.Object.FindObjectsOfType<Light>();
+		foreach(Light l in lights){
+		    // l.shadows= LightShadows.Soft;
+		    if(l.lightmapBakeType == LightmapBakeType.Realtime){
+		    	Debug.Log(l.name);
+		    	l.shadowBias = 0;
+		    }
+		}
+
+		// GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
+		// List<GameObject> meshObjects = new List<GameObject>();
+		// List<Entity> entities = new List<Entity>();
+		// foreach(GameObject obj in allObjects){
+		// 	if(!obj.name.Contains("wall") && !obj.name.Contains("ceiling") && !obj.name.Contains("floor")){
 								
-                MeshFilter mf = obj.GetComponent(typeof(MeshFilter)) as MeshFilter;
-                if(mf != null){
-                    meshObjects.Add(obj);
-                    Entity e = new Entity(obj);
-                    entities.Add(e);
-                }
-            }
-        }
+  //               MeshFilter mf = obj.GetComponent(typeof(MeshFilter)) as MeshFilter;
+  //               if(mf != null){
+  //                   meshObjects.Add(obj);
+  //                   Entity e = new Entity(obj);
+  //                   entities.Add(e);
+  //               }
+  //           }
+  //       }
 		
 
-		foreach(Entity e1 in entities){
-			Debug.Log(e1.name);
-			Debug.Log(e1.centre_of_mass);
-			if(e1.name == "paper"){
-				Debug.Log(e1.lowest_point);
-				Debug.Log(e1.highest_point);
-				float thickness = e1.highest_point - e1.lowest_point;
-				Debug.Log(thickness);
-			}
+		// foreach(Entity e1 in entities){
+		// 	Debug.Log(e1.name);
+		// 	Debug.Log(e1.centre_of_mass);
+		// 	if(e1.name == "paper"){
+		// 		Debug.Log(e1.lowest_point);
+		// 		Debug.Log(e1.highest_point);
+		// 		float thickness = e1.highest_point - e1.lowest_point;
+		// 		Debug.Log(thickness);
+		// 	}
 			// foreach(Entity e2 in entities){
 				
 			// 	Pair p = new Pair(e1,e2);
@@ -48,7 +57,7 @@ public class Placeholder: EditorWindow{
 			// 	Debug.Log(p.horizontal_projection_overlap_proportion);
 
 			// }
-		}
+		// }
 		// Debug.Log(EditorApplication.currentScene);
 		// Scenes scene_info = new Scenes();
 		// foreach(MyScene s in scene_info.SceneList)

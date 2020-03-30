@@ -103,8 +103,8 @@ public class TaskScene {
 		PlayerPrefs.SetString(selectedFig_playerpref, fig.name);
 
 		highlight_figure(fig);
-		Debug.Log("new figure:");
-		Debug.Log(fig.name);
+		// Debug.Log("new figure:");
+		// Debug.Log(fig.name);
 		
 		
 	}
@@ -117,8 +117,8 @@ public class TaskScene {
 		
 		PlayerPrefs.SetString(selectedgrd_playerpref, gr.name);
 		highlight_ground(gr);
-		Debug.Log("new ground:");
-		Debug.Log(gr.name);
+		// Debug.Log("new ground:");
+		// Debug.Log(gr.name);
 		
 		
 		
@@ -142,11 +142,12 @@ public class TaskScene {
 		
 		// Get old figure
 		string old_figure_name = PlayerPrefs.GetString(selectedFig_playerpref,"");
+		Debug.Log(old_figure_name);
 		// Note find objects can be heavy process (see docs if needs calling every frame)
 		GameObject old_figure = GameObject.Find(old_figure_name);
 		//If there was actually a figure, undo highlighting
 		if (old_figure != null){
-			Debug.Log("Unhighlighting figure: " + old_figure_name);
+			// Debug.Log("Unhighlighting figure: " + old_figure_name);
 			unhighlight_figure(old_figure);
 			
 		}
@@ -161,14 +162,14 @@ public class TaskScene {
     /// </summary>	
 	public void deselect_ground(){
 		
-		Debug.Log("Deselect ground is called");
+		// Debug.Log("Deselect ground is called");
 		string old_grd_name = PlayerPrefs.GetString(selectedgrd_playerpref,"");
-		Debug.Log("old_grd_name is " + old_grd_name);
+		// Debug.Log("old_grd_name is " + old_grd_name);
 		// Note find objects can be heavy process (see docs if needs calling every frame)
 		GameObject old_grd = GameObject.Find(old_grd_name);
 		//If there was actually a ground, undo highlighting
 		if (old_grd != null){
-			Debug.Log("Unhighlighting ground: " + old_grd_name);
+			// Debug.Log("Unhighlighting ground: " + old_grd_name);
 
 			unhighlight_ground(old_grd);
 
@@ -240,7 +241,7 @@ public class TaskScene {
 	/// <summary>
     /// Populates ground and figure lists to generate configurations to test.
     /// </summary>
-	void populate_fig_ground_list(){
+	public void populate_fig_ground_list(){
 		GameObject[] g_list = GameObject.FindGameObjectsWithTag(ground_tag);
 		GameObject[] f_list = GameObject.FindGameObjectsWithTag(figure_tag);
 		GameObject[] fg_list = GameObject.FindGameObjectsWithTag(fig_grd_tag);
@@ -258,55 +259,57 @@ public class TaskScene {
 			ground_list.Add(gobj);
 		}
 	}
-	
-	/// <summary>
-    /// Loads scene and finds configurations to test.
-    /// </summary>
-	public IEnumerator set_scene_coroutine(){
-		
-
-		// Needs to be set up as a coroutine so that it only continues after scene is fully loaded
-		SceneManager.LoadScene(name,LoadSceneMode.Additive);
-		yield return null;
-		SceneManager.SetActiveScene(SceneManager.GetSceneByName(name));
+	public void set_main_camera(){
 		// Set camera
-		cam_list = GameObject.FindGameObjectsWithTag("MainCamera");
+		cam_list = GameObject.FindGameObjectsWithTag(Main.main_camera_tag);
 		foreach(GameObject c in cam_list){
 			if (c.scene.name == name){
 				main_camera = c.GetComponent<Camera>();
 			}
 		}
+	}
+
+	public void populate_config_list(){
+		// Add configurations to list by taking children of ground
+		foreach (GameObject ground in ground_list){
+			foreach(GameObject fig in figure_list){
+				if(fig.name != ground.name){
+					GameObject[] config = {fig,ground};
+					configuration_list.Add(config);
+				}
+			}
+
+			if(task_type == Main.screen_abv){
+				foreach(Transform emp in ground.transform){
+					string p = emp.gameObject.tag;
+					if (comp_preposition_list.Contains(p)){
+						screening_preposition = p;
+						
+					}
+				}
+			}
+			
+		}
+	}
+
+	/// <summary>
+    /// Once scene has been loaded, populates various list/configurations and set main camera.
+    /// </summary>
+	public void instantiate_after_scene_loaded(){
+		// Set camera
+		set_main_camera();
 		populate_fig_ground_list();
 		// Add in configurations
 		if (task_type == Main.sv_abv || task_type == "pq" || task_type == Main.screen_abv){
-			// Create list of grounds by tag
 			
-			// Add configurations to list by taking children of ground
-			foreach (GameObject ground in ground_list){
-				foreach(GameObject fig in figure_list){
-					if(fig.name != ground.name){
-						GameObject[] config = {fig,ground};
-						configuration_list.Add(config);
-					}
-				}
-
-				if(task_type == Main.screen_abv){
-					foreach(Transform emp in ground.transform){
-						string p = emp.gameObject.tag;
-						if (comp_preposition_list.Contains(p)){
-							screening_preposition = p;
-							
-						}
-					}
-				}
-				
-			}
+			populate_config_list();
+			
 		}
 
 		
 
 		if (task_type == Main.comp_abv){
-			// Create list of grounds by tag
+			
 			
 			
 			foreach (GameObject ground in ground_list){
@@ -331,6 +334,18 @@ public class TaskScene {
 			// 		}
 			// 	}
 		}
+	}
+	/// <summary>
+    /// Loads scene and finds configurations to test.
+    /// </summary>
+	public IEnumerator set_scene_coroutine(){
+		
+
+		// Needs to be set up as a coroutine so that it only continues after scene is fully loaded
+		SceneManager.LoadScene(name,LoadSceneMode.Additive);
+		yield return null;
+		SceneManager.SetActiveScene(SceneManager.GetSceneByName(name));
+		instantiate_after_scene_loaded();
 		
 	}
 	
@@ -730,6 +745,7 @@ public class Main : MonoBehaviour {
 	public static string sv_abv = "sv";
 	public static string comp_abv = "comp";
 	public static string screen_abv = "screen";
+	public static string typ_abv ="typ";
 
 	// Input keys
 	static public KeyCode ShowHelpKey = KeyCode.Delete;
@@ -739,17 +755,20 @@ public class Main : MonoBehaviour {
 	Task pq_task;
 	Task comp_task;
 	Task screen_task;
+	Task typ_task;
+	
 	static public Task task;
 
 	TaskScene task_scene;
 
-	
 	// Gameobjects to assign
+	public GameObject typ_main_panel;
 	public GameObject comp_main_panel;
 	public GameObject sv_main_panel;
 	public Text selected_fig_text;
 	public Text comp_instruction_text;
 	public Text sv_instruction_text;
+	public Text typ_instruction_text;
 	public GameObject confirm_text;
 	public GameObject confirmQuit_text;
 	public GameObject help_panel;
@@ -760,11 +779,12 @@ public class Main : MonoBehaviour {
 	public GameObject loadingImage;
 	public Text SceneCounter_Text;
 	string SceneCountertext = "Scenes left: :int:";
-
-	public bool fail_loaded; // bool to know if fail scene is loaded.
 	
-	public int number_scenes_done = 0;
+	int number_scenes_done = 0;
 
+	// Objetcs to hide/show if in dev mode.
+	bool dev_mode = true;
+	public GameObject change_task_button;
 	// Create random object for random number generation later
 	static System.Random rnd = new System.Random();
 	
@@ -781,9 +801,23 @@ public class Main : MonoBehaviour {
 	/// <summary>
 	/// Awake is used to initialize any variables or game state before the game starts.
 	/// Awake is called only once during the lifetime of the script instance.
+	/// Populate dev_objects list.
 	/// Creates tasks. Adds listeners to toggles. Deactivates some objects.
 	/// </summary>
 	void Awake(){
+		GameObject[] dev_objects = {change_task_button};
+		//  Show/hide dev objects.
+		foreach(GameObject go in dev_objects){
+			if(dev_mode){
+				go.SetActive(true);
+			}
+			else{
+				go.SetActive(false);
+			}
+		}
+		if(dev_mode){
+			Debug.Log("Warning: In developer mode.");
+		}
 		
 		// Get list of all game objects
 		allObjects = Object.FindObjectsOfType<GameObject>();
@@ -803,7 +837,9 @@ public class Main : MonoBehaviour {
 
 		string comp_instruction_title = "Task 2 Instructions";
 		string[] comp_instructions = {"In this task you will be asked to select the object which <b>best fits</b> a given description.", "An object will be described by its relation to another object which will be <color=red><b>highlighted in red</b></color>, e.g. 'the object <b>on</b> the <color=red><b>table</b></color>'. You need to <b>click</b> on the object <b>which best fits the description</b>.\n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.", "The object you select will turn <color=green><b>green</b></color>. Once you have selected an object you must press 'Enter' or click 'Accept' to confirm your selection. \n\n You <b>cannot select</b> the room, floor, ceiling or walls; but remember that you <b>can select</b> the table. \n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.","All important objects in the scene will be immediately in view; but remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
-			
+		
+		string generic_instructions_title = "Instructions";
+		string[] typ_instructions = {};
 		// string game_instruction_title = "Game Instructions";
 		// string[] game_instructions = {};
 		
@@ -816,17 +852,17 @@ public class Main : MonoBehaviour {
 		pq_task = new Task("pq",sv_instructions,sv_instruction_title,task_panels,sv_main_panel,selected_fig_text,sv_instruction_text);
 		comp_task = new Task(comp_abv,comp_instructions,comp_instruction_title,task_panels,comp_main_panel,selected_fig_text,comp_instruction_text);
 		screen_task = new Task(screen_abv,screen_instructions,screen_instruction_title,task_panels,comp_main_panel,selected_fig_text,comp_instruction_text);
-		
+		typ_task = new Task(typ_abv,typ_instructions,generic_instructions_title,task_panels,typ_main_panel,selected_fig_text,typ_instruction_text);
 		// Set instructions (this should probably happen on instatiation?)
 		comp_task.instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
 	
 		sv_task.instruction = "Select <b>all</b> words which could fill in the blank:\n \n   ':a: :figure: (____) the :ground:'";
 		pq_task.instruction = "Is the :figure: :preposition: the :ground:?";
-		
+		typ_task.instruction = "Select the pair of objects which best fits the description:\n'the green object :preposition: the red object'";
+
 		screen_task.instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
 		screen_task.number_scenes_to_do = screen_task.list_of_scenes.Count;
-		
-		
+	
 		
 		None_toggle = None_toggle_obj.GetComponent(typeof(Toggle)) as Toggle;
 
@@ -1060,7 +1096,7 @@ public class Main : MonoBehaviour {
 	/// <summary>
 	/// Clears playerprefs for fig, ground.
 	/// </summary>
-	public void clear_object_player_prefs(){
+	static public void clear_object_player_prefs(){
 		// Game was loading with these set to an object which was causing unhighlighting of them
 		PlayerPrefs.SetString(selectedFig_playerpref, "");
 		PlayerPrefs.SetString(selectedgrd_playerpref, "");

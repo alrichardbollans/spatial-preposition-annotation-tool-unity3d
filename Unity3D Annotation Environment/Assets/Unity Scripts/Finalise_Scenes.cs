@@ -60,6 +60,83 @@ public class Finalise_Scenes : EditorWindow
         
     }
 
+    static void make_edits_to_scene(string ith_file){
+        string scenePath = get_scene_path(ith_file);
+        string scene_name =  simplify_scene_name(ith_file);
+        
+        EditorSceneManager.OpenScene(scenePath);
+        
+        EditorSceneManager.SetActiveScene(EditorSceneManager.GetSceneByName(scene_name));
+        
+        GameObject[] cameras;
+        // Edit Main camera properties
+        cameras = GameObject.FindGameObjectsWithTag(Main.main_camera_tag);
+        
+        foreach(GameObject camera in cameras){
+            
+            if (camera.GetComponent<camera_vision>() == null){
+                camera.AddComponent<camera_vision>();
+            }
+            
+            camera.GetComponent<AudioListener>().enabled = false;
+
+            Camera camera_component;
+            camera_component = camera.GetComponent<Camera>();
+            camera_component.nearClipPlane = 0.05f;
+            camera_component.fieldOfView = 70f;
+           
+
+        }
+        // Make edits to objects
+        GameObject[] allObjects = Object.FindObjectsOfType<GameObject>();
+        
+        foreach(GameObject obj in allObjects){
+            MeshFilter mf = obj.GetComponent(typeof(MeshFilter)) as MeshFilter;
+            if(mf != null){
+                MeshObject mobj = new MeshObject(obj);
+                
+                mobj.prepare_physics_for_game();
+            }
+            
+            var waiting_script = obj.GetComponent(typeof(WaitingGame)) as WaitingGame;
+            if (waiting_script != null){
+                DestroyImmediate(waiting_script);
+            }
+
+            Rigidbody r = obj.GetComponent(typeof(Rigidbody)) as Rigidbody;
+            if (r != null){
+                DestroyImmediate(r);
+            }
+
+            Animator a = obj.GetComponent(typeof(Animator)) as Animator;
+            if (a != null){
+                DestroyImmediate(a);
+            }
+        }
+        
+        // Edit lighting in scene
+        Light[] lights = Object.FindObjectsOfType<Light>();
+        foreach(Light l in lights){
+            l.shadows= LightShadows.Soft;
+            // l.lightmapBakeType = LightmapBakeType.Realtime;
+            if(l.lightmapBakeType == LightmapBakeType.Realtime){
+                // Make shadowbias 0 so close objects recieve shadows.
+                l.shadowBias = 0;
+            }
+        }
+
+        //Bake Lighting settings
+
+        Lightmapping.giWorkflowMode = Lightmapping.GIWorkflowMode.OnDemand;
+        LightmapEditorSettings.bakeResolution = 1f;
+        Lightmapping.realtimeGI = false; // Realtime GI does not show up on WebGL build
+        Lightmapping.Bake();
+        
+        Debug.Log ("Saving active scene");
+        // EditorSceneManager.SaveOpenScenes();
+        EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
+    }
+
     // Add menu item in editor.
     [MenuItem ("My Tools/Add Scenes To Build !!SAVE Scripts FIRST!!")]
    
@@ -80,6 +157,7 @@ public class Finalise_Scenes : EditorWindow
     /// </remarks>
     static void Init ()
     {   
+        
         // Give user chance to save scenes.
         EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
         
@@ -118,80 +196,12 @@ public class Finalise_Scenes : EditorWindow
         EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
     
         
-        GameObject[] cameras;
+        
 
         // Iterate through all scenes to make edits.
         for (i = 0; i < SceneList.Count; i ++)
         {
-            string scenePath = get_scene_path(SceneList[i]);
-            string scene_name =  simplify_scene_name(SceneList[i]);
-            
-            EditorSceneManager.OpenScene(scenePath);
-            
-            EditorSceneManager.SetActiveScene(EditorSceneManager.GetSceneByName(scene_name));
-            
-            // Edit Main camera properties
-            cameras = GameObject.FindGameObjectsWithTag(Main.main_camera_tag);
-            
-            foreach(GameObject camera in cameras){
-                
-                if (camera.GetComponent<camera_vision>() == null){
-                    camera.AddComponent<camera_vision>();
-                }
-                
-                camera.GetComponent<AudioListener>().enabled = false;
-
-                Camera camera_component;
-                camera_component = camera.GetComponent<Camera>();
-                camera_component.nearClipPlane = 0.05f;
-                camera_component.fieldOfView = 70f;
-               
-
-            }
-            // Make edits to objects
-            GameObject[] allObjects = Object.FindObjectsOfType<GameObject>();
-            
-            foreach(GameObject obj in allObjects){
-                MeshFilter mf = obj.GetComponent(typeof(MeshFilter)) as MeshFilter;
-                if(mf != null){
-                    MeshObject mobj = new MeshObject(obj);
-                    
-                    mobj.prepare_physics_for_game();
-                }
-                
-                var waiting_script = obj.GetComponent(typeof(WaitingGame)) as WaitingGame;
-                if (waiting_script != null){
-                    DestroyImmediate(waiting_script);
-                }
-
-                Rigidbody r = obj.GetComponent(typeof(Rigidbody)) as Rigidbody;
-                if (r != null){
-                    DestroyImmediate(r);
-                }
-
-                Animator a = obj.GetComponent(typeof(Animator)) as Animator;
-                if (a != null){
-                    DestroyImmediate(a);
-                }
-            }
-            
-            // Edit lighting in scene
-            Light[] lights = Object.FindObjectsOfType<Light>();
-            foreach(Light l in lights){
-                l.shadows= LightShadows.Soft;
-                // l.lightmapBakeType = LightmapBakeType.Realtime;
-            }
-
-            //Bake Lighting settings
-
-            Lightmapping.giWorkflowMode = Lightmapping.GIWorkflowMode.OnDemand;
-            LightmapEditorSettings.bakeResolution = 1f;
-            Lightmapping.realtimeGI = false; // Realtime GI does not show up on WebGL build
-            Lightmapping.Bake();
-            
-            Debug.Log ("Saving active scene");
-            // EditorSceneManager.SaveOpenScenes();
-            EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
+            make_edits_to_scene(SceneList[i]);
            
         }
         
