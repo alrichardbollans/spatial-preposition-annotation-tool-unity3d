@@ -12,12 +12,12 @@ using System.Collections.Generic;
 public class screenshots_for_typicality : EditorWindow
 {   
     // Resolution for screenshots.
-    static public int resWidth = 1275; 
-    static public int resHeight = 1650;
+    static public int resWidth = 512; 
+    static public int resHeight = 768;
 
     // Main camera is scene.
     static Camera MainCamera;
-
+    static Rect new_rect1;
 
     static TaskScene task_scene;
     static string task_name = "sv";
@@ -65,9 +65,18 @@ public class screenshots_for_typicality : EditorWindow
         Bounds low_bound = new Bounds(b.min, new Vector3(0.1f, 0.1f, 0.1f));
         Bounds high_bound = new Bounds(b.max, new Vector3(0.1f, 0.1f, 0.1f));
 
+        // Chaneg camera planes to fit resolution.
+        Rect old_rect;
+        old_rect = MainCamera.rect;
+        new_rect1 = MainCamera.rect;
+        new_rect1.width = 0.5f;
         
+        MainCamera.rect = new_rect1;
+
         bool l = GeometryUtility.TestPlanesAABB(GeometryUtility.CalculateFrustumPlanes(MainCamera), low_bound);
         bool h = GeometryUtility.TestPlanesAABB(GeometryUtility.CalculateFrustumPlanes(MainCamera), high_bound);
+        // Revert camera planes.
+        MainCamera.rect = old_rect;
         bool r;
         if(l && h){
             // Debug.Log("I see you");
@@ -111,10 +120,15 @@ public class screenshots_for_typicality : EditorWindow
 
         // Move couple more times for providence.
         zoom_out(2f);
+        // extend_fov();
         
 
     }
-
+    static void extend_fov(){
+        Camera camera_component;
+        camera_component = MainCamera.GetComponent<Camera>();
+        camera_component.fieldOfView = 90f;
+    }
     static void take_screenshots_all_configs(){
         
         // Tidy this up.
@@ -122,7 +136,10 @@ public class screenshots_for_typicality : EditorWindow
 
         bool x = task_scene.set_new_example();
         MainCamera  = task_scene.main_camera;
+
         
+        
+
         
         while(x){
             
@@ -178,7 +195,8 @@ public class screenshots_for_typicality : EditorWindow
    
         }
         
-        
+        // task_scene = new TaskScene("scene_template",task_name);
+        // take_screenshots_all_configs();
 
         Debug.Log("Completed");
     }

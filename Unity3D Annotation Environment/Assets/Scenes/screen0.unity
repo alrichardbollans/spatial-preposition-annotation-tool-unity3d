@@ -124,7 +124,6 @@ GameObject:
   - component: {fileID: 160854576}
   - component: {fileID: 160854575}
   - component: {fileID: 160854573}
-  - component: {fileID: 160854578}
   - component: {fileID: 160854574}
   m_Layer: 0
   m_Name: floor
@@ -177,7 +176,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 14
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
@@ -201,24 +200,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
---- !u!114 &160854578
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 160854572}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fbddf4b61ce1754b9bf9c082e1723f3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  outputTimeMeasurements: 0
-  createChildGameObject: 1
-  avoidGapsInside: 0
-  avoidExceedingMesh: 1
-  boxesPerEdge: 20
-  physicsMaterialForColliders: {fileID: 0}
-  mergedBoxes_count: 34
 --- !u!1 &608848253
 GameObject:
   m_ObjectHideFlags: 0
@@ -229,7 +210,6 @@ GameObject:
   - component: {fileID: 608848257}
   - component: {fileID: 608848256}
   - component: {fileID: 608848254}
-  - component: {fileID: 608848259}
   - component: {fileID: 608848255}
   m_Layer: 0
   m_Name: wall (1)
@@ -282,7 +262,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 14
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
@@ -306,24 +286,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &608848259
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 608848253}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fbddf4b61ce1754b9bf9c082e1723f3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  outputTimeMeasurements: 0
-  createChildGameObject: 1
-  avoidGapsInside: 0
-  avoidExceedingMesh: 1
-  boxesPerEdge: 20
-  physicsMaterialForColliders: {fileID: 0}
-  mergedBoxes_count: 34
 --- !u!1001 &890052345
 Prefab:
   m_ObjectHideFlags: 0
@@ -440,9 +402,29 @@ Prefab:
       propertyPath: m_RootOrder
       value: 3
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 64423920713884110, guid: 81f07e32be75841548544498e8a3c238, type: 2}
   m_ParentPrefab: {fileID: 100100000, guid: 81f07e32be75841548544498e8a3c238, type: 2}
   m_IsPrefabParent: 0
+--- !u!1 &976533878 stripped
+GameObject:
+  m_PrefabParentObject: {fileID: 1112578321558106, guid: 81f07e32be75841548544498e8a3c238,
+    type: 2}
+  m_PrefabInternal: {fileID: 976533877}
+--- !u!64 &976533879
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 976533878}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Convex: 1
+  m_CookingOptions: 14
+  m_SkinWidth: 0.01
+  m_Mesh: {fileID: 4300000, guid: c87ccea64ceaf496bab9475ec5c45421, type: 3}
 --- !u!1 &998010174
 GameObject:
   m_ObjectHideFlags: 0
@@ -569,6 +551,7 @@ Prefab:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 9500000, guid: 2c4c3bffc56254ba59e44bd72a3be308, type: 3}
+    - {fileID: 6400000, guid: 2c4c3bffc56254ba59e44bd72a3be308, type: 3}
   m_ParentPrefab: {fileID: 100100000, guid: 2c4c3bffc56254ba59e44bd72a3be308, type: 3}
   m_IsPrefabParent: 0
 --- !u!1 &1565830355 stripped
@@ -586,7 +569,7 @@ MeshCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Convex: 0
-  m_CookingOptions: 0
+  m_CookingOptions: 14
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 4300000, guid: 2c4c3bffc56254ba59e44bd72a3be308, type: 3}
 --- !u!1 &1570686679
@@ -624,7 +607,7 @@ Light:
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
-    m_Bias: 0.05
+    m_Bias: 0
     m_NormalBias: 0.4
     m_NearPlane: 0.2
   m_Cookie: {fileID: 0}
@@ -692,9 +675,7 @@ GameObject:
   - component: {fileID: 1684555583}
   - component: {fileID: 1684555582}
   - component: {fileID: 1684555580}
-  - component: {fileID: 1684555585}
   - component: {fileID: 1684555581}
-  - component: {fileID: 1684555584}
   m_Layer: 0
   m_Name: wall (2)
   m_TagString: Untagged
@@ -746,7 +727,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 14
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
@@ -770,36 +751,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
---- !u!65 &1684555584
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1684555579}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1.0000002, y: 1, z: 1.0000002}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &1684555585
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1684555579}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fbddf4b61ce1754b9bf9c082e1723f3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  outputTimeMeasurements: 0
-  createChildGameObject: 1
-  avoidGapsInside: 0
-  avoidExceedingMesh: 1
-  boxesPerEdge: 20
-  physicsMaterialForColliders: {fileID: 0}
-  mergedBoxes_count: 34
 --- !u!1 &1713189137
 GameObject:
   m_ObjectHideFlags: 0
@@ -810,7 +761,6 @@ GameObject:
   - component: {fileID: 1713189141}
   - component: {fileID: 1713189140}
   - component: {fileID: 1713189138}
-  - component: {fileID: 1713189143}
   - component: {fileID: 1713189139}
   m_Layer: 0
   m_Name: wall (3)
@@ -863,7 +813,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 14
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
@@ -887,24 +837,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
---- !u!114 &1713189143
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1713189137}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fbddf4b61ce1754b9bf9c082e1723f3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  outputTimeMeasurements: 0
-  createChildGameObject: 1
-  avoidGapsInside: 0
-  avoidExceedingMesh: 1
-  boxesPerEdge: 20
-  physicsMaterialForColliders: {fileID: 0}
-  mergedBoxes_count: 34
 --- !u!1 &1870802355
 GameObject:
   m_ObjectHideFlags: 0
@@ -940,7 +872,7 @@ Light:
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
-    m_Bias: 0.05
+    m_Bias: 0
     m_NormalBias: 0.4
     m_NearPlane: 0.2
   m_Cookie: {fileID: 0}
@@ -980,7 +912,6 @@ GameObject:
   - component: {fileID: 1958104382}
   - component: {fileID: 1958104381}
   - component: {fileID: 1958104379}
-  - component: {fileID: 1958104384}
   - component: {fileID: 1958104380}
   m_Layer: 0
   m_Name: ceiling
@@ -1033,7 +964,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 14
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
@@ -1057,24 +988,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
---- !u!114 &1958104384
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1958104378}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fbddf4b61ce1754b9bf9c082e1723f3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  outputTimeMeasurements: 0
-  createChildGameObject: 1
-  avoidGapsInside: 0
-  avoidExceedingMesh: 1
-  boxesPerEdge: 20
-  physicsMaterialForColliders: {fileID: 0}
-  mergedBoxes_count: 34
 --- !u!1 &1964604809
 GameObject:
   m_ObjectHideFlags: 0
@@ -1178,7 +1091,6 @@ GameObject:
   - component: {fileID: 2005695785}
   - component: {fileID: 2005695784}
   - component: {fileID: 2005695782}
-  - component: {fileID: 2005695787}
   - component: {fileID: 2005695783}
   m_Layer: 0
   m_Name: wall
@@ -1231,7 +1143,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 14
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
@@ -1255,24 +1167,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2005695787
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 2005695781}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fbddf4b61ce1754b9bf9c082e1723f3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  outputTimeMeasurements: 0
-  createChildGameObject: 1
-  avoidGapsInside: 0
-  avoidExceedingMesh: 1
-  boxesPerEdge: 20
-  physicsMaterialForColliders: {fileID: 0}
-  mergedBoxes_count: 34
 --- !u!1 &2097227042
 GameObject:
   m_ObjectHideFlags: 0
@@ -1308,7 +1202,7 @@ Light:
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
-    m_Bias: 0.05
+    m_Bias: 0
     m_NormalBias: 0.4
     m_NearPlane: 0.2
   m_Cookie: {fileID: 0}

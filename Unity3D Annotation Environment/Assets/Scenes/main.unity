@@ -455,8 +455,6 @@ MonoBehaviour:
   None_toggle_obj: {fileID: 939690510}
   loadingImage: {fileID: 406088930}
   SceneCounter_Text: {fileID: 703833770}
-  fail_loaded: 0
-  number_scenes_done: 0
   change_task_button: {fileID: 2120322308}
 --- !u!4 &75614431
 Transform:
