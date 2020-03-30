@@ -40,6 +40,10 @@ Object tags handle which objects are tested and how they are tested.
 ### Removing Scenes
 Scenes need removing from build and removing from scene list in main.cs. To do this, open the project, delete the scenes and then run finalise_scenes.cs. Then build.
 
+### Rendering Issues
+
+There are some realtime lights which provide shadows. The shadow bias of these is set to 0 and they set to display soft shadows. Find its best to set objects to have static lightmap. 
+
 
 ## Other Assets
 figure_material and ground_material need to be in Resources folder
