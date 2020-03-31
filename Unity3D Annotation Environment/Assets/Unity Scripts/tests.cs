@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
+using System.Linq;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -12,17 +14,51 @@ using System.Collections.Generic;
 
 
 public class Placeholder: EditorWindow{
-	
+	static string get_strings(string orig,int first_ch_index){
+		string sc;
+		int end = orig.Length - first_ch_index;
+		sc = orig.Substring(first_ch_index,end);
+		
+		sc = sc.Substring(0,sc.IndexOf(":"));
+		
+		return sc;
+	}
 	[MenuItem ("My Tools/Tests")]
 	static void init(){
-		Light[] lights = UnityEngine.Object.FindObjectsOfType<Light>();
-		foreach(Light l in lights){
-		    // l.shadows= LightShadows.Soft;
-		    if(l.lightmapBakeType == LightmapBakeType.Realtime){
-		    	Debug.Log(l.name);
-		    	l.shadowBias = 0;
-		    }
-		}
+		// Light[] lights = UnityEngine.Object.FindObjectsOfType<Light>();
+		// foreach(Light l in lights){
+		//     // l.shadows= LightShadows.Soft;
+		//     if(l.lightmapBakeType == LightmapBakeType.Realtime){
+		//     	Debug.Log(l.name);
+		//     	l.shadowBias = 0;
+		//     }
+		// }
+		// Sprite[] sprites =Resources.LoadAll<Sprite>("Typ_task_folder");
+		Texture2D[] imgs =Resources.LoadAll<Texture2D>("Typ_task_folder");
+		
+		Texture2D img = imgs[3];//.Where(a => a.name == "nice").First() as Texture2D;//Resources.Load <Sprite> ("typ_task_folder/nice");
+		Debug.Log(img.name);
+		GameObject li = GameObject.Find("RightImage");
+
+		// li.GetComponent<RawImage>().texture = img;
+
+		string old = img.name;
+		string fig;
+		string grd;
+		string scene;
+		
+		int first_scene_character_index = old.IndexOf("scene:") +6;
+		int first_fig_character_index = old.IndexOf("figure:") +7;
+		int first_gr_character_index = old.IndexOf("ground:") +7;
+		
+		fig = get_strings(old,first_fig_character_index);
+		scene = get_strings(old,first_scene_character_index);
+		grd = get_strings(old,first_gr_character_index);
+		
+		Debug.Log(fig);
+		Debug.Log(scene);
+		Debug.Log(grd);
+
 
 		// GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
 		// List<GameObject> meshObjects = new List<GameObject>();

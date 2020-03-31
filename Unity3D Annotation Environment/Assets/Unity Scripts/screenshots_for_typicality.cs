@@ -22,10 +22,12 @@ public class screenshots_for_typicality : EditorWindow
     static TaskScene task_scene;
     static string task_name = "sv";
 
-    public static string ScreenShotName(string scene, string figure, string ground) {
-        return string.Format("{0}/Resources/typtask_scene:{1}:_figure:{2}:_ground:{3}:.png", 
-                             Application.dataPath, 
-                             scene, figure, ground);
+
+
+    public static string ScreenShotPath(TaskScene scene, string figure, string ground) {
+        string direct = Application.dataPath + "/Resources/typ_task_folder/";
+        string r =  direct + TaskScene.ScreenShotName(scene.name,figure,ground);
+        return r;
     }
 
     /// <summary>
@@ -153,7 +155,7 @@ public class screenshots_for_typicality : EditorWindow
             position_camera(f,g);
             
             
-            string newname= ScreenShotName(task_scene.name, f.name, g.name);
+            string newname= ScreenShotPath(task_scene, f.name, g.name);
             
             
             take_screenshot(newname);

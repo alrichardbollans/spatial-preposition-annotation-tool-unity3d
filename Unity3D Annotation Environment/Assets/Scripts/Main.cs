@@ -43,6 +43,8 @@ using System.IO;
 using System.Text;
 using System.Linq;
 
+
+
 /// <summary>
 /// TaskScene class acts like the usual Scene object except 
 /// more information is stored regarding object configurations.
@@ -71,6 +73,9 @@ public class TaskScene {
 	Material[] stored_fig_mats;
 	Material[] stored_grd_mats;
 
+	// Images to use in typ_task.
+	List<Texture2D> typicality_images;
+
 	// Strings for storing values in PlayerPrefs
 	static string selectedFig_playerpref = Main.selectedFig_playerpref;
 	static string selectedgrd_playerpref = Main.selectedgrd_playerpref;
@@ -82,6 +87,8 @@ public class TaskScene {
 	static string fig_grd_tag =  Main.fig_grd_tag;
 	// Random instance for generating random integers.
 	static System.Random rnd = new System.Random();
+
+	int config_counter = 0;
 
 	/// <summary>
     /// Create class instance.
@@ -108,6 +115,8 @@ public class TaskScene {
 		
 		
 	}
+
+
 
 	/// <summary>
     /// Stores ground name in playerprefs and highlights ground.
@@ -263,6 +272,7 @@ public class TaskScene {
 		// Set camera
 		cam_list = GameObject.FindGameObjectsWithTag(Main.main_camera_tag);
 		foreach(GameObject c in cam_list){
+
 			if (c.scene.name == name){
 				main_camera = c.GetComponent<Camera>();
 			}
@@ -270,43 +280,49 @@ public class TaskScene {
 	}
 
 	public void populate_config_list(){
-		// Add configurations to list by taking children of ground
-		foreach (GameObject ground in ground_list){
-			foreach(GameObject fig in figure_list){
-				if(fig.name != ground.name){
-					GameObject[] config = {fig,ground};
-					configuration_list.Add(config);
-				}
-			}
-
-			if(task_type == Main.screen_abv){
-				foreach(Transform emp in ground.transform){
-					string p = emp.gameObject.tag;
-					if (comp_preposition_list.Contains(p)){
-						screening_preposition = p;
-						
+		if (task_type == Main.sv_abv || task_type == "pq" || task_type == Main.screen_abv){
+			
+			foreach (GameObject ground in ground_list){
+				foreach(GameObject fig in figure_list){
+					if(fig.name != ground.name){
+						GameObject[] config = {fig,ground};
+						configuration_list.Add(config);
 					}
 				}
+
+				if(task_type == Main.screen_abv){
+					// Add configurations to list by taking children of ground
+					foreach(Transform emp in ground.transform){
+						string p = emp.gameObject.tag;
+						if (comp_preposition_list.Contains(p)){
+							screening_preposition = p;
+							
+						}
+					}
+				}
+				
 			}
 			
 		}
+		if(task_type == Main.typ_abv){
+			
+			Texture2D[] typ_im_array =Resources.LoadAll<Texture2D>("Typ_task_folder");
+			typicality_images = typ_im_array.ToList();
+		}
+		
+		
 	}
 
 	/// <summary>
     /// Once scene has been loaded, populates various list/configurations and set main camera.
     /// </summary>
 	public void instantiate_after_scene_loaded(){
+		Debug.Log("Instantiating task scene");
 		// Set camera
 		set_main_camera();
 		populate_fig_ground_list();
 		// Add in configurations
-		if (task_type == Main.sv_abv || task_type == "pq" || task_type == Main.screen_abv){
-			
-			populate_config_list();
-			
-		}
-
-		
+		populate_config_list();
 
 		if (task_type == Main.comp_abv){
 			
@@ -340,12 +356,20 @@ public class TaskScene {
     /// </summary>
 	public IEnumerator set_scene_coroutine(){
 		
-
-		// Needs to be set up as a coroutine so that it only continues after scene is fully loaded
-		SceneManager.LoadScene(name,LoadSceneMode.Additive);
-		yield return null;
-		SceneManager.SetActiveScene(SceneManager.GetSceneByName(name));
+		Scene scene_to_load = SceneManager.GetSceneByName(name);
+		if(!scene_to_load.isLoaded){
+			// Needs to be set up as a coroutine so that it only continues after scene is fully loaded
+			SceneManager.LoadScene(name,LoadSceneMode.Additive);
+			yield return null;
+			SceneManager.SetActiveScene(scene_to_load);
+		}
+		// Update playerprefs.
+		PlayerPrefs.SetString(Main.scene_player_pref, name);
+			
+		
+		// Populate various lists.
 		instantiate_after_scene_loaded();
+			
 		
 	}
 	
@@ -366,7 +390,66 @@ public class TaskScene {
 		
 		comparison_list.Add(config);
 	}
+
+	public static string ScreenShotName(string scene, string figure, string ground) {
+	    return string.Format("typtask_scene:{1}:_figure:{2}:_ground:{3}:.png", 
+	                         scene, figure, ground);
+	}
+
+	public static string get_config_string_from_img(Texture2D img){
+		string old = img.name;
+		string fig;
+		string grd;
+		string scene;
+		
+		int first_scene_character_index = old.IndexOf("scene:") +6;
+		int first_fig_character_index = old.IndexOf("figure:") +7;
+		int first_gr_character_index = old.IndexOf("ground:") +7;
+		
+		fig = get_string_from_img_file(old,first_fig_character_index);
+		scene = get_string_from_img_file(old,first_scene_character_index);
+		grd = get_string_from_img_file(old,first_gr_character_index);
+		
+		string config =scene + ";"+fig + ";"+grd;
+
+		return config;
 	
+	}
+
+	static string get_string_from_img_file(string file_string,int first_ch_index){
+		string out_string;
+		int end = file_string.Length - first_ch_index;
+		out_string = file_string.Substring(first_ch_index,end);
+		
+		out_string = out_string.Substring(0,out_string.IndexOf(":"));
+		
+		return out_string;
+	}
+
+	void show_new_config_pictures(){
+		int i1 = rnd.Next(typicality_images.Count);
+		
+		Texture2D img1 = typicality_images[i1];
+
+		string config1_string = get_config_string_from_img(img1);
+
+		PlayerPrefs.SetString(Main.config1_player_pref, config1_string);
+		typicality_images.Remove(img1);
+
+		int i2 = rnd.Next(typicality_images.Count);
+		Texture2D img2 = typicality_images[i2];
+		string config2_string = get_config_string_from_img(img2);
+
+		PlayerPrefs.SetString(Main.config2_player_pref, config2_string);
+
+		typicality_images.Remove(img2);
+
+
+		Main.left_image.GetComponent<RawImage>().texture = img1;
+		Main.right_image.GetComponent<RawImage>().texture = img2;
+
+		config_counter +=1;
+	}
 	/// <summary>
     /// Sets new configuration to test.
     /// </summary>
@@ -442,7 +525,7 @@ public class TaskScene {
 
 
 		
-		if (task_type == Main.comp_abv){
+		else if (task_type == Main.comp_abv){
 			deselect_figure();
 			deselect_ground();
 			
@@ -488,13 +571,23 @@ public class TaskScene {
 			}
 		}
 
+		else if (task_type== Main.typ_abv){
+			if(config_counter<Main.number_configs_to_compare){
+				show_new_config_pictures();
+				return true;
+			}
+			else{
+				return false;
+			}
+		}
+
 		else{
 			Debug.Log("Error: Task type incorrectly set");
 			Debug.Log("task_type = " + task_type);
 			return false;
 		}
-		}
 	}
+}
 
 	
 /// <summary>
@@ -585,7 +678,6 @@ public class Task {
 		// 	scene_abbreviations.Add(Main.comp_abv);
 
 		// }
-		GameObject[] allObjects = Object.FindObjectsOfType<GameObject>();
 		
 		get_scenes();
 
@@ -714,6 +806,13 @@ public class Main : MonoBehaviour {
 	public static string task_player_pref = "task";
 	public static string scene_player_pref = "scene";
 	public static string userid_player_pref = "UserID";
+	// Specific to typ_task.
+	public static string config1_player_pref = "config1";
+	public static string config2_player_pref = "config2";
+	public static string selection_player_pref = "config_selection";
+
+
+
 
 	// Tags
 	public static string ground_tag = "ground";
@@ -747,6 +846,8 @@ public class Main : MonoBehaviour {
 	public static string screen_abv = "screen";
 	public static string typ_abv ="typ";
 
+	public static int number_configs_to_compare = 2;
+
 	// Input keys
 	static public KeyCode ShowHelpKey = KeyCode.Delete;
 	static public KeyCode quitKey = KeyCode.Escape;
@@ -769,9 +870,14 @@ public class Main : MonoBehaviour {
 	public Text comp_instruction_text;
 	public Text sv_instruction_text;
 	public Text typ_instruction_text;
+	public GameObject typ_left_image;
+	public GameObject typ_right_image;
 	public GameObject confirm_text;
 	public GameObject confirmQuit_text;
 	public GameObject help_panel;
+
+	static public GameObject left_image;
+	static public GameObject right_image;
 
 	public GameObject None_toggle_obj;
 	Toggle None_toggle;
@@ -805,8 +911,13 @@ public class Main : MonoBehaviour {
 	/// Creates tasks. Adds listeners to toggles. Deactivates some objects.
 	/// </summary>
 	void Awake(){
-		GameObject[] dev_objects = {change_task_button};
+		//Reassing some static objects.
+		left_image = typ_left_image;
+		right_image = typ_right_image;
+
 		//  Show/hide dev objects.
+		GameObject[] dev_objects = {change_task_button};
+		
 		foreach(GameObject go in dev_objects){
 			if(dev_mode){
 				go.SetActive(true);
@@ -839,7 +950,7 @@ public class Main : MonoBehaviour {
 		string[] comp_instructions = {"In this task you will be asked to select the object which <b>best fits</b> a given description.", "An object will be described by its relation to another object which will be <color=red><b>highlighted in red</b></color>, e.g. 'the object <b>on</b> the <color=red><b>table</b></color>'. You need to <b>click</b> on the object <b>which best fits the description</b>.\n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.", "The object you select will turn <color=green><b>green</b></color>. Once you have selected an object you must press 'Enter' or click 'Accept' to confirm your selection. \n\n You <b>cannot select</b> the room, floor, ceiling or walls; but remember that you <b>can select</b> the table. \n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.","All important objects in the scene will be immediately in view; but remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
 		
 		string generic_instructions_title = "Instructions";
-		string[] typ_instructions = {};
+		string[] typ_instructions = {"In this task etc.."};
 		// string game_instruction_title = "Game Instructions";
 		// string[] game_instructions = {};
 		
@@ -847,6 +958,7 @@ public class Main : MonoBehaviour {
 		List<GameObject> task_panels = new List<GameObject>();
 		task_panels.Add(sv_main_panel);
 		task_panels.Add(comp_main_panel);
+		task_panels.Add(typ_main_panel);
 		// Instantiate tasks now lists have been created
 		sv_task = new Task(sv_abv,sv_instructions,sv_instruction_title,task_panels,sv_main_panel,selected_fig_text,sv_instruction_text);
 		pq_task = new Task("pq",sv_instructions,sv_instruction_title,task_panels,sv_main_panel,selected_fig_text,sv_instruction_text);
@@ -893,7 +1005,7 @@ public class Main : MonoBehaviour {
 		{	
 		
 		// Set which task to begin
-		task = screen_task;
+		task = typ_task;
 
 		loadingImage.SetActive(false);
 		clear_object_player_prefs();
@@ -986,22 +1098,21 @@ public class Main : MonoBehaviour {
 	/// </summary>
 	/// <param name="sceneName">String. Scene name.</param>
 	public void load_scene(string sceneName){
-			loadingImage.SetActive(true);
-			// takes a scene name and loads it for the task
-			
-			task_scene = new TaskScene(sceneName,task.name);
-			
-			StartCoroutine(task_scene.set_scene_coroutine());
-			
-			PlayerPrefs.SetString(scene_player_pref, sceneName);
+		loadingImage.SetActive(true);
+		// takes a scene name and loads it for the task
+		
+		task_scene = new TaskScene(sceneName,task.name);
+		
+		StartCoroutine(task_scene.set_scene_coroutine());
 
-			// Update scene counter.
-			int number_scenes_left = task.number_scenes_to_do - number_scenes_done;
-			string count = number_scenes_left.ToString();
-			string newtext = SceneCountertext.Replace(":int:",count);
-			SceneCounter_Text.text = newtext;
+		// Update scene counter.
+		// Update this to do typ_task.
+		int number_scenes_left = task.number_scenes_to_do - number_scenes_done;
+		string count = number_scenes_left.ToString();
+		string newtext = SceneCountertext.Replace(":int:",count);
+		SceneCounter_Text.text = newtext;
 
-			new_example();
+		new_example();
 		
 		
 	}
@@ -1014,6 +1125,14 @@ public class Main : MonoBehaviour {
 		
 		if (number_scenes_done == task.number_scenes_to_do || task.list_of_scenes_to_do.Count==0){
 			change_task();
+		}
+
+		else if(task.name == typ_abv){
+			unload_current_scene();
+			// Only uses on scene camera:main.
+			task_scene = new TaskScene(main_scene_name,task.name);
+			StartCoroutine(task_scene.set_scene_coroutine());
+			new_example();
 		}
 
 		else{
@@ -1126,6 +1245,10 @@ public class Main : MonoBehaviour {
 	    string url = appendannotation_url;
         yield return null;
         /// Output info
+        string c1 = PlayerPrefs.GetString(config1_player_pref,"");
+        string c2 = PlayerPrefs.GetString(config2_player_pref,"");
+        string selection = PlayerPrefs.GetString(selection_player_pref,"");
+		
 		string f = PlayerPrefs.GetString(selectedFig_playerpref,"");
 		string g = PlayerPrefs.GetString(selectedgrd_playerpref,"");
 		string p = PlayerPrefs.GetString(prep_playerpref,"");
@@ -1135,38 +1258,56 @@ public class Main : MonoBehaviour {
 		string now = System.DateTime.UtcNow.ToString("yyyyMMdd-HHMMss");
 		string ID = System.Guid.NewGuid().ToString();
 		string prepositions = "";
+		// Find selected prepositions for sv task.
 		List<string> selected_prepositions =  new List<string> ();
 		string all_prepositions =   "";
 		foreach (Toggle t in task.list_of_toggles){
-				if(t.isOn ==true){
-					selected_prepositions.Add(t.name);
-					prepositions  = prepositions + t.name + ";";
-				}
-
-				all_prepositions = all_prepositions + t.name + ";";
-
+			if(t.isOn ==true){
+				selected_prepositions.Add(t.name);
+				prepositions  = prepositions + t.name + ";";
 			}
 
-		string cam_loc = task_scene.main_camera.gameObject.transform.position.ToString();
-		string cam_rot = task_scene.main_camera.gameObject.transform.rotation.ToString();
+			all_prepositions = all_prepositions + t.name + ";";
 
+		}
+
+	
+			
 
         bool successful = true; //Not yet used here
 
-        WWWForm form = new WWWForm(); //create web form to talk with
-        form.AddField("selectedFigure",f);
-        form.AddField("selectedGround",g);
-        form.AddField("preposition",p);
-        form.AddField("prepositions",prepositions);
-        form.AddField("allprepositions",all_prepositions);
-        form.AddField("task",ta);
-        form.AddField("UserID",u);
-        form.AddField("scene",sc);
+        //create web form to talk with.
+        WWWForm form = new WWWForm(); 
+        // Added to all annotations.
         form.AddField("now",now);
         form.AddField("ID",ID);
-        // form.AddField("all_objects",all_objects_string);
-        form.AddField("cam_loc",cam_loc);
-        form.AddField("cam_rot",cam_rot);
+        form.AddField("task",ta);
+        form.AddField("UserID",u);
+
+        if(task.name == typ_abv){
+        	form.AddField("c1",c1);
+        	form.AddField("c2",c2);
+        	form.AddField("selection",selection);
+        }
+        else{
+        	string cam_loc = task_scene.main_camera.gameObject.transform.position.ToString();
+        	string cam_rot = task_scene.main_camera.gameObject.transform.rotation.ToString();
+        	
+        	// Not included in typ_task.
+        	form.AddField("selectedFigure",f);
+        	form.AddField("selectedGround",g);
+        	form.AddField("preposition",p);
+        	form.AddField("prepositions",prepositions);
+        	form.AddField("allprepositions",all_prepositions);
+        
+
+
+	        form.AddField("scene",sc);
+
+	        // form.AddField("all_objects",all_objects_string);
+	        form.AddField("cam_loc",cam_loc);
+	        form.AddField("cam_rot",cam_rot);
+	    }
         
         
         // Send the form to the php script
@@ -1325,6 +1466,18 @@ public class Main : MonoBehaviour {
 		
 	}
 
+	public void left_image_click(){
+		string c1 = PlayerPrefs.GetString(config1_player_pref,"");
+		PlayerPrefs.SetString(selection_player_pref,c1);
+		show_confirm_click();
+	}
+
+	public void right_image_click(){
+		string c2 = PlayerPrefs.GetString(config2_player_pref,"");
+		PlayerPrefs.SetString(selection_player_pref,c2);
+		show_confirm_click();
+	}
+
 	
 	/// <summary>
 	/// Shows confirm click dialogue.
@@ -1372,15 +1525,19 @@ public class Main : MonoBehaviour {
 	/// Handles user what to do when user clicks or touches screen.
 	/// </summary>
 	void handle_click_touch(){
-			
-		// Deselect old figure object.
-		task_scene.deselect_figure();
-		hide_confirm_click();
+		Debug.Log("click");
+
 		
 
 		// Find hit object.
 	    Ray ray = task_scene.main_camera.ScreenPointToRay(Input.mousePosition);
 	    RaycastHit hit;
+		// Deselect old figure object.
+		task_scene.deselect_figure();
+		hide_confirm_click();
+		
+
+		
 	  	// If something is hit.
 		if (Physics.Raycast(ray, out hit)){
 		    // The object identified by hit.transform was clicked.
@@ -1403,7 +1560,8 @@ public class Main : MonoBehaviour {
 			else{
 				task.selected_figure_text.text = "Selected Object: ";
 			}
-	  	}
+	  	
+		}
 	}
 
 	/// <summary>
@@ -1465,9 +1623,12 @@ public class Main : MonoBehaviour {
 	    // Handle clicks and "return" presses.
 		if(player_in_game()){
 			
+
 			if (task.name == comp_abv || task.name == screen_abv){
-				// If left mouse button pressed...
-				if (Input.GetMouseButtonDown(0)){ 
+				
+
+				if (Input.GetMouseButtonDown(0)){
+					// If left mouse button pressed...
 					if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began){
 			        	Debug.Log("touch");
 			            // Check if finger is over a UI element
@@ -1484,10 +1645,11 @@ public class Main : MonoBehaviour {
 				    }
 
 				}
-				// If return is pressed.
-				if (Input.GetKeyDown (KeyCode.Return)){
-			  		accept();
-				}
+				
+			}
+			// If return is pressed.
+			if (Input.GetKeyDown (KeyCode.Return)){
+		  		accept();
 			}
 		}
 	}
