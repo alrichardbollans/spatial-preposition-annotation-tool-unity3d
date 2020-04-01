@@ -369,7 +369,7 @@ public class TaskScene {
 			// Needs to be set up as a coroutine so that it only continues after scene is fully loaded
 			SceneManager.LoadScene(name,LoadSceneMode.Additive);
 			yield return null;
-			SceneManager.SetActiveScene(scene_to_load);
+			SceneManager.SetActiveScene(SceneManager.GetSceneByName(name));
 		}
 		// Update playerprefs.
 		PlayerPrefs.SetString(Main.scene_player_pref, name);
@@ -1033,7 +1033,7 @@ public class Main : MonoBehaviour {
 		{	
 		
 		// Set which task to begin
-		task = typ_task;
+		task = sv_task;
 
 		loadingImage.SetActive(false);
 		clear_object_player_prefs();
