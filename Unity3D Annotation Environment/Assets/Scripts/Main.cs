@@ -672,6 +672,7 @@ public class Task {
 		main = m;
 
 		scene_abbreviations.Add(n);
+		get_scenes();
 		
 		selected_figure_text = main.selected_fig_text;
 
@@ -736,8 +737,6 @@ public class Task {
 		// 	scene_abbreviations.Add(Main.comp_abv);
 
 		// }
-		
-		get_scenes();
 
 		// Populate list of active objects by what's in panel hierarchy
 		add_all_descendants(panel);
@@ -1033,7 +1032,7 @@ public class Main : MonoBehaviour {
 		{	
 		
 		// Set which task to begin
-		task = sv_task;
+		task = typ_task;
 
 		loadingImage.SetActive(false);
 		clear_object_player_prefs();
@@ -1153,11 +1152,21 @@ public class Main : MonoBehaviour {
 	/// </summary>
 	public void load_next_scene(){
 		
-		if (number_scenes_done == task.number_scenes_to_do || task.list_of_scenes_to_do.Count==0){
+		if (number_scenes_done == task.number_scenes_to_do){
+			Debug.Log(number_scenes_done);
+
+			Debug.Log("change because of scene number");
+			change_task();
+			 
+		}
+		if (task.list_of_scenes_to_do.Count==0){
+		
+			Debug.Log("change because of scene to do");
 			change_task();
 		}
 
 		else if (number_typ_configs_done >= number_typ_configs_to_do){
+			Debug.Log("change because of typ_task");
 			change_task();
 		}
 
