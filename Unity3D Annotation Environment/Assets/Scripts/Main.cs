@@ -580,11 +580,13 @@ public class TaskScene {
 		}
 
 		else if (task_type== Main.typ_abv){
-			if(config_counter<Main.number_configs_to_compare){
+			if(Main.number_typ_configs_done<Main.number_typ_configs_to_do){
+				Main.number_typ_configs_done +=1;
 				show_new_config_pictures();
 				int r = rnd.Next(comp_preposition_list.Count);
 				string p = comp_preposition_list[r];
 				set_preposition(p);
+
 				return true;
 			}
 			else{
@@ -633,8 +635,7 @@ public class Task {
 	
 	public List<string> list_of_scenes = new List<string> (); // List of all scenes doesn't get chanegd
 	public List<string> list_of_scenes_to_do = new List<string> (); // List of scenes where done scenes are removed 
-
-	public int number_scenes_to_do;
+	public int number_scenes_to_do=10;
 
 	static string task_player_pref = Main.task_player_pref;
 
@@ -671,7 +672,6 @@ public class Task {
 		main = m;
 
 		scene_abbreviations.Add(n);
-		number_scenes_to_do = 10;
 		
 		selected_figure_text = main.selected_fig_text;
 
@@ -683,7 +683,7 @@ public class Task {
 		if(name==Main.sv_abv){
 			panel = main.sv_main_panel;
 			instruction_text_component = main.sv_instruction_text;
-
+			number_scenes_to_do = 10;
 			instruction_title = "Task 1 Instructions";
 			string[] il = {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
 			"A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.",
@@ -696,6 +696,7 @@ public class Task {
 		}
 		if(name==Main.comp_abv){
 			panel = main.comp_main_panel;
+			number_scenes_to_do = 10;
 			instruction_text_component = main.comp_instruction_text;
 			string[] il = {"In this task you will be asked to select the object which <b>best fits</b> a given description.", "An object will be described by its relation to another object which will be <color=red><b>highlighted in red</b></color>, e.g. 'the object <b>on</b> the <color=red><b>table</b></color>'. You need to <b>click</b> on the object <b>which best fits the description</b>.\n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.", "The object you select will turn <color=green><b>green</b></color>. Once you have selected an object you must press 'Enter' or click 'Accept' to confirm your selection. \n\n You <b>cannot select</b> the room, floor, ceiling or walls; but remember that you <b>can select</b> the table. \n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.","All important objects in the scene will be immediately in view; but remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
 			instruction_list = il;
@@ -723,8 +724,7 @@ public class Task {
 			string[] il = {"In this task etc.."};
 			instruction_list = il;
 			instruction_title = "Instructions";
-			instruction = "Select the pair of objects which best fits the description:\n'the green object :preposition: the red object'";
-
+			instruction = "Select the pair of objects which best fits the description:\n'the <color=green><b>green object</b></color> :preposition: the <color=red><b>red object</b></color>'";
 			
 
 		}
@@ -845,6 +845,7 @@ public class Task {
 
 	}
 
+
 	
 }
 	
@@ -907,7 +908,7 @@ public class Main : MonoBehaviour {
 	public static string screen_abv = "screen";
 	public static string typ_abv ="typ";
 
-	public static int number_configs_to_compare = 2;
+	
 
 	// Input keys
 	static public KeyCode ShowHelpKey = KeyCode.Delete;
@@ -933,10 +934,6 @@ public class Main : MonoBehaviour {
 	public Text typ_instruction_text;
 	public GameObject typ_left_image;
 	public GameObject typ_right_image;
-	public GameObject left_image_button_go;
-	public GameObject right_image_button_go;
-	Button left_image_button;
-	Button right_image_button;
 	public GameObject confirm_text;
 	public GameObject confirmQuit_text;
 	public GameObject help_panel;
@@ -949,6 +946,9 @@ public class Main : MonoBehaviour {
 	string SceneCountertext = "Scenes left: :int:";
 	
 	int number_scenes_done = 0;
+	
+	static public int number_typ_configs_done = 0;
+	static public int number_typ_configs_to_do = 2;
 
 	// Objetcs to hide/show if in dev mode.
 	bool dev_mode = true;
@@ -973,8 +973,6 @@ public class Main : MonoBehaviour {
 	/// Creates tasks. Adds listeners to toggles. Deactivates some objects.
 	/// </summary>
 	void Awake(){
-		left_image_button = left_image_button_go.GetComponent(typeof(Button)) as Button;
-		right_image_button = right_image_button_go.GetComponent(typeof(Button)) as Button;
 		//  Show/hide dev objects.
 		GameObject[] dev_objects = {change_task_button};
 		
@@ -1147,6 +1145,8 @@ public class Main : MonoBehaviour {
 		
 	}
 
+
+
 	/// <summary>
 	/// If user has done enough scenes for task, changes task.
 	/// Else, unloads current scene and loads new random scene.
@@ -1157,7 +1157,11 @@ public class Main : MonoBehaviour {
 			change_task();
 		}
 
-		else if(task.name == typ_abv){
+		else if (number_typ_configs_done >= number_typ_configs_to_do){
+			change_task();
+		}
+
+		else if(task == typ_task){
 			unload_current_scene();
 			// Only uses on scene camera:main.
 			task_scene = new TaskScene(main_scene_name,task.name);
@@ -1229,6 +1233,7 @@ public class Main : MonoBehaviour {
 	/// </summary>
 	public void reset_task_values(){
 		number_scenes_done = 0;
+		number_typ_configs_done = 0;
 		reset_input_values();
 		PlayerPrefs.SetString(task_player_pref, "");
 
@@ -1500,13 +1505,15 @@ public class Main : MonoBehaviour {
 	public void left_image_click(){
 		string c1 = PlayerPrefs.GetString(config1_player_pref,"");
 		PlayerPrefs.SetString(selection_player_pref,c1);
-		show_confirm_click();
+		confirm = true;
+		accept();
 	}
 
 	public void right_image_click(){
 		string c2 = PlayerPrefs.GetString(config2_player_pref,"");
 		PlayerPrefs.SetString(selection_player_pref,c2);
-		show_confirm_click();
+		confirm = true;
+		accept();
 	}
 
 	
@@ -1524,8 +1531,7 @@ public class Main : MonoBehaviour {
 	void hide_confirm_click(){
 		confirm = false;
 		confirm_text.SetActive(false);
-		// unhighlight_button(left_image_button);
-		// unhighlight_button(right_image_button);
+
 	}
 
 	/// <summary>
@@ -1625,17 +1631,7 @@ public class Main : MonoBehaviour {
 		}
 	}
 
-	void highlight_button(Button bu){
-		Color newColor = new Color(255, 41, 41, 60);
-		Image i = bu.GetComponent(typeof(Image)) as Image;
-		i.color = newColor;
-	}
 
-	void unhighlight_button(Button bu){
-		Color newColor = new Color(255, 41, 41, 0);
-		Image i = bu.GetComponent(typeof(Image)) as Image;
-		i.color = newColor;
-	}
 
 
 	/// <summary>
