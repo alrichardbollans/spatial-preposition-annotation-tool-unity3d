@@ -53,6 +53,7 @@ public class TaskScene {
 
 	public string name; //Scene Name
 	public string task_type; 
+	Main main; // Main instance.
 	public List<GameObject> ground_list = new List<GameObject>();
 	public List<GameObject> figure_list = new List<GameObject>();
 	// Camera needed for raycasting
@@ -95,10 +96,10 @@ public class TaskScene {
     /// </summary>
     /// <param name="n">Scene name.</param>
     /// <param name="type">task abbreviation.</param>
-	public TaskScene(string n, string type){
+	public TaskScene(string n, string type,Main m){
 		name = n;
 		task_type = type;
-		
+		main = m;
 	}
 
 	/// <summary>
@@ -445,8 +446,8 @@ public class TaskScene {
 		typicality_images.Remove(img2);
 
 
-		Main.left_image.GetComponent<RawImage>().texture = img1;
-		Main.right_image.GetComponent<RawImage>().texture = img2;
+		main.left_image.GetComponent<RawImage>().texture = img1;
+		main.right_image.GetComponent<RawImage>().texture = img2;
 
 		config_counter +=1;
 	}
@@ -572,7 +573,7 @@ public class TaskScene {
 		}
 
 		else if (task_type== Main.typ_abv){
-			if(config_counter<Main.number_configs_to_compare){
+			if(config_counter<main.number_configs_to_compare){
 				show_new_config_pictures();
 				return true;
 			}
@@ -600,6 +601,7 @@ public class Task {
     public static string[] input_list_of_scenes = {"compsva12","compsva13","compsva14","compsva15","compsva23","compsva24","compsva25","compsva34","compsvi12","compsvi13","compsvi14","compsvi14a","compsvi15","compsvi16","compsvi23","compsvi24","compsvi24a","compsvi25","compsvi26","compsvi26a","compsvi3","compsvi34","compsvi36","compsvi45","compsvi46","compsvinew1","compsvinew2","compsvo12","compsvo12v","compsvo13v","compsvo14","compsvo14a","compsvo14v","compsvo16","compsvo16a","compsvo17","compsvo18","compsvo19","compsvo23v","compsvo24","compsvo24v","compsvo26","compsvo27","compsvo28","compsvo29","compsvo34v","compsvo67","compsvo68","compsvo68a","compsvo69a","compsvo78","compsvo79","compsvo89","compsvu15","compsvu16","compsvu17","compsvu23","compsvu25","compsvu25a","compsvu34","compsvu53","compsvu56","compsvu63","compsvu67","compsvu67a","compsvul","compsvula","finish","instruction","main","player_menu","scene_template","screen0","screen1","screening_fail","test","typ_test"};
 	//
 	public string name;
+	Main main;
 	public string instruction; //Instruction to give in each scene
 
 	string new_instruction;  //Instruction to give in each scene
@@ -658,18 +660,60 @@ public class Task {
 	/// <param name="main_panel">Main task panel.</param>
 	/// <param name="selected_fig_text">Text component for displaying selected object.</param>
 	/// <param name="instruction_text">Text component of instruction panel.</param>
-	public Task(string n,string[] instructions,string title,List<GameObject> task_pans, GameObject main_panel, Text selected_fig_text, Text instruction_text){
+	public Task(string n,Main m){
 		
 		
 		name = n;
-		instruction_list = instructions;
-		instruction_title = title;
+		main = m;
+
 		scene_abbreviations.Add(n);
 		number_scenes_to_do = 10;
-		panel = main_panel;
-		selected_figure_text = selected_fig_text;
-		instruction_text_component = instruction_text;
-		task_panels = task_pans;
+		
+		selected_figure_text = main.selected_fig_text;
+		task_panels = main.task_panels;
+		
+		if(name==Main.sv_abv){
+			panel = main.sv_main_panel;
+			instruction_text_component = main.sv_instruction_text;
+			instruction_list = {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.","A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.","The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.","Remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
+			instruction_title = "Task 1 Instructions";
+			instruction = "Select <b>all</b> words which could fill in the blank:\n \n   ':a: :figure: (____) the :ground:'";
+		
+			
+
+		}
+		if(name==Main.comp_abv){
+			panel = main.comp_main_panel;
+			instruction_text_component = main.comp_instruction_text;
+			instruction_list = {"In this task you will be asked to select the object which <b>best fits</b> a given description.", "An object will be described by its relation to another object which will be <color=red><b>highlighted in red</b></color>, e.g. 'the object <b>on</b> the <color=red><b>table</b></color>'. You need to <b>click</b> on the object <b>which best fits the description</b>.\n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.", "The object you select will turn <color=green><b>green</b></color>. Once you have selected an object you must press 'Enter' or click 'Accept' to confirm your selection. \n\n You <b>cannot select</b> the room, floor, ceiling or walls; but remember that you <b>can select</b> the table. \n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.","All important objects in the scene will be immediately in view; but remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
+			instruction_title = "Task 2 Instructions";
+			instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
+		
+
+		}
+		if(name==Main.screen_abv){
+			panel = main.comp_main_panel;
+			instruction_text_component = main.comp_instruction_text;
+			instruction_list = {"Before beginning you will be given <b>two quick examples</b> to complete\n \n \nClick Next..",	"You will be shown an indoor scene and a description of an object will be provided at the bottom of the screen. \n \n Click on the object that best fits the description.\n \n You will be prompted to press enter or click accept to confirm your selection. \n \nIf you are correct you will move on to the next stage.",
+		"To move around the scene: \n - Use the <b>arrow keys</b> to move around \n - <b>Hold down the '0' key</b> to use the mouse to look around \n - Use the <b>'1' and '2' keys</b> to move up and down if you need to \n - Press the <b>'Delete' key</b> for help"	};
+		
+			instruction_title = "Instructions";
+			instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
+			number_scenes_to_do = list_of_scenes.Count;
+			
+
+		}
+		
+		if(name==Main.typ_abv){
+			panel = main.typ_main_panel;
+			instruction_text_component = main.typ_instruction_text;
+			instruction_list = "Instructions";
+			instruction_title = {"In this task etc.."};
+			instruction = "Select the pair of objects which best fits the description:\n'the green object :preposition: the red object'";
+
+			
+
+		}
 
 		// if(name == Main.sv_abv || name == Main.comp_abv || name == "pq"){
 		// 	//These tasks share scenes
@@ -876,8 +920,7 @@ public class Main : MonoBehaviour {
 	public GameObject confirmQuit_text;
 	public GameObject help_panel;
 
-	static public GameObject left_image;
-	static public GameObject right_image;
+	public List<GameObject> task_panels = new List<GameObject>();
 
 	public GameObject None_toggle_obj;
 	Toggle None_toggle;
@@ -937,45 +980,18 @@ public class Main : MonoBehaviour {
 			all_objects.Add(obj.name);
 			all_objects_string += obj.name + ",";
 		}
-		// Set intructions
-		string screen_instruction_title = "Instructions";
-		string[] screen_instructions = {"Before beginning you will be given <b>two quick examples</b> to complete\n \n \nClick Next..",	"You will be shown an indoor scene and a description of an object will be provided at the bottom of the screen. \n \n Click on the object that best fits the description.\n \n You will be prompted to press enter or click accept to confirm your selection. \n \nIf you are correct you will move on to the next stage.",
-		"To move around the scene: \n - Use the <b>arrow keys</b> to move around \n - <b>Hold down the '0' key</b> to use the mouse to look around \n - Use the <b>'1' and '2' keys</b> to move up and down if you need to \n - Press the <b>'Delete' key</b> for help"	};
 		
-		string sv_instruction_title = "Task 1 Instructions";
-		string[] sv_instructions = {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.","A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.","The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.","Remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
-		
-
-		string comp_instruction_title = "Task 2 Instructions";
-		string[] comp_instructions = {"In this task you will be asked to select the object which <b>best fits</b> a given description.", "An object will be described by its relation to another object which will be <color=red><b>highlighted in red</b></color>, e.g. 'the object <b>on</b> the <color=red><b>table</b></color>'. You need to <b>click</b> on the object <b>which best fits the description</b>.\n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.", "The object you select will turn <color=green><b>green</b></color>. Once you have selected an object you must press 'Enter' or click 'Accept' to confirm your selection. \n\n You <b>cannot select</b> the room, floor, ceiling or walls; but remember that you <b>can select</b> the table. \n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.","All important objects in the scene will be immediately in view; but remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
-		
-		string generic_instructions_title = "Instructions";
-		string[] typ_instructions = {"In this task etc.."};
-		// string game_instruction_title = "Game Instructions";
-		// string[] game_instructions = {};
-		
-		// Populate task_panels list.
-		List<GameObject> task_panels = new List<GameObject>();
+		// Populate task_panels list.		
 		task_panels.Add(sv_main_panel);
 		task_panels.Add(comp_main_panel);
 		task_panels.Add(typ_main_panel);
 		// Instantiate tasks now lists have been created
-		sv_task = new Task(sv_abv,sv_instructions,sv_instruction_title,task_panels,sv_main_panel,selected_fig_text,sv_instruction_text);
-		pq_task = new Task("pq",sv_instructions,sv_instruction_title,task_panels,sv_main_panel,selected_fig_text,sv_instruction_text);
-		comp_task = new Task(comp_abv,comp_instructions,comp_instruction_title,task_panels,comp_main_panel,selected_fig_text,comp_instruction_text);
-		screen_task = new Task(screen_abv,screen_instructions,screen_instruction_title,task_panels,comp_main_panel,selected_fig_text,comp_instruction_text);
-		typ_task = new Task(typ_abv,typ_instructions,generic_instructions_title,task_panels,typ_main_panel,selected_fig_text,typ_instruction_text);
-		// Set instructions (this should probably happen on instatiation?)
-		comp_task.instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
+		sv_task = new Task(sv_abv,this)
+		// pq_task = new Task("pq",this)sv_instructions,sv_instruction_title,task_panels,sv_main_panel,selected_fig_text,sv_instruction_text);
+		comp_task = new Task(comp_abv,this)
+		screen_task = new Task(screen_abv,this)
+		typ_task = new Task(typ_abv,this)
 	
-		sv_task.instruction = "Select <b>all</b> words which could fill in the blank:\n \n   ':a: :figure: (____) the :ground:'";
-		pq_task.instruction = "Is the :figure: :preposition: the :ground:?";
-		typ_task.instruction = "Select the pair of objects which best fits the description:\n'the green object :preposition: the red object'";
-
-		screen_task.instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
-		screen_task.number_scenes_to_do = screen_task.list_of_scenes.Count;
-	
-		
 		None_toggle = None_toggle_obj.GetComponent(typeof(Toggle)) as Toggle;
 
 		//Add listener for when the state of the Toggle changes, to take action
@@ -1169,7 +1185,7 @@ public class Main : MonoBehaviour {
 		bool x = task_scene.set_new_example();
 		if (x){
 			task.turn_off_toggles();
-			task.set_text(this);
+			task.set_text();
 			yield return new WaitForSeconds(1);
 			loadingImage.SetActive(false);
 			
