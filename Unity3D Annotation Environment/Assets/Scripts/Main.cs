@@ -954,9 +954,6 @@ public class Main : MonoBehaviour {
 	/// Creates tasks. Adds listeners to toggles. Deactivates some objects.
 	/// </summary>
 	void Awake(){
-		//Reassing some static objects.
-		left_image = typ_left_image;
-		right_image = typ_right_image;
 
 		//  Show/hide dev objects.
 		GameObject[] dev_objects = {change_task_button};
