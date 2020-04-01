@@ -582,6 +582,9 @@ public class TaskScene {
 		else if (task_type== Main.typ_abv){
 			if(config_counter<Main.number_configs_to_compare){
 				show_new_config_pictures();
+				int r = rnd.Next(comp_preposition_list.Count);
+				string p = comp_preposition_list[r];
+				set_preposition(p);
 				return true;
 			}
 			else{
@@ -930,6 +933,10 @@ public class Main : MonoBehaviour {
 	public Text typ_instruction_text;
 	public GameObject typ_left_image;
 	public GameObject typ_right_image;
+	public GameObject left_image_button_go;
+	public GameObject right_image_button_go;
+	Button left_image_button;
+	Button right_image_button;
 	public GameObject confirm_text;
 	public GameObject confirmQuit_text;
 	public GameObject help_panel;
@@ -966,7 +973,8 @@ public class Main : MonoBehaviour {
 	/// Creates tasks. Adds listeners to toggles. Deactivates some objects.
 	/// </summary>
 	void Awake(){
-
+		left_image_button = left_image_button_go.GetComponent(typeof(Button)) as Button;
+		right_image_button = right_image_button_go.GetComponent(typeof(Button)) as Button;
 		//  Show/hide dev objects.
 		GameObject[] dev_objects = {change_task_button};
 		
@@ -1270,10 +1278,11 @@ public class Main : MonoBehaviour {
         string c1 = PlayerPrefs.GetString(config1_player_pref,"");
         string c2 = PlayerPrefs.GetString(config2_player_pref,"");
         string selection = PlayerPrefs.GetString(selection_player_pref,"");
+
+        string p = PlayerPrefs.GetString(prep_playerpref,"");
 		
 		string f = PlayerPrefs.GetString(selectedFig_playerpref,"");
 		string g = PlayerPrefs.GetString(selectedgrd_playerpref,"");
-		string p = PlayerPrefs.GetString(prep_playerpref,"");
 		string ta = PlayerPrefs.GetString(task_player_pref,"");
 		string u = PlayerPrefs.GetString(userid_player_pref,"");
 		string sc = PlayerPrefs.GetString(scene_player_pref,"");
@@ -1305,6 +1314,7 @@ public class Main : MonoBehaviour {
         form.AddField("ID",ID);
         form.AddField("task",ta);
         form.AddField("UserID",u);
+        form.AddField("preposition",p);
 
         if(task.name == typ_abv){
         	form.AddField("c1",c1);
@@ -1318,7 +1328,6 @@ public class Main : MonoBehaviour {
         	// Not included in typ_task.
         	form.AddField("selectedFigure",f);
         	form.AddField("selectedGround",g);
-        	form.AddField("preposition",p);
         	form.AddField("prepositions",prepositions);
         	form.AddField("allprepositions",all_prepositions);
         
@@ -1353,16 +1362,16 @@ public class Main : MonoBehaviour {
 		reset_task_values();
 
 		if (task.name == screen_abv){
-			task = sv_task;
+			task = typ_task;
 			
 		}
 		
-		else if (task.name == sv_abv){
-			task = comp_task;
+		else if (task.name == typ_abv){
+			task = sv_task;
 			
 		}
 
-		else if (task.name == comp_abv){
+		else if (task.name == sv_abv){
 
 			Debug.Log("Finished");
 			finish();
@@ -1515,6 +1524,8 @@ public class Main : MonoBehaviour {
 	void hide_confirm_click(){
 		confirm = false;
 		confirm_text.SetActive(false);
+		// unhighlight_button(left_image_button);
+		// unhighlight_button(right_image_button);
 	}
 
 	/// <summary>
@@ -1614,6 +1625,18 @@ public class Main : MonoBehaviour {
 		}
 	}
 
+	void highlight_button(Button bu){
+		Color newColor = new Color(255, 41, 41, 60);
+		Image i = bu.GetComponent(typeof(Image)) as Image;
+		i.color = newColor;
+	}
+
+	void unhighlight_button(Button bu){
+		Color newColor = new Color(255, 41, 41, 0);
+		Image i = bu.GetComponent(typeof(Image)) as Image;
+		i.color = newColor;
+	}
+
 
 	/// <summary>
 	/// Update is called once per frame.
@@ -1673,6 +1696,8 @@ public class Main : MonoBehaviour {
 			if (Input.GetKeyDown (KeyCode.Return)){
 		  		accept();
 			}
+
+			
 		}
 	}
 }
