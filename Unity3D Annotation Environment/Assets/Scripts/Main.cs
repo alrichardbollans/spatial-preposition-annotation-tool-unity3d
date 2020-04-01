@@ -621,7 +621,7 @@ public class Task {
 	public GameObject panel;
 	public Text selected_figure_text;
 	public Text instruction_text_component;
-	List<GameObject> task_panels;
+	List<GameObject> task_panels=  new List<GameObject>();
 
 
 	public List<GameObject> active_objects =  new List<GameObject>(); // list of all objects in panel hieracrchy
@@ -671,7 +671,11 @@ public class Task {
 		number_scenes_to_do = 10;
 		
 		selected_figure_text = main.selected_fig_text;
-		task_panels = main.task_panels;
+
+		// Populate task_panels list.		
+		task_panels.Add(main.sv_main_panel);
+		task_panels.Add(main.comp_main_panel);
+		task_panels.Add(main.typ_main_panel);
 		
 		if(name==Main.sv_abv){
 			panel = main.sv_main_panel;
@@ -930,8 +934,6 @@ public class Main : MonoBehaviour {
 	public GameObject confirmQuit_text;
 	public GameObject help_panel;
 
-	public List<GameObject> task_panels = new List<GameObject>();
-
 	public GameObject None_toggle_obj;
 	Toggle None_toggle;
 	
@@ -988,10 +990,7 @@ public class Main : MonoBehaviour {
 			all_objects_string += obj.name + ",";
 		}
 		
-		// Populate task_panels list.		
-		task_panels.Add(sv_main_panel);
-		task_panels.Add(comp_main_panel);
-		task_panels.Add(typ_main_panel);
+
 		// Instantiate tasks now lists have been created
 		sv_task = new Task(sv_abv,this);
 		// pq_task = new Task("pq",this)sv_instructions,sv_instruction_title,task_panels,sv_main_panel,selected_fig_text,sv_instruction_text);
