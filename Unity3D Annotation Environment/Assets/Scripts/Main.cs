@@ -808,6 +808,15 @@ public class Task {
 			g.SetActive(true);
 		}
 
+		if(name == "typ"){
+			main.general_info_panel.SetActive(false);
+
+		}
+		else{
+			main.general_info_panel.SetActive(true);
+			
+		}
+
 		// Turn off toggles
 		turn_off_toggles();
 		
@@ -936,6 +945,7 @@ public class Main : MonoBehaviour {
 	public GameObject confirm_text;
 	public GameObject confirmQuit_text;
 	public GameObject help_panel;
+	public GameObject general_info_panel;
 
 	public GameObject None_toggle_obj;
 	Toggle None_toggle;
@@ -951,7 +961,7 @@ public class Main : MonoBehaviour {
 
 	// Objetcs to hide/show if in dev mode.
 	bool dev_mode = true;
-	public GameObject change_task_button;
+	public GameObject dev_panel;
 	// Create random object for random number generation later
 	static System.Random rnd = new System.Random();
 	
@@ -973,16 +983,13 @@ public class Main : MonoBehaviour {
 	/// </summary>
 	void Awake(){
 		//  Show/hide dev objects.
-		GameObject[] dev_objects = {change_task_button};
-		
-		foreach(GameObject go in dev_objects){
-			if(dev_mode){
-				go.SetActive(true);
-			}
-			else{
-				go.SetActive(false);
-			}
+		if(dev_mode){
+			dev_panel.SetActive(true);
 		}
+		else{
+			dev_panel.SetActive(false);
+		}
+	
 		if(dev_mode){
 			Debug.Log("Warning: In developer mode.");
 		}
@@ -1161,7 +1168,7 @@ public class Main : MonoBehaviour {
 		}
 		if (task.list_of_scenes_to_do.Count==0){
 		
-			Debug.Log("change because of scene to do");
+			Debug.Log("change because no scene to do");
 			change_task();
 		}
 
