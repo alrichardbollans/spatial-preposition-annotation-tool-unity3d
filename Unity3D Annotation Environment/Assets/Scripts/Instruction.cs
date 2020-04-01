@@ -36,7 +36,7 @@ public class Instruction : MonoBehaviour {
 	/// </summary>
 	public void Awake(){
 		// Get main game script
-		main_empty = GameObject.Find("mainEmpty");
+		main_empty = GameObject.Find(Main.maingameobject);
 		if(main_empty !=null){
 			main_empty_script = main_empty.GetComponent<Main>();
 		}
