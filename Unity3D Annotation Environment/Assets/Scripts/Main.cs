@@ -159,7 +159,7 @@ public class TaskScene {
 		
 		// Get old figure
 		string old_figure_name = PlayerPrefs.GetString(selectedFig_playerpref,"");
-		Debug.Log(old_figure_name);
+		// Debug.Log(old_figure_name);
 		// Note find objects can be heavy process (see docs if needs calling every frame)
 		GameObject old_figure = GameObject.Find(old_figure_name);
 		//If there was actually a figure, undo highlighting
@@ -1298,7 +1298,11 @@ public class Main : MonoBehaviour {
         form.AddField("UserID",u);
         form.AddField("preposition",p);
 
+		Debug.Log("outputting");
         if(task.name == typ_abv){
+
+        	Debug.Log(c1);
+        	Debug.Log(c2);
         	form.AddField("c1",c1);
         	form.AddField("c2",c2);
         	form.AddField("selection",selection);
@@ -1307,8 +1311,10 @@ public class Main : MonoBehaviour {
         	string cam_loc = task_scene.main_camera.gameObject.transform.position.ToString();
         	string cam_rot = task_scene.main_camera.gameObject.transform.rotation.ToString();
         	
+        	Debug.Log(f);
         	// Not included in typ_task.
         	form.AddField("selectedFigure",f);
+        	Debug.Log(form.data);
         	form.AddField("selectedGround",g);
         	form.AddField("prepositions",prepositions);
         
@@ -1421,9 +1427,9 @@ public class Main : MonoBehaviour {
 	/// If any preposition toggle is on, turns off nonetoggle.
 	/// </summary>
 	void PrepToggleValueChanged(){
-		Debug.Log("Prep change");
+		// Debug.Log("Prep change");
 		if(task.preposition_toggles.Any(x => x.isOn ==true)){
-			Debug.Log("Prep on");
+			// Debug.Log("Prep on");
 			None_toggle.isOn = false;
 		}
 	}
@@ -1569,6 +1575,7 @@ public class Main : MonoBehaviour {
 		number_typ_configs_done = 0;
 		reset_input_values();
 		PlayerPrefs.SetString(task_player_pref, "");
+		PlayerPrefs.SetString(prep_playerpref, "");
 
 	}
 
