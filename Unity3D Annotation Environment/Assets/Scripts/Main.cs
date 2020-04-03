@@ -905,16 +905,17 @@ public class Main : MonoBehaviour {
 	public static string MainFolder   = "Assets/Scenes";
 	
 	// Server strings
+	public static string my_url = "http://adamrichard-bollans.co.uk";
     public static string auth_username = "game";
-    public static string auth_password =  "6KK6w4EhgcrBQHKzgL";
-	public static string appendannotation_url = "/spatial_language_study/appendannotation.php";
-	public static string writeuserdata_url = "/spatial_language_study/writeuserdata.php";
+    public static string auth_password =  "REDACTED";
+	public static string appendannotation_url = my_url + "/spatial_language_study/appendannotation.php";
+	public static string writeuserdata_url = my_url + "/spatial_language_study/writeuserdata.php";
 
 	// Task Abbreviations
 	public static string sv_abv = "sv";
 	public static string comp_abv = "comp";
 	public static string screen_abv = "screen";
-	public static string typ_abv ="typ";
+	public static string typ_abv ="typ"; // Check this string is the same in php script.
 
 	
 
@@ -1230,47 +1231,7 @@ public class Main : MonoBehaviour {
 		}
 	}
 
-	/// <summary>
-	/// Clears playerprefs for fig, ground and preposition. Unhighlights/deselects fig and ground.
-	/// </summary>
-	public void reset_input_values(){
-		if(task_scene != null){
-			task_scene.deselect_figure();
-			task_scene.deselect_ground();
-		}
-		
-		PlayerPrefs.SetString(prep_playerpref, "");
-		
 
-	}
-
-	/// <summary>
-	/// Clears playerprefs for task, fig, ground and preposition. Unhighlights/deselects fig and ground.
-	/// </summary>
-	public void reset_task_values(){
-		number_scenes_done = 0;
-		number_typ_configs_done = 0;
-		reset_input_values();
-		PlayerPrefs.SetString(task_player_pref, "");
-
-	}
-
-	/// <summary>
-	/// Clears playerprefs for scene, fig, ground and preposition. Unhighlights/deselects fig and ground.
-	/// </summary>
-	public void reset_scene_values(){
-		reset_input_values();
-		PlayerPrefs.SetString(scene_player_pref, "");
-	}
-	
-	/// <summary>
-	/// Clears playerprefs for fig, ground.
-	/// </summary>
-	static public void clear_object_player_prefs(){
-		// Game was loading with these set to an object which was causing unhighlighting of them
-		PlayerPrefs.SetString(selectedFig_playerpref, "");
-		PlayerPrefs.SetString(selectedgrd_playerpref, "");
-	}
 
 	/// <summary>
 	/// Gets string for authentication from username and password.
@@ -1350,7 +1311,6 @@ public class Main : MonoBehaviour {
         	form.AddField("selectedFigure",f);
         	form.AddField("selectedGround",g);
         	form.AddField("prepositions",prepositions);
-        	form.AddField("allprepositions",all_prepositions);
         
 
 
@@ -1571,9 +1531,76 @@ public class Main : MonoBehaviour {
 	/// Attached to select none button.
 	/// </remarks>
 	public void select_none(){
-		task_scene.deselect_figure();
+		reset_input_values();
 		hide_confirm_click();
 		submit();
+	}
+
+	/// <summary>
+	/// Clears playerprefs and selection/highlighting of objects the user inputs.
+	/// </summary>
+	public void reset_input_values(){
+		if(task_scene != null){
+
+			if(task == comp_task){
+				task_scene.deselect_figure();
+			
+			}	
+			
+		}
+		if(task == typ_task){
+			PlayerPrefs.SetString(selection_player_pref, "");
+
+		}
+		
+		if(task == sv_task){
+			task.turn_off_preposition_toggles();
+			
+		}
+
+
+	}
+
+	/// <summary>
+	/// Clears playerprefs for task, fig, ground and preposition. Unhighlights/deselects fig and ground.
+	/// </summary>
+	public void reset_task_values(){
+		number_scenes_done = 0;
+		number_typ_configs_done = 0;
+		reset_input_values();
+		PlayerPrefs.SetString(task_player_pref, "");
+
+	}
+
+	/// <summary>
+	/// Clears playerprefs for scene, fig, ground and preposition. Unhighlights/deselects fig and ground.
+	/// </summary>
+	public void reset_scene_values(){
+		clear_any_object_selections();
+		reset_input_values();
+		PlayerPrefs.SetString(scene_player_pref, "");
+	}
+	
+	/// <summary>
+	/// Clears playerprefs and highlighting for fig, ground.
+	/// </summary>
+	public void clear_any_object_selections(){
+		if(task_scene != null){
+			task_scene.deselect_figure();
+			task_scene.deselect_ground();
+		}
+		clear_object_player_prefs();
+
+	}
+
+	/// <summary>
+	/// Clears playerprefs for fig, ground.
+	/// </summary>
+	static public void clear_object_player_prefs(){
+		// Game was loading with these set to an object which was causing unhighlighting of them
+		PlayerPrefs.SetString(selectedFig_playerpref, "");
+		PlayerPrefs.SetString(selectedgrd_playerpref, "");
+		PlayerPrefs.SetString(selection_player_pref, "");
 	}
 
 	/// <summary>

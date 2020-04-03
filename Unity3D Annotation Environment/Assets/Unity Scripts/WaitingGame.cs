@@ -20,7 +20,7 @@ public class WaitingGame : MonoBehaviour
 	List<GameObject> meshObjects = new List<GameObject>();
 
 	static string old_positions_csv ="old positions.csv";
-	static string new_positions_csv ="positions.csv";
+	public static string new_positions_csv ="positions.csv";
 
 	/// <summary>
 	/// Coroutine which outputs initial positions, waits x seconds and then outputs new positions.
