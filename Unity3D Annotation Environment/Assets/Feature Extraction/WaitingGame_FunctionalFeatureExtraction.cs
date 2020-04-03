@@ -30,8 +30,8 @@ public class WaitingGame_FunctionalFeatureExtraction : MonoBehaviour
     public static Vector3 xforce = new Vector3(1f,0f,0f);
     public static Vector3 zforce = new Vector3(0f,0f,1f);
     
-    public static int fall_time = 2;
-    public static int lc_move_time = 2;
+    public static int fall_time = 10;
+    public static int lc_move_time = 5;
 
     GameObject get_new_ground(){
     	//Get new ground from csv and update file

@@ -96,6 +96,7 @@ public class Finalise_Scenes : EditorWindow
                 MeshObject mobj = new MeshObject(obj);
                 
                 mobj.prepare_physics_for_game();
+                obj.isStatic = true;
             }
             
             var waiting_script = obj.GetComponent(typeof(WaitingGame)) as WaitingGame;

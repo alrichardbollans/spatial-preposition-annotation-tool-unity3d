@@ -373,7 +373,7 @@ public class write_transforms : EditorWindow{
 	static void read_and_update_positions(){
 		// Read positions
 		string line;
-		using(StreamReader file =  new StreamReader("positions.csv")){
+		using(StreamReader file =  new StreamReader(WaitingGame.new_positions.csv)){
 			while((line = file.ReadLine()) != null)
             {
 

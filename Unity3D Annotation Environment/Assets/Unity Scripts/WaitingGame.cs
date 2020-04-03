@@ -1,5 +1,6 @@
 // A script which is added to a game object and prints object initial positions 
 // and positions after some time.
+// Refernced by set_objects_at_rest.
 
 
 using UnityEngine;
