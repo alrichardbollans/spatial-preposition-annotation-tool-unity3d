@@ -722,7 +722,8 @@ public class Task {
 		if(name==Main.typ_abv){
 			panel = main.typ_main_panel;
 			instruction_text_component = main.typ_instruction_text;
-			string[] il = {"In this task etc.."};
+			string[] il = {"In this task you will be shown two configurations of objects and asked to select which configuration <b>best fits</b> a given description.",
+			"A simple description will be given of a green object and its relationship to a red object, e.g. 'the <color=green><b>green object</b></color> <b>on</b> the <color=red><b>red object</b></color>'. You need to <b>click</b> the image <b>which best fits the description</b>.\n\n If you feel that <b>no image fits</b> the given description, click 'Select None'."};
 			instruction_list = il;
 			instruction_title = "Instructions";
 			instruction = "Select the pair of objects which best fits the description:\n'the <color=green><b>green object</b></color> :preposition: the <color=red><b>red object</b></color>'";
