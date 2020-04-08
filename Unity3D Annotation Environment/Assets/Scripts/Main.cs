@@ -908,8 +908,8 @@ public class Main : MonoBehaviour {
 	public static string my_url = "http://adamrichard-bollans.co.uk";
     public static string auth_username = "game";
     public static string auth_password =  "REDACTED";
-	public static string appendannotation_url = my_url + "/spatial_language_study/appendannotation.php";
-	public static string writeuserdata_url = my_url + "/spatial_language_study/writeuserdata.php";
+	public static string appendannotation_url = "/spatial_language_study/appendannotation.php";
+	public static string writeuserdata_url = "/spatial_language_study/writeuserdata.php";
 
 	// Task Abbreviations
 	public static string sv_abv = "sv";
