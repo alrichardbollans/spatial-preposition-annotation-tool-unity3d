@@ -587,6 +587,10 @@ public class TaskScene {
 				string p = comp_preposition_list[r];
 				set_preposition(p);
 
+				// int left_to_do = 1 + Main.number_typ_configs_to_do - Main.number_typ_configs_done;
+				// string newtext = main.SceneCountertext.Replace(":int:",left_to_do.ToString());
+				// main.SceneCounter_Text.text = newtext;
+
 				return true;
 			}
 			else{
@@ -685,7 +689,7 @@ public class Task {
 			panel = main.sv_main_panel;
 			instruction_text_component = main.sv_instruction_text;
 			number_scenes_to_do = 10;
-			instruction_title = "Task 1 Instructions";
+			instruction_title = "Instructions";
 			string[] il = {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
 			"A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.",
 			"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",
@@ -701,7 +705,7 @@ public class Task {
 			instruction_text_component = main.comp_instruction_text;
 			string[] il = {"In this task you will be asked to select the object which <b>best fits</b> a given description.", "An object will be described by its relation to another object which will be <color=red><b>highlighted in red</b></color>, e.g. 'the object <b>on</b> the <color=red><b>table</b></color>'. You need to <b>click</b> on the object <b>which best fits the description</b>.\n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.", "The object you select will turn <color=green><b>green</b></color>. Once you have selected an object you must press 'Enter' or click 'Accept' to confirm your selection. \n\n You <b>cannot select</b> the room, floor, ceiling or walls; but remember that you <b>can select</b> the table. \n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.","All important objects in the scene will be immediately in view; but remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
 			instruction_list = il;
-			instruction_title = "Task 2 Instructions";
+			instruction_title = "Instructions";
 			instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
 		
 
@@ -954,7 +958,7 @@ public class Main : MonoBehaviour {
 	
 	public GameObject loadingImage;
 	public Text SceneCounter_Text;
-	string SceneCountertext = "Scenes left: :int:";
+	public string SceneCountertext = "Scenes left: :int:";
 	
 	int number_scenes_done = 0;
 	
@@ -962,7 +966,7 @@ public class Main : MonoBehaviour {
 	static public int number_typ_configs_to_do = 2;
 
 	// Objetcs to hide/show if in dev mode.
-	bool dev_mode = true;
+	bool dev_mode = false;
 	public GameObject dev_panel;
 	// Create random object for random number generation later
 	static System.Random rnd = new System.Random();
