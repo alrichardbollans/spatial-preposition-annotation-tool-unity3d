@@ -59,7 +59,7 @@ class BasicInfo:
 	stats_folder_name = "stats"
 	sem_annotations_name  = "clean semantic annotation list.csv"
 	comp_annotations_name  = "clean comparative annotation list.csv"
-
+	typ_annotations_name = "clean typicality annotation list.csv"
 	
 
 	raw_user_list = "userlist.csv"
@@ -75,14 +75,18 @@ class BasicInfo:
 
 
 	# Task abbreviations
+	sv_task = "sv"
+	comp_task = "comp"
+	typ_task = "typ"
+	semantic_abbreviations = [sv_task]
 
-	semantic_abbreviations = ["sv","pq"]
-
-	comparative_abbreviations = ["comp"]
+	comparative_abbreviations = [comp_task]
 
 	# Dictionary giving the index of each value in annotations
 
 	a_index = {'id':0,'userid':1,'time':2,'figure':3,'ground':4,'task':5,'scene':6,'preposition':7,'prepositions':8,'cam_rot':9,'cam_loc':10}
+	# indexs for typ task
+	typ_a_index = {'id':0,'userid':1,'time':2,'c1':3,'c2':4,'task':5,'selection':6,'preposition':7}
 	@staticmethod
 	def get_scene_list():
 		scene_list = []

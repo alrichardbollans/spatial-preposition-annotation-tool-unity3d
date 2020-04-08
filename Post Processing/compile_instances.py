@@ -2,7 +2,8 @@
 
 ## Input: cleaned annotation, user lists and list of feature values for configurations (see Relationship class)
 ## Compiles annotation instances, adds feature values to them
-## Output: For each task: Basic stats for each preposition. For sv task writes a csv of feature values with selection information
+## Output: For each task: Basic stats for each preposition. 
+# For sv task writes a csv of feature values with selection information
 
 ## Also has functions to generate constraints from comparative data
 

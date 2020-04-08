@@ -15,6 +15,8 @@ from classes import Comparison, BasicInfo
 
 class User():
 
+	list_headings = ['User ID','Short ID','Time','Native=1, Non-Native =0']
+
 	def __init__(self,clean_id,user_id,time,native): #The order of this should be the same as in writeuserdata.php
 		
 		self.user_id = user_id
@@ -24,7 +26,7 @@ class User():
 		self.clean_user_id = clean_id
 
 		self.list_format = [self.user_id,self.clean_user_id,self.time,self.native]
-		self.list_headings = ['User ID','Short ID','Time','Native=1, Non-Native =0']
+		
 
 	
 	def annotation_match(self,annotation):
@@ -63,7 +65,7 @@ class UserData():
 		with open(BasicInfo.data_folder_name + '/' +'clean_users.csv', "w") as csvfile:
 			writer = csv.writer(csvfile)
 
-			heading = self.user_list[0].list_headings
+			heading = User.list_headings
 			writer.writerow(heading)
 			
 			for user in self.user_list:
@@ -78,46 +80,68 @@ class UserData():
 				
 class Annotation:
 	# Gets annotations from the raw data
-	
+	list_headings = ['Annotation ID','Clean User ID','Task','Scene','Preposition', 'Prepositions','Figure','Ground', 'Time']
 
 	def __init__(self,userdata,annotation):#ID,UserID,now,selectedFigure,selectedGround,task,scene,preposition,prepositions,cam_rot,cam_loc):
-		self.id = annotation[BasicInfo.a_index['id']]
-		self.user_id = annotation[BasicInfo.a_index['userid']]
-		self.time = annotation[BasicInfo.a_index['time']]
-		selectedFigure = annotation[BasicInfo.a_index['figure']]
-		if selectedFigure == "":
-			self.figure = "none"
+		
+		self.task = annotation[BasicInfo.typ_a_index['task']]
+		
 
+		if self.task == "typ":
+			self.id = annotation[BasicInfo.typ_a_index['id']]
+			self.user_id = annotation[BasicInfo.typ_a_index['userid']]
+			self.time = annotation[BasicInfo.typ_a_index['time']]
+			self.task = annotation[BasicInfo.typ_a_index['task']]
+			self.preposition = annotation[BasicInfo.typ_a_index['preposition']]
+
+			for user in userdata.user_list:
+				if user.user_id == self.user_id:
+					self.user = user
+					self.clean_user_id = user.clean_user_id
+
+			self.c1 = annotation[BasicInfo.typ_a_index['c1']]
+			self.c2 = annotation[BasicInfo.typ_a_index['c2']]
+			self.selection = annotation[BasicInfo.typ_a_index['selection']]
+			self.list_format = [self.id,self.clean_user_id,self.task,self.preposition,self.c1,self.c2,self.selection,self.time]
+			
 		else:
-			self.figure = selectedFigure
-		self.ground = annotation[BasicInfo.a_index['ground']]
-		self.task = annotation[BasicInfo.a_index['task']]
-		self.scene = annotation[BasicInfo.a_index['scene']]
-		self.preposition = annotation[BasicInfo.a_index['preposition']]
-		self.prepositions = annotation[BasicInfo.a_index['prepositions']]
-		
-		self.cam_rot =annotation[BasicInfo.a_index['cam_rot']]
-		self.cam_loc = annotation[BasicInfo.a_index['cam_loc']]
-		
-		
-		
-		for user in userdata.user_list:
-			if user.user_id == self.user_id:
-				self.user = user
-				self.clean_user_id = user.clean_user_id
+			print(self.task)
 
-		self.list_format = [self.id,self.clean_user_id,self.task,self.scene,self.preposition,self.prepositions,self.figure,self.ground,self.time]
-		self.list_headings = ['Annotation ID','Clean User ID','Task','Scene','Preposition', 'Prepositions','Figure','Ground', 'Time']
-	def clean_name(object_name):
-		if '(' in object_name:
-			clean_name = object_name[:object_name.find(".")]
-		elif '_' in object_name:
-			clean_name = object_name[:object_name.find("_")]
-		else: 
-			clean_name = object_name
-		return clean_name.lower()
+			self.id = annotation[BasicInfo.a_index['id']]
+			print(self.id)
+			self.user_id = annotation[BasicInfo.a_index['userid']]
+			print(self.user_id)
+			self.time = annotation[BasicInfo.a_index['time']]
+			self.task = annotation[BasicInfo.a_index['task']]
+			self.preposition = annotation[BasicInfo.a_index['preposition']]
+
+			for user in userdata.user_list:
+				if user.user_id == self.user_id:
+					self.user = user
+					self.clean_user_id = user.clean_user_id
+
+			selectedFigure = annotation[BasicInfo.a_index['figure']]
+			if selectedFigure == "":
+				self.figure = "none"
+
+			else:
+				self.figure = selectedFigure
+			self.ground = annotation[BasicInfo.a_index['ground']]
+			
+			self.scene = annotation[BasicInfo.a_index['scene']]
+			
+			self.prepositions = annotation[BasicInfo.a_index['prepositions']]
+			
+			self.cam_rot =annotation[BasicInfo.a_index['cam_rot']]
+			self.cam_loc = annotation[BasicInfo.a_index['cam_loc']]
+
+			self.list_format = [self.id,self.clean_user_id,self.task,self.scene,self.preposition,self.prepositions,self.figure,self.ground,self.time]
+		
+		
+
 
 class ComparativeAnnotation(Annotation):
+	list_headings = ['Annotation ID','Clean User ID','Task','Scene', 'Preposition','Figure','Ground', 'Time']
 	# Users selects a figure given a ground and preposition
 	def __init__(self,userdata,annotation):#ID,UserID,now,selectedFigure,selectedGround,scene,preposition,prepositions,cam_rot,cam_loc):
 		Annotation.__init__(self,userdata,annotation)
@@ -129,18 +153,19 @@ class ComparativeAnnotation(Annotation):
 		
 		for f in self.possible_figures:
 			self.list_format.append(f)
-		self.list_headings = ['Annotation ID','Clean User ID','Task','Scene', 'Preposition','Figure','Ground', 'Time']
+		
 	def print_list(self):
 		print([self.id,self.clean_user_id,self.preposition,self.scene,self.figure,self.ground,self.time])
 
 
 class SemanticAnnotation(Annotation):
+	list_headings = ['Annotation ID','Clean User ID','Task','Scene', 'Prepositions','Figure','Ground', 'Time']
 	# User selects multiple prepositions given a figure and ground
 	def __init__(self,userdata,annotation):#ID,UserID,now,selectedFigure,selectedGround,scene,preposition,prepositions,cam_rot,cam_loc):
 		Annotation.__init__(self,userdata,annotation)
 		self.preposition_list = self.make_preposition_list()
 		self.list_format = [self.id,self.clean_user_id,self.task,self.scene,self.prepositions,self.figure,self.ground,self.time]
-		self.list_headings = ['Annotation ID','Clean User ID','Task','Scene', 'Prepositions','Figure','Ground', 'Time']
+		
 	def print_list(self):
 		print([self.id,self.clean_user_id,self.prepositions,self.scene,self.figure,self.ground,self.time])
 
@@ -149,6 +174,14 @@ class SemanticAnnotation(Annotation):
 		x= self.prepositions.split(';')
 		return x
 
+class TypicalityAnnotation(Annotation):
+	list_headings = ['Annotation ID','Clean User ID','Task', 'Preposition',"Config1","Config2","Selection", 'Time']
+	# User selects multiple prepositions given a figure and ground
+	def __init__(self,userdata,annotation):#ID,UserID,now,selectedFigure,selectedGround,scene,preposition,prepositions,cam_rot,cam_loc):
+		Annotation.__init__(self,userdata,annotation)
+		
+	def print_list(self):
+		print(self.list_format)
 
 class Data():
 	
@@ -164,6 +197,7 @@ class Data():
 		
 		self.user_list = self.get_users()
 		self.native_users = self.get_native_users()
+		# Scene list is used for checking sv and comp task
 		self.scene_list = self.get_scenes()
 		
 		self.clean_csv_name = "all_clean_annotations.csv"
@@ -194,8 +228,9 @@ class Data():
 	def get_non_users(self):
 		out = []
 		for user in userdata.user_list:
-			x = self.number_of_scenes_done_by_user(user,"sv")
-			y = self.number_of_scenes_done_by_user(user,"comp")
+			x = self.number_of_scenes_done_by_user(user,BasicInfo.sv_task)
+			y = self.number_of_scenes_done_by_user(user,BasicInfo.comp_task)
+			
 			if x == 0 and y ==0:
 				out.append(user)
 		return out
@@ -218,8 +253,9 @@ class Data():
 		out = []
 
 		for an in self.annotation_list:
-			if an.scene not in out:
-				out.append(an.scene)
+			if hasattr(an,"scene"):
+				if an.scene not in out:
+					out.append(an.scene)
 		return out 
 
 	def get_scenes_done_x_times(self,x):
@@ -243,8 +279,10 @@ class Data():
 		out = []
 		# This only counts native speakers
 		for sc in self.scene_list:
-			x = self.number_of_users_per_scene(sc,"sv")
-			y = self.number_of_users_per_scene(sc,"comp")
+			x = self.number_of_users_per_scene(user,BasicInfo.sv_task)
+			y = self.number_of_users_per_scene(user,BasicInfo.comp_task)
+			z = self.number_of_users_per_scene(user,BasicInfo.typ_task)
+			
 			if x< 3 or y <3:
 				out.append(sc)
 				print("Scene: " + sc +" sv done " + str(x) + "times" +" comp done " + str(y) + "times")
@@ -256,8 +294,8 @@ class Data():
 		out = []
 		# This only counts native speakers
 		for sc in self.scene_list:
-			x = self.number_of_users_per_scene(sc,"sv")
-			y = self.number_of_users_per_scene(sc,"comp")
+			x = self.number_of_users_per_scene(sc,BasicInfo.sv_task)
+			y = self.number_of_users_per_scene(sc,BasicInfo.comp_task)
 			if x>= 3 and y >=3:
 				out.append(sc)
 				print("Scene: " + sc +" sv done " + str(x) + "times" +" comp done " + str(y) + "times")
@@ -293,8 +331,8 @@ class Data():
 	def number_of_completed_users(self):
 		i=0
 		for user in self.user_list:
-			x = self.number_of_scenes_done_by_user(user,"sv")
-			y = self.number_of_scenes_done_by_user(user,"comp")
+			x = self.number_of_scenes_done_by_user(user,BasicInfo.sv_task)
+			y = self.number_of_scenes_done_by_user(user,BasicInfo.comp_task)
 			# print(user)
 			# print(x)
 			# print(y)
@@ -446,7 +484,7 @@ class Data():
 class ComparativeData(Data):
 	def __init__(self,userdata):
 		self.userdata = userdata
-		self.task = "comp"
+		self.task = BasicInfo.comp_task
 		self.data_list = self.load_annotations_from_csv()
 		self.annotation_list = self.get_comp_annotations(userdata)
 		self.clean_data_list = self.clean_list()
@@ -528,7 +566,7 @@ class ComparativeData(Data):
 class SemanticData(Data):
 	def __init__(self,userdata):
 		#The object from this class will be a list containing all the semantic annotations
-		self.task = "sv"
+		self.task = BasicInfo.sv_task
 		self.data_list = self.load_annotations_from_csv()
 		self.annotation_list = self.get_semantic_annotations(userdata)
 		self.clean_data_list = self.clean_list()
@@ -606,7 +644,43 @@ class SemanticData(Data):
 			
 			for s in self.scene_list:
 				writer.writerow([s,self.number_of_users_per_scene(s,self.task),self.get_prepositions_for_scene(s)])
+class TypicalityData(Data):
+	def __init__(self,userdata):
+		#The object from this class will be a list containing all the semantic annotations
+		self.task = BasicInfo.sv_task
+		self.data_list = self.load_annotations_from_csv()
+		self.annotation_list = self.get_typ_annotations(userdata)
+		self.clean_data_list = self.clean_list()
+		self.user_list = self.get_users()
+		self.native_users = self.get_native_users()
+		self.clean_csv_name = BasicInfo.typ_annotations_name
+		self.stats_csv_name = "typicality stats.csv"
+		self.agreements_csv_name = "typicality agreements.csv"
 
+
+
+	def get_typ_annotations(self,userdata):
+		# datalist.pop(0) #removes first line of data list which is headings
+		# datalist=datalist[::-1] #inverts data list to put in time order
+		out = []
+		for annotation in self.data_list:
+			ann = Annotation(userdata,annotation)
+			if ann.task == BasicInfo.typ_task:
+				
+				an = TypicalityAnnotation(userdata,annotation)
+				out.append(an)
+				
+		return out
+
+
+
+
+	# This is a very basic list of information about the task
+	# compile_instances gives a better overview
+	def output_statistics(self):
+		with open(BasicInfo.stats_folder_name+'/' + self.stats_csv_name, "w") as csvfile:
+			writer = csv.writer(csvfile)
+			writer.writerow(['Number of Native English users: ' + str(len(self.native_users))])
 
 	
 class Agreements(Data):
@@ -789,29 +863,43 @@ if __name__ == '__main__':
 
 	# 
 	# Load and process semantic annotations
-	semantic_data = SemanticData(userdata)
+	# semantic_data = SemanticData(userdata)
 
 
 
-	# Output semantic csv
-	semantic_data.output_clean_annotation_list()
+	# # Output semantic csv
+	# semantic_data.output_clean_annotation_list()
 
-	semantic_data.output_statistics()
+	# semantic_data.output_statistics()
 
-	semantic_data.write_user_agreements()
+	# semantic_data.write_user_agreements()
 	
-	#Load and process comparative annotations
-	comparative_data = ComparativeData(userdata)
+	# #Load and process comparative annotations
+	# comparative_data = ComparativeData(userdata)
+
+
+
+	# # output comparative csv
+
+	# comparative_data.output_clean_annotation_list()
+
+	# comparative_data.output_statistics()
+
+
+	# comparative_data.write_user_agreements()
+
+
+	## typicality data
+	typ_data = TypicalityData(userdata)
 
 
 
 	# output comparative csv
 
-	comparative_data.output_clean_annotation_list()
+	typ_data.output_clean_annotation_list()
 
-	comparative_data.output_statistics()
+	typ_data.output_statistics()
 
 
-	comparative_data.write_user_agreements()
-
+	# typ_data.write_user_agreements()
 
