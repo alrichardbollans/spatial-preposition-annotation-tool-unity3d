@@ -102,15 +102,17 @@ class Annotation:
 			self.c1 = annotation[BasicInfo.typ_a_index['c1']]
 			self.c2 = annotation[BasicInfo.typ_a_index['c2']]
 			self.selection = annotation[BasicInfo.typ_a_index['selection']]
+			if self.selection == "":
+				self.selection = "none"
 			self.list_format = [self.id,self.clean_user_id,self.task,self.preposition,self.c1,self.c2,self.selection,self.time]
 			
 		else:
-			print(self.task)
+			
 
 			self.id = annotation[BasicInfo.a_index['id']]
-			print(self.id)
+			
 			self.user_id = annotation[BasicInfo.a_index['userid']]
-			print(self.user_id)
+			
 			self.time = annotation[BasicInfo.a_index['time']]
 			self.task = annotation[BasicInfo.a_index['task']]
 			self.preposition = annotation[BasicInfo.a_index['preposition']]
