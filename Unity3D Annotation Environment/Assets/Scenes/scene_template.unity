@@ -43,7 +43,7 @@ RenderSettings:
 LightmapSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 11
-  m_GIWorkflowMode: 1
+  m_GIWorkflowMode: 0
   m_GISettings:
     serializedVersion: 2
     m_BounceScale: 1
@@ -515,6 +515,10 @@ Prefab:
       propertyPath: m_Materials.Array.data[5]
       value: 
       objectReference: {fileID: 2100000, guid: 2e0aab778a80541f9bbe1f9fbb3e9c86, type: 2}
+    - target: {fileID: 1192129587336878, guid: 6605aa28bf12a4cef9a951e24ddd5e84, type: 2}
+      propertyPath: m_StaticEditorFlags
+      value: 4294967295
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 64807541530221814, guid: 6605aa28bf12a4cef9a951e24ddd5e84, type: 2}
   m_ParentPrefab: {fileID: 100100000, guid: 6605aa28bf12a4cef9a951e24ddd5e84, type: 2}
@@ -1033,6 +1037,10 @@ Prefab:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 1208878899}
+    - target: {fileID: 1904947071459326, guid: 066ae9e2dc53b45d49cfc24c16c2c670, type: 2}
+      propertyPath: m_StaticEditorFlags
+      value: 4294967295
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 64024001904834376, guid: 066ae9e2dc53b45d49cfc24c16c2c670, type: 2}
   m_ParentPrefab: {fileID: 100100000, guid: 066ae9e2dc53b45d49cfc24c16c2c670, type: 2}
@@ -1344,6 +1352,10 @@ Prefab:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 340339327}
+    - target: {fileID: 1870686335925384, guid: f1aceb759e59940b2bd8ef4971fb5114, type: 2}
+      propertyPath: m_StaticEditorFlags
+      value: 4294967295
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 135101612656608640, guid: f1aceb759e59940b2bd8ef4971fb5114, type: 2}
   m_ParentPrefab: {fileID: 100100000, guid: f1aceb759e59940b2bd8ef4971fb5114, type: 2}
