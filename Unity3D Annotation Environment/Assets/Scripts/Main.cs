@@ -31,19 +31,28 @@
 // When naming objects in game be careful with strings 
 // including any of the strings given by Main class.
 
+using System;
+using System.IO;
+using System.Text;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-using System.IO;
-using System.Text;
-using System.Linq;
 
 
+
+public class Config  
+{  
+     public string scene;  
+     public string figure;
+     public string ground;
+}   
 
 /// <summary>
 /// TaskScene class acts like the usual Scene object except 
@@ -74,8 +83,8 @@ public class TaskScene {
 	Material[] stored_fig_mats;
 	Material[] stored_grd_mats;
 
-	// Images to use in typ_task.
-	List<Texture2D> typicality_images;
+	// Dictionary of images for each preposition to use in typ_task.
+	Dictionary<string,List<Texture2D>> typicality_images;
 
 	// Strings for storing values in PlayerPrefs
 	static string selectedFig_playerpref = Main.selectedFig_playerpref;
@@ -89,7 +98,6 @@ public class TaskScene {
 	// Random instance for generating random integers.
 	static System.Random rnd = new System.Random();
 
-	int config_counter = 0;
 
 	/// <summary>
     /// Create class instance.
@@ -313,9 +321,22 @@ public class TaskScene {
 			
 		}
 		if(task_type == Main.typ_abv){
+			foreach(string prep in comp_preposition_list){
+				try{
+					Texture2D[] typ_im_array =Resources.LoadAll<Texture2D>("Typ_task_folder/"+prep);
+					typicality_images[prep] = typ_im_array.ToList();
+				}
+				catch(Exception e){
+					Debug.Log("No folder for '" + prep + "' images.");
+				}
+				
+			}
+			// Images are shared for some prepositions.
+			typicality_images["inside"] = typicality_images["in"];
+			typicality_images["above"] = typicality_images["over"];
+			typicality_images["below"] = typicality_images["under"];
+			typicality_images["on top of"] = typicality_images["on"];
 			
-			Texture2D[] typ_im_array =Resources.LoadAll<Texture2D>("Typ_task_folder");
-			typicality_images = typ_im_array.ToList();
 		}
 		
 		
@@ -404,7 +425,7 @@ public class TaskScene {
 	                         scene, figure, ground);
 	}
 
-	public static string get_config_string_from_img(Texture2D img){
+	public static Config get_config_from_img(Texture2D img){
 		string old = img.name;
 		string fig;
 		string grd;
@@ -418,9 +439,12 @@ public class TaskScene {
 		scene = get_string_from_img_file(old,first_scene_character_index);
 		grd = get_string_from_img_file(old,first_gr_character_index);
 		
-		string config =scene + ";"+fig + ";"+grd;
+		Config c = new Config();
+		c.figure = fig;
+		c.scene = scene;
+		c.ground = grd;
 
-		return config;
+		return c;
 	
 	}
 
@@ -435,28 +459,44 @@ public class TaskScene {
 	}
 
 	void show_new_config_pictures(){
-		int i1 = rnd.Next(typicality_images.Count);
-		
-		Texture2D img1 = typicality_images[i1];
+		// Set preposition.
+		int r = rnd.Next(comp_preposition_list.Count);
+		string p = comp_preposition_list[r];
+		set_preposition(p);
 
-		string config1_string = get_config_string_from_img(img1);
+		// Pick an image for the preposition.
+		int i1 = rnd.Next(typicality_images[p].Count);
+		Texture2D img1 = typicality_images[p][i1];
 
-		PlayerPrefs.SetString(Main.config1_player_pref, config1_string);
-		typicality_images.Remove(img1);
-
-		int i2 = rnd.Next(typicality_images.Count);
-		Texture2D img2 = typicality_images[i2];
-		string config2_string = get_config_string_from_img(img2);
-
-		PlayerPrefs.SetString(Main.config2_player_pref, config2_string);
-
-		typicality_images.Remove(img2);
-
-
+		// Set the player prefs and left object texture.
+		PlayerPrefs.SetString(Main.config1_player_pref, img1.name);
 		main.typ_left_image.GetComponent<RawImage>().texture = img1;
+
+		// Remove similar images (matching scene and ground).
+		Config c1 = get_config_from_img(img1);
+		foreach(Texture2D img in typicality_images[p]){
+			Config c = get_config_from_img(img);
+			if(c.scene == c1.scene && c.ground == c1.ground){
+				typicality_images[p].Remove(img);
+			}
+		}
+		
+		// Pick an image for the preposition.
+		int i2 = rnd.Next(typicality_images[p].Count);
+		Texture2D img2 = typicality_images[p][i2];
+		
+		// Set the player prefs and right object texture.
+		PlayerPrefs.SetString(Main.config2_player_pref, img2.name);
 		main.typ_right_image.GetComponent<RawImage>().texture = img2;
 
-		config_counter +=1;
+		// Remove similar images (matching scene and ground).
+		Config c2 = get_config_from_img(img2);
+		foreach(Texture2D img in typicality_images[p]){
+			Config c = get_config_from_img(img);
+			if(c.scene == c2.scene && c.ground == c2.ground){
+				typicality_images[p].Remove(img);
+			}
+		}
 	}
 	/// <summary>
     /// Sets new configuration to test.
@@ -583,9 +623,7 @@ public class TaskScene {
 			if(Main.number_typ_configs_done<Main.number_typ_configs_to_do){
 				Main.number_typ_configs_done +=1;
 				show_new_config_pictures();
-				int r = rnd.Next(comp_preposition_list.Count);
-				string p = comp_preposition_list[r];
-				set_preposition(p);
+				
 
 				// int left_to_do = 1 + Main.number_typ_configs_to_do - Main.number_typ_configs_done;
 				// string newtext = main.SceneCountertext.Replace(":int:",left_to_do.ToString());
@@ -882,7 +920,7 @@ public class Main : MonoBehaviour {
 	public static string config1_player_pref = "config1";
 	public static string config2_player_pref = "config2";
 	public static string selection_player_pref = "config_selection";
-
+	public static string image_used_player_pref = "image_used";
 
 
 
@@ -1001,7 +1039,7 @@ public class Main : MonoBehaviour {
 		}
 		
 		// Get list of all game objects
-		allObjects = Object.FindObjectsOfType<GameObject>();
+		allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
 		all_objects_string = "";
 		foreach(GameObject obj in allObjects){
 			all_objects.Add(obj.name);
@@ -1265,6 +1303,7 @@ public class Main : MonoBehaviour {
         string c1 = PlayerPrefs.GetString(config1_player_pref,"");
         string c2 = PlayerPrefs.GetString(config2_player_pref,"");
         string selection = PlayerPrefs.GetString(selection_player_pref,"");
+        string image_used = PlayerPrefs.GetString(image_used_player_pref,"");
 
         string p = PlayerPrefs.GetString(prep_playerpref,"");
 		
@@ -1311,6 +1350,7 @@ public class Main : MonoBehaviour {
         	form.AddField("c1",c1);
         	form.AddField("c2",c2);
         	form.AddField("selection",selection);
+        	form.AddField("imageName",image_used);
         }
         else{
         	string cam_loc = task_scene.main_camera.gameObject.transform.position.ToString();
