@@ -285,7 +285,7 @@ public class MeshObject{
 			if (non_convex_script == null){
 			    non_convex_script = go.AddComponent<NonConvexMeshCollider>();
 			}
-			non_convex_script.boxesPerEdge = 20;
+			non_convex_script.boxesPerEdge = 50;
 			non_convex_script.avoidExceedingMesh = false;
 			non_convex_script.Calculate();
 
