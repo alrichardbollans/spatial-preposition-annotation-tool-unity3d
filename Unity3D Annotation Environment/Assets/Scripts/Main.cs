@@ -420,9 +420,9 @@ public class TaskScene {
 		comparison_list.Add(config);
 	}
 
-	public static string ScreenShotName(string scene, string figure, string ground) {
-	    return string.Format("typtask_scene:{1}:_figure:{2}:_ground:{3}:.png", 
-	                         scene, figure, ground);
+	public static string ScreenShotName(string scene, string figure, string ground,string number) {
+	    return string.Format("typtask_scene:{0}:_figure:{1}:_ground:{2}:{3}.png", 
+	                         scene, figure, ground,number);
 	}
 
 	public static Config get_config_from_img(Texture2D img){

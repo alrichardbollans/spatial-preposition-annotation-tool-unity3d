@@ -9,7 +9,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
  #if UNITY_EDITOR
-public class screenshots_for_typicality : EditorWindow
+public class position_camera_for_screenshots_for_typicality : EditorWindow
 {   
     // Resolution for screenshots.
     static public int resWidth = 512; 
@@ -22,34 +22,13 @@ public class screenshots_for_typicality : EditorWindow
     static TaskScene task_scene;
     static string task_name = "sv";
 
+    public GameObject fig;
 
+    public GameObject grd;
 
-    public static string ScreenShotPath(TaskScene scene, string figure, string ground) {
-        string direct = Application.dataPath + "/Resources/typ_task_folder/";
-        string r =  direct + TaskScene.ScreenShotName(scene.name,figure,ground);
-        return r;
-    }
+    public int i;
+    public string prep;
 
-    /// <summary>
-    /// Takes screenshot from camera and saves to file.
-    /// </summary>
-    /// <param name="file">File to save to.</param>
-    public static void take_screenshot(string file){
-        RenderTexture rt = new RenderTexture(resWidth, resHeight, 24);
-        MainCamera.targetTexture = rt;
-        Texture2D screenShot = new Texture2D(resWidth, resHeight, TextureFormat.RGB24, false);
-        MainCamera.Render();
-        RenderTexture.active = rt;
-        screenShot.ReadPixels(new Rect(0, 0, resWidth, resHeight), 0, 0);
-        MainCamera.targetTexture = null;
-        RenderTexture.active = null; // JC: added to avoid errors
-        
-        byte[] bytes = screenShot.EncodeToPNG();
-        
-        System.IO.File.WriteAllBytes(file, bytes);
-        
-        
-    }
     /// <summary>
     /// Checks if Gameobject is visible from given camera.
     /// </summary>
@@ -105,6 +84,13 @@ public class screenshots_for_typicality : EditorWindow
         MainCamera.transform.position += transform_new;
     }
 
+    static void rotate(float xfactor,float yfactor){
+       
+    
+        MainCamera.transform.rotation *= Quaternion.AngleAxis(xfactor, Vector3.up);
+        MainCamera.transform.rotation *= Quaternion.AngleAxis(yfactor, Vector3.left);
+    }
+
     static void position_camera(GameObject fig, GameObject gr){
         
         
@@ -131,43 +117,35 @@ public class screenshots_for_typicality : EditorWindow
         camera_component = MainCamera.GetComponent<Camera>();
         camera_component.fieldOfView = 90f;
     }
-    static void take_screenshots_all_configs(){
-        
-        // Tidy this up.
-        task_scene.instantiate_after_scene_loaded();
-
-        bool x = task_scene.set_new_example();
-        MainCamera  = task_scene.main_camera;
-
-        
-        
-
-        
-        while(x){
-            
-
-            GameObject f = task_scene.active_configuration[0];
-            
-            GameObject g = task_scene.active_configuration[1];
-            
-            
-
-            position_camera(f,g);
-            
-            
-            string newname= ScreenShotPath(task_scene, f.name, g.name);
-            
-            
-            take_screenshot(newname);
-
-            // Try to get a new example, assign result to x.
-            x = task_scene.set_new_example();
-            
-        }
+    
+    public static string ScreenShotPath(string preposition,TaskScene scene, string figure, string ground,string number) {
+        string direct = Application.dataPath + "/Resources/typ_task_folder/" + preposition +"/";
+        string r =  direct + TaskScene.ScreenShotName(scene.name,figure,ground,number);
+        return r;
     }
 
+    /// <summary>
+    /// Takes screenshot from camera and saves to file.
+    /// </summary>
+    /// <param name="file">File to save to.</param>
+    public static void take_screenshot(string file){
+        RenderTexture rt = new RenderTexture(resWidth, resHeight, 24);
+        MainCamera.targetTexture = rt;
+        Texture2D screenShot = new Texture2D(resWidth, resHeight, TextureFormat.RGB24, false);
+        MainCamera.Render();
+        RenderTexture.active = rt;
+        screenShot.ReadPixels(new Rect(0, 0, resWidth, resHeight), 0, 0);
+        MainCamera.targetTexture = null;
+        RenderTexture.active = null; // JC: added to avoid errors
+        
+        byte[] bytes = screenShot.EncodeToPNG();
+        
+        System.IO.File.WriteAllBytes(file, bytes);
+        
+        
+    }
     // Add menu item in editor.
-    [MenuItem ("My Tools/Get Screenshots for typicality task")]
+    [MenuItem ("My Tools/Position Camera for Screenshots")]
    
    
     /// <summary>
@@ -177,31 +155,60 @@ public class screenshots_for_typicality : EditorWindow
     /// </remarks>
     static void Init ()
     {   
-        Main.clear_object_player_prefs();
-        Scenes scene_info = new Scenes();
+        var window = GetWindowWithRect<position_camera_for_screenshots_for_typicality>(new Rect(0, 0, 300, 165));
+        window.Show();
 
-        // Iterate through all scenes and do the things.
-        int i;
-       
-        for (i = 0; i < scene_info.SceneList.Count; i ++)
-        {
-            
-            MyScene next_scene = scene_info.SceneList[i];
-            
-            next_scene.open_set_active();
-
-            task_scene = new TaskScene(next_scene.name,task_name);
-            take_screenshots_all_configs();
-            
-            
-   
-        }
+        string scene_name = EditorSceneManager.GetActiveScene().name;
+        task_scene = new TaskScene(scene_name,task_name);
+        task_scene.set_main_camera();
+        MainCamera = task_scene.main_camera;
         
-        // task_scene = new TaskScene("scene_template",task_name);
-        // take_screenshots_all_configs();
+        // 
 
-        Debug.Log("Completed");
+    }
+
+    void OnGUI()
+    {   
+
+        EditorGUILayout.BeginVertical();
+        EditorGUIUtility.labelWidth=50f;
+        fig = EditorGUILayout.ObjectField("Figure:",fig, typeof(GameObject), true) as GameObject;
+        
+        grd =EditorGUILayout.ObjectField("Ground:",grd, typeof(GameObject), true) as GameObject;
+        EditorGUIUtility.labelWidth=80f;
+        i = EditorGUILayout.IntField("Screenshots#:", i);
+        prep = EditorGUILayout.TextField("Preposition:", prep);
+        EditorGUILayout.EndVertical();
+
+        if (GUILayout.Button("Search!"))
+            {
+                
+                
+                
+
+                task_scene.highlight_figure(fig);
+                task_scene.highlight_ground(grd);
+
+                position_camera(fig,grd);
+            }
+        if (GUILayout.Button("Rotate!"))
+                {
+                    rotate(20f,0f);
+                }
+        if (GUILayout.Button("Take shot!"))
+            {
+                string num = i.ToString();
+                Debug.Log(prep);
+
+
+                string newname= ScreenShotPath(prep,task_scene, fig.name, grd.name,num);
+                
+                
+                take_screenshot(newname);
+            }
     }
    
 }
+
+
 #endif
