@@ -920,7 +920,7 @@ public class Main : MonoBehaviour {
 	public static string config1_player_pref = "config1";
 	public static string config2_player_pref = "config2";
 	public static string selection_player_pref = "config_selection";
-	public static string image_used_player_pref = "image_used";
+	
 
 
 
@@ -1303,7 +1303,6 @@ public class Main : MonoBehaviour {
         string c1 = PlayerPrefs.GetString(config1_player_pref,"");
         string c2 = PlayerPrefs.GetString(config2_player_pref,"");
         string selection = PlayerPrefs.GetString(selection_player_pref,"");
-        string image_used = PlayerPrefs.GetString(image_used_player_pref,"");
 
         string p = PlayerPrefs.GetString(prep_playerpref,"");
 		
@@ -1350,7 +1349,7 @@ public class Main : MonoBehaviour {
         	form.AddField("c1",c1);
         	form.AddField("c2",c2);
         	form.AddField("selection",selection);
-        	form.AddField("imageName",image_used);
+        	
         }
         else{
         	string cam_loc = task_scene.main_camera.gameObject.transform.position.ToString();
