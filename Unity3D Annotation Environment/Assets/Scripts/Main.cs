@@ -75,6 +75,8 @@ public class TaskScene {
 	public List<object> active_comparison; // Ground preposition pair
 	// Preposition list for comp task.
 	List<string> comp_preposition_list = new List<string> {"on","on top of", "in", "inside","against","over","below","above","under"};
+	// Preposition list for typ task.
+	List<string> typ_preposition_list = new List<string> {"on","on top of", "in", "inside","against","over","below","above","under"};
 
 	Material fig_mat = Resources.Load("figure_material", typeof(Material)) as Material;
 	Material grd_mat = Resources.Load("ground_material", typeof(Material)) as Material;
@@ -85,6 +87,8 @@ public class TaskScene {
 
 	// Dictionary of images for each preposition to use in typ_task.
 	Dictionary<string,List<Texture2D>> typicality_images;
+	// Pairs of images to display.
+	Dictionary<string,List<List<Texture2D>>> typicality_image_pairs;
 
 	// Strings for storing values in PlayerPrefs
 	static string selectedFig_playerpref = Main.selectedFig_playerpref;
@@ -321,7 +325,8 @@ public class TaskScene {
 			
 		}
 		if(task_type == Main.typ_abv){
-			foreach(string prep in comp_preposition_list){
+			// Get images for each preposition.
+			foreach(string prep in typ_preposition_list){
 				try{
 					Texture2D[] typ_im_array =Resources.LoadAll<Texture2D>("Typ_task_folder/"+prep);
 					typicality_images[prep] = typ_im_array.ToList();
@@ -337,9 +342,49 @@ public class TaskScene {
 			typicality_images["below"] = typicality_images["under"];
 			typicality_images["on top of"] = typicality_images["on"];
 			
+			// Now shuffle the lists.
+			foreach(string prep in typ_preposition_list){
+				typicality_images[prep] = typicality_images[prep].OrderBy(a => rnd.Next()).ToList();
+				typicality_image_pairs[prep] = new List<List<Texture2D>>() {};
+			}
+
+			
+			// Now go through lists and create pairs for task.
+			foreach(string prep in typ_preposition_list){
+				foreach(Texture2D img1 in typicality_images[prep]){
+					Config c1 = get_config_from_img(img1);
+					foreach(Texture2D img2 in typicality_images[prep]){
+						Config c2 = get_config_from_img(img2);
+						if(c1.scene != c2.scene){
+							if(!typicality_image_pairs[prep].Any(img_pair => is_there_a_pair_match(c1, c2,img_pair))){
+								List<Texture2D> new_pair = new List<Texture2D>() {img1,img2};
+								typicality_image_pairs[prep].Add(new_pair);
+							}
+						}
+						
+						
+					}
+				}
+			}
 		}
 		
 		
+	}
+
+	/// <summary>
+    /// Checks if two configs match an image pair by scenes.
+    /// </summary>
+	bool is_there_a_pair_match(Config c1, Config c2,List<Texture2D> img_pair){
+		Config ic1 = get_config_from_img(img_pair[0]);
+		Config ic2 = get_config_from_img(img_pair[1]);
+		if(c1.scene == ic1.scene && c2.scene == ic2.scene){
+			return true;
+		}
+		if(c2.scene == ic1.scene && c1.scene == ic2.scene){
+			return true;
+		}
+
+		return false;
 	}
 
 	/// <summary>
@@ -458,45 +503,45 @@ public class TaskScene {
 		return out_string;
 	}
 
-	void show_new_config_pictures(){
+	bool show_new_config_pictures(){
 		// Set preposition.
-		int r = rnd.Next(comp_preposition_list.Count);
-		string p = comp_preposition_list[r];
+		int r = rnd.Next(typ_preposition_list.Count);
+		string p = typ_preposition_list[r];
+		// If there are no images to test get another preposition.
+		while(typicality_image_pairs[p].Count == 0){
+			typ_preposition_list.Remove(p);
+			// If there are no more prepositions return false.
+			if(typ_preposition_list.Count == 0){
+				return false;
+			}
+			else{
+				
+				r = rnd.Next(typ_preposition_list.Count);
+				p = typ_preposition_list[r];
+			}
+			
+		}
+		// Set preposition.
 		set_preposition(p);
 
-		// Pick an image for the preposition.
-		int i1 = rnd.Next(typicality_images[p].Count);
-		Texture2D img1 = typicality_images[p][i1];
+		// Pick an image pair for the preposition.
+		int i = rnd.Next(typicality_image_pairs[p].Count);
+		List<Texture2D> img_pair = typicality_image_pairs[p][i];
+		
+		Texture2D img1 = img_pair[0];
+		Texture2D img2 = img_pair[1];
 
 		// Set the player prefs and left object texture.
 		PlayerPrefs.SetString(Main.config1_player_pref, img1.name);
 		main.typ_left_image.GetComponent<RawImage>().texture = img1;
-
-		// Remove similar images (matching scene and ground).
-		Config c1 = get_config_from_img(img1);
-		foreach(Texture2D img in typicality_images[p]){
-			Config c = get_config_from_img(img);
-			if(c.scene == c1.scene && c.ground == c1.ground){
-				typicality_images[p].Remove(img);
-			}
-		}
-		
-		// Pick an image for the preposition.
-		int i2 = rnd.Next(typicality_images[p].Count);
-		Texture2D img2 = typicality_images[p][i2];
-		
 		// Set the player prefs and right object texture.
 		PlayerPrefs.SetString(Main.config2_player_pref, img2.name);
 		main.typ_right_image.GetComponent<RawImage>().texture = img2;
 
-		// Remove similar images (matching scene and ground).
-		Config c2 = get_config_from_img(img2);
-		foreach(Texture2D img in typicality_images[p]){
-			Config c = get_config_from_img(img);
-			if(c.scene == c2.scene && c.ground == c2.ground){
-				typicality_images[p].Remove(img);
-			}
-		}
+		// Remove pair from testing.
+		typicality_image_pairs[p].Remove(img_pair);
+		
+		return true;
 	}
 	/// <summary>
     /// Sets new configuration to test.
@@ -622,14 +667,15 @@ public class TaskScene {
 		else if (task_type== Main.typ_abv){
 			if(Main.number_typ_configs_done<Main.number_typ_configs_to_do){
 				Main.number_typ_configs_done +=1;
-				show_new_config_pictures();
+				bool x = show_new_config_pictures();
+				return x;
 				
 
 				// int left_to_do = 1 + Main.number_typ_configs_to_do - Main.number_typ_configs_done;
 				// string newtext = main.SceneCountertext.Replace(":int:",left_to_do.ToString());
 				// main.SceneCounter_Text.text = newtext;
 
-				return true;
+				
 			}
 			else{
 				return false;
