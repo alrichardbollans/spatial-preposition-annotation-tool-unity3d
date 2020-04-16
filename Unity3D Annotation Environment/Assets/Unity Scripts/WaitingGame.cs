@@ -22,6 +22,9 @@ public class WaitingGame : MonoBehaviour
 	static string old_positions_csv ="old positions.csv";
 	public static string new_positions_csv ="positions.csv";
 
+	public int fall_time = WaitingGame_FunctionalFeatureExtraction.fall_time;
+	public float time_scale = WaitingGame_FunctionalFeatureExtraction.time_scale;
+
 	/// <summary>
 	/// Coroutine which outputs initial positions, waits x seconds and then outputs new positions.
 	/// Then quits game and sets write_transforms.written to true.
@@ -39,8 +42,8 @@ public class WaitingGame : MonoBehaviour
 				file1.WriteLine(row_csv_string);
 			}
 		}
-		// Wait 5 seconds
-		yield return new WaitForSeconds(5);
+		// Wait x seconds
+		yield return new WaitForSeconds(fall_time);
 		
 		using(StreamWriter file = new StreamWriter(new_positions_csv)){
 			foreach(GameObject obj in meshObjects){
@@ -89,6 +92,11 @@ public class WaitingGame : MonoBehaviour
                 meshObjects.Add(obj);
             }
         }
+        // Improve Simulations;
+        Physics.defaultSolverIterations = 20;
+        // Speeds up physics simulations. Adjust Wait times accordingly
+        // Setting too high causes issues
+        Time.timeScale = time_scale;
 		run_pp();
 
 	}

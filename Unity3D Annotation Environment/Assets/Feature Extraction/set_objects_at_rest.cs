@@ -126,25 +126,28 @@ public class MeshObject{
 	/// </summary>
 	public void give_rigid_body(){
 		
-		// Make sure has rigidbody.
-        Rigidbody r = go.GetComponent(typeof(Rigidbody)) as Rigidbody;
-        if (r == null){
-            r = go.AddComponent<Rigidbody>() as Rigidbody;
-        }
-        r.mass = mass;
-        
-        if(Main.unselectable_scene_objects.Any(x => go.name.Contains(x))){
-        	r = go.GetComponent(typeof(Rigidbody)) as Rigidbody;
-        	
-        	Object.DestroyImmediate(r);
-        	
-        }
 
-        // Make floating objects not use gravity
-        if(floating_objects.Contains(clean_name)){
-        	r.useGravity = false;
-        }
-	    
+	    if(!Main.unselectable_scene_objects.Any(x => go.name.Contains(x))){
+	    	
+			// Make sure has rigidbody.
+	        Rigidbody r = go.GetComponent(typeof(Rigidbody)) as Rigidbody;
+	        if (r == null){
+	            r = go.AddComponent<Rigidbody>() as Rigidbody;
+	        }
+	        r.mass = mass;
+	        // Make floating objects not use gravity
+	        if(floating_objects.Contains(clean_name)){
+	        	r.useGravity = false;
+	        }
+	        else{
+	        	r.useGravity = true;
+	        }
+		    
+		    // Improve collision detection so objects don't fall through each other.
+		    r.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+	    }
+
+		
 
 	}
 

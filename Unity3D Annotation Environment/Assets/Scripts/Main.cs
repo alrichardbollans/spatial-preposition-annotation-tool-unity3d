@@ -78,12 +78,12 @@ public class TaskScene {
 	// Preposition list for typ task.
 	List<string> typ_preposition_list = new List<string> {"on","on top of", "in", "inside","against","over","below","above","under"};
 
-	Material fig_mat = Resources.Load("figure_material", typeof(Material)) as Material;
-	Material grd_mat = Resources.Load("ground_material", typeof(Material)) as Material;
+	static Material fig_mat = Resources.Load("figure_material", typeof(Material)) as Material;
+	static Material grd_mat = Resources.Load("ground_material", typeof(Material)) as Material;
 
 	// Stores materials to undo highlighting.
-	Material[] stored_fig_mats;
-	Material[] stored_grd_mats;
+	static Material[] stored_fig_mats;
+	static Material[] stored_grd_mats;
 
 	// Dictionary of images for each preposition to use in typ_task.
 	Dictionary<string,List<Texture2D>> typicality_images;
@@ -214,7 +214,7 @@ public class TaskScene {
     /// First stores figures materials then changes them all to highlight material.
     /// </summary>
     /// <param name="fig">Figure to highlight.</param>
-	public void highlight_figure(GameObject fig){
+	static public void highlight_figure(GameObject fig){
 		// Stores old figure materials
 		stored_fig_mats = fig.GetComponent<Renderer>().materials;
 		// Create a new array with same number of fig mat instances
@@ -236,7 +236,7 @@ public class TaskScene {
     /// First stores grounds materials then changes them all to highlight material.
     /// </summary>
     /// <param name="grd">Ground to highlight.</param>
-	public void highlight_ground(GameObject grd){
+	static public void highlight_ground(GameObject grd){
 		// Stores old ground materials
 		stored_grd_mats = grd.GetComponent<Renderer>().materials;
 		// Create a new array with same number of grd mat instances
@@ -466,7 +466,7 @@ public class TaskScene {
 	}
 
 	public static string ScreenShotName(string scene, string figure, string ground,string number) {
-	    return string.Format("typtask_scene:{0}:_figure:{1}:_ground:{2}:{3}.png", 
+	    return string.Format("typtask_scene_{0}__figure_{1}__ground_{2}_{3}.png", 
 	                         scene, figure, ground,number);
 	}
 
@@ -476,9 +476,9 @@ public class TaskScene {
 		string grd;
 		string scene;
 		
-		int first_scene_character_index = old.IndexOf("scene:") +6;
-		int first_fig_character_index = old.IndexOf("figure:") +7;
-		int first_gr_character_index = old.IndexOf("ground:") +7;
+		int first_scene_character_index = old.IndexOf("scene_") +6;
+		int first_fig_character_index = old.IndexOf("figure_") +7;
+		int first_gr_character_index = old.IndexOf("ground_") +7;
 		
 		fig = get_string_from_img_file(old,first_fig_character_index);
 		scene = get_string_from_img_file(old,first_scene_character_index);

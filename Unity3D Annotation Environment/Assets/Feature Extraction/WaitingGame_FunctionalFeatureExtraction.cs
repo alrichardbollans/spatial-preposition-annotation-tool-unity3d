@@ -32,6 +32,7 @@ public class WaitingGame_FunctionalFeatureExtraction : MonoBehaviour
     
     public static int fall_time = 10;
     public static int lc_move_time = 5;
+    public static float time_scale = 5f;
 
     GameObject get_new_ground(){
     	//Get new ground from csv and update file
@@ -495,9 +496,11 @@ public class WaitingGame_FunctionalFeatureExtraction : MonoBehaviour
 			// initial_position_dictionary[obj.name] = obj.transform.position;
 			initial_rotation_dictionary[obj.name] = obj.transform.rotation;
 		}
+		// Improve Simulations;
+		Physics.defaultSolverIterations = 20;
 		// Speeds up physics simulations. Adjust Wait times accordingly
 		// Setting too high causes issues
-		Time.timeScale = 5f;
+		Time.timeScale = time_scale;
 		
 		StartCoroutine(run_pp());
 		
