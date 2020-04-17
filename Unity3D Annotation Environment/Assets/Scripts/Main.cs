@@ -69,9 +69,9 @@ public class TaskScene {
 	static Material[] stored_grd_mats;
 
 	// Dictionary of images for each preposition to use in typ_task.
-	Dictionary<string,List<Texture2D>> typicality_images;
+	Dictionary<string,List<Texture2D>> typicality_images =  new Dictionary<string,List<Texture2D>>();
 	// Pairs of images to display.
-	Dictionary<string,List<List<Texture2D>>> typicality_image_pairs;
+	Dictionary<string,List<List<Texture2D>>> typicality_image_pairs = new Dictionary<string,List<List<Texture2D>>>();
 
 	// Strings for storing values in PlayerPrefs
 	static string selectedFig_playerpref = Main.selectedFig_playerpref;
@@ -310,11 +310,14 @@ public class TaskScene {
 		if(task_type == Main.typ_abv){
 			// Get images for each preposition.
 			foreach(string prep in typ_preposition_list){
+				typicality_images[prep] = new List<Texture2D>();
 				try{
-					Texture2D[] typ_im_array =Resources.LoadAll<Texture2D>("Typ_task_folder/"+prep);
-					typicality_images[prep] = typ_im_array.ToList();
+					
+					typicality_images[prep] = Resources.LoadAll<Texture2D>("Typ_task_folder/"+prep).ToList();
+					
 				}
 				catch(Exception e){
+					Debug.Log(e);
 					Debug.Log("No folder for '" + prep + "' images.");
 				}
 				
@@ -330,12 +333,15 @@ public class TaskScene {
 				typicality_images[prep] = typicality_images[prep].OrderBy(a => rnd.Next()).ToList();
 				typicality_image_pairs[prep] = new List<List<Texture2D>>() {};
 			}
-
+			
 			
 			// Now go through lists and create pairs for task.
 			foreach(string prep in typ_preposition_list){
 				foreach(Texture2D img1 in typicality_images[prep]){
 					Config c1 = get_config_from_img(img1);
+					Debug.Log(c1.scene);
+					Debug.Log(c1.figure);
+					Debug.Log(c1.ground);
 					foreach(Texture2D img2 in typicality_images[prep]){
 						Config c2 = get_config_from_img(img2);
 						if(c1.scene != c2.scene){
@@ -349,6 +355,7 @@ public class TaskScene {
 					}
 				}
 			}
+			
 		}
 		
 		
@@ -448,8 +455,16 @@ public class TaskScene {
 		comparison_list.Add(config);
 	}
 
-	public static string ScreenShotName(string scene, string figure, string ground,string number) {
-	    return string.Format("typtask_scene_{0}__figure_{1}__ground_{2}_.png", 
+	/// <summary>
+    /// Gets name of screenshot to save to.
+    /// Scene, figure and ground names are later retrieved using position of "_"s.
+    /// Avoid using double '_' in object or scene names.
+    /// </summary>
+    /// <returns>
+	/// String, screenshot name.
+	/// </returns>
+	public static string ScreenShotName(string scene, string figure, string ground) {
+	    return string.Format("typtask_scene_{0}__figure_{1}__ground_{2}__.png", 
 	                         scene, figure, ground);
 	}
 
@@ -478,7 +493,7 @@ public class TaskScene {
 		int end = file_string.Length - first_ch_index;
 		out_string = file_string.Substring(first_ch_index,end);
 		
-		out_string = out_string.Substring(0,out_string.IndexOf("_"));
+		out_string = out_string.Substring(0,out_string.IndexOf("__"));
 		
 		return out_string;
 	}
@@ -489,6 +504,7 @@ public class TaskScene {
 		string p = typ_preposition_list[r];
 		// If there are no images to test get another preposition.
 		while(typicality_image_pairs[p].Count == 0){
+			
 			typ_preposition_list.Remove(p);
 			// If there are no more prepositions return false.
 			if(typ_preposition_list.Count == 0){
@@ -646,6 +662,7 @@ public class TaskScene {
 
 		else if (task_type== Main.typ_abv){
 			if(Main.number_typ_configs_done<Main.number_typ_configs_to_do){
+				Debug.Log("Showing new pics");
 				Main.number_typ_configs_done +=1;
 				bool x = show_new_config_pictures();
 				return x;

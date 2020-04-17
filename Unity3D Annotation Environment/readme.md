@@ -21,6 +21,8 @@ Any number of objects may be added and the tags given to the objects handle whic
 
 * Object names should be distinguished by using brackets as clean names are made by finding the first "(".
 
+* Avoid using double `_` in object or scene names.
+
 * Don't use red or green objects as it will be difficult to see highlighting.
 
 * Setting at rest: Once objects have been added to a scene and roughly positioned, objects can be set at rest using the `set_objects_at_rest.cs` script (using associated editor button). Some objects names will need adding to attributes of this script if adding new types of objects.
