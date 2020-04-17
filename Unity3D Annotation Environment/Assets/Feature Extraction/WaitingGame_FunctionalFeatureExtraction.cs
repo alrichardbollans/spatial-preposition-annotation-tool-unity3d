@@ -496,8 +496,7 @@ public class WaitingGame_FunctionalFeatureExtraction : MonoBehaviour
 			// initial_position_dictionary[obj.name] = obj.transform.position;
 			initial_rotation_dictionary[obj.name] = obj.transform.rotation;
 		}
-		// Improve Simulations;
-		Physics.defaultSolverIterations = 20;
+		
 		// Speeds up physics simulations. Adjust Wait times accordingly
 		// Setting too high causes issues
 		Time.timeScale = time_scale;

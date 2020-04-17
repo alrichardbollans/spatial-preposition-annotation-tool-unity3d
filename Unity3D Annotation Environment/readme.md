@@ -44,6 +44,16 @@ Scenes need removing from build and removing from scene list in main.cs. To do t
 
 There are some realtime lights which provide shadows. The shadow bias of these is set to 0 and they set to display soft shadows. Find its best to set objects to have static lightmap. 
 
+### Checks
+
+* Have tags been assigned?
+* Are objects set at rest?
+* Is the camera positioned well?
+* Has the lighting been baked?
+
+## Editor Settings
+### PhysicsManager
+* Default Solver Iterations = 20, this improves simulations and prevents objects falling through each other.
 
 ## Other Assets
 figure_material and ground_material need to be in Resources folder

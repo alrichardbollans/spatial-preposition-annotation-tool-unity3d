@@ -92,8 +92,7 @@ public class WaitingGame : MonoBehaviour
                 meshObjects.Add(obj);
             }
         }
-        // Improve Simulations;
-        Physics.defaultSolverIterations = 20;
+        
         // Speeds up physics simulations. Adjust Wait times accordingly
         // Setting too high causes issues
         Time.timeScale = time_scale;
