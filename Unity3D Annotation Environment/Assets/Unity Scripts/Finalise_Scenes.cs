@@ -1,4 +1,5 @@
-// This script finalises scenes and should be executed via menuitem once all scenes have been finished.
+// This script finalises scenes and should be executed via menuitem
+// once all scenes have been finished.
 
 using UnityEngine;
 #if UNITY_EDITOR
@@ -9,7 +10,7 @@ using UnityEditor.SceneManagement;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
- #if UNITY_EDITOR
+#if UNITY_EDITOR
 public class Finalise_Scenes : EditorWindow
 {   
     
@@ -139,7 +140,7 @@ public class Finalise_Scenes : EditorWindow
     }
 
     // Add menu item in editor.
-    [MenuItem ("My Tools/Add Scenes To Build !!SAVE Scripts FIRST!!")]
+    [MenuItem ("My Tools/Finalise Scenes !!SAVE Scripts FIRST!!")]
    
    
     /// <summary>

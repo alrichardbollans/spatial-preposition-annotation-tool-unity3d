@@ -24,10 +24,10 @@ GameObject:
   - component: {fileID: 135101612656608640}
   m_Layer: 0
   m_Name: ball
-  m_TagString: figure
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!4 &4577651459528998
 Transform:

@@ -49,6 +49,7 @@ There are some realtime lights which provide shadows. The shadow bias of these i
 * Have tags been assigned?
 * Are objects set at rest?
 * Is the camera positioned well?
+* Are objects set to static?
 * Has the lighting been baked?
 
 ## Editor Settings

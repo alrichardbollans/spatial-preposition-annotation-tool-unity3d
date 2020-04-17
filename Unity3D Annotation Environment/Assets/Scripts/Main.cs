@@ -4,32 +4,8 @@
 // This scene is open during all data collection with other scenes loaded on top. 
 // In this way the 'Main' instance is never destroyed
 
-// This script forms the base.
-// Implements various tasks
-// sv = semantic validity
-// pq =  predicational question
-// comp =  comparative task
-// game = game
-
-// Active ground can't be selected in comp task
-
-/// Scene file names should contain task abbreviation --  sv, pq and comp tasks are shared scenes
-
-// Highlighting works by storing and then changing all materials on object.
-
-// Ground Objects in scenes are given tag "ground". FIgures to compare with them are set as children
-// To associate a ground with a preposition for the comp task, ground are given empty objects as children with preposition tags
-// For the screen task figures are set as above and given a preposition tag
-
-// Scene cameras must have "MainCamera" tag.
-
-// Be careful using PlayerPrefs.GetString("selectedGround","");. 
-// In general objects have different names but sometimes this will 
-// not be the case in added scenes.
-
-// Pay attention to task.set_task.
-// When naming objects in game be careful with strings 
-// including any of the strings given by Main class.
+// To Do:
+// - Separate different tasks into different classes which inherit from Task.
 
 using System;
 using System.IO;
@@ -52,11 +28,18 @@ public class Config
      public string scene;  
      public string figure;
      public string ground;
+
+     public Config(string scn, string fig,string gr){
+     	scene= scn;
+     	figure = fig;
+     	ground = gr;
+     	
+     }
 }   
 
 /// <summary>
 /// TaskScene class acts like the usual Scene object except 
-/// more information is stored regarding object configurations.
+/// more information is stored regarding object configurations and examples to test.
 /// </summary>
 public class TaskScene {
 
@@ -300,7 +283,7 @@ public class TaskScene {
 	}
 
 	public void populate_config_list(){
-		if (task_type == Main.sv_abv || task.name == sv_mod_abv || task_type == "pq" || task_type == Main.screen_abv){
+		if (task_type == Main.sv_abv || task_type == Main.sv_mod_abv || task_type == "pq" || task_type == Main.screen_abv){
 			
 			foreach (GameObject ground in ground_list){
 				foreach(GameObject fig in figure_list){
@@ -484,10 +467,7 @@ public class TaskScene {
 		scene = get_string_from_img_file(old,first_scene_character_index);
 		grd = get_string_from_img_file(old,first_gr_character_index);
 		
-		Config c = new Config();
-		c.figure = fig;
-		c.scene = scene;
-		c.ground = grd;
+		Config c = new Config(scene,fig,grd);
 
 		return c;
 	
@@ -550,7 +530,7 @@ public class TaskScene {
 	/// true if a new configuration can be set in the scene, otherwise False.
 	/// </returns>
 	public bool set_new_example(){
-		if (task_type == Main.sv_abv || task.name == sv_mod_abv || task_type == "pq" || task_type == Main.screen_abv){
+		if (task_type == Main.sv_abv || task_type == Main.sv_mod_abv || task_type == "pq" || task_type == Main.screen_abv){
 
 
 			// Unselect figure and ground

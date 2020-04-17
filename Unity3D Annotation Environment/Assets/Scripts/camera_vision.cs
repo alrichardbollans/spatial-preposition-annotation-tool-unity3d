@@ -159,39 +159,39 @@ public class camera_vision : MonoBehaviour
 		
 			
 
-			if(direction == "forward"){
-				
-				transform_new.x = transform.forward.x;
-				transform_new.z = transform.forward.z;
-			}
-			else{
-				transform_new.x = transform.right.x;
-				transform_new.z = transform.right.z;
-			}
+		if(direction == "forward"){
+			
+			transform_new.x = transform.forward.x;
+			transform_new.z = transform.forward.z;
+		}
+		else{
+			transform_new.x = transform.right.x;
+			transform_new.z = transform.right.z;
+		}
 
-			if(transform.position.x>=bound_x_r){
-				if(transform_new.x < 0){
-					transform_new.x = 0f;
-				}
+		if(transform.position.x>=bound_x_r){
+			if(transform_new.x < 0){
+				transform_new.x = 0f;
 			}
+		}
 
-			if(transform.position.x<=bound_x_l){
-				if(transform_new.x > 0){
-					transform_new.x = 0f;
-				}
+		if(transform.position.x<=bound_x_l){
+			if(transform_new.x > 0){
+				transform_new.x = 0f;
 			}
+		}
 
-			if(transform.position.z>=bound_z_f){
-				if(transform_new.z<0){
-					transform_new.z = 0f;
-				}
+		if(transform.position.z>=bound_z_f){
+			if(transform_new.z<0){
+				transform_new.z = 0f;
 			}
+		}
 
-			if(transform.position.z<=bound_z_b){
-				if(transform_new.z>0){
-					transform_new.z = 0f;
-				}
+		if(transform.position.z<=bound_z_b){
+			if(transform_new.z>0){
+				transform_new.z = 0f;
 			}
+		}
 
 
 		return transform_new;

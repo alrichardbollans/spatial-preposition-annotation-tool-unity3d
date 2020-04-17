@@ -21,13 +21,13 @@ GameObject:
   - component: {fileID: 4302176787415204}
   - component: {fileID: 33060254496603808}
   - component: {fileID: 23103582445183036}
-  - component: {fileID: 64644050855079696}
+  - component: {fileID: 64428196872605088}
   m_Layer: 0
   m_Name: book
-  m_TagString: figure
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!4 &4302176787415204
 Transform:
@@ -35,8 +35,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1520371037708242}
-  m_LocalRotation: {x: -0.42868078, y: 0.56216365, z: 0.5634677, w: 0.42744482}
-  m_LocalPosition: {x: -0.7457044, y: 0.8503494, z: 0.87601894}
+  m_LocalRotation: {x: -0.4280161, y: 0.56359714, z: 0.56228215, w: 0.4277841}
+  m_LocalPosition: {x: 0.208068, y: 0.850351, z: 0.96295}
   m_LocalScale: {x: 0.9367193, y: 1.561198, z: 0.6244791}
   m_Children: []
   m_Father: {fileID: 0}
@@ -83,7 +83,7 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1520371037708242}
   m_Mesh: {fileID: 4300000, guid: f637fec0790c54de2ac75b708f069310, type: 3}
---- !u!64 &64644050855079696
+--- !u!64 &64428196872605088
 MeshCollider:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
