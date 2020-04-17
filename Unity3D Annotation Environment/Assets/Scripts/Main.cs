@@ -678,7 +678,7 @@ public class TaskScene {
 public class Task {
 	// Be careful editing below list. It is edited by a script (finalise_scenes.cs) 
 	// (button in the editor)
-    public static string[] input_list_of_scenes = {"compsva12","compsva13","compsva14","compsva15","compsva23","compsva24","compsva25","compsva34","compsvi12","compsvi13","compsvi14","compsvi14a","compsvi15","compsvi16","compsvi23","compsvi24","compsvi24a","compsvi25","compsvi26","compsvi26a","compsvi3","compsvi34","compsvi36","compsvi45","compsvi46","compsvinew1","compsvinew2","compsvo12","compsvo12v","compsvo13v","compsvo14","compsvo14a","compsvo14v","compsvo16","compsvo16a","compsvo17","compsvo18","compsvo19","compsvo23v","compsvo24","compsvo24v","compsvo26","compsvo27","compsvo28","compsvo29","compsvo34v","compsvo67","compsvo68","compsvo68a","compsvo69a","compsvo78","compsvo79","compsvo89","compsvu15","compsvu16","compsvu17","compsvu23","compsvu25","compsvu25a","compsvu34","compsvu53","compsvu56","compsvu63","compsvu67","compsvu67a","compsvul","compsvula","finish","instruction","main","player_menu","scene_template","screen0","screen1","screening_fail","test","typ_test"};
+    public static string[] input_list_of_scenes = {"finish","instruction","main","player_menu","scene_template","screen0","screen1","screening_fail","sv_modtypa1","sv_modtypa2","sv_modtypi1","sv_modtypi2","sv_modtypi3","sv_modtypi4","sv_modtypo1","sv_modtypo2","sv_modtypo3","sv_modtypo4","sv_modtypov1","sv_modtypov2","sv_modtypov3","sv_modtypu1","sv_modtypu2","sv_modtypu3","sv_modtypu4","test"};
 	//
 	public string name;
 	Main main;

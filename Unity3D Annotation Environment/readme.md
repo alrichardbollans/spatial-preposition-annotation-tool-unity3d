@@ -47,6 +47,7 @@ There are some realtime lights which provide shadows. The shadow bias of these i
 ### Checks
 
 * Have tags been assigned?
+* Is the camera positioned well?
 * Are objects set at rest?
 * Is the camera positioned well?
 * Are objects set to static?
