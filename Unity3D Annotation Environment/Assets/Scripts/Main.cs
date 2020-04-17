@@ -300,7 +300,7 @@ public class TaskScene {
 	}
 
 	public void populate_config_list(){
-		if (task_type == Main.sv_abv || task_type == "pq" || task_type == Main.screen_abv){
+		if (task_type == Main.sv_abv || task.name == sv_mod_abv || task_type == "pq" || task_type == Main.screen_abv){
 			
 			foreach (GameObject ground in ground_list){
 				foreach(GameObject fig in figure_list){
@@ -466,8 +466,8 @@ public class TaskScene {
 	}
 
 	public static string ScreenShotName(string scene, string figure, string ground,string number) {
-	    return string.Format("typtask_scene_{0}__figure_{1}__ground_{2}_{3}.png", 
-	                         scene, figure, ground,number);
+	    return string.Format("typtask_scene_{0}__figure_{1}__ground_{2}_.png", 
+	                         scene, figure, ground);
 	}
 
 	public static Config get_config_from_img(Texture2D img){
@@ -498,7 +498,7 @@ public class TaskScene {
 		int end = file_string.Length - first_ch_index;
 		out_string = file_string.Substring(first_ch_index,end);
 		
-		out_string = out_string.Substring(0,out_string.IndexOf(":"));
+		out_string = out_string.Substring(0,out_string.IndexOf("_"));
 		
 		return out_string;
 	}
@@ -550,7 +550,7 @@ public class TaskScene {
 	/// true if a new configuration can be set in the scene, otherwise False.
 	/// </returns>
 	public bool set_new_example(){
-		if (task_type == Main.sv_abv || task_type == "pq" || task_type == Main.screen_abv){
+		if (task_type == Main.sv_abv || task.name == sv_mod_abv || task_type == "pq" || task_type == Main.screen_abv){
 
 
 			// Unselect figure and ground
@@ -792,10 +792,10 @@ public class Task {
 			string[] il = {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
 			"A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.",
 			"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",
-			"Remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
+			};
 			instruction_list = il;
 			
-			instruction = "Select <b>all</b> words which could fill in the blank:\n \n   'a :figure: (____) the :ground:'";
+			instruction = "Select <b>all</b> words which could fill in the blank:\n \n   'a <color=green><b>green object</b></color> (____) the <color=red><b>red object</b></color>'";
 
 		}
 		if(name==Main.comp_abv){
@@ -1568,7 +1568,7 @@ public class Main : MonoBehaviour {
 				fail();
 			}
 		}
-		else if(task.name == sv_abv){
+		else if(task.name == sv_abv || task.name == sv_mod_abv){
 			if(task.list_of_toggles.All(x => x.isOn ==false)){
 
 			}
