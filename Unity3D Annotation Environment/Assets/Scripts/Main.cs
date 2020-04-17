@@ -783,6 +783,21 @@ public class Task {
 			instruction = "Select <b>all</b> words which could fill in the blank:\n \n   ':a: :figure: (____) the :ground:'";
 
 		}
+
+		if(name == Main.sv_mod_abv){
+			panel = main.sv_main_panel;
+			instruction_text_component = main.sv_instruction_text;
+			number_scenes_to_do = 10;
+			instruction_title = "Instructions";
+			string[] il = {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
+			"A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.",
+			"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",
+			"Remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
+			instruction_list = il;
+			
+			instruction = "Select <b>all</b> words which could fill in the blank:\n \n   'a :figure: (____) the :ground:'";
+
+		}
 		if(name==Main.comp_abv){
 			panel = main.comp_main_panel;
 			number_scenes_to_do = 10;
@@ -814,7 +829,7 @@ public class Task {
 			"A simple description will be given of a green object and its relationship to a red object, e.g. 'the <color=green><b>green object</b></color> <b>on</b> the <color=red><b>red object</b></color>'. You need to <b>click</b> the image <b>which best fits the description</b>.\n\n If you feel that <b>no image fits</b> the given description, click 'Select None'."};
 			instruction_list = il;
 			instruction_title = "Instructions";
-			instruction = "Select the pair of objects which best fits the description:\n'the <color=green><b>green object</b></color> :preposition: the <color=red><b>red object</b></color>'";
+			instruction = "Select the pair of objects which best fits the description:\n'a <color=green><b>green object</b></color> :preposition: the <color=red><b>red object</b></color>'";
 			
 
 		}
@@ -897,8 +912,10 @@ public class Task {
 			g.SetActive(true);
 		}
 
-		if(name == "typ"){
+		// Hide info panel and stop camera movement for some tasks.
+		if(name == Main.typ_abv || name == Main.sv_mod_abv){
 			main.general_info_panel.SetActive(false);
+			Main.allow_camera_movement = false;
 
 		}
 		else{
@@ -976,6 +993,7 @@ public class Main : MonoBehaviour {
 	public static string fig_grd_tag = "figureground";
 	public static string main_camera_tag= "MainCamera";
 
+
 	// Scene names
 	public static string first_scene_name = "player_menu";
 	public static string main_scene_name = "main";
@@ -1002,6 +1020,7 @@ public class Main : MonoBehaviour {
 
 	// Task Abbreviations
 	public static string sv_abv = "sv";
+	public static string sv_mod_abv = "sv_mod";
 	public static string comp_abv = "comp";
 	public static string screen_abv = "screen";
 	public static string typ_abv ="typ"; // Check this string is the same in php script.
@@ -1013,7 +1032,7 @@ public class Main : MonoBehaviour {
 	static public KeyCode quitKey = KeyCode.Escape;
 
 	Task sv_task;
-	Task pq_task;
+	Task sv_mod_task;
 	Task comp_task;
 	Task screen_task;
 	Task typ_task;
@@ -1048,6 +1067,8 @@ public class Main : MonoBehaviour {
 	
 	static public int number_typ_configs_done = 0;
 	static public int number_typ_configs_to_do = 10;
+
+	public static bool allow_camera_movement = true;
 
 	// Objetcs to hide/show if in dev mode.
 	bool dev_mode = false;
@@ -1095,7 +1116,7 @@ public class Main : MonoBehaviour {
 
 		// Instantiate tasks now lists have been created
 		sv_task = new Task(sv_abv,this);
-		// pq_task = new Task("pq",this)sv_instructions,sv_instruction_title,task_panels,sv_main_panel,selected_fig_text,sv_instruction_text);
+		sv_mod_task = new Task(sv_mod_abv,this);
 		comp_task = new Task(comp_abv,this);
 		screen_task = new Task(screen_abv,this);
 		typ_task = new Task(typ_abv,this);
@@ -1444,11 +1465,11 @@ public class Main : MonoBehaviour {
 		}
 		
 		else if (task.name == typ_abv){
-			task = sv_task;
+			task = sv_mod_task;
 			
 		}
 
-		else if (task.name == sv_abv){
+		else if (task.name == sv_mod_abv){
 
 			Debug.Log("Finished");
 			finish();

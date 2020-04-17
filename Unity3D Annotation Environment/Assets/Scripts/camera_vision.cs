@@ -27,10 +27,7 @@ public class camera_vision : MonoBehaviour
 	*/
  	
 	public static float cameraSensitivity = 0;
-	public static float climbSpeed = 0.5f;
 	public static float normalMoveSpeed = 0.5f;
-	public static float slowMoveFactor = 0.25f;
-	public static float fastMoveFactor = 3;
  
 	private float rotationX = 0.0f;
 	private float rotationY = 0.0f;
@@ -77,6 +74,24 @@ public class camera_vision : MonoBehaviour
 	public static void stop_mouse_look_around(){
 		cameraSensitivity = 0;
 		Cursor.lockState = CursorLockMode.None;
+		
+	}
+
+	/// <summary>
+	/// Disable all camera movement.
+	/// </summary>
+	public static void freeze_camera(){
+		normalMoveSpeed = 0f;
+		cameraSensitivity = 0;
+		Cursor.lockState = CursorLockMode.None;
+		
+	}
+
+	/// <summary>
+	/// Enable camera movement.
+	/// </summary>
+	public static void unfreeze_camera(){
+		normalMoveSpeed = 0.5f;
 		
 	}
 
@@ -184,77 +199,79 @@ public class camera_vision : MonoBehaviour
 
 	void Update ()
 	{	
+		if(Main.allow_camera_movement){
+			// If cameraSensitivity not zero, allow movement with mouse.
+			if(cameraSensitivity !=0){
+				
+
+				
+
+				rotationX += Input.GetAxis("Mouse X") * cameraSensitivity * Time.deltaTime;
+				rotationY += Input.GetAxis("Mouse Y") * cameraSensitivity * Time.deltaTime;
+				// rotationY = Mathf.Clamp (rotationY, -90, 90);
+		 
+				transform.rotation = Quaternion.AngleAxis(rotationX, Vector3.up);
+				transform.rotation *= Quaternion.AngleAxis(rotationY, Vector3.left);
+			 }
+		 	
+	 		// Keyboard movement
+	 		// 1 and 2 move camera up and down on world axis
+			if (Input.GetKey (KeyCode.Alpha2) || Input.GetKey (KeyCode.Keypad2)) {
+				if (transform.position.y<bound_top){
+					transform.position += Vector3.up * normalMoveSpeed * Time.deltaTime;
+				}
+			}
+			if (Input.GetKey (KeyCode.Alpha1) || Input.GetKey (KeyCode.Keypad1)) {
+				if (transform.position.y>bound_bottom){
+					transform.position -= Vector3.up * normalMoveSpeed * Time.deltaTime;
+				}
+			}
+			// Arrow keys move camera on local camera axes, only along x,z axes.
+			if (Input.GetKey (KeyCode.UpArrow)) {
+				Vector3 transform_new;
+				transform_new = get_new_transform_plus("forward");
+
+				transform.position += transform_new * normalMoveSpeed * Time.deltaTime;
+			}
+			if (Input.GetKey (KeyCode.DownArrow)) {
+				Vector3 transform_new;
+				transform_new = get_new_transform_minus("forward");
+				
+
+				transform.position -= transform_new * normalMoveSpeed * Time.deltaTime;
+			}
+			if (Input.GetKey (KeyCode.RightArrow)) {
+				Vector3 transform_new;
+				transform_new = get_new_transform_plus("right");
+
+				
+				transform.position += transform_new * normalMoveSpeed * Time.deltaTime;
+			}
+			if (Input.GetKey (KeyCode.LeftArrow)) {
+				Vector3 transform_new;
+				transform_new = get_new_transform_minus("right");
+
+				
+				transform.position -= transform_new * normalMoveSpeed * Time.deltaTime;
+			}
+
+			// 0 toggles allowing moust to look around.
+	 		if (Input.GetKey (KeyCode.Alpha0) || Input.GetKey (KeyCode.Keypad0)){
+
+				
+				allow_mouse_look_around();
+				
+
+			}
+
+			if (!(Input.GetKey (KeyCode.Alpha0) || Input.GetKey (KeyCode.Keypad0))){
+				
+				stop_mouse_look_around();
+				
+
+			}
+		}
 		
-		// If cameraSensitivity not zero, allow movement with mouse.
-		if(cameraSensitivity !=0){
-			
-
-			
-
-			rotationX += Input.GetAxis("Mouse X") * cameraSensitivity * Time.deltaTime;
-			rotationY += Input.GetAxis("Mouse Y") * cameraSensitivity * Time.deltaTime;
-			// rotationY = Mathf.Clamp (rotationY, -90, 90);
-	 
-			transform.rotation = Quaternion.AngleAxis(rotationX, Vector3.up);
-			transform.rotation *= Quaternion.AngleAxis(rotationY, Vector3.left);
-		 }
-	 	
- 		// Keyboard movement
- 		// 1 and 2 move camera up and down on world axis
-		if (Input.GetKey (KeyCode.Alpha2) || Input.GetKey (KeyCode.Keypad2)) {
-			if (transform.position.y<bound_top){
-				transform.position += Vector3.up * normalMoveSpeed * Time.deltaTime;
-			}
-		}
-		if (Input.GetKey (KeyCode.Alpha1) || Input.GetKey (KeyCode.Keypad1)) {
-			if (transform.position.y>bound_bottom){
-				transform.position -= Vector3.up * normalMoveSpeed * Time.deltaTime;
-			}
-		}
-		// Arrow keys move camera on local camera axes, only along x,z axes.
-		if (Input.GetKey (KeyCode.UpArrow)) {
-			Vector3 transform_new;
-			transform_new = get_new_transform_plus("forward");
-
-			transform.position += transform_new * normalMoveSpeed * Time.deltaTime;
-		}
-		if (Input.GetKey (KeyCode.DownArrow)) {
-			Vector3 transform_new;
-			transform_new = get_new_transform_minus("forward");
-			
-
-			transform.position -= transform_new * normalMoveSpeed * Time.deltaTime;
-		}
-		if (Input.GetKey (KeyCode.RightArrow)) {
-			Vector3 transform_new;
-			transform_new = get_new_transform_plus("right");
-
-			
-			transform.position += transform_new * normalMoveSpeed * Time.deltaTime;
-		}
-		if (Input.GetKey (KeyCode.LeftArrow)) {
-			Vector3 transform_new;
-			transform_new = get_new_transform_minus("right");
-
-			
-			transform.position -= transform_new * normalMoveSpeed * Time.deltaTime;
-		}
-
-		// 0 toggles allowing moust to look around.
- 		if (Input.GetKey (KeyCode.Alpha0) || Input.GetKey (KeyCode.Keypad0)){
-
-			
-			allow_mouse_look_around();
-			
-
-		}
-
-		if (!(Input.GetKey (KeyCode.Alpha0) || Input.GetKey (KeyCode.Keypad0))){
-			
-			stop_mouse_look_around();
-			
-
-		}
 		
 	}
 }
