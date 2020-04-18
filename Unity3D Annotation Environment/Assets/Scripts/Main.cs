@@ -43,7 +43,6 @@ public class Config
 public class TaskExamples {
 
 	public string name; //Scene Name
-	Main main; // Main instance.
 	// Camera needed for raycasting
 	GameObject[] cam_list;
 	public Camera main_camera;
@@ -55,24 +54,15 @@ public class TaskExamples {
 	static Material[] stored_fig_mats;
 	static Material[] stored_grd_mats;
 
-	// Random instance for generating random integers.
-	static System.Random rnd = new System.Random();
+
 
 
 	/// <summary>
     /// Create class instance.
     /// </summary>
     /// <param name="n">Scene name.</param>
-    /// <param name="type">task abbreviation.</param>
 	public TaskExamples(string n){
 		name = n;
-		// Get main game script
-		GameObject main_empty;
-	
-		main_empty = GameObject.Find(Main.maingameobject);
-		if(main_empty !=null){
-			main = main_empty.GetComponent<Main>();
-		}
 		
 	}
 
@@ -238,7 +228,7 @@ public class TaskExamples {
 		// Set camera
 		set_main_camera();
 		// Add in configurations
-		main.task.populate_config_list();
+		Main.task.populate_config_list();
 
 		
 	}
@@ -289,10 +279,10 @@ public class Task {
     public string name;
 
 	
-	Main main;
+	public Main main;
 	public string instruction; //Instruction to give in each scene
 
-	string new_instruction;  //Instruction to give in each scene
+	public string new_instruction;  //Instruction to give in each scene
 	
 
 	public string[] instruction_list; // List of instructions to give before starting
@@ -314,11 +304,14 @@ public class Task {
 
 	static string task_player_pref = Main.task_player_pref;
 
-	bool allow_camera_movement = true;
+	public bool allow_camera_movement = true;
 
 	// Variables from scene
 	public List<GameObject> ground_list = new List<GameObject>();
 	public List<GameObject> figure_list = new List<GameObject>();
+
+	// Random instance for generating random integers.
+	static public System.Random rnd = new System.Random();
 
 	/// <summary>
 	/// Gets scene lists for task.
@@ -506,6 +499,11 @@ public class Task {
 			ground_list.Add(gobj);
 		}
 	}
+
+	// This is just a placeholder.
+	public virtual void populate_config_list(){
+		Debug.Log("This shouldn't happen.");
+	}
 	
 }
 	
@@ -520,12 +518,13 @@ public class TypTask : Task {
 	Dictionary<string,List<List<Texture2D>>> typicality_image_pairs = new Dictionary<string,List<List<Texture2D>>>();
 
 
-	public TypTask(Main m) : base(m.typ_abv, m, m.typ_main_panel){
+	public TypTask(Main m) : base(Main.typ_abv, m, m.typ_main_panel){
 		allow_camera_movement = false;
 
 		instruction_text_component = main.typ_instruction_text;
-		instruction_list = {"In this task you will be shown two configurations of objects and asked to select which configuration <b>best fits</b> a given description.",
+		string[] il = {"In this task you will be shown two configurations of objects and asked to select which configuration <b>best fits</b> a given description.",
 		"A simple description will be given of a green object and its relationship to a red object, e.g. 'the <color=green><b>green object</b></color> <b>on</b> the <color=red><b>red object</b></color>'. You need to <b>click</b> the image <b>which best fits the description</b>.\n\n If you feel that <b>no image fits</b> the given description, click 'Select None'."};
+		instruction_list = il;
 		instruction_title = "Instructions";
 		instruction = "Select the pair of objects which best fits the description:\n'a <color=green><b>green object</b></color> :preposition: the <color=red><b>red object</b></color>'";
 		
@@ -592,7 +591,7 @@ public class TypTask : Task {
 		return false;
 	}
 
-	public void populate_config_list(){
+	public override void  populate_config_list(){
 		// Get images for each preposition.
 		foreach(string prep in preposition_list){
 			typicality_images[prep] = new List<Texture2D>();
@@ -673,7 +672,7 @@ public class TypTask : Task {
 				
 			}
 			// Set preposition.
-			set_preposition(p);
+			TaskExamples.set_preposition(p);
 
 			// Pick an image pair for the preposition.
 			int i = rnd.Next(typicality_image_pairs[p].Count);
@@ -720,17 +719,17 @@ public class SVTask : Task{
 		instruction_text_component = main.sv_instruction_text;
 		number_scenes_to_do = 10;
 		instruction_title = "Instructions";
-		instruction_list = {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
+		string[] il =  {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
 		"A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.",
 		"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",
 		"Remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
-		
+		instruction_list = il;
 		instruction = "Select <b>all</b> words which could fill in the blank:\n \n   ':a: :figure: (____) the :ground:'";
 
 		
 	}
 
-	public void populate_config_list(){
+	public override void  populate_config_list(){
 		populate_fig_ground_list();
 			
 		foreach (GameObject ground in ground_list){
@@ -816,14 +815,14 @@ public class SVTask : Task{
 }
 
 public class SVModTask : SVTask{
-	public SVModTask(Main m) : base(m.sv_mod_abv, m){
+	public SVModTask(Main m) : base(Main.sv_mod_abv, m){
 		allow_camera_movement = false;
 
-		instruction_list = {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
+		string[] il =  {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
 		"A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.",
 		"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",
 		};
-		
+		instruction_list = il;
 		instruction = "Select <b>all</b> words which could fill in the blank:\n \n   'a <color=green><b>green object</b></color> (____) the <color=red><b>red object</b></color>'";
 
 		
@@ -840,14 +839,16 @@ public class CompTask : Task{
 	public List<object> active_comparison; // Ground preposition pair
 	
 
-	public CompTask(Main m) : base(m.comp_abv, m, m.comp_main_panel){
+	public CompTask(Main m) : base(Main.comp_abv, m, m.comp_main_panel){
 		allow_camera_movement = true;
 
 		
 		
 		number_scenes_to_do = 10;
 		instruction_text_component = main.comp_instruction_text;
-		instruction_list = {"In this task you will be asked to select the object which <b>best fits</b> a given description.", "An object will be described by its relation to another object which will be <color=red><b>highlighted in red</b></color>, e.g. 'the object <b>on</b> the <color=red><b>table</b></color>'. You need to <b>click</b> on the object <b>which best fits the description</b>.\n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.", "The object you select will turn <color=green><b>green</b></color>. Once you have selected an object you must press 'Enter' or click 'Accept' to confirm your selection. \n\n You <b>cannot select</b> the room, floor, ceiling or walls; but remember that you <b>can select</b> the table. \n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.","All important objects in the scene will be immediately in view; but remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
+		string[] il =  {"In this task you will be asked to select the object which <b>best fits</b> a given description.", "An object will be described by its relation to another object which will be <color=red><b>highlighted in red</b></color>, e.g. 'the object <b>on</b> the <color=red><b>table</b></color>'. You need to <b>click</b> on the object <b>which best fits the description</b>.\n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.", "The object you select will turn <color=green><b>green</b></color>. Once you have selected an object you must press 'Enter' or click 'Accept' to confirm your selection. \n\n You <b>cannot select</b> the room, floor, ceiling or walls; but remember that you <b>can select</b> the table. \n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.","All important objects in the scene will be immediately in view; but remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
+		instruction_list = il;
+
 		instruction_title = "Instructions";
 		instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
 		
@@ -874,7 +875,7 @@ public class CompTask : Task{
 		comparison_list.Add(config);
 	}
 
-	public void populate_config_list(){
+	public override void  populate_config_list(){
 		populate_fig_ground_list();
 		foreach (GameObject ground in ground_list){
 			add_new_comp_config(ground);
@@ -949,14 +950,15 @@ public class ScreenTask : Task{
 	public List<object> active_comparison; // Ground preposition pair
 	
 
-	public ScreenTask(Main m) : base(m.comp_abv, m, m.comp_main_panel){
+	public ScreenTask(Main m) : base(Main.comp_abv, m, m.comp_main_panel){
 		allow_camera_movement = true;
 
 		
 		
 		instruction_text_component = main.comp_instruction_text;
-		instruction_list = {"Before beginning you will be given <b>two quick examples</b> to complete\n \n \nClick Next..",	"You will be shown an indoor scene and a description of an object will be provided at the bottom of the screen. \n \n Click on the object that best fits the description.\n \n You will be prompted to press enter or click accept to confirm your selection. \n \nIf you are correct you will move on to the next stage.",
+		string[] il =  {"Before beginning you will be given <b>two quick examples</b> to complete\n \n \nClick Next..",	"You will be shown an indoor scene and a description of an object will be provided at the bottom of the screen. \n \n Click on the object that best fits the description.\n \n You will be prompted to press enter or click accept to confirm your selection. \n \nIf you are correct you will move on to the next stage.",
 		"To move around the scene: \n - Use the <b>arrow keys</b> to move around \n - <b>Hold down the '0' key</b> to use the mouse to look around \n - Use the <b>'1' and '2' keys</b> to move up and down if you need to \n - Press the <b>'Delete' key</b> for help"	};
+		instruction_list = il;
 		instruction_title = "Instructions";
 		instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
 		number_scenes_to_do = list_of_scenes.Count;
@@ -965,7 +967,7 @@ public class ScreenTask : Task{
 		
 	}
 
-	public void populate_config_list(){
+	public override void  populate_config_list(){
 		populate_fig_ground_list();
 		foreach (GameObject ground in ground_list){
 			foreach(GameObject fig in figure_list){
