@@ -130,7 +130,7 @@ public class TaskExamples {
 	/// <summary>
     /// Unhighlights ground and updates player prefs.
     /// </summary>	
-	public void deselect_ground(){
+	static public void deselect_ground(){
 		
 		// Debug.Log("Deselect ground is called");
 		string old_grd_name = PlayerPrefs.GetString(Main.selectedgrd_playerpref,"");
@@ -502,7 +502,19 @@ public class Task {
 
 	// This is just a placeholder.
 	public virtual void populate_config_list(){
-		Debug.Log("This shouldn't happen.");
+		Debug.Log("This shouldn't happen 1.");
+	}
+
+	// This is just a placeholder.
+	public virtual bool set_new_example(){
+		Debug.Log("This shouldn't happen 2.");
+		return false;
+	}
+
+	// This is just a placeholder.
+	public virtual void submit(){
+		Debug.Log("This shouldn't happen 3.");
+		
 	}
 	
 }
@@ -648,7 +660,7 @@ public class TypTask : Task {
     /// <returns>
 	/// true if a new configuration can be set in the scene, otherwise False.
 	/// </returns>
-	public bool set_new_example(){
+	public override bool set_new_example(){
 		if(Main.number_typ_configs_done<Main.number_typ_configs_to_do){
 			Debug.Log("Showing new pics");
 			Main.number_typ_configs_done +=1;
@@ -699,8 +711,8 @@ public class TypTask : Task {
 			return false;
 		}
 	}
-	public void submit(){
-		StartCoroutine(sendselectionToFile_coroutine());
+	public override void submit(){
+		main.StartCoroutine(main.sendselectionToFile_coroutine());
 
 		/// Set new example.
 		main.new_example();
@@ -743,7 +755,7 @@ public class SVTask : Task{
 		}
 	}
 			
-	public bool set_new_example(){
+	public override bool set_new_example(){
 		// Unselect figure and ground
 		TaskExamples.deselect_figure();
 		TaskExamples.deselect_ground();
@@ -799,13 +811,13 @@ public class SVTask : Task{
 		}
 	}
 
-	public void submit(){
+	public override void submit(){
 
 		if(list_of_toggles.All(x => x.isOn ==false)){
 
 		}
 		else{
-			StartCoroutine(sendselectionToFile_coroutine());
+			main.StartCoroutine(main.sendselectionToFile_coroutine());
 
 			// Set new example.
 			main.new_example();
@@ -887,7 +899,7 @@ public class CompTask : Task{
 		
 	}
 			
-	public bool set_new_example(){
+	public override bool set_new_example(){
 		TaskExamples.deselect_figure();
 		TaskExamples.deselect_ground();
 		
@@ -933,8 +945,8 @@ public class CompTask : Task{
 		}
 	}
 	
-	public void submit(){
-		StartCoroutine(sendselectionToFile_coroutine());
+	public override void submit(){
+		main.StartCoroutine(main.sendselectionToFile_coroutine());
 
 		/// Set new example.
 		main.new_example();
@@ -943,6 +955,9 @@ public class CompTask : Task{
 }
 
 public class ScreenTask : Task{
+	// Preposition list for comp task.
+	List<string> preposition_list = new List<string> {"on","on top of", "in", "inside","against","over","below","above","under"};
+	
 	public List<GameObject[]> configuration_list = new List<GameObject[]>();
 	public List<List<object>> comparison_list = new List<List<object>>(); // list of ground/preposition pairs
 	public string screening_preposition;
@@ -980,7 +995,7 @@ public class ScreenTask : Task{
 			// Add configurations to list by taking children of ground
 			foreach(Transform emp in ground.transform){
 				string p = emp.gameObject.tag;
-				if (comp_preposition_list.Contains(p)){
+				if (preposition_list.Contains(p)){
 					screening_preposition = p;
 					
 				}
@@ -991,7 +1006,7 @@ public class ScreenTask : Task{
 		
 	}
 			
-	public bool set_new_example(){
+	public override bool set_new_example(){
 		TaskExamples.deselect_figure();
 		TaskExamples.deselect_ground();
 		
@@ -1037,8 +1052,8 @@ public class ScreenTask : Task{
 		}
 	}
 
-	public void submit(){
-		string f = PlayerPrefs.GetString(selectedFig_playerpref,"");
+	public override void submit(){
+		string f = PlayerPrefs.GetString(Main.selectedFig_playerpref,"");
 		GameObject fig = active_configuration[0];
 		
 		// Check selection is correct.
@@ -1451,7 +1466,7 @@ public class Main : MonoBehaviour {
     /// <summary>
     /// Writes annotation info to file.
     /// </summary>
-	IEnumerator sendselectionToFile_coroutine(){
+	public IEnumerator sendselectionToFile_coroutine(){
         string authorization = authenticate(auth_username, auth_password);
 	    string url = appendannotation_url;
         yield return null;
@@ -1645,7 +1660,7 @@ public class Main : MonoBehaviour {
 	/// Sets object as figure for associated raycast object.
 	/// </summary>
 	void click_figure(RaycastHit fig){
-		task_scene.set_figure(fig.transform.gameObject);
+		TaskExamples.set_figure(fig.transform.gameObject);
 		
 	}
 
@@ -1714,7 +1729,7 @@ public class Main : MonoBehaviour {
 		if(task_scene != null){
 
 			if(task == comp_task){
-				task_scene.deselect_figure();
+				TaskExamples.deselect_figure();
 			
 			}	
 			
@@ -1758,8 +1773,8 @@ public class Main : MonoBehaviour {
 	/// </summary>
 	public void clear_any_object_selections(){
 		if(task_scene != null){
-			task_scene.deselect_figure();
-			task_scene.deselect_ground();
+			TaskExamples.deselect_figure();
+			TaskExamples.deselect_ground();
 		}
 		clear_object_player_prefs();
 
@@ -1787,7 +1802,7 @@ public class Main : MonoBehaviour {
 	    Ray ray = task_scene.main_camera.ScreenPointToRay(Input.mousePosition);
 	    RaycastHit hit;
 		// Deselect old figure object.
-		task_scene.deselect_figure();
+		TaskExamples.deselect_figure();
 		hide_confirm_click();
 		
 
@@ -1797,11 +1812,11 @@ public class Main : MonoBehaviour {
 		    // The object identified by hit.transform was clicked.
 		  	GameObject g;
 		  	// Get current ground object from task_scene.
-		  	if (task.name == screen_task){
-			  	g = task_scene.active_configuration[1];
+		  	if (task == screen_task){
+			  	g = task.active_configuration[1];
 			}
 			else{
-				g = task_scene.active_comparison[0] as GameObject;
+				g = task.active_comparison[0] as GameObject;
 			}
 			  
 			// If hit.transform is a selectable object, set figure and show confirm click.
