@@ -38,29 +38,16 @@ public class Config
 }   
 
 /// <summary>
-/// TaskScene class acts like the usual Scene object except 
-/// more information is stored regarding object configurations and examples to test.
+/// TaskExamples class contains useful methods for object selection and loading scenes.
 /// </summary>
-public class TaskScene {
+public class TaskExamples {
 
 	public string name; //Scene Name
-	public string task_type; 
 	Main main; // Main instance.
-	public List<GameObject> ground_list = new List<GameObject>();
-	public List<GameObject> figure_list = new List<GameObject>();
 	// Camera needed for raycasting
 	GameObject[] cam_list;
 	public Camera main_camera;
-	public List<GameObject[]> configuration_list = new List<GameObject[]>();
-	public List<List<object>> comparison_list = new List<List<object>>(); // list of ground/preposition pairs
-	public string screening_preposition;
-	public GameObject[] active_configuration; // Figure Ground pair
-	public List<object> active_comparison; // Ground preposition pair
-	// Preposition list for comp task.
-	List<string> comp_preposition_list = new List<string> {"on","on top of", "in", "inside","against","over","below","above","under"};
-	// Preposition list for typ task.
-	List<string> typ_preposition_list = new List<string> {"on","on top of", "in", "inside","against","over","below","above","under"};
-
+	
 	static Material fig_mat = Resources.Load("figure_material", typeof(Material)) as Material;
 	static Material grd_mat = Resources.Load("ground_material", typeof(Material)) as Material;
 
@@ -68,20 +55,6 @@ public class TaskScene {
 	static Material[] stored_fig_mats;
 	static Material[] stored_grd_mats;
 
-	// Dictionary of images for each preposition to use in typ_task.
-	Dictionary<string,List<Texture2D>> typicality_images =  new Dictionary<string,List<Texture2D>>();
-	// Pairs of images to display.
-	Dictionary<string,List<List<Texture2D>>> typicality_image_pairs = new Dictionary<string,List<List<Texture2D>>>();
-
-	// Strings for storing values in PlayerPrefs
-	static string selectedFig_playerpref = Main.selectedFig_playerpref;
-	static string selectedgrd_playerpref = Main.selectedgrd_playerpref;
-	static string prep_playerpref = Main.prep_playerpref;
-
-	// Tag names.
-	static string ground_tag = Main.ground_tag;
-	static string figure_tag = Main.figure_tag;
-	static string fig_grd_tag =  Main.fig_grd_tag;
 	// Random instance for generating random integers.
 	static System.Random rnd = new System.Random();
 
@@ -91,9 +64,8 @@ public class TaskScene {
     /// </summary>
     /// <param name="n">Scene name.</param>
     /// <param name="type">task abbreviation.</param>
-	public TaskScene(string n, string type){
+	public TaskExamples(string n){
 		name = n;
-		task_type = type;
 		// Get main game script
 		GameObject main_empty;
 	
@@ -108,13 +80,11 @@ public class TaskScene {
     /// Stores figure name in playerprefs and highlights figure.
     /// </summary>
     /// <param name="fig">Figure to set.</param>
-	public void set_figure(GameObject fig){ 
+	static public void set_figure(GameObject fig){ 
 		
-		PlayerPrefs.SetString(selectedFig_playerpref, fig.name);
+		PlayerPrefs.SetString(Main.selectedFig_playerpref, fig.name);
 
 		highlight_figure(fig);
-		// Debug.Log("new figure:");
-		// Debug.Log(fig.name);
 		
 		
 	}
@@ -125,12 +95,10 @@ public class TaskScene {
     /// Stores ground name in playerprefs and highlights ground.
     /// </summary>
     /// <param name="gr">Ground to set.</param>
-	public void set_ground(GameObject gr){
+	static public void set_ground(GameObject gr){
 		
-		PlayerPrefs.SetString(selectedgrd_playerpref, gr.name);
+		PlayerPrefs.SetString(Main.selectedgrd_playerpref, gr.name);
 		highlight_ground(gr);
-		// Debug.Log("new ground:");
-		// Debug.Log(gr.name);
 		
 		
 		
@@ -140,9 +108,9 @@ public class TaskScene {
     /// Stores preposition in playerprefs.
     /// </summary>
     /// <param name="preposition">preposition to set.</param>
-	public void set_preposition(string preposition){
+	static public void set_preposition(string preposition){
 		
-		PlayerPrefs.SetString(prep_playerpref, preposition);
+		PlayerPrefs.SetString(Main.prep_playerpref, preposition);
 
 	}
 
@@ -150,10 +118,10 @@ public class TaskScene {
 	/// <summary>
     /// Unhighlights figure and updates player prefs.
     /// </summary>
-	public void deselect_figure(){
+	static public void deselect_figure(){
 		
 		// Get old figure
-		string old_figure_name = PlayerPrefs.GetString(selectedFig_playerpref,"");
+		string old_figure_name = PlayerPrefs.GetString(Main.selectedFig_playerpref,"");
 		// Debug.Log(old_figure_name);
 		// Note find objects can be heavy process (see docs if needs calling every frame)
 		GameObject old_figure = GameObject.Find(old_figure_name);
@@ -164,7 +132,7 @@ public class TaskScene {
 			
 		}
 		
-		PlayerPrefs.SetString(selectedFig_playerpref, "");
+		PlayerPrefs.SetString(Main.selectedFig_playerpref, "");
 		
 	}
 
@@ -175,7 +143,7 @@ public class TaskScene {
 	public void deselect_ground(){
 		
 		// Debug.Log("Deselect ground is called");
-		string old_grd_name = PlayerPrefs.GetString(selectedgrd_playerpref,"");
+		string old_grd_name = PlayerPrefs.GetString(Main.selectedgrd_playerpref,"");
 		// Debug.Log("old_grd_name is " + old_grd_name);
 		// Note find objects can be heavy process (see docs if needs calling every frame)
 		GameObject old_grd = GameObject.Find(old_grd_name);
@@ -187,7 +155,7 @@ public class TaskScene {
 
 		}
 		// Remove fig form player prefs
-		PlayerPrefs.SetString(selectedgrd_playerpref, "");
+		PlayerPrefs.SetString(Main.selectedgrd_playerpref, "");
 		
 		// g_label.text = "Ground:";
 	}
@@ -237,7 +205,7 @@ public class TaskScene {
     /// Removes highlighting from ground.
     /// </summary>
     /// <param name="grd">Ground to unhighlight.</param>
-	public void unhighlight_ground(GameObject grd){
+	static public void unhighlight_ground(GameObject grd){
 		grd.GetComponent<Renderer>().materials = stored_grd_mats;
 	}
 
@@ -245,32 +213,12 @@ public class TaskScene {
     /// Removes highlighting from figure.
     /// </summary>
     /// <param name="fig">Figure to unhighlight.</param>
-	public void unhighlight_figure(GameObject fig){
+	static public void unhighlight_figure(GameObject fig){
 		fig.GetComponent<Renderer>().materials = stored_fig_mats;
 	}
 	
 
-	/// <summary>
-    /// Populates ground and figure lists to generate configurations to test.
-    /// </summary>
-	public void populate_fig_ground_list(){
-		GameObject[] g_list = GameObject.FindGameObjectsWithTag(ground_tag);
-		GameObject[] f_list = GameObject.FindGameObjectsWithTag(figure_tag);
-		GameObject[] fg_list = GameObject.FindGameObjectsWithTag(fig_grd_tag);
-
-		foreach(GameObject gobj in g_list){
-			ground_list.Add(gobj);
-		}
-
-		foreach(GameObject gobj in f_list){
-			figure_list.Add(gobj);
-		}
-
-		foreach(GameObject gobj in fg_list){
-			figure_list.Add(gobj);
-			ground_list.Add(gobj);
-		}
-	}
+	
 	public void set_main_camera(){
 		// Set camera
 		cam_list = GameObject.FindGameObjectsWithTag(Main.main_camera_tag);
@@ -282,101 +230,6 @@ public class TaskScene {
 		}
 	}
 
-	public void populate_config_list(){
-		if (task_type == Main.sv_abv || task_type == Main.sv_mod_abv || task_type == "pq" || task_type == Main.screen_abv){
-			
-			foreach (GameObject ground in ground_list){
-				foreach(GameObject fig in figure_list){
-					if(fig.name != ground.name){
-						GameObject[] config = {fig,ground};
-						configuration_list.Add(config);
-					}
-				}
-
-				if(task_type == Main.screen_abv){
-					// Add configurations to list by taking children of ground
-					foreach(Transform emp in ground.transform){
-						string p = emp.gameObject.tag;
-						if (comp_preposition_list.Contains(p)){
-							screening_preposition = p;
-							
-						}
-					}
-				}
-				
-			}
-			
-		}
-		if(task_type == Main.typ_abv){
-			// Get images for each preposition.
-			foreach(string prep in typ_preposition_list){
-				typicality_images[prep] = new List<Texture2D>();
-				try{
-					
-					typicality_images[prep] = Resources.LoadAll<Texture2D>("Typ_task_folder/"+prep).ToList();
-					
-				}
-				catch(Exception e){
-					Debug.Log(e);
-					Debug.Log("No folder for '" + prep + "' images.");
-				}
-				
-			}
-			// Images are shared for some prepositions.
-			typicality_images["inside"] = typicality_images["in"];
-			typicality_images["above"] = typicality_images["over"];
-			typicality_images["below"] = typicality_images["under"];
-			typicality_images["on top of"] = typicality_images["on"];
-			
-			// Now shuffle the lists.
-			foreach(string prep in typ_preposition_list){
-				typicality_images[prep] = typicality_images[prep].OrderBy(a => rnd.Next()).ToList();
-				typicality_image_pairs[prep] = new List<List<Texture2D>>() {};
-			}
-			
-			
-			// Now go through lists and create pairs for task.
-			foreach(string prep in typ_preposition_list){
-				foreach(Texture2D img1 in typicality_images[prep]){
-					Config c1 = get_config_from_img(img1);
-					Debug.Log(c1.scene);
-					Debug.Log(c1.figure);
-					Debug.Log(c1.ground);
-					foreach(Texture2D img2 in typicality_images[prep]){
-						Config c2 = get_config_from_img(img2);
-						if(c1.scene != c2.scene){
-							if(!typicality_image_pairs[prep].Any(img_pair => is_there_a_pair_match(c1, c2,img_pair))){
-								List<Texture2D> new_pair = new List<Texture2D>() {img1,img2};
-								typicality_image_pairs[prep].Add(new_pair);
-							}
-						}
-						
-						
-					}
-				}
-			}
-			
-		}
-		
-		
-	}
-
-	/// <summary>
-    /// Checks if two configs match an image pair by scenes.
-    /// </summary>
-	bool is_there_a_pair_match(Config c1, Config c2,List<Texture2D> img_pair){
-		Config ic1 = get_config_from_img(img_pair[0]);
-		Config ic2 = get_config_from_img(img_pair[1]);
-		if(c1.scene == ic1.scene && c2.scene == ic2.scene){
-			return true;
-		}
-		if(c2.scene == ic1.scene && c1.scene == ic2.scene){
-			return true;
-		}
-
-		return false;
-	}
-
 	/// <summary>
     /// Once scene has been loaded, populates various list/configurations and set main camera.
     /// </summary>
@@ -384,36 +237,10 @@ public class TaskScene {
 		Debug.Log("Instantiating task scene");
 		// Set camera
 		set_main_camera();
-		populate_fig_ground_list();
 		// Add in configurations
-		populate_config_list();
+		main.task.populate_config_list();
 
-		if (task_type == Main.comp_abv){
-			
-			
-			
-			foreach (GameObject ground in ground_list){
-				add_new_comp_config(ground);
-				add_new_comp_config(ground);
-				add_new_comp_config(ground);
-				add_new_comp_config(ground);
-				add_new_comp_config(ground);
-			}
-			//// Next part can be uncommented if want to use later
-
-			// 	foreach (Transform emp in ground.transform){
-			// 		string p = emp.gameObject.tag;
-			// 		if (comp_preposition_list.Contains(p)){
-						
-			// 			List<object> config = new List<object>();
-			// 			config.Add(ground);
-			// 			config.Add(p);
-						
-			// 			comparison_list.Add(config);
-			// 			}
-			// 		}
-			// 	}
-		}
+		
 	}
 	/// <summary>
     /// Loads scene and finds configurations to test.
@@ -437,22 +264,273 @@ public class TaskScene {
 		
 	}
 	
-    /// <summary>
-    /// Adds preposition-ground pair to comparison list.
-    /// Preposition is randomly selected and removed from list.
-    /// </summary>	
-	void add_new_comp_config(GameObject ground){
-		int r = rnd.Next(comp_preposition_list.Count);
-		string p = comp_preposition_list[r];
 
-		comp_preposition_list.Remove(p);
 
-		List<object> config = new List<object>();
+	
 
-		config.Add(ground);
-		config.Add(p);
+
+
+	
+}
+
+	
+/// <summary>
+/// The main Task class.
+/// Contains information on what is displayed for the task.
+/// </summary>
+public class Task {
+	// Be careful editing below list. It is edited by a script (finalise_scenes.cs) 
+	// (button in the editor)
+    public static string[] input_list_of_scenes = {"finish","instruction","main","player_menu","scene_template","screen0","screen1","screening_fail","sv_modtypa1","sv_modtypa2","sv_modtypi1","sv_modtypi2","sv_modtypi3","sv_modtypi4","sv_modtypo1","sv_modtypo2","sv_modtypo3","sv_modtypo4","sv_modtypov1","sv_modtypov2","sv_modtypov3","sv_modtypu1","sv_modtypu2","sv_modtypu3","sv_modtypu4","test"};
+	//
+
+    //task name abbreviations with shared scenes
+    List<string> scene_abbreviations =  new List<string>(); 
+    public string name;
+
+	
+	Main main;
+	public string instruction; //Instruction to give in each scene
+
+	string new_instruction;  //Instruction to give in each scene
+	
+
+	public string[] instruction_list; // List of instructions to give before starting
+	public string instruction_title; //Title for instruction scene
+	
+	public GameObject panel;
+	public Text selected_figure_text;
+	public Text instruction_text_component;
+	List<GameObject> task_panels=  new List<GameObject>();
+
+
+	public List<GameObject> active_objects =  new List<GameObject>(); // list of all objects in panel hieracrchy
+	public List<Toggle> list_of_toggles = new List<Toggle> (); // Toggles for selecting prepositions
+	public List<Toggle> preposition_toggles = new List<Toggle> ();
+	
+	public List<string> list_of_scenes = new List<string> (); // List of all scenes doesn't get chanegd
+	public List<string> list_of_scenes_to_do = new List<string> (); // List of scenes where done scenes are removed 
+	public int number_scenes_to_do=10;
+
+	static string task_player_pref = Main.task_player_pref;
+
+	bool allow_camera_movement = true;
+
+	// Variables from scene
+	public List<GameObject> ground_list = new List<GameObject>();
+	public List<GameObject> figure_list = new List<GameObject>();
+
+	/// <summary>
+	/// Gets scene lists for task.
+	/// Any scene name which contains any of the scene_abbreviations for the task is added.
+	/// </summary>
+	public void get_scenes(){
+		scene_abbreviations.Add(name);
+		// Adds scenes to task
+		for (int n = 0; n < input_list_of_scenes.Length; ++n){
+			string s;
+			s = input_list_of_scenes[n];
+
+			foreach(string abv in scene_abbreviations){
+				if (s.Contains(abv) && !s.Contains("fail")){
+					list_of_scenes.Add(s);
+					list_of_scenes_to_do.Add(s);
+					break;
+				}
+			}
+			
+		}
 		
-		comparison_list.Add(config);
+	}
+
+	/// <summary>
+	/// Add all descendants to active_objects.
+	/// </summary>
+	void add_all_descendants(GameObject go){
+		foreach (Transform obj in go.transform){
+			
+			active_objects.Add(obj.gameObject);
+			add_all_descendants(obj.gameObject);
+		}
+	}
+
+	/// <summary>
+	/// Instantiate Task.
+	/// Sets panels and toggles for task.
+	/// </summary>
+	/// <param name="n">Task name.</param>
+	/// <param name="m">Main game manager instance.</param>
+	public Task(string n,Main m,GameObject main_panel){
+
+		name = n;
+		main = m;
+		panel = main_panel;
+		
+		get_scenes();
+		
+		selected_figure_text = main.selected_fig_text;
+
+		// Populate task_panels list.		
+		task_panels.Add(main.sv_main_panel);
+		task_panels.Add(main.comp_main_panel);
+		task_panels.Add(main.typ_main_panel);
+		
+		// Populate list of active objects by what's in panel hierarchy
+		add_all_descendants(panel);
+
+		// Assign various objects
+		foreach (GameObject g in active_objects){
+
+			//Add to toggle list
+			
+			Toggle t = g.GetComponent(typeof(Toggle)) as Toggle;
+			if (t != null){
+				
+				list_of_toggles.Add(t);
+
+				if(!t.gameObject.name.Contains("none")){
+					preposition_toggles.Add(t);
+				}
+			}
+		}
+		
+	}
+
+
+		
+
+	/// <summary>
+	/// Turn off non-preposition toggles.
+	/// </summary>
+	public void turn_off_toggles(){
+		foreach (Toggle t in list_of_toggles){
+				t.isOn =false;
+			}
+	}
+
+	/// <summary>
+	/// Turn off preposition toggles.
+	/// </summary>
+	public void turn_off_preposition_toggles(){
+		foreach (Toggle t in preposition_toggles){
+			
+				t.isOn =false;
+			
+			}
+	}
+	
+	/// <summary>
+	/// Prepares for task.
+	/// Set necessary panels to be active.
+	/// Turn off toggles.
+	/// </summary>
+	public virtual void set_task(){
+		
+		// De/Activate Objects
+		foreach (GameObject g in task_panels){
+			g.SetActive(false);
+			
+		}
+
+		panel.SetActive(true);
+		foreach (GameObject g in active_objects){
+			g.SetActive(true);
+		}
+
+		// Hide info panel and stop camera movement for some tasks.
+		if(allow_camera_movement){
+			main.general_info_panel.SetActive(true);
+			
+
+		}
+		else{
+			main.general_info_panel.SetActive(false);
+			
+		}
+		
+		
+		// Turn off toggles
+		turn_off_toggles();
+		
+		// Set player prefs
+		PlayerPrefs.SetString(task_player_pref, name);
+
+		
+	}
+
+	public void set_text(){
+		string p = PlayerPrefs.GetString(Main.prep_playerpref,"");
+		string f = PlayerPrefs.GetString(Main.selectedFig_playerpref,"");
+		string g = PlayerPrefs.GetString(Main.selectedgrd_playerpref,"");
+		
+		new_instruction = instruction.Replace(":preposition:","<b>" + p + "</b>");
+		new_instruction = new_instruction.Replace(":figure:","<color=green><b>" + Main.clean_name(f) + "</b></color>");
+		new_instruction = new_instruction.Replace(":ground:","<color=red><b>" + Main.clean_name(g) + "</b></color>");
+		string[] vowels = new  string[] {"a", "e", "i", "o", "u", "h"};
+		
+		if (f != ""){
+			Debug.Log("setting fig text");
+			string l = Main.clean_name(f)[0].ToString();
+			if (vowels.Contains(l)){//Any(s => s.Equals(Main.clean_name(f)[0]))){
+				
+				new_instruction = new_instruction.Replace(":a:","an");
+			}
+
+			else {
+				new_instruction = new_instruction.Replace(":a:","a");
+			}
+		}
+		instruction_text_component.text = new_instruction;
+		selected_figure_text.text = "Selected Object: ";
+
+	}
+
+	/// <summary>
+    /// Populates ground and figure lists to generate configurations to test.
+    /// </summary>
+	public void populate_fig_ground_list(){
+		GameObject[] g_list = GameObject.FindGameObjectsWithTag(Main.ground_tag);
+		GameObject[] f_list = GameObject.FindGameObjectsWithTag(Main.figure_tag);
+		GameObject[] fg_list = GameObject.FindGameObjectsWithTag(Main.fig_grd_tag);
+
+		foreach(GameObject gobj in g_list){
+			ground_list.Add(gobj);
+		}
+
+		foreach(GameObject gobj in f_list){
+			figure_list.Add(gobj);
+		}
+
+		foreach(GameObject gobj in fg_list){
+			figure_list.Add(gobj);
+			ground_list.Add(gobj);
+		}
+	}
+	
+}
+	
+
+public class TypTask : Task {
+	// Preposition list for typ task.
+	List<string> preposition_list = new List<string> {"on","on top of", "in", "inside","against","over","below","above","under"};
+
+	// Dictionary of images for each preposition to use in typ_task.
+	Dictionary<string,List<Texture2D>> typicality_images =  new Dictionary<string,List<Texture2D>>();
+	// Pairs of images to display.
+	Dictionary<string,List<List<Texture2D>>> typicality_image_pairs = new Dictionary<string,List<List<Texture2D>>>();
+
+
+	public TypTask(Main m) : base(m.typ_abv, m, m.typ_main_panel){
+		allow_camera_movement = false;
+
+		instruction_text_component = main.typ_instruction_text;
+		instruction_list = {"In this task you will be shown two configurations of objects and asked to select which configuration <b>best fits</b> a given description.",
+		"A simple description will be given of a green object and its relationship to a red object, e.g. 'the <color=green><b>green object</b></color> <b>on</b> the <color=red><b>red object</b></color>'. You need to <b>click</b> the image <b>which best fits the description</b>.\n\n If you feel that <b>no image fits</b> the given description, click 'Select None'."};
+		instruction_title = "Instructions";
+		instruction = "Select the pair of objects which best fits the description:\n'a <color=green><b>green object</b></color> :preposition: the <color=red><b>red object</b></color>'";
+		
+
+	
 	}
 
 	/// <summary>
@@ -498,47 +576,73 @@ public class TaskScene {
 		return out_string;
 	}
 
-	bool show_new_config_pictures(){
-		// Set preposition.
-		int r = rnd.Next(typ_preposition_list.Count);
-		string p = typ_preposition_list[r];
-		// If there are no images to test get another preposition.
-		while(typicality_image_pairs[p].Count == 0){
-			
-			typ_preposition_list.Remove(p);
-			// If there are no more prepositions return false.
-			if(typ_preposition_list.Count == 0){
-				return false;
-			}
-			else{
+	/// <summary>
+    /// Checks if two configs match an image pair by scenes.
+    /// </summary>
+	bool is_there_a_pair_match(Config c1, Config c2,List<Texture2D> img_pair){
+		Config ic1 = get_config_from_img(img_pair[0]);
+		Config ic2 = get_config_from_img(img_pair[1]);
+		if(c1.scene == ic1.scene && c2.scene == ic2.scene){
+			return true;
+		}
+		if(c2.scene == ic1.scene && c1.scene == ic2.scene){
+			return true;
+		}
+
+		return false;
+	}
+
+	public void populate_config_list(){
+		// Get images for each preposition.
+		foreach(string prep in preposition_list){
+			typicality_images[prep] = new List<Texture2D>();
+			try{
 				
-				r = rnd.Next(typ_preposition_list.Count);
-				p = typ_preposition_list[r];
+				typicality_images[prep] = Resources.LoadAll<Texture2D>("Typ_task_folder/"+prep).ToList();
+				
+			}
+			catch(Exception e){
+				Debug.Log(e);
+				Debug.Log("No folder for '" + prep + "' images.");
 			}
 			
 		}
-		// Set preposition.
-		set_preposition(p);
-
-		// Pick an image pair for the preposition.
-		int i = rnd.Next(typicality_image_pairs[p].Count);
-		List<Texture2D> img_pair = typicality_image_pairs[p][i];
+		// Images are shared for some prepositions.
+		typicality_images["inside"] = typicality_images["in"];
+		typicality_images["above"] = typicality_images["over"];
+		typicality_images["below"] = typicality_images["under"];
+		typicality_images["on top of"] = typicality_images["on"];
 		
-		Texture2D img1 = img_pair[0];
-		Texture2D img2 = img_pair[1];
-
-		// Set the player prefs and left object texture.
-		PlayerPrefs.SetString(Main.config1_player_pref, img1.name);
-		main.typ_left_image.GetComponent<RawImage>().texture = img1;
-		// Set the player prefs and right object texture.
-		PlayerPrefs.SetString(Main.config2_player_pref, img2.name);
-		main.typ_right_image.GetComponent<RawImage>().texture = img2;
-
-		// Remove pair from testing.
-		typicality_image_pairs[p].Remove(img_pair);
+		// Now shuffle the lists.
+		foreach(string prep in preposition_list){
+			typicality_images[prep] = typicality_images[prep].OrderBy(a => rnd.Next()).ToList();
+			typicality_image_pairs[prep] = new List<List<Texture2D>>() {};
+		}
 		
-		return true;
+		
+		// Now go through lists and create pairs for task.
+		foreach(string prep in preposition_list){
+			foreach(Texture2D img1 in typicality_images[prep]){
+				Config c1 = get_config_from_img(img1);
+				Debug.Log(c1.scene);
+				Debug.Log(c1.figure);
+				Debug.Log(c1.ground);
+				foreach(Texture2D img2 in typicality_images[prep]){
+					Config c2 = get_config_from_img(img2);
+					if(c1.scene != c2.scene){
+						if(!typicality_image_pairs[prep].Any(img_pair => is_there_a_pair_match(c1, c2,img_pair))){
+							List<Texture2D> new_pair = new List<Texture2D>() {img1,img2};
+							typicality_image_pairs[prep].Add(new_pair);
+						}
+					}
+					
+					
+				}
+			}
+		}
 	}
+
+
 	/// <summary>
     /// Sets new configuration to test.
     /// </summary>
@@ -546,422 +650,371 @@ public class TaskScene {
 	/// true if a new configuration can be set in the scene, otherwise False.
 	/// </returns>
 	public bool set_new_example(){
-		if (task_type == Main.sv_abv || task_type == Main.sv_mod_abv || task_type == "pq" || task_type == Main.screen_abv){
-
-
-			// Unselect figure and ground
-			deselect_figure();
-			deselect_ground();
-
-			if (configuration_list.Contains(active_configuration)){
-				// If there is an active configuration pick next configuration in list
-				int i = configuration_list.IndexOf(active_configuration);
+		if(Main.number_typ_configs_done<Main.number_typ_configs_to_do){
+			Debug.Log("Showing new pics");
+			Main.number_typ_configs_done +=1;
+			
+			// Set preposition.
+			int r = rnd.Next(preposition_list.Count);
+			string p = preposition_list[r];
+			// If there are no images to test get another preposition.
+			while(typicality_image_pairs[p].Count == 0){
 				
-				// If there is a next one to pick do that and return true, else return false
-				if (i+1 < configuration_list.Count){
-
-					active_configuration = configuration_list[i+1];
-					GameObject f = active_configuration[0];
-				
-					GameObject g = active_configuration[1];
-					if(task_type != Main.screen_abv){
-						set_figure(f);
-					}
-					
-					set_ground(g);
-					Debug.Log("New example:");
-					Debug.Log("New Figure:" + f.name);
-					Debug.Log("New Ground:" + g.name);
-					if (task_type == Main.screen_abv){
-						Debug.Log("setting preposition: " + screening_preposition);
-						set_preposition(screening_preposition);
-					}
-					return true;
-				}
-				
-				else {
-					Debug.Log("No more configurations, will load next scene");
-					//Load next scene
+				preposition_list.Remove(p);
+				// If there are no more prepositions return false.
+				if(preposition_list.Count == 0){
 					return false;
+				}
+				else{
+					
+					r = rnd.Next(preposition_list.Count);
+					p = preposition_list[r];
 				}
 				
 			}
-			else if(configuration_list.Count >0) {
-				// If there is no active configuration start with the first one in list
-				active_configuration = configuration_list[0];
+			// Set preposition.
+			set_preposition(p);
+
+			// Pick an image pair for the preposition.
+			int i = rnd.Next(typicality_image_pairs[p].Count);
+			List<Texture2D> img_pair = typicality_image_pairs[p][i];
+			
+			Texture2D img1 = img_pair[0];
+			Texture2D img2 = img_pair[1];
+
+			// Set the player prefs and left object texture.
+			PlayerPrefs.SetString(Main.config1_player_pref, img1.name);
+			main.typ_left_image.GetComponent<RawImage>().texture = img1;
+			// Set the player prefs and right object texture.
+			PlayerPrefs.SetString(Main.config2_player_pref, img2.name);
+			main.typ_right_image.GetComponent<RawImage>().texture = img2;
+
+			// Remove pair from testing.
+			typicality_image_pairs[p].Remove(img_pair);
+			
+			return true;
+
+				
+		}
+		else{
+			return false;
+		}
+}
+
+public class SVTask : Task{
+	public List<GameObject[]> configuration_list = new List<GameObject[]>();
+	public GameObject[] active_configuration; // Figure Ground pair
+
+	
+
+	public SVTask(string task_abv,Main m) : base(task_abv, m, m.sv_main_panel){
+		allow_camera_movement = true;
+
+		instruction_text_component = main.sv_instruction_text;
+		number_scenes_to_do = 10;
+		instruction_title = "Instructions";
+		instruction_list = {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
+		"A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.",
+		"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",
+		"Remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
+		
+		instruction = "Select <b>all</b> words which could fill in the blank:\n \n   ':a: :figure: (____) the :ground:'";
+
+		
+	}
+
+	public void populate_config_list(){
+		populate_fig_ground_list();
+			
+		foreach (GameObject ground in ground_list){
+			foreach(GameObject fig in figure_list){
+				if(fig.name != ground.name){
+					GameObject[] config = {fig,ground};
+					configuration_list.Add(config);
+				}
+			}
+			
+		}
+	}
+			
+	public bool set_new_example(){
+		// Unselect figure and ground
+		TaskExamples.deselect_figure();
+		TaskExamples.deselect_ground();
+
+		if (configuration_list.Contains(active_configuration)){
+			// If there is an active configuration pick next configuration in list
+			int i = configuration_list.IndexOf(active_configuration);
+			
+			// If there is a next one to pick do that and return true, else return false
+			if (i+1 < configuration_list.Count){
+
+				active_configuration = configuration_list[i+1];
 				GameObject f = active_configuration[0];
 			
 				GameObject g = active_configuration[1];
-
-				if(task_type != Main.screen_abv){
-						set_figure(f);
-					}
-				set_ground(g);
-				if (task_type == Main.screen_abv){
-					Debug.Log("setting preposition: " + screening_preposition);
-					set_preposition(screening_preposition);
-				}
+				
+				TaskExamples.set_figure(f);
+				TaskExamples.set_ground(g);
+				
+				Debug.Log("New example:");
+				Debug.Log("New Figure:" + f.name);
+				Debug.Log("New Ground:" + g.name);
+				
 				return true;
-				
 			}
-
-			else{
-				Debug.Log("No configurations for this task in this scene, will load next scene");
-				//Load next scene
-				return false;
-			}
-		}
-
-
-		
-		else if (task_type == Main.comp_abv){
-			deselect_figure();
-			deselect_ground();
 			
-
-
-			if (comparison_list.Contains(active_comparison)){
-					// If there is an active configuration pick next configuration in list
-					int i = comparison_list.IndexOf(active_comparison);
-					if (i+1 < comparison_list.Count){
-						
-						// int x = Random.Range(0,comparison_list.Count);
-						active_comparison = comparison_list[i+1];
-						GameObject g = active_comparison[0] as GameObject;
-						string p = active_comparison[1] as string;
-
-						set_ground(g);
-
-						set_preposition(p);
-						return true;	
-					}
-					else {
-					Debug.Log("No more configurations, will load next scene");
-					//Load next scene
-					return false;
-					}
-			}
-			else if(comparison_list.Count>0) {
-					// If there is no active configuration start with the first one in list
-					active_comparison = comparison_list[0];
-					GameObject g = active_comparison[0] as GameObject;
-					string p = active_comparison[1] as string;
-
-					set_ground(g);
-
-					set_preposition(p);
-					return true;
-					
-				}
-			else{
-				Debug.Log("No configurations for this task in this scene, will load next scene");
+			else {
+				Debug.Log("No more configurations, will load next scene");
 				//Load next scene
 				return false;
 			}
+			
 		}
+		else if(configuration_list.Count >0) {
+			// If there is no active configuration start with the first one in list
+			active_configuration = configuration_list[0];
+			GameObject f = active_configuration[0];
+		
+			GameObject g = active_configuration[1];
 
-		else if (task_type== Main.typ_abv){
-			if(Main.number_typ_configs_done<Main.number_typ_configs_to_do){
-				Debug.Log("Showing new pics");
-				Main.number_typ_configs_done +=1;
-				bool x = show_new_config_pictures();
-				return x;
-				
+			
+			TaskExamples.set_figure(f);
+			TaskExamples.set_ground(g);
 
-				// int left_to_do = 1 + Main.number_typ_configs_to_do - Main.number_typ_configs_done;
-				// string newtext = main.SceneCountertext.Replace(":int:",left_to_do.ToString());
-				// main.SceneCounter_Text.text = newtext;
-
-				
-			}
-			else{
-				return false;
-			}
+			return true;
+			
 		}
 
 		else{
-			Debug.Log("Error: Task type incorrectly set");
-			Debug.Log("task_type = " + task_type);
+			Debug.Log("No configurations for this task in this scene, will load next scene");
+			//Load next scene
 			return false;
 		}
 	}
+
+	
+
 }
 
+public class SVModTask : SVTask{
+	public SVModTask(Main m) : base(m.sv_mod_abv, m){
+		allow_camera_movement = false;
+
+		instruction_list = {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
+		"A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.",
+		"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",
+		};
+		
+		instruction = "Select <b>all</b> words which could fill in the blank:\n \n   'a <color=green><b>green object</b></color> (____) the <color=red><b>red object</b></color>'";
+
+		
+	}
+}
+
+
+
+public class CompTask : Task{
+	// Preposition list for comp task.
+	List<string> preposition_list = new List<string> {"on","on top of", "in", "inside","against","over","below","above","under"};
 	
-/// <summary>
-/// The main Task class.
-/// Contains information on what is displayed for the task.
-/// </summary>
-public class Task {
-	// Be careful editing below list. It is edited by a script (finalise_scenes.cs) 
-	// (button in the editor)
-    public static string[] input_list_of_scenes = {"finish","instruction","main","player_menu","scene_template","screen0","screen1","screening_fail","sv_modtypa1","sv_modtypa2","sv_modtypi1","sv_modtypi2","sv_modtypi3","sv_modtypi4","sv_modtypo1","sv_modtypo2","sv_modtypo3","sv_modtypo4","sv_modtypov1","sv_modtypov2","sv_modtypov3","sv_modtypu1","sv_modtypu2","sv_modtypu3","sv_modtypu4","test"};
-	//
-	public string name;
-	Main main;
-	public string instruction; //Instruction to give in each scene
-
-	string new_instruction;  //Instruction to give in each scene
-	//task name abbreviations with shared scenes
-	List<string> scene_abbreviations =  new List<string>(); 
-
-	public string[] instruction_list; // List of instructions to give before starting
-	public string instruction_title; //Title for instruction scene
+	public List<List<object>> comparison_list = new List<List<object>>(); // list of ground/preposition pairs
+	public List<object> active_comparison; // Ground preposition pair
 	
-	public GameObject panel;
-	public Text selected_figure_text;
-	public Text instruction_text_component;
-	List<GameObject> task_panels=  new List<GameObject>();
 
+	public CompTask(Main m) : base(m.comp_abv, m, m.comp_main_panel){
+		allow_camera_movement = true;
 
-	public List<GameObject> active_objects =  new List<GameObject>(); // list of all objects in panel hieracrchy
-	public List<Toggle> list_of_toggles = new List<Toggle> (); // Toggles for selecting prepositions
-	public List<Toggle> preposition_toggles = new List<Toggle> ();
-	
-	public List<string> list_of_scenes = new List<string> (); // List of all scenes doesn't get chanegd
-	public List<string> list_of_scenes_to_do = new List<string> (); // List of scenes where done scenes are removed 
-	public int number_scenes_to_do=10;
+		
+		
+		number_scenes_to_do = 10;
+		instruction_text_component = main.comp_instruction_text;
+		instruction_list = {"In this task you will be asked to select the object which <b>best fits</b> a given description.", "An object will be described by its relation to another object which will be <color=red><b>highlighted in red</b></color>, e.g. 'the object <b>on</b> the <color=red><b>table</b></color>'. You need to <b>click</b> on the object <b>which best fits the description</b>.\n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.", "The object you select will turn <color=green><b>green</b></color>. Once you have selected an object you must press 'Enter' or click 'Accept' to confirm your selection. \n\n You <b>cannot select</b> the room, floor, ceiling or walls; but remember that you <b>can select</b> the table. \n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.","All important objects in the scene will be immediately in view; but remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
+		instruction_title = "Instructions";
+		instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
+		
 
-	static string task_player_pref = Main.task_player_pref;
+		
+		
+	}
 
-	/// <summary>
-	/// Gets scene lists for task.
-	/// Any scene name which contains any of the scene_abbreviations for the task is added.
-	/// </summary>
-	public void get_scenes(){
-		// Adds scenes to task
-		for (int n = 0; n < input_list_of_scenes.Length; ++n){
-			string s;
-			s = input_list_of_scenes[n];
+    /// <summary>
+    /// Adds preposition-ground pair to comparison list.
+    /// Preposition is randomly selected and removed from list.
+    /// </summary>	
+	void add_new_comp_config(GameObject ground){
+		int r = rnd.Next(preposition_list.Count);
+		string p = preposition_list[r];
 
-			foreach(string abv in scene_abbreviations){
-				if (s.Contains(abv) && !s.Contains("fail")){
-					list_of_scenes.Add(s);
-					list_of_scenes_to_do.Add(s);
-					break;
-				}
-			}
-			
+		preposition_list.Remove(p);
+
+		List<object> config = new List<object>();
+
+		config.Add(ground);
+		config.Add(p);
+		
+		comparison_list.Add(config);
+	}
+
+	public void populate_config_list(){
+		populate_fig_ground_list();
+		foreach (GameObject ground in ground_list){
+			add_new_comp_config(ground);
+			add_new_comp_config(ground);
+			add_new_comp_config(ground);
+			add_new_comp_config(ground);
+			add_new_comp_config(ground);
 		}
 		
 	}
-	/// <summary>
-	/// Instantiate Task.
-	/// Sets panels and toggles for task.
-	/// </summary>
-	/// <param name="n">Task name.</param>
-	/// <param name="m">Main game manager instance.</param>
-	public Task(string n,Main m){
-
-		name = n;
-		main = m;
-
-		scene_abbreviations.Add(n);
-		get_scenes();
-		
-		selected_figure_text = main.selected_fig_text;
-
-		// Populate task_panels list.		
-		task_panels.Add(main.sv_main_panel);
-		task_panels.Add(main.comp_main_panel);
-		task_panels.Add(main.typ_main_panel);
-		
-		if(name==Main.sv_abv){
-			panel = main.sv_main_panel;
-			instruction_text_component = main.sv_instruction_text;
-			number_scenes_to_do = 10;
-			instruction_title = "Instructions";
-			string[] il = {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
-			"A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.",
-			"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",
-			"Remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
-			instruction_list = il;
 			
-			instruction = "Select <b>all</b> words which could fill in the blank:\n \n   ':a: :figure: (____) the :ground:'";
-
-		}
-
-		if(name == Main.sv_mod_abv){
-			panel = main.sv_main_panel;
-			instruction_text_component = main.sv_instruction_text;
-			number_scenes_to_do = 10;
-			instruction_title = "Instructions";
-			string[] il = {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
-			"A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.",
-			"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",
-			};
-			instruction_list = il;
-			
-			instruction = "Select <b>all</b> words which could fill in the blank:\n \n   'a <color=green><b>green object</b></color> (____) the <color=red><b>red object</b></color>'";
-
-		}
-		if(name==Main.comp_abv){
-			panel = main.comp_main_panel;
-			number_scenes_to_do = 10;
-			instruction_text_component = main.comp_instruction_text;
-			string[] il = {"In this task you will be asked to select the object which <b>best fits</b> a given description.", "An object will be described by its relation to another object which will be <color=red><b>highlighted in red</b></color>, e.g. 'the object <b>on</b> the <color=red><b>table</b></color>'. You need to <b>click</b> on the object <b>which best fits the description</b>.\n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.", "The object you select will turn <color=green><b>green</b></color>. Once you have selected an object you must press 'Enter' or click 'Accept' to confirm your selection. \n\n You <b>cannot select</b> the room, floor, ceiling or walls; but remember that you <b>can select</b> the table. \n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.","All important objects in the scene will be immediately in view; but remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
-			instruction_list = il;
-			instruction_title = "Instructions";
-			instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
+	public bool set_new_example(){
+		TaskExamples.deselect_figure();
+		TaskExamples.deselect_ground();
 		
 
-		}
-		if(name==Main.screen_abv){
-			panel = main.comp_main_panel;
-			instruction_text_component = main.comp_instruction_text;
-			string[] il = {"Before beginning you will be given <b>two quick examples</b> to complete\n \n \nClick Next..",	"You will be shown an indoor scene and a description of an object will be provided at the bottom of the screen. \n \n Click on the object that best fits the description.\n \n You will be prompted to press enter or click accept to confirm your selection. \n \nIf you are correct you will move on to the next stage.",
-			"To move around the scene: \n - Use the <b>arrow keys</b> to move around \n - <b>Hold down the '0' key</b> to use the mouse to look around \n - Use the <b>'1' and '2' keys</b> to move up and down if you need to \n - Press the <b>'Delete' key</b> for help"	};
-			instruction_list = il;
-			instruction_title = "Instructions";
-			instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
-			number_scenes_to_do = list_of_scenes.Count;
-			
 
-		}
-		
-		if(name==Main.typ_abv){
-			panel = main.typ_main_panel;
-			instruction_text_component = main.typ_instruction_text;
-			string[] il = {"In this task you will be shown two configurations of objects and asked to select which configuration <b>best fits</b> a given description.",
-			"A simple description will be given of a green object and its relationship to a red object, e.g. 'the <color=green><b>green object</b></color> <b>on</b> the <color=red><b>red object</b></color>'. You need to <b>click</b> the image <b>which best fits the description</b>.\n\n If you feel that <b>no image fits</b> the given description, click 'Select None'."};
-			instruction_list = il;
-			instruction_title = "Instructions";
-			instruction = "Select the pair of objects which best fits the description:\n'a <color=green><b>green object</b></color> :preposition: the <color=red><b>red object</b></color>'";
-			
-
-		}
-
-		// if(name == Main.sv_abv || name == Main.comp_abv || name == "pq"){
-		// 	//These tasks share scenes
-		// 	scene_abbreviations.Add(Main.sv_abv);
-		// 	scene_abbreviations.Add("pq");
-		// 	scene_abbreviations.Add(Main.comp_abv);
-
-		// }
-
-		// Populate list of active objects by what's in panel hierarchy
-		add_all_descendants(panel);
-
-		// Assign various objects
-		foreach (GameObject g in active_objects){
-
-			//Add to toggle list
-			
-			Toggle t = g.GetComponent(typeof(Toggle)) as Toggle;
-			if (t != null){
+		if (comparison_list.Contains(active_comparison)){
+			// If there is an active configuration pick next configuration in list
+			int i = comparison_list.IndexOf(active_comparison);
+			if (i+1 < comparison_list.Count){
 				
-				list_of_toggles.Add(t);
-
-				if(!t.gameObject.name.Contains("none")){
-					preposition_toggles.Add(t);
-				}
-			}
-		}
-	}
-
-	/// <summary>
-	/// Add all descendants to active_objects.
-	/// </summary>
-	void add_all_descendants(GameObject go){
-		foreach (Transform obj in go.transform){
-			
-			active_objects.Add(obj.gameObject);
-			add_all_descendants(obj.gameObject);
-		}
-	}
-		
-
-	/// <summary>
-	/// Turn off non-preposition toggles.
-	/// </summary>
-	public void turn_off_toggles(){
-		foreach (Toggle t in list_of_toggles){
-				t.isOn =false;
-			}
-	}
-
-	/// <summary>
-	/// Turn off preposition toggles.
-	/// </summary>
-	public void turn_off_preposition_toggles(){
-		foreach (Toggle t in preposition_toggles){
-			
-				t.isOn =false;
-			
-			}
-	}
-	
-	/// <summary>
-	/// Prepares for task.
-	/// Set necessary panels to be active.
-	/// Turn off toggles.
-	/// </summary>
-	public void set_task(){
-		
-		// De/Activate Objects
-		foreach (GameObject g in task_panels){
-			g.SetActive(false);
-			
-		}
-
-		panel.SetActive(true);
-		foreach (GameObject g in active_objects){
-			g.SetActive(true);
-		}
-
-		// Hide info panel and stop camera movement for some tasks.
-		if(name == Main.typ_abv || name == Main.sv_mod_abv){
-			main.general_info_panel.SetActive(false);
-			Main.allow_camera_movement = false;
-
-		}
-		else{
-			main.general_info_panel.SetActive(true);
-			
-		}
-
-		// Turn off toggles
-		turn_off_toggles();
-		
-		// Set player prefs
-		PlayerPrefs.SetString(task_player_pref, name);
-
-		
-	}
-
-	public void set_text(){
-		string p = PlayerPrefs.GetString(Main.prep_playerpref,"");
-		string f = PlayerPrefs.GetString(Main.selectedFig_playerpref,"");
-		string g = PlayerPrefs.GetString(Main.selectedgrd_playerpref,"");
-		
-		new_instruction = instruction.Replace(":preposition:","<b>" + p + "</b>");
-		new_instruction = new_instruction.Replace(":figure:","<color=green><b>" + Main.clean_name(f) + "</b></color>");
-		new_instruction = new_instruction.Replace(":ground:","<color=red><b>" + Main.clean_name(g) + "</b></color>");
-		string[] vowels = new  string[] {"a", "e", "i", "o", "u", "h"};
-		
-		if (f != ""){
-			Debug.Log("setting fig text");
-			string l = Main.clean_name(f)[0].ToString();
-			if (vowels.Contains(l)){//Any(s => s.Equals(Main.clean_name(f)[0]))){
 				
-				new_instruction = new_instruction.Replace(":a:","an");
-			}
+				active_comparison = comparison_list[i+1];
+				GameObject g = active_comparison[0] as GameObject;
+				string p = active_comparison[1] as string;
 
+				TaskExamples.set_ground(g);
+
+				TaskExamples.set_preposition(p);
+				return true;	
+			}
 			else {
-				new_instruction = new_instruction.Replace(":a:","a");
+				Debug.Log("No more configurations, will load next scene");
+				//Load next scene
+				return false;
 			}
 		}
-		instruction_text_component.text = new_instruction;
-		selected_figure_text.text = "Selected Object: ";
+		else if(comparison_list.Count>0) {
+				// If there is no active configuration start with the first one in list
+				active_comparison = comparison_list[0];
+				GameObject g = active_comparison[0] as GameObject;
+				string p = active_comparison[1] as string;
 
+				TaskExamples.set_ground(g);
+
+				TaskExamples.set_preposition(p);
+				return true;
+				
+			}
+		else{
+			Debug.Log("No configurations for this task in this scene, will load next scene");
+			//Load next scene
+			return false;
+		}
+	}
+	
+	
+
+}
+
+public class ScreenTask : Task{
+	public List<GameObject[]> configuration_list = new List<GameObject[]>();
+	public List<List<object>> comparison_list = new List<List<object>>(); // list of ground/preposition pairs
+	public string screening_preposition;
+	public GameObject[] active_configuration; // Figure Ground pair
+	public List<object> active_comparison; // Ground preposition pair
+	
+
+	public ScreenTask(Main m) : base(m.comp_abv, m, m.comp_main_panel){
+		allow_camera_movement = true;
+
+		
+		
+		instruction_text_component = main.comp_instruction_text;
+		instruction_list = {"Before beginning you will be given <b>two quick examples</b> to complete\n \n \nClick Next..",	"You will be shown an indoor scene and a description of an object will be provided at the bottom of the screen. \n \n Click on the object that best fits the description.\n \n You will be prompted to press enter or click accept to confirm your selection. \n \nIf you are correct you will move on to the next stage.",
+		"To move around the scene: \n - Use the <b>arrow keys</b> to move around \n - <b>Hold down the '0' key</b> to use the mouse to look around \n - Use the <b>'1' and '2' keys</b> to move up and down if you need to \n - Press the <b>'Delete' key</b> for help"	};
+		instruction_title = "Instructions";
+		instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
+		number_scenes_to_do = list_of_scenes.Count;
+
+		
+		
 	}
 
+	public void populate_config_list(){
+		populate_fig_ground_list();
+		foreach (GameObject ground in ground_list){
+			foreach(GameObject fig in figure_list){
+				if(fig.name != ground.name){
+					GameObject[] config = {fig,ground};
+					configuration_list.Add(config);
+				}
+			}
+
+			// Add configurations to list by taking children of ground
+			foreach(Transform emp in ground.transform){
+				string p = emp.gameObject.tag;
+				if (comp_preposition_list.Contains(p)){
+					screening_preposition = p;
+					
+				}
+			}
+			
+			
+		}
+		
+	}
+			
+	public bool set_new_example(){
+		TaskExamples.deselect_figure();
+		TaskExamples.deselect_ground();
+		
+
+
+		if (comparison_list.Contains(active_comparison)){
+			// If there is an active configuration pick next configuration in list
+			int i = comparison_list.IndexOf(active_comparison);
+			if (i+1 < comparison_list.Count){
+				
+				
+				active_comparison = comparison_list[i+1];
+				GameObject g = active_comparison[0] as GameObject;
+				string p = active_comparison[1] as string;
+
+				TaskExamples.set_ground(g);
+
+				TaskExamples.set_preposition(p);
+				return true;	
+			}
+			else {
+				Debug.Log("No more configurations, will load next scene");
+				//Load next scene
+				return false;
+			}
+		}
+		else if(comparison_list.Count>0) {
+				// If there is no active configuration start with the first one in list
+				active_comparison = comparison_list[0];
+				GameObject g = active_comparison[0] as GameObject;
+				string p = active_comparison[1] as string;
+
+				TaskExamples.set_ground(g);
+
+				TaskExamples.set_preposition(p);
+				return true;
+				
+			}
+		else{
+			Debug.Log("No configurations for this task in this scene, will load next scene");
+			//Load next scene
+			return false;
+		}
+	}
 
 	
+
 }
-	
-
-
 
 /// <summary>
 /// The main game monobehaviour class.
@@ -1036,7 +1089,7 @@ public class Main : MonoBehaviour {
 	
 	static public Task task;
 
-	TaskScene task_scene;
+	TaskExamples task_scene;
 
 	// Gameobjects to assign
 	public GameObject typ_main_panel;
@@ -1064,8 +1117,6 @@ public class Main : MonoBehaviour {
 	
 	static public int number_typ_configs_done = 0;
 	static public int number_typ_configs_to_do = 10;
-
-	public static bool allow_camera_movement = true;
 
 	// Objetcs to hide/show if in dev mode.
 	bool dev_mode = false;
@@ -1112,11 +1163,11 @@ public class Main : MonoBehaviour {
 		
 
 		// Instantiate tasks now lists have been created
-		sv_task = new Task(sv_abv,this);
-		sv_mod_task = new Task(sv_mod_abv,this);
-		comp_task = new Task(comp_abv,this);
-		screen_task = new Task(screen_abv,this);
-		typ_task = new Task(typ_abv,this);
+		sv_task = new SVTask(sv_abv,this);
+		sv_mod_task = new SVModTask(this);
+		comp_task = new CompTask(this);
+		screen_task = new ScreenTask(this);
+		typ_task = new TypTask(this);
 	
 		None_toggle = None_toggle_obj.GetComponent(typeof(Toggle)) as Toggle;
 
@@ -1188,7 +1239,7 @@ public class Main : MonoBehaviour {
 	/// <returns>
 	/// True, if scene is loaded, otherwise False.
 	/// </returns>
-	public bool is_scene_loaded(string sceneName){
+	static public bool is_scene_loaded(string sceneName){
 		int countLoaded = SceneManager.sceneCount;
         Scene[] loadedScenes = new Scene[countLoaded];
         string[] loadedSceneNames = new string[countLoaded];
@@ -1243,7 +1294,7 @@ public class Main : MonoBehaviour {
 		loadingImage.SetActive(true);
 		// takes a scene name and loads it for the task
 		
-		task_scene = new TaskScene(sceneName,task.name);
+		task_scene = new TaskExamples(sceneName);
 		
 		StartCoroutine(task_scene.set_scene_coroutine());
 
@@ -1288,7 +1339,7 @@ public class Main : MonoBehaviour {
 		else if(task == typ_task){
 			unload_current_scene();
 			// Only uses on scene camera:main.
-			task_scene = new TaskScene(main_scene_name,task.name);
+			task_scene = new TaskExamples(main_scene_name);
 			StartCoroutine(task_scene.set_scene_coroutine());
 			new_example();
 		}
@@ -1324,7 +1375,7 @@ public class Main : MonoBehaviour {
 	/// </summary>
 	public IEnumerator new_example_coroutine(){
 		yield return null;
-		bool x = task_scene.set_new_example();
+		bool x = task.set_new_example();
 		if (x){
 			task.turn_off_toggles();
 			task.set_text();

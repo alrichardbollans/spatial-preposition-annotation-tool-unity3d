@@ -199,7 +199,7 @@ public class camera_vision : MonoBehaviour
 
 	void Update ()
 	{	
-		if(Main.allow_camera_movement){
+		if(Main.task.allow_camera_movement){
 			// If cameraSensitivity not zero, allow movement with mouse.
 			if(cameraSensitivity !=0){
 				
