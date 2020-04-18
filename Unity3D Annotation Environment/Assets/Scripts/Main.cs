@@ -699,6 +699,13 @@ public class TypTask : Task {
 		else{
 			return false;
 		}
+	}
+	public void submit(){
+		StartCoroutine(sendselectionToFile_coroutine());
+
+		/// Set new example.
+		main.new_example();
+	}
 }
 
 public class SVTask : Task{
@@ -793,7 +800,18 @@ public class SVTask : Task{
 		}
 	}
 
-	
+	public void submit(){
+
+		if(list_of_toggles.All(x => x.isOn ==false)){
+
+		}
+		else{
+			StartCoroutine(sendselectionToFile_coroutine());
+
+			// Set new example.
+			main.new_example();
+		}
+	}
 
 }
 
@@ -914,7 +932,12 @@ public class CompTask : Task{
 		}
 	}
 	
-	
+	public void submit(){
+		StartCoroutine(sendselectionToFile_coroutine());
+
+		/// Set new example.
+		main.new_example();
+	}
 
 }
 
@@ -1012,6 +1035,22 @@ public class ScreenTask : Task{
 		}
 	}
 
+	public void submit(){
+		string f = PlayerPrefs.GetString(selectedFig_playerpref,"");
+		GameObject fig = active_configuration[0];
+		
+		// Check selection is correct.
+		if (f==fig.name){
+
+			/// Set new example
+			main.new_example();
+		}
+
+		else{
+			
+			main.fail();
+		}
+	}
 	
 
 }
@@ -1507,17 +1546,17 @@ public class Main : MonoBehaviour {
 		Debug.Log("Changing Task"); //Add to change task button in editor
 		reset_task_values();
 
-		if (task.name == screen_abv){
+		if (task == screen_task){
 			task = typ_task;
 			
 		}
 		
-		else if (task.name == typ_abv){
+		else if (task == typ_task){
 			task = sv_mod_task;
 			
 		}
 
-		else if (task.name == sv_mod_abv){
+		else if (task == sv_mod_task){
 
 			Debug.Log("Finished");
 			finish();
@@ -1552,9 +1591,6 @@ public class Main : MonoBehaviour {
 		}
 
 		number_scenes_done = 0;
-		
-
-
 	
 		UnityEngine.SceneManagement.SceneManager.LoadScene(fail_scene_name,LoadSceneMode.Additive);
 		
@@ -1600,39 +1636,7 @@ public class Main : MonoBehaviour {
 	/// Attached to submit button.
 	/// </remarks>
 	public void submit(){
-		if(task.name == screen_abv){
-			string f = PlayerPrefs.GetString(selectedFig_playerpref,"");
-			GameObject fig = task_scene.active_configuration[0];
-			
-			// Check selection is correct.
-			if (f==fig.name){
-
-				/// Set new example
-				new_example();
-			}
-
-			else{
-				
-				fail();
-			}
-		}
-		else if(task.name == sv_abv || task.name == sv_mod_abv){
-			if(task.list_of_toggles.All(x => x.isOn ==false)){
-
-			}
-			else{
-				StartCoroutine(sendselectionToFile_coroutine());
-
-				// Set new example.
-				new_example();
-			}
-		}
-		else{
-			StartCoroutine(sendselectionToFile_coroutine());
-
-			/// Set new example.
-			new_example();
-		}
+		task.submit();
 	}
 	
 	/// <summary>
@@ -1791,7 +1795,7 @@ public class Main : MonoBehaviour {
 		    // The object identified by hit.transform was clicked.
 		  	GameObject g;
 		  	// Get current ground object from task_scene.
-		  	if (task.name == screen_abv){
+		  	if (task.name == screen_task){
 			  	g = task_scene.active_configuration[1];
 			}
 			else{
