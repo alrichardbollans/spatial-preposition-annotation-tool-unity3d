@@ -274,6 +274,14 @@ public class Task {
     public static string[] input_list_of_scenes = {"finish","instruction","main","player_menu","scene_template","screen0","screen1","screening_fail","sv_modtypa1","sv_modtypa2","sv_modtypi1","sv_modtypi2","sv_modtypi3","sv_modtypi4","sv_modtypo1","sv_modtypo2","sv_modtypo3","sv_modtypo4","sv_modtypov1","sv_modtypov2","sv_modtypov3","sv_modtypu1","sv_modtypu2","sv_modtypu3","sv_modtypu4","test"};
 	//
 
+	// Server strings
+	public static string my_url = "http://adamrichard-bollans.co.uk";
+    public static string auth_username = "game";
+    public static string auth_password =  "REDACTED";
+	public static string appendannotation_url = my_url+"/spatial_language_study/appendannotation.php";
+	public static string writeuserdata_url = my_url+"/spatial_language_study/writeuserdata.php";
+
+
     //task name abbreviations with shared scenes
     List<string> scene_abbreviations =  new List<string>(); 
     public string name;
@@ -500,6 +508,51 @@ public class Task {
 		}
 	}
 
+	/// <summary>
+	/// Runs new_example_coroutine.
+	/// </summary>
+	public void new_example(){
+
+		// This needs to be a coroutine as we need to wait for task_scene lists to be populated
+		main.StartCoroutine(new_example_coroutine());
+	}
+
+	/// <summary>
+	/// Coroutine. If there are remaining examples to do in the scene, sets new example.
+	/// Else, changes scene.
+	/// </summary>
+	public IEnumerator new_example_coroutine(){
+		yield return null;
+		bool x = set_new_example();
+		if (x){
+			turn_off_toggles();
+			set_text();
+			yield return new WaitForSeconds(1);
+			main.loadingImage.SetActive(false);
+			
+		}
+		else {
+			main.load_next_scene();
+			
+		}
+	}
+
+	/// <summary>
+	/// Gets string for authentication from username and password.
+	/// </summary>
+	/// <param name="username">The username.</param>
+	/// <param name="password">The password.</param>
+	/// <returns>
+	/// Authentication string.
+	/// </returns>
+	public static string authenticate(string username, string password)
+	{
+	    string auth = username + ":" + password;
+	    auth = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(auth));
+	    auth = "Basic " + auth;
+	    return auth;
+	}
+
 	// This is just a placeholder.
 	public virtual void populate_config_list(){
 		Debug.Log("This shouldn't happen 1.");
@@ -515,6 +568,19 @@ public class Task {
 	public virtual void submit(){
 		Debug.Log("This shouldn't happen 3.");
 		
+	}
+
+	public virtual void on_click(RaycastHit hit){
+		Debug.Log("click/touch");
+	    
+	}
+
+	/// <summary>
+	/// Clears playerprefs and selection/highlighting of objects the user inputs.
+	/// </summary>
+	public virtual void reset_input_values(){
+		Debug.Log("Reset inpt values");
+
 	}
 	
 }
@@ -711,13 +777,70 @@ public class TypTask : Task {
 			return false;
 		}
 	}
+	
+    /// <summary>
+    /// Writes annotation info to file.
+    /// </summary>
+	public IEnumerator sendselectionToFile_coroutine(){
+        string authorization = authenticate(auth_username, auth_password);
+	    string url = appendannotation_url;
+        yield return null;
+        /// Output info
+        string c1 = PlayerPrefs.GetString(Main.config1_player_pref,"");
+        string c2 = PlayerPrefs.GetString(Main.config2_player_pref,"");
+        string selection = PlayerPrefs.GetString(Main.selection_player_pref,"");
+
+        string p = PlayerPrefs.GetString(Main.prep_playerpref,"");
+        string u = PlayerPrefs.GetString(Main.userid_player_pref,"");
+        string ta = PlayerPrefs.GetString(Main.task_player_pref,"");
+        string now = System.DateTime.UtcNow.ToString("yyyyMMdd-HHMMss");
+        string ID = System.Guid.NewGuid().ToString();
+	
+        bool successful = true; //Not yet used here
+
+        //create web form to talk with.
+        WWWForm form = new WWWForm(); 
+       
+        form.AddField("now",now);
+        form.AddField("ID",ID);
+        form.AddField("task",ta);
+        form.AddField("UserID",u);
+        form.AddField("preposition",p);
+
+		Debug.Log("outputting");
+    	form.AddField("c1",c1);
+    	form.AddField("c2",c2);
+    	form.AddField("selection",selection);
+    	
+        // Send the form to the php script
+        // Upload to a cgi script
+        using (var w = UnityWebRequest.Post(url, form))
+        {
+        	w.SetRequestHeader("AUTHORIZATION",authorization);
+            yield return w.SendWebRequest();
+            if (w.isNetworkError || w.isHttpError) {
+                Main.print(w.error);
+            }
+            
+        }
+    }
 	public override void submit(){
-		main.StartCoroutine(main.sendselectionToFile_coroutine());
+		main.StartCoroutine(sendselectionToFile_coroutine());
 
 		/// Set new example.
-		main.new_example();
+		new_example();
+	}
+
+	public override void reset_input_values(){
+
+		
+		PlayerPrefs.SetString(Main.selection_player_pref, "");
+
 	}
 }
+
+    
+
 
 public class SVTask : Task{
 	public List<GameObject[]> configuration_list = new List<GameObject[]>();
@@ -817,13 +940,82 @@ public class SVTask : Task{
 
 		}
 		else{
-			main.StartCoroutine(main.sendselectionToFile_coroutine());
+			main.StartCoroutine(sendselectionToFile_coroutine());
 
 			// Set new example.
-			main.new_example();
+			new_example();
 		}
 	}
 
+    /// <summary>
+    /// Writes annotation info to file.
+    /// </summary>
+	public IEnumerator sendselectionToFile_coroutine(){
+        string authorization = authenticate(auth_username, auth_password);
+	    string url = appendannotation_url;
+        yield return null;
+        /// Output info
+        string p = PlayerPrefs.GetString(Main.prep_playerpref,"");
+		
+		string f = PlayerPrefs.GetString(Main.selectedFig_playerpref,"");
+		string g = PlayerPrefs.GetString(Main.selectedgrd_playerpref,"");
+		string ta = PlayerPrefs.GetString(Main.task_player_pref,"");
+		string u = PlayerPrefs.GetString(Main.userid_player_pref,"");
+		string sc = PlayerPrefs.GetString(Main.scene_player_pref,"");
+		string now = System.DateTime.UtcNow.ToString("yyyyMMdd-HHMMss");
+		string ID = System.Guid.NewGuid().ToString();
+		string prepositions = "";
+
+		foreach (Toggle t in list_of_toggles){
+			if(t.isOn ==true){
+				
+				prepositions  = prepositions + t.name + ";";
+			}
+
+		}
+
+		string cam_loc = main.task_scene.main_camera.gameObject.transform.position.ToString();
+		string cam_rot = main.task_scene.main_camera.gameObject.transform.rotation.ToString();
+		
+			
+
+        bool successful = true; //Not yet used here
+
+        //create web form to talk with.
+        WWWForm form = new WWWForm(); 
+        
+        form.AddField("now",now);
+        form.AddField("ID",ID);
+        form.AddField("task",ta);
+        form.AddField("UserID",u);
+        form.AddField("preposition",p);
+        form.AddField("selectedFigure",f);
+        form.AddField("selectedGround",g);
+        form.AddField("prepositions",prepositions);
+        form.AddField("scene",sc);
+        form.AddField("cam_loc",cam_loc);
+        form.AddField("cam_rot",cam_rot);
+
+		Debug.Log("outputting");
+
+        // Send the form to the php script
+        // Upload to a cgi script
+        using (var w = UnityWebRequest.Post(url, form))
+        {
+        	w.SetRequestHeader("AUTHORIZATION",authorization);
+            yield return w.SendWebRequest();
+            if (w.isNetworkError || w.isHttpError) {
+                Main.print(w.error);
+            }
+            
+        }
+    }
+
+    public override void reset_input_values(){
+		turn_off_preposition_toggles();
+
+    }
+    
 }
 
 public class SVModTask : SVTask{
@@ -945,11 +1137,94 @@ public class CompTask : Task{
 		}
 	}
 	
+    /// <summary>
+    /// Writes annotation info to file.
+    /// </summary>
+	public IEnumerator sendselectionToFile_coroutine(){
+        string authorization = authenticate(auth_username, auth_password);
+	    string url = appendannotation_url;
+        yield return null;
+        /// Output info
+        string p = PlayerPrefs.GetString(Main.prep_playerpref,"");
+		
+		string f = PlayerPrefs.GetString(Main.selectedFig_playerpref,"");
+		string g = PlayerPrefs.GetString(Main.selectedgrd_playerpref,"");
+		string ta = PlayerPrefs.GetString(Main.task_player_pref,"");
+		string u = PlayerPrefs.GetString(Main.userid_player_pref,"");
+		string sc = PlayerPrefs.GetString(Main.scene_player_pref,"");
+		string now = System.DateTime.UtcNow.ToString("yyyyMMdd-HHMMss");
+		string ID = System.Guid.NewGuid().ToString();
+		string prepositions = "";
+
+		string cam_loc = main.task_scene.main_camera.gameObject.transform.position.ToString();
+		string cam_rot = main.task_scene.main_camera.gameObject.transform.rotation.ToString();
+		
+			
+
+        bool successful = true; //Not yet used here
+
+        //create web form to talk with.
+        WWWForm form = new WWWForm(); 
+        
+        form.AddField("now",now);
+        form.AddField("ID",ID);
+        form.AddField("task",ta);
+        form.AddField("UserID",u);
+        form.AddField("preposition",p);
+        form.AddField("selectedFigure",f);
+        form.AddField("selectedGround",g);
+        form.AddField("prepositions",prepositions);
+        form.AddField("scene",sc);
+        form.AddField("cam_loc",cam_loc);
+        form.AddField("cam_rot",cam_rot);
+
+		Debug.Log("outputting");
+
+        // Send the form to the php script
+        // Upload to a cgi script
+        using (var w = UnityWebRequest.Post(url, form))
+        {
+        	w.SetRequestHeader("AUTHORIZATION",authorization);
+            yield return w.SendWebRequest();
+            if (w.isNetworkError || w.isHttpError) {
+                Main.print(w.error);
+            }
+            
+        }
+    }
+
 	public override void submit(){
-		main.StartCoroutine(main.sendselectionToFile_coroutine());
+		main.StartCoroutine(sendselectionToFile_coroutine());
 
 		/// Set new example.
-		main.new_example();
+		new_example();
+	}
+
+	public override void on_click(RaycastHit hit){
+    	Debug.Log("touch");
+	    // The object identified by hit.transform was clicked.
+	  	GameObject g;
+	  	// Get current ground object from task.
+	  	
+		g = active_comparison[0] as GameObject;
+		
+		  
+		// If hit.transform is a selectable object, set figure and show confirm click.
+	  	if (hit.transform.name != g.name && !Main.unselectable_scene_objects.Any(x => hit.transform.name.Contains(x))){
+	  		selected_figure_text.text = "Selected Object: " + "<b>" + hit.transform.name + "</b>";
+		  	main.click_figure(hit);
+		  	main.show_confirm_click();
+		}
+
+		else{
+			selected_figure_text.text = "Selected Object: ";
+		}
+	}
+
+	public virtual void reset_input_values(){
+
+		TaskExamples.deselect_figure();
+
 	}
 
 }
@@ -1060,12 +1335,33 @@ public class ScreenTask : Task{
 		if (f==fig.name){
 
 			/// Set new example
-			main.new_example();
+			new_example();
 		}
 
 		else{
 			
 			main.fail();
+		}
+	}
+
+	public override void on_click(RaycastHit hit){
+    	Debug.Log("touch");
+	    // The object identified by hit.transform was clicked.
+	  	GameObject g;
+	  	// Get current ground object from task.
+	  	
+		g = active_configuration[1];
+		
+		  
+		// If hit.transform is a selectable object, set figure and show confirm click.
+	  	if (hit.transform.name != g.name && !Main.unselectable_scene_objects.Any(x => hit.transform.name.Contains(x))){
+	  		selected_figure_text.text = "Selected Object: " + "<b>" + hit.transform.name + "</b>";
+		  	main.click_figure(hit);
+		  	main.show_confirm_click();
+		}
+
+		else{
+			selected_figure_text.text = "Selected Object: ";
 		}
 	}
 	
@@ -1117,13 +1413,7 @@ public class Main : MonoBehaviour {
 	// Directory Info
 	public static string MainFolder   = "Assets/Scenes";
 	
-	// Server strings
-	public static string my_url = "http://adamrichard-bollans.co.uk";
-    public static string auth_username = "game";
-    public static string auth_password =  "REDACTED";
-	public static string appendannotation_url = my_url+"/spatial_language_study/appendannotation.php";
-	public static string writeuserdata_url = my_url+"/spatial_language_study/writeuserdata.php";
-
+	
 	// Task Abbreviations
 	public static string sv_abv = "sv";
 	public static string sv_mod_abv = "sv_mod";
@@ -1145,7 +1435,7 @@ public class Main : MonoBehaviour {
 	
 	static public Task task;
 
-	TaskExamples task_scene;
+	public TaskExamples task_scene;
 
 	// Gameobjects to assign
 	public GameObject typ_main_panel;
@@ -1361,7 +1651,7 @@ public class Main : MonoBehaviour {
 		string newtext = SceneCountertext.Replace(":int:",count);
 		SceneCounter_Text.text = newtext;
 
-		new_example();
+		task.new_example();
 		
 		
 	}
@@ -1397,7 +1687,7 @@ public class Main : MonoBehaviour {
 			// Only uses on scene camera:main.
 			task_scene = new TaskExamples(main_scene_name);
 			StartCoroutine(task_scene.set_scene_coroutine());
-			new_example();
+			task.new_example();
 		}
 
 		else{
@@ -1416,145 +1706,8 @@ public class Main : MonoBehaviour {
 
 	}
 
-	/// <summary>
-	/// Runs new_example_coroutine.
-	/// </summary>
-	public void new_example(){
-
-		// This needs to be a coroutine as we need to wait for task_scene lists to be populated
-		StartCoroutine(new_example_coroutine());
-	}
-
-	/// <summary>
-	/// Coroutine. If there are remaining examples to do in the scene, sets new example.
-	/// Else, changes scene.
-	/// </summary>
-	public IEnumerator new_example_coroutine(){
-		yield return null;
-		bool x = task.set_new_example();
-		if (x){
-			task.turn_off_toggles();
-			task.set_text();
-			yield return new WaitForSeconds(1);
-			loadingImage.SetActive(false);
-			
-		}
-		else {
-			load_next_scene();
-			
-		}
-	}
-
-
-
-	/// <summary>
-	/// Gets string for authentication from username and password.
-	/// </summary>
-	/// <param name="username">The username.</param>
-	/// <param name="password">The password.</param>
-	/// <returns>
-	/// Authentication string.
-	/// </returns>
-	string authenticate(string username, string password)
-	{
-	    string auth = username + ":" + password;
-	    auth = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(auth));
-	    auth = "Basic " + auth;
-	    return auth;
-	}
     
-    /// <summary>
-    /// Writes annotation info to file.
-    /// </summary>
-	public IEnumerator sendselectionToFile_coroutine(){
-        string authorization = authenticate(auth_username, auth_password);
-	    string url = appendannotation_url;
-        yield return null;
-        /// Output info
-        string c1 = PlayerPrefs.GetString(config1_player_pref,"");
-        string c2 = PlayerPrefs.GetString(config2_player_pref,"");
-        string selection = PlayerPrefs.GetString(selection_player_pref,"");
-
-        string p = PlayerPrefs.GetString(prep_playerpref,"");
-		
-		string f = PlayerPrefs.GetString(selectedFig_playerpref,"");
-		string g = PlayerPrefs.GetString(selectedgrd_playerpref,"");
-		string ta = PlayerPrefs.GetString(task_player_pref,"");
-		string u = PlayerPrefs.GetString(userid_player_pref,"");
-		string sc = PlayerPrefs.GetString(scene_player_pref,"");
-		string now = System.DateTime.UtcNow.ToString("yyyyMMdd-HHMMss");
-		string ID = System.Guid.NewGuid().ToString();
-		string prepositions = "";
-		// Find selected prepositions for sv task.
-		List<string> selected_prepositions =  new List<string> ();
-		string all_prepositions =   "";
-		foreach (Toggle t in task.list_of_toggles){
-			if(t.isOn ==true){
-				selected_prepositions.Add(t.name);
-				prepositions  = prepositions + t.name + ";";
-			}
-
-			all_prepositions = all_prepositions + t.name + ";";
-
-		}
-
-	
-			
-
-        bool successful = true; //Not yet used here
-
-        //create web form to talk with.
-        WWWForm form = new WWWForm(); 
-        // Added to all annotations.
-        form.AddField("now",now);
-        form.AddField("ID",ID);
-        form.AddField("task",ta);
-        form.AddField("UserID",u);
-        form.AddField("preposition",p);
-
-		Debug.Log("outputting");
-        if(task.name == typ_abv){
-
-        	Debug.Log(c1);
-        	Debug.Log(c2);
-        	form.AddField("c1",c1);
-        	form.AddField("c2",c2);
-        	form.AddField("selection",selection);
-        	
-        }
-        else{
-        	string cam_loc = task_scene.main_camera.gameObject.transform.position.ToString();
-        	string cam_rot = task_scene.main_camera.gameObject.transform.rotation.ToString();
-        	
-        	Debug.Log(f);
-        	// Not included in typ_task.
-        	form.AddField("selectedFigure",f);
-        	Debug.Log(form.data);
-        	form.AddField("selectedGround",g);
-        	form.AddField("prepositions",prepositions);
-        
-
-
-	        form.AddField("scene",sc);
-
-	        // form.AddField("all_objects",all_objects_string);
-	        form.AddField("cam_loc",cam_loc);
-	        form.AddField("cam_rot",cam_rot);
-	    }
-        
-        
-        // Send the form to the php script
-        // Upload to a cgi script
-        using (var w = UnityWebRequest.Post(url, form))
-        {
-        	w.SetRequestHeader("AUTHORIZATION",authorization);
-            yield return w.SendWebRequest();
-            if (w.isNetworkError || w.isHttpError) {
-                print(w.error);
-            }
-            
-        }
-    }
+    
 	
 	/// <summary>
 	/// Resets some playerpref values then sets new task, unloads current scene and loads instructions.
@@ -1659,7 +1812,7 @@ public class Main : MonoBehaviour {
 	/// <summary>
 	/// Sets object as figure for associated raycast object.
 	/// </summary>
-	void click_figure(RaycastHit fig){
+	public void click_figure(RaycastHit fig){
 		TaskExamples.set_figure(fig.transform.gameObject);
 		
 	}
@@ -1682,7 +1835,7 @@ public class Main : MonoBehaviour {
 	/// <summary>
 	/// Shows confirm click dialogue.
 	/// </summary>
-	void show_confirm_click(){
+	public void show_confirm_click(){
 		confirm = true;
 		confirm_text.SetActive(true);
 	}
@@ -1690,7 +1843,7 @@ public class Main : MonoBehaviour {
 	/// <summary>
 	/// Hides confirm click dialogue.
 	/// </summary>
-	void hide_confirm_click(){
+	public void hide_confirm_click(){
 		confirm = false;
 		confirm_text.SetActive(false);
 
@@ -1717,34 +1870,9 @@ public class Main : MonoBehaviour {
 	/// Attached to select none button.
 	/// </remarks>
 	public void select_none(){
-		reset_input_values();
+		task.reset_input_values();
 		hide_confirm_click();
 		submit();
-	}
-
-	/// <summary>
-	/// Clears playerprefs and selection/highlighting of objects the user inputs.
-	/// </summary>
-	public void reset_input_values(){
-		if(task_scene != null){
-
-			if(task == comp_task){
-				TaskExamples.deselect_figure();
-			
-			}	
-			
-		}
-		if(task == typ_task){
-			PlayerPrefs.SetString(selection_player_pref, "");
-
-		}
-		
-		if(task == sv_task){
-			task.turn_off_preposition_toggles();
-			
-		}
-
-
 	}
 
 	/// <summary>
@@ -1753,7 +1881,7 @@ public class Main : MonoBehaviour {
 	public void reset_task_values(){
 		number_scenes_done = 0;
 		number_typ_configs_done = 0;
-		reset_input_values();
+		task.reset_input_values();
 		PlayerPrefs.SetString(task_player_pref, "");
 		PlayerPrefs.SetString(prep_playerpref, "");
 
@@ -1764,7 +1892,7 @@ public class Main : MonoBehaviour {
 	/// </summary>
 	public void reset_scene_values(){
 		clear_any_object_selections();
-		reset_input_values();
+		task.reset_input_values();
 		PlayerPrefs.SetString(scene_player_pref, "");
 	}
 	
@@ -1796,7 +1924,6 @@ public class Main : MonoBehaviour {
 	void handle_click_touch(){
 		Debug.Log("click");
 
-		
 
 		// Find hit object.
 	    Ray ray = task_scene.main_camera.ScreenPointToRay(Input.mousePosition);
@@ -1805,30 +1932,9 @@ public class Main : MonoBehaviour {
 		TaskExamples.deselect_figure();
 		hide_confirm_click();
 		
-
-		
 	  	// If something is hit.
 		if (Physics.Raycast(ray, out hit)){
-		    // The object identified by hit.transform was clicked.
-		  	GameObject g;
-		  	// Get current ground object from task_scene.
-		  	if (task == screen_task){
-			  	g = task.active_configuration[1];
-			}
-			else{
-				g = task.active_comparison[0] as GameObject;
-			}
-			  
-			// If hit.transform is a selectable object, set figure and show confirm click.
-		  	if (hit.transform.name != g.name && !unselectable_scene_objects.Any(x => hit.transform.name.Contains(x))){
-		  		task.selected_figure_text.text = "Selected Object: " + "<b>" + hit.transform.name + "</b>";
-			  	click_figure(hit);
-			  	show_confirm_click();
-			}
-
-			else{
-				task.selected_figure_text.text = "Selected Object: ";
-			}
+		    task.on_click(hit);
 	  	
 		}
 	}
@@ -1894,30 +2000,26 @@ public class Main : MonoBehaviour {
 	    // Handle clicks and "return" presses.
 		if(player_in_game()){
 			
-
-			if (task.name == comp_abv || task.name == screen_abv){
-				
-
-				if (Input.GetMouseButtonDown(0)){
-					// If left mouse button pressed...
-					if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began){
-			        	Debug.Log("touch");
-			            // Check if finger is over a UI element
-			            if (!EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
-			            {
-			                handle_click_touch();
-			            }
-			        }
-					else if (!EventSystem.current.IsPointerOverGameObject()){
-						
-			            Debug.Log("No touch and not over UI");
+			if (Input.GetMouseButtonDown(0)){
+				// If left mouse button pressed...
+				if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began){
+		        	Debug.Log("touch");
+		            // Check if finger is over a UI element
+		            if (!EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
+		            {
 		                handle_click_touch();
-				        
-				    }
+		            }
+		        }
+				else if (!EventSystem.current.IsPointerOverGameObject()){
+					
+		            Debug.Log("No touch and not over UI");
+	                handle_click_touch();
+			        
+			    }
 
-				}
-				
 			}
+			
+		
 			// If return is pressed.
 			if (Input.GetKeyDown (KeyCode.Return)){
 		  		accept();

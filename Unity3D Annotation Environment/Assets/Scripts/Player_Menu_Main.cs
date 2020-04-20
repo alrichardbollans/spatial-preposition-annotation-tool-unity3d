@@ -71,27 +71,12 @@ public class Player_Menu_Main : MonoBehaviour {
         else { return true;}
     }
 
-    /// <summary>
-    /// Gets string for authentication from username and password.
-    /// </summary>
-    /// <param name="username">The username.</param>
-    /// <param name="password">The password.</param>
-    /// <returns>
-    /// Authentication string.
-    /// </returns>
-    string authenticate(string username, string password)
-    {
-        string auth = username + ":" + password;
-        auth = System.Convert.ToBase64String(System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(auth));
-        auth = "Basic " + auth;
-        return auth;
-    }
 
     /// <summary>
     /// Writes user info to file then loads main scene.
     /// </summary>
     IEnumerator sendUserTextToFile_then_loadscene(){
-        string authorization = authenticate(Main.auth_username, Main.auth_password);
+        string authorization = Task.authenticate(Task.auth_username, Task.auth_password);
         yield return null;
         /// Set details
         set_form_values();
@@ -113,7 +98,7 @@ public class Player_Menu_Main : MonoBehaviour {
         }
         // Send the form to the php script to write to server
         // Upload to a cgi script
-        using (var w = UnityWebRequest.Post(Main.writeuserdata_url, form))
+        using (var w = UnityWebRequest.Post(Task.writeuserdata_url, form))
         {
             w.SetRequestHeader("AUTHORIZATION",authorization);
             yield return w.SendWebRequest();

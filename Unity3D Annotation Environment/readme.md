@@ -71,7 +71,7 @@ Once all scenes have been created, they must be added to the build settings and 
 
 To set up tasks and/or change order of tasks, Main.cs must be edited. `Start()` method describes which is the first task to do and `change_task()` defines which tasks are done after the first. To create a new task, an instance must be created in `Main` class where its behaviour is defined in TaskScene.
 
-Annotations are output via a http post to a php script on the server. Associated strings are given in the `Main` class and *passwords for http post are exposed here*.
+Annotations are output via a http post to a php script on the server. Associated strings are given in the `Task` class and *passwords for http post are exposed here*.
 
 
 

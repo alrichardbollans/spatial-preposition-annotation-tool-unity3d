@@ -119,7 +119,7 @@ public class screenshots_for_typicality : EditorWindow
     public static string ScreenShotPath(string preposition, string figure, string ground) {
         string scene_name = EditorSceneManager.GetActiveScene().name;
         string direct = Application.dataPath + "/Resources/typ_task_folder/" + preposition +"/";
-        string r =  direct + TaskScene.ScreenShotName(scene_name,figure,ground);
+        string r =  direct + TypTask.ScreenShotName(scene_name,figure,ground);
         return r;
     }
 
@@ -218,8 +218,8 @@ public class screenshots_for_typicality : EditorWindow
             set_main_camera();
             set_fig_grd();
 
-            TaskScene.highlight_figure(fig);
-            TaskScene.highlight_ground(grd);
+            TaskExamples.highlight_figure(fig);
+            TaskExamples.highlight_ground(grd);
 
         }
         // if (GUILayout.Button("Search!"))
