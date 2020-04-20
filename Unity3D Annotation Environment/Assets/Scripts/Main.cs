@@ -4,9 +4,6 @@
 // This scene is open during all data collection with other scenes loaded on top. 
 // In this way the 'Main' instance is never destroyed
 
-// To Do:
-// - Separate different tasks into different classes which inherit from Task.
-
 using System;
 using System.IO;
 using System.Text;
@@ -39,6 +36,7 @@ public class Config
 
 /// <summary>
 /// TaskExamples class contains useful methods for object selection and loading scenes.
+/// It should mostly be added to Task class though.
 /// </summary>
 public class TaskExamples {
 
@@ -53,9 +51,6 @@ public class TaskExamples {
 	// Stores materials to undo highlighting.
 	static Material[] stored_fig_mats;
 	static Material[] stored_grd_mats;
-
-
-
 
 	/// <summary>
     /// Create class instance.
@@ -147,7 +142,6 @@ public class TaskExamples {
 		// Remove fig form player prefs
 		PlayerPrefs.SetString(Main.selectedgrd_playerpref, "");
 		
-		// g_label.text = "Ground:";
 	}
 	
 	/// <summary>
@@ -286,7 +280,9 @@ public class Task {
     List<string> scene_abbreviations =  new List<string>();
     public List<string> list_of_scenes = new List<string> (); // List of all scenes doesn't get chanegd
     public List<string> list_of_scenes_to_do = new List<string> (); // List of scenes where done scenes are removed 
+    
     public int number_scenes_to_do=10;
+    public int number_scenes_done = 0;
 
     // Task name.
     public string name;
@@ -584,6 +580,23 @@ public class Task {
 		Debug.Log("Reset inpt values");
 
 	}
+
+	public virtual void reset_number_of_examples(){
+		number_scenes_done = 0;
+	}
+
+	public virtual bool should_task_be_changed(){
+    	if(number_scenes_done >= number_scenes_to_do){
+    		return true;
+    	}
+    	else if(list_of_scenes_to_do.Count==0){
+    		return true;
+    	}
+    	else{
+    		return false;
+    	}
+
+    }
 	
 }
 	
@@ -597,6 +610,8 @@ public class TypTask : Task {
 	// Pairs of images to display.
 	Dictionary<string,List<List<Texture2D>>> typicality_image_pairs = new Dictionary<string,List<List<Texture2D>>>();
 
+	static public int number_typ_configs_done = 0;
+	static public int number_typ_configs_to_do = 10;
 
 	public TypTask(Main m) : base(Main.typ_abv, m, m.typ_main_panel){
 		allow_camera_movement = false;
@@ -731,9 +746,9 @@ public class TypTask : Task {
 	/// true if a new configuration can be set in the scene, otherwise False.
 	/// </returns>
 	public override bool set_new_example(){
-		if(Main.number_typ_configs_done<Main.number_typ_configs_to_do){
+		if(number_typ_configs_done<number_typ_configs_to_do){
 			Debug.Log("Showing new pics");
-			Main.number_typ_configs_done +=1;
+			number_typ_configs_done +=1;
 			
 			// Set preposition.
 			int r = rnd.Next(preposition_list.Count);
@@ -841,6 +856,21 @@ public class TypTask : Task {
 		PlayerPrefs.SetString(Main.selection_player_pref, "");
 
 	}
+
+	public override void reset_number_of_examples(){
+
+		number_typ_configs_done = 0;
+	}
+
+	public override bool should_task_be_changed(){
+		if(number_typ_configs_done >= number_typ_configs_to_do){
+			return true;
+		}
+		else{
+			return false;
+		}
+
+	}
 }
 
     
@@ -850,6 +880,7 @@ public class SVTask : Task{
 	public List<GameObject[]> configuration_list = new List<GameObject[]>();
 	public GameObject[] active_configuration; // Figure Ground pair
 
+	
 	
 
 	public SVTask(string task_abv,Main m) : base(task_abv, m, m.sv_main_panel){
@@ -1020,6 +1051,8 @@ public class SVTask : Task{
 		turn_off_preposition_toggles();
 
     }
+
+    
     
 }
 
@@ -1047,7 +1080,6 @@ public class CompTask : Task{
 	public List<List<object>> comparison_list = new List<List<object>>(); // list of ground/preposition pairs
 	public List<object> active_comparison; // Ground preposition pair
 	
-
 	public CompTask(Main m) : base(Main.comp_abv, m, m.comp_main_panel){
 		allow_camera_movement = true;
 
@@ -1232,6 +1264,8 @@ public class CompTask : Task{
 		TaskExamples.deselect_figure();
 
 	}
+
+
 
 }
 
@@ -1477,10 +1511,8 @@ public class Main : MonoBehaviour {
 	public Text SceneCounter_Text;
 	public string SceneCountertext = "Scenes left: :int:";
 	
-	int number_scenes_done = 0;
 	
-	static public int number_typ_configs_done = 0;
-	static public int number_typ_configs_to_do = 10;
+	
 
 	// Objetcs to hide/show if in dev mode.
 	bool dev_mode = false;
@@ -1664,7 +1696,7 @@ public class Main : MonoBehaviour {
 
 		// Update scene counter.
 		// Update this to do typ_task.
-		int number_scenes_left = task.number_scenes_to_do - number_scenes_done;
+		int number_scenes_left = task.number_scenes_to_do - task.number_scenes_done;
 		string count = number_scenes_left.ToString();
 		string newtext = SceneCountertext.Replace(":int:",count);
 		SceneCounter_Text.text = newtext;
@@ -1681,22 +1713,7 @@ public class Main : MonoBehaviour {
 	/// Else, unloads current scene and loads new random scene.
 	/// </summary>
 	public void load_next_scene(){
-		
-		if (number_scenes_done == task.number_scenes_to_do){
-			Debug.Log(number_scenes_done);
-
-			Debug.Log("change because of scene number");
-			change_task();
-			 
-		}
-		if (task.list_of_scenes_to_do.Count==0){
-		
-			Debug.Log("change because no scene to do");
-			change_task();
-		}
-
-		else if (number_typ_configs_done >= number_typ_configs_to_do){
-			Debug.Log("change because of typ_task");
+		if(task.should_task_be_changed()){
 			change_task();
 		}
 
@@ -1719,7 +1736,7 @@ public class Main : MonoBehaviour {
 
 			task.list_of_scenes_to_do.Remove(new_scene);
 
-			number_scenes_done += 1;
+			task.number_scenes_done += 1;
 		}	
 
 	}
@@ -1778,7 +1795,7 @@ public class Main : MonoBehaviour {
 			task.list_of_scenes_to_do.Add(s); // Add them back into list of scnes to do
 		}
 
-		number_scenes_done = 0;
+		task.number_scenes_done = 0;
 	
 		UnityEngine.SceneManagement.SceneManager.LoadScene(fail_scene_name,LoadSceneMode.Additive);
 		
@@ -1897,8 +1914,8 @@ public class Main : MonoBehaviour {
 	/// Clears playerprefs for task, fig, ground and preposition. Unhighlights/deselects fig and ground.
 	/// </summary>
 	public void reset_task_values(){
-		number_scenes_done = 0;
-		number_typ_configs_done = 0;
+		
+		task.reset_number_of_examples();
 		task.reset_input_values();
 		PlayerPrefs.SetString(task_player_pref, "");
 		PlayerPrefs.SetString(prep_playerpref, "");
