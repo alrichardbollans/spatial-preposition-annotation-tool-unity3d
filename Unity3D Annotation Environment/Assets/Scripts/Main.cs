@@ -283,32 +283,31 @@ public class Task {
 
 
     //task name abbreviations with shared scenes
-    List<string> scene_abbreviations =  new List<string>(); 
+    List<string> scene_abbreviations =  new List<string>();
+    public List<string> list_of_scenes = new List<string> (); // List of all scenes doesn't get chanegd
+    public List<string> list_of_scenes_to_do = new List<string> (); // List of scenes where done scenes are removed 
+    public int number_scenes_to_do=10;
+
+    // Task name.
     public string name;
 
 	
 	public Main main;
-	public string instruction; //Instruction to give in each scene
-
-	public string new_instruction;  //Instruction to give in each scene
 	
-
-	public string[] instruction_list; // List of instructions to give before starting
-	public string instruction_title; //Title for instruction scene
-	
+	// UI Gameobjects and variables
 	public GameObject panel;
 	public Text selected_figure_text;
 	public Text instruction_text_component;
 	List<GameObject> task_panels=  new List<GameObject>();
-
-
 	public List<GameObject> active_objects =  new List<GameObject>(); // list of all objects in panel hieracrchy
 	public List<Toggle> list_of_toggles = new List<Toggle> (); // Toggles for selecting prepositions
 	public List<Toggle> preposition_toggles = new List<Toggle> ();
 	
-	public List<string> list_of_scenes = new List<string> (); // List of all scenes doesn't get chanegd
-	public List<string> list_of_scenes_to_do = new List<string> (); // List of scenes where done scenes are removed 
-	public int number_scenes_to_do=10;
+	// For updating instructions
+	public string[] instruction_list; // List of instructions to give before starting
+	public string instruction_title; //Title for instruction scene
+	public string instruction; //Instruction to give in each scene
+	public string new_instruction;  //Instruction to give in each scene
 
 	static string task_player_pref = Main.task_player_pref;
 
@@ -490,6 +489,9 @@ public class Task {
     /// Populates ground and figure lists to generate configurations to test.
     /// </summary>
 	public void populate_fig_ground_list(){
+		figure_list.Clear();
+		ground_list.Clear();
+
 		GameObject[] g_list = GameObject.FindGameObjectsWithTag(Main.ground_tag);
 		GameObject[] f_list = GameObject.FindGameObjectsWithTag(Main.figure_tag);
 		GameObject[] fg_list = GameObject.FindGameObjectsWithTag(Main.fig_grd_tag);
@@ -670,6 +672,8 @@ public class TypTask : Task {
 	}
 
 	public override void  populate_config_list(){
+		typicality_images.Clear();
+		typicality_image_pairs.Clear();
 		// Get images for each preposition.
 		foreach(string prep in preposition_list){
 			typicality_images[prep] = new List<Texture2D>();
@@ -865,6 +869,7 @@ public class SVTask : Task{
 	}
 
 	public override void  populate_config_list(){
+		configuration_list.Clear();
 		populate_fig_ground_list();
 			
 		foreach (GameObject ground in ground_list){
@@ -1080,6 +1085,7 @@ public class CompTask : Task{
 	}
 
 	public override void  populate_config_list(){
+		comparison_list.Clear();
 		populate_fig_ground_list();
 		foreach (GameObject ground in ground_list){
 			add_new_comp_config(ground);
@@ -1234,11 +1240,9 @@ public class ScreenTask : Task{
 	List<string> preposition_list = new List<string> {"on","on top of", "in", "inside","against","over","below","above","under"};
 	
 	public List<GameObject[]> configuration_list = new List<GameObject[]>();
-	public List<List<object>> comparison_list = new List<List<object>>(); // list of ground/preposition pairs
 	public string screening_preposition;
 	public GameObject[] active_configuration; // Figure Ground pair
-	public List<object> active_comparison; // Ground preposition pair
-	
+
 
 	public ScreenTask(Main m) : base(Main.comp_abv, m, m.comp_main_panel){
 		allow_camera_movement = true;
@@ -1258,6 +1262,7 @@ public class ScreenTask : Task{
 	}
 
 	public override void  populate_config_list(){
+		configuration_list.Clear();
 		populate_fig_ground_list();
 		foreach (GameObject ground in ground_list){
 			foreach(GameObject fig in figure_list){
@@ -1284,47 +1289,60 @@ public class ScreenTask : Task{
 	public override bool set_new_example(){
 		TaskExamples.deselect_figure();
 		TaskExamples.deselect_ground();
-		
 
 
-		if (comparison_list.Contains(active_comparison)){
+		if (configuration_list.Contains(active_configuration)){
 			// If there is an active configuration pick next configuration in list
-			int i = comparison_list.IndexOf(active_comparison);
-			if (i+1 < comparison_list.Count){
-				
-				
-				active_comparison = comparison_list[i+1];
-				GameObject g = active_comparison[0] as GameObject;
-				string p = active_comparison[1] as string;
+			int i = configuration_list.IndexOf(active_configuration);
+			
+			// If there is a next one to pick do that and return true, else return false
+			if (i+1 < configuration_list.Count){
 
+				active_configuration = configuration_list[i+1];
+				GameObject f = active_configuration[0];
+			
+				GameObject g = active_configuration[1];
+				
+				
 				TaskExamples.set_ground(g);
+				
+				Debug.Log("New example:");
+				Debug.Log("New Figure:" + f.name);
+				Debug.Log("New Ground:" + g.name);
+				Debug.Log("setting preposition: " + screening_preposition);
+				TaskExamples.set_preposition(screening_preposition);
 
-				TaskExamples.set_preposition(p);
-				return true;	
+				return true;
 			}
+			
 			else {
 				Debug.Log("No more configurations, will load next scene");
 				//Load next scene
 				return false;
 			}
+			
 		}
-		else if(comparison_list.Count>0) {
-				// If there is no active configuration start with the first one in list
-				active_comparison = comparison_list[0];
-				GameObject g = active_comparison[0] as GameObject;
-				string p = active_comparison[1] as string;
+		else if(configuration_list.Count >0) {
+			// If there is no active configuration start with the first one in list
+			active_configuration = configuration_list[0];
+			GameObject f = active_configuration[0];
+		
+			GameObject g = active_configuration[1];
 
-				TaskExamples.set_ground(g);
+			
+			TaskExamples.set_figure(f);
+			TaskExamples.set_ground(g);
 
-				TaskExamples.set_preposition(p);
-				return true;
-				
-			}
+			return true;
+			
+		}
+
 		else{
 			Debug.Log("No configurations for this task in this scene, will load next scene");
 			//Load next scene
 			return false;
 		}
+	
 	}
 
 	public override void submit(){
@@ -1609,7 +1627,7 @@ public class Main : MonoBehaviour {
 	/// <returns>
 	/// True, if no scenes are loaded which indicate being outside test, otherwise False.
 	/// </returns>
-	public bool player_in_game(){
+	static public bool player_in_game(){
 		if(! is_scene_loaded(instruction_scene_name) && ! is_scene_loaded(fail_scene_name) && ! is_scene_loaded(finish_scene_name)){
 			return true;
 		}
