@@ -599,7 +599,7 @@ public class Task {
 		
 	}
 
-	public virtual void on_click(RaycastHit hit){
+	public virtual void on_click(Ray ray){
 		Debug.Log("click/touch");
 	    
 	}
@@ -1289,25 +1289,32 @@ public class CompTask : Task{
 		new_example();
 	}
 
-	public override void on_click(RaycastHit hit){
-    	Debug.Log("touch");
-	    // The object identified by hit.transform was clicked.
-	  	GameObject g;
-	  	// Get current ground object from task.
-	  	
-		g = active_comparison[0] as GameObject;
-		
-		  
-		// If hit.transform is a selectable object, set figure and show confirm click.
-	  	if (hit.transform.name != g.name && !Main.unselectable_scene_objects.Any(x => hit.transform.name.Contains(x))){
-	  		selected_figure_text.text = "Selected Object: " + "<b>" + hit.transform.name + "</b>";
-		  	click_figure(hit);
-		  	main.show_confirm_click();
-		}
+	public override void on_click(Ray ray){
+		deselect_figure();
+		RaycastHit hit;
+	  	// If something is hit.
+		if (Physics.Raycast(ray, out hit)){
+        	Debug.Log("touch");
+    	    // The object identified by hit.transform was clicked.
+    	  	GameObject g;
+    	  	// Get current ground object from task.
+    	  	
+    		g = active_comparison[0] as GameObject;
+    		
+    		  
+    		// If hit.transform is a selectable object, set figure and show confirm click.
+    	  	if (hit.transform.name != g.name && !Main.unselectable_scene_objects.Any(x => hit.transform.name.Contains(x))){
+    	  		selected_figure_text.text = "Selected Object: " + "<b>" + hit.transform.name + "</b>";
+    		  	click_figure(hit);
+    		  	main.show_confirm_click();
+    		}
 
-		else{
-			selected_figure_text.text = "Selected Object: ";
+    		else{
+    			selected_figure_text.text = "Selected Object: ";
+    		}
+	  	
 		}
+    	
 	}
 
 	public virtual void reset_input_values(){
@@ -1447,24 +1454,29 @@ public class ScreenTask : Task{
 		}
 	}
 
-	public override void on_click(RaycastHit hit){
-    	Debug.Log("touch");
-	    // The object identified by hit.transform was clicked.
-	  	GameObject g;
-	  	// Get current ground object from task.
-	  	
-		g = active_configuration[1];
-		
-		  
-		// If hit.transform is a selectable object, set figure and show confirm click.
-	  	if (hit.transform.name != g.name && !Main.unselectable_scene_objects.Any(x => hit.transform.name.Contains(x))){
-	  		selected_figure_text.text = "Selected Object: " + "<b>" + hit.transform.name + "</b>";
-		  	click_figure(hit);
-		  	main.show_confirm_click();
-		}
+	public override void on_click(Ray ray){
+		deselect_figure();
+		RaycastHit hit;
+		// If something is hit.
+		if (Physics.Raycast(ray, out hit)){
+	    	Debug.Log("touch");
+		    // The object identified by hit.transform was clicked.
+		  	GameObject g;
+		  	// Get current ground object from task.
+		  	
+			g = active_configuration[1];
+			
+			  
+			// If hit.transform is a selectable object, set figure and show confirm click.
+		  	if (hit.transform.name != g.name && !Main.unselectable_scene_objects.Any(x => hit.transform.name.Contains(x))){
+		  		selected_figure_text.text = "Selected Object: " + "<b>" + hit.transform.name + "</b>";
+			  	click_figure(hit);
+			  	main.show_confirm_click();
+			}
 
-		else{
-			selected_figure_text.text = "Selected Object: ";
+			else{
+				selected_figure_text.text = "Selected Object: ";
+			}
 		}
 	}
 	
@@ -1618,7 +1630,7 @@ public class Main : MonoBehaviour {
 		typ_task = new TypTask(this);
 		
 		
-		task_order = new Task[] {typ_task,sv_mod_task};
+		task_order = new Task[] {screen_task,typ_task,sv_mod_task};
 
 		None_toggle = None_toggle_obj.GetComponent(typeof(Toggle)) as Toggle;
 
@@ -2005,16 +2017,10 @@ public class Main : MonoBehaviour {
 
 		// Find hit object.
 	    Ray ray = task_scene.main_camera.ScreenPointToRay(Input.mousePosition);
-	    RaycastHit hit;
-		// Deselect old figure object.
-		Task.deselect_figure();
-		hide_confirm_click();
 		
-	  	// If something is hit.
-		if (Physics.Raycast(ray, out hit)){
-		    task.on_click(hit);
+		hide_confirm_click();
+		task.on_click(ray);
 	  	
-		}
 	}
 
 	/// <summary>
