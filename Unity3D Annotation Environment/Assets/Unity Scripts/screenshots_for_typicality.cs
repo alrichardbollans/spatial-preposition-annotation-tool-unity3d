@@ -218,8 +218,8 @@ public class screenshots_for_typicality : EditorWindow
             set_main_camera();
             set_fig_grd();
 
-            TaskExamples.highlight_figure(fig);
-            TaskExamples.highlight_ground(grd);
+            Task.highlight_figure(fig);
+            Task.highlight_ground(grd);
 
         }
         // if (GUILayout.Button("Search!"))

@@ -35,170 +35,24 @@ public class Config
 }   
 
 /// <summary>
-/// TaskExamples class contains useful methods for object selection and loading scenes.
-/// It should mostly be added to Task class though.
+/// TaskScene class contains useful methods for loading scenes.
+/// It could mostly be added to Task class though and is a bit redundant.
 /// </summary>
-public class TaskExamples {
+public class TaskScene {
 
-	public string name; //Scene Name
+	//Scene Name.
+	public string name; 
 	// Camera needed for raycasting
 	GameObject[] cam_list;
 	public Camera main_camera;
-	
-	static Material fig_mat = Resources.Load("figure_material", typeof(Material)) as Material;
-	static Material grd_mat = Resources.Load("ground_material", typeof(Material)) as Material;
-
-	// Stores materials to undo highlighting.
-	static Material[] stored_fig_mats;
-	static Material[] stored_grd_mats;
 
 	/// <summary>
     /// Create class instance.
     /// </summary>
     /// <param name="n">Scene name.</param>
-	public TaskExamples(string n){
+	public TaskScene(string n){
 		name = n;
 		
-	}
-
-	/// <summary>
-    /// Stores figure name in playerprefs and highlights figure.
-    /// </summary>
-    /// <param name="fig">Figure to set.</param>
-	static public void set_figure(GameObject fig){ 
-		
-		PlayerPrefs.SetString(Main.selectedFig_playerpref, fig.name);
-
-		highlight_figure(fig);
-		
-		
-	}
-
-
-
-	/// <summary>
-    /// Stores ground name in playerprefs and highlights ground.
-    /// </summary>
-    /// <param name="gr">Ground to set.</param>
-	static public void set_ground(GameObject gr){
-		
-		PlayerPrefs.SetString(Main.selectedgrd_playerpref, gr.name);
-		highlight_ground(gr);
-		
-		
-		
-	}
-
-	/// <summary>
-    /// Stores preposition in playerprefs.
-    /// </summary>
-    /// <param name="preposition">preposition to set.</param>
-	static public void set_preposition(string preposition){
-		
-		PlayerPrefs.SetString(Main.prep_playerpref, preposition);
-
-	}
-
-	
-	/// <summary>
-    /// Unhighlights figure and updates player prefs.
-    /// </summary>
-	static public void deselect_figure(){
-		
-		// Get old figure
-		string old_figure_name = PlayerPrefs.GetString(Main.selectedFig_playerpref,"");
-		// Debug.Log(old_figure_name);
-		// Note find objects can be heavy process (see docs if needs calling every frame)
-		GameObject old_figure = GameObject.Find(old_figure_name);
-		//If there was actually a figure, undo highlighting
-		if (old_figure != null){
-			// Debug.Log("Unhighlighting figure: " + old_figure_name);
-			unhighlight_figure(old_figure);
-			
-		}
-		
-		PlayerPrefs.SetString(Main.selectedFig_playerpref, "");
-		
-	}
-
-	
-	/// <summary>
-    /// Unhighlights ground and updates player prefs.
-    /// </summary>	
-	static public void deselect_ground(){
-		
-		// Debug.Log("Deselect ground is called");
-		string old_grd_name = PlayerPrefs.GetString(Main.selectedgrd_playerpref,"");
-		// Debug.Log("old_grd_name is " + old_grd_name);
-		// Note find objects can be heavy process (see docs if needs calling every frame)
-		GameObject old_grd = GameObject.Find(old_grd_name);
-		//If there was actually a ground, undo highlighting
-		if (old_grd != null){
-			// Debug.Log("Unhighlighting ground: " + old_grd_name);
-
-			unhighlight_ground(old_grd);
-
-		}
-		// Remove fig form player prefs
-		PlayerPrefs.SetString(Main.selectedgrd_playerpref, "");
-		
-	}
-	
-	/// <summary>
-    /// Highlights figure.
-    /// First stores figures materials then changes them all to highlight material.
-    /// </summary>
-    /// <param name="fig">Figure to highlight.</param>
-	static public void highlight_figure(GameObject fig){
-		// Stores old figure materials
-		stored_fig_mats = fig.GetComponent<Renderer>().materials;
-		// Create a new array with same number of fig mat instances
-		// All materials in array are the fig_mat for highlighting
-		List<Material> new_mats_list = new List<Material>();
-		foreach(Material m in stored_fig_mats){
-			new_mats_list.Add(fig_mat);
-		}
-
-		Material[] new_mats =new_mats_list.ToArray();
-
-		fig.GetComponent<Renderer>().materials = new_mats;		
-
-	}
-
-	
-	/// <summary>
-    /// Highlights ground.
-    /// First stores grounds materials then changes them all to highlight material.
-    /// </summary>
-    /// <param name="grd">Ground to highlight.</param>
-	static public void highlight_ground(GameObject grd){
-		// Stores old ground materials
-		stored_grd_mats = grd.GetComponent<Renderer>().materials;
-		// Create a new array with same number of grd mat instances
-		List<Material> new_mats_list = new List<Material>();
-		foreach(Material m in stored_grd_mats){
-			new_mats_list.Add(grd_mat);
-		}
-
-		Material[] new_mats =new_mats_list.ToArray();
-
-		grd.GetComponent<Renderer>().materials = new_mats;
-
-	}
-	/// <summary>
-    /// Removes highlighting from ground.
-    /// </summary>
-    /// <param name="grd">Ground to unhighlight.</param>
-	static public void unhighlight_ground(GameObject grd){
-		grd.GetComponent<Renderer>().materials = stored_grd_mats;
-	}
-
-	/// <summary>
-    /// Removes highlighting from figure.
-    /// </summary>
-    /// <param name="fig">Figure to unhighlight.</param>
-	static public void unhighlight_figure(GameObject fig){
-		fig.GetComponent<Renderer>().materials = stored_fig_mats;
 	}
 	
 
@@ -287,7 +141,7 @@ public class Task {
     // Task name.
     public string name;
 
-	
+	// Main instance. Gives access to task gameobjects.
 	public Main main;
 	
 	// UI Gameobjects and variables
@@ -295,8 +149,10 @@ public class Task {
 	public Text selected_figure_text;
 	public Text instruction_text_component;
 	List<GameObject> task_panels=  new List<GameObject>();
-	public List<GameObject> active_objects =  new List<GameObject>(); // list of all objects in panel hieracrchy
-	public List<Toggle> list_of_toggles = new List<Toggle> (); // Toggles for selecting prepositions
+	// List of all objects in panel hieracrchy, to be set active.
+	public List<GameObject> active_objects =  new List<GameObject>();
+	// Toggles for selecting prepositions.
+	public List<Toggle> list_of_toggles = new List<Toggle> (); 
 	public List<Toggle> preposition_toggles = new List<Toggle> ();
 	
 	// For updating instructions
@@ -312,6 +168,14 @@ public class Task {
 	// Variables from scene
 	public List<GameObject> ground_list = new List<GameObject>();
 	public List<GameObject> figure_list = new List<GameObject>();
+
+	// Stores materials to undo highlighting.
+	static Material[] stored_fig_mats;
+	static Material[] stored_grd_mats;
+
+	static Material fig_mat = Resources.Load("figure_material", typeof(Material)) as Material;
+	static Material grd_mat = Resources.Load("ground_material", typeof(Material)) as Material;
+
 
 	// Random instance for generating random integers.
 	static public System.Random rnd = new System.Random();
@@ -481,6 +345,20 @@ public class Task {
 
 	}
 
+	public virtual void load_next_scene(){
+		int r = rnd.Next(list_of_scenes_to_do.Count);
+
+		// unloads current scene and loads the next scene
+		
+		main.unload_current_scene();
+		string new_scene = list_of_scenes_to_do[r];
+		main.load_scene(new_scene);
+
+		list_of_scenes_to_do.Remove(new_scene);
+
+		number_scenes_done += 1;
+	}
+
 	/// <summary>
     /// Populates ground and figure lists to generate configurations to test.
     /// </summary>
@@ -551,6 +429,154 @@ public class Task {
 	    return auth;
 	}
 
+	/// <summary>
+	/// Sets object as figure for associated raycast object.
+	/// </summary>
+	static public void click_figure(RaycastHit fig){
+		set_figure(fig.transform.gameObject);
+		
+	}
+
+	/// <summary>
+    /// Stores figure name in playerprefs and highlights figure.
+    /// </summary>
+    /// <param name="fig">Figure to set.</param>
+	static public void set_figure(GameObject fig){ 
+		
+		PlayerPrefs.SetString(Main.selectedFig_playerpref, fig.name);
+
+		highlight_figure(fig);
+		
+		
+	}
+
+
+
+	/// <summary>
+    /// Stores ground name in playerprefs and highlights ground.
+    /// </summary>
+    /// <param name="gr">Ground to set.</param>
+	static public void set_ground(GameObject gr){
+		
+		PlayerPrefs.SetString(Main.selectedgrd_playerpref, gr.name);
+		highlight_ground(gr);
+		
+		
+		
+	}
+
+	/// <summary>
+    /// Stores preposition in playerprefs.
+    /// </summary>
+    /// <param name="preposition">preposition to set.</param>
+	static public void set_preposition(string preposition){
+		
+		PlayerPrefs.SetString(Main.prep_playerpref, preposition);
+
+	}
+
+	
+	/// <summary>
+    /// Unhighlights figure and updates player prefs.
+    /// </summary>
+	static public void deselect_figure(){
+		
+		// Get old figure
+		string old_figure_name = PlayerPrefs.GetString(Main.selectedFig_playerpref,"");
+		// Debug.Log(old_figure_name);
+		// Note find objects can be heavy process (see docs if needs calling every frame)
+		GameObject old_figure = GameObject.Find(old_figure_name);
+		//If there was actually a figure, undo highlighting
+		if (old_figure != null){
+			// Debug.Log("Unhighlighting figure: " + old_figure_name);
+			unhighlight_figure(old_figure);
+			
+		}
+		
+		PlayerPrefs.SetString(Main.selectedFig_playerpref, "");
+		
+	}
+
+	
+	/// <summary>
+    /// Unhighlights ground and updates player prefs.
+    /// </summary>	
+	static public void deselect_ground(){
+		
+		// Debug.Log("Deselect ground is called");
+		string old_grd_name = PlayerPrefs.GetString(Main.selectedgrd_playerpref,"");
+		// Debug.Log("old_grd_name is " + old_grd_name);
+		// Note find objects can be heavy process (see docs if needs calling every frame)
+		GameObject old_grd = GameObject.Find(old_grd_name);
+		//If there was actually a ground, undo highlighting
+		if (old_grd != null){
+			// Debug.Log("Unhighlighting ground: " + old_grd_name);
+
+			unhighlight_ground(old_grd);
+
+		}
+		// Remove fig form player prefs
+		PlayerPrefs.SetString(Main.selectedgrd_playerpref, "");
+		
+	}
+	
+	/// <summary>
+    /// Highlights figure.
+    /// First stores figures materials then changes them all to highlight material.
+    /// </summary>
+    /// <param name="fig">Figure to highlight.</param>
+	static public void highlight_figure(GameObject fig){
+		// Stores old figure materials
+		stored_fig_mats = fig.GetComponent<Renderer>().materials;
+		// Create a new array with same number of fig mat instances
+		// All materials in array are the fig_mat for highlighting
+		List<Material> new_mats_list = new List<Material>();
+		foreach(Material m in stored_fig_mats){
+			new_mats_list.Add(fig_mat);
+		}
+
+		Material[] new_mats =new_mats_list.ToArray();
+
+		fig.GetComponent<Renderer>().materials = new_mats;		
+
+	}
+
+	
+	/// <summary>
+    /// Highlights ground.
+    /// First stores grounds materials then changes them all to highlight material.
+    /// </summary>
+    /// <param name="grd">Ground to highlight.</param>
+	static public void highlight_ground(GameObject grd){
+		// Stores old ground materials
+		stored_grd_mats = grd.GetComponent<Renderer>().materials;
+		// Create a new array with same number of grd mat instances
+		List<Material> new_mats_list = new List<Material>();
+		foreach(Material m in stored_grd_mats){
+			new_mats_list.Add(grd_mat);
+		}
+
+		Material[] new_mats =new_mats_list.ToArray();
+
+		grd.GetComponent<Renderer>().materials = new_mats;
+
+	}
+	/// <summary>
+    /// Removes highlighting from ground.
+    /// </summary>
+    /// <param name="grd">Ground to unhighlight.</param>
+	static public void unhighlight_ground(GameObject grd){
+		grd.GetComponent<Renderer>().materials = stored_grd_mats;
+	}
+
+	/// <summary>
+    /// Removes highlighting from figure.
+    /// </summary>
+    /// <param name="fig">Figure to unhighlight.</param>
+	static public void unhighlight_figure(GameObject fig){
+		fig.GetComponent<Renderer>().materials = stored_fig_mats;
+	}
+
 	// This is just a placeholder.
 	public virtual void populate_config_list(){
 		Debug.Log("This shouldn't happen 1.");
@@ -617,9 +643,8 @@ public class TypTask : Task {
 		allow_camera_movement = false;
 
 		instruction_text_component = main.typ_instruction_text;
-		string[] il = {"In this task you will be shown two configurations of objects and asked to select which configuration <b>best fits</b> a given description.",
+		instruction_list =  new string[] {"In this task you will be shown two configurations of objects and asked to select which configuration <b>best fits</b> a given description.",
 		"A simple description will be given of a green object and its relationship to a red object, e.g. 'the <color=green><b>green object</b></color> <b>on</b> the <color=red><b>red object</b></color>'. You need to <b>click</b> the image <b>which best fits the description</b>.\n\n If you feel that <b>no image fits</b> the given description, click 'Select None'."};
-		instruction_list = il;
 		instruction_title = "Instructions";
 		instruction = "Select the pair of objects which best fits the description:\n'a <color=green><b>green object</b></color> :preposition: the <color=red><b>red object</b></color>'";
 		
@@ -684,6 +709,14 @@ public class TypTask : Task {
 		}
 
 		return false;
+	}
+
+	public override void load_next_scene(){
+		main.unload_current_scene();
+		// Only uses on scene camera:main.
+		main.task_scene = new TaskScene(Main.main_scene_name);
+		main.StartCoroutine(main.task_scene.set_scene_coroutine());
+		new_example();
 	}
 
 	public override void  populate_config_list(){
@@ -769,7 +802,7 @@ public class TypTask : Task {
 				
 			}
 			// Set preposition.
-			TaskExamples.set_preposition(p);
+			set_preposition(p);
 
 			// Pick an image pair for the preposition.
 			int i = rnd.Next(typicality_image_pairs[p].Count);
@@ -889,11 +922,11 @@ public class SVTask : Task{
 		instruction_text_component = main.sv_instruction_text;
 		number_scenes_to_do = 10;
 		instruction_title = "Instructions";
-		string[] il =  {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
+		instruction_list = new string[]{"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
 		"A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.",
 		"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",
 		"Remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
-		instruction_list = il;
+		
 		instruction = "Select <b>all</b> words which could fill in the blank:\n \n   ':a: :figure: (____) the :ground:'";
 
 		
@@ -916,8 +949,8 @@ public class SVTask : Task{
 			
 	public override bool set_new_example(){
 		// Unselect figure and ground
-		TaskExamples.deselect_figure();
-		TaskExamples.deselect_ground();
+		deselect_figure();
+		deselect_ground();
 
 		if (configuration_list.Contains(active_configuration)){
 			// If there is an active configuration pick next configuration in list
@@ -931,8 +964,8 @@ public class SVTask : Task{
 			
 				GameObject g = active_configuration[1];
 				
-				TaskExamples.set_figure(f);
-				TaskExamples.set_ground(g);
+				set_figure(f);
+				set_ground(g);
 				
 				Debug.Log("New example:");
 				Debug.Log("New Figure:" + f.name);
@@ -956,8 +989,8 @@ public class SVTask : Task{
 			GameObject g = active_configuration[1];
 
 			
-			TaskExamples.set_figure(f);
-			TaskExamples.set_ground(g);
+			set_figure(f);
+			set_ground(g);
 
 			return true;
 			
@@ -1060,11 +1093,11 @@ public class SVModTask : SVTask{
 	public SVModTask(Main m) : base(Main.sv_mod_abv, m){
 		allow_camera_movement = false;
 
-		string[] il =  {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
+		instruction_list = new string[] {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
 		"A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.",
 		"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",
 		};
-		instruction_list = il;
+		
 		instruction = "Select <b>all</b> words which could fill in the blank:\n \n   'a <color=green><b>green object</b></color> (____) the <color=red><b>red object</b></color>'";
 
 		
@@ -1087,8 +1120,8 @@ public class CompTask : Task{
 		
 		number_scenes_to_do = 10;
 		instruction_text_component = main.comp_instruction_text;
-		string[] il =  {"In this task you will be asked to select the object which <b>best fits</b> a given description.", "An object will be described by its relation to another object which will be <color=red><b>highlighted in red</b></color>, e.g. 'the object <b>on</b> the <color=red><b>table</b></color>'. You need to <b>click</b> on the object <b>which best fits the description</b>.\n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.", "The object you select will turn <color=green><b>green</b></color>. Once you have selected an object you must press 'Enter' or click 'Accept' to confirm your selection. \n\n You <b>cannot select</b> the room, floor, ceiling or walls; but remember that you <b>can select</b> the table. \n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.","All important objects in the scene will be immediately in view; but remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
-		instruction_list = il;
+		instruction_list = new string[] {"In this task you will be asked to select the object which <b>best fits</b> a given description.", "An object will be described by its relation to another object which will be <color=red><b>highlighted in red</b></color>, e.g. 'the object <b>on</b> the <color=red><b>table</b></color>'. You need to <b>click</b> on the object <b>which best fits the description</b>.\n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.", "The object you select will turn <color=green><b>green</b></color>. Once you have selected an object you must press 'Enter' or click 'Accept' to confirm your selection. \n\n You <b>cannot select</b> the room, floor, ceiling or walls; but remember that you <b>can select</b> the table. \n\n If you feel that <b>no object fits</b> the given description, click 'Select None'.","All important objects in the scene will be immediately in view; but remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
+		
 
 		instruction_title = "Instructions";
 		instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
@@ -1130,8 +1163,8 @@ public class CompTask : Task{
 	}
 			
 	public override bool set_new_example(){
-		TaskExamples.deselect_figure();
-		TaskExamples.deselect_ground();
+		deselect_figure();
+		deselect_ground();
 		
 
 
@@ -1145,9 +1178,9 @@ public class CompTask : Task{
 				GameObject g = active_comparison[0] as GameObject;
 				string p = active_comparison[1] as string;
 
-				TaskExamples.set_ground(g);
+				set_ground(g);
 
-				TaskExamples.set_preposition(p);
+				set_preposition(p);
 				return true;	
 			}
 			else {
@@ -1162,9 +1195,9 @@ public class CompTask : Task{
 				GameObject g = active_comparison[0] as GameObject;
 				string p = active_comparison[1] as string;
 
-				TaskExamples.set_ground(g);
+				set_ground(g);
 
-				TaskExamples.set_preposition(p);
+				set_preposition(p);
 				return true;
 				
 			}
@@ -1250,7 +1283,7 @@ public class CompTask : Task{
 		// If hit.transform is a selectable object, set figure and show confirm click.
 	  	if (hit.transform.name != g.name && !Main.unselectable_scene_objects.Any(x => hit.transform.name.Contains(x))){
 	  		selected_figure_text.text = "Selected Object: " + "<b>" + hit.transform.name + "</b>";
-		  	main.click_figure(hit);
+		  	click_figure(hit);
 		  	main.show_confirm_click();
 		}
 
@@ -1261,7 +1294,7 @@ public class CompTask : Task{
 
 	public virtual void reset_input_values(){
 
-		TaskExamples.deselect_figure();
+		deselect_figure();
 
 	}
 
@@ -1278,15 +1311,15 @@ public class ScreenTask : Task{
 	public GameObject[] active_configuration; // Figure Ground pair
 
 
-	public ScreenTask(Main m) : base(Main.comp_abv, m, m.comp_main_panel){
+	public ScreenTask(Main m) : base(Main.screen_abv, m, m.comp_main_panel){
 		allow_camera_movement = true;
 
 		
 		
 		instruction_text_component = main.comp_instruction_text;
-		string[] il =  {"Before beginning you will be given <b>two quick examples</b> to complete\n \n \nClick Next..",	"You will be shown an indoor scene and a description of an object will be provided at the bottom of the screen. \n \n Click on the object that best fits the description.\n \n You will be prompted to press enter or click accept to confirm your selection. \n \nIf you are correct you will move on to the next stage.",
+		instruction_list = new string[] {"Before beginning you will be given <b>two quick examples</b> to complete\n \n \nClick Next..",	"You will be shown an indoor scene and a description of an object will be provided at the bottom of the screen. \n \n Click on the object that best fits the description.\n \n You will be prompted to press enter or click accept to confirm your selection. \n \nIf you are correct you will move on to the next stage.",
 		"To move around the scene: \n - Use the <b>arrow keys</b> to move around \n - <b>Hold down the '0' key</b> to use the mouse to look around \n - Use the <b>'1' and '2' keys</b> to move up and down if you need to \n - Press the <b>'Delete' key</b> for help"	};
-		instruction_list = il;
+		
 		instruction_title = "Instructions";
 		instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
 		number_scenes_to_do = list_of_scenes.Count;
@@ -1321,8 +1354,8 @@ public class ScreenTask : Task{
 	}
 			
 	public override bool set_new_example(){
-		TaskExamples.deselect_figure();
-		TaskExamples.deselect_ground();
+		deselect_figure();
+		deselect_ground();
 
 
 		if (configuration_list.Contains(active_configuration)){
@@ -1338,13 +1371,13 @@ public class ScreenTask : Task{
 				GameObject g = active_configuration[1];
 				
 				
-				TaskExamples.set_ground(g);
+				set_ground(g);
 				
 				Debug.Log("New example:");
 				Debug.Log("New Figure:" + f.name);
 				Debug.Log("New Ground:" + g.name);
 				Debug.Log("setting preposition: " + screening_preposition);
-				TaskExamples.set_preposition(screening_preposition);
+				set_preposition(screening_preposition);
 
 				return true;
 			}
@@ -1362,10 +1395,10 @@ public class ScreenTask : Task{
 			GameObject f = active_configuration[0];
 		
 			GameObject g = active_configuration[1];
-
 			
-			TaskExamples.set_figure(f);
-			TaskExamples.set_ground(g);
+			
+			set_preposition(screening_preposition);
+			set_ground(g);
 
 			return true;
 			
@@ -1408,7 +1441,7 @@ public class ScreenTask : Task{
 		// If hit.transform is a selectable object, set figure and show confirm click.
 	  	if (hit.transform.name != g.name && !Main.unselectable_scene_objects.Any(x => hit.transform.name.Contains(x))){
 	  		selected_figure_text.text = "Selected Object: " + "<b>" + hit.transform.name + "</b>";
-		  	main.click_figure(hit);
+		  	click_figure(hit);
 		  	main.show_confirm_click();
 		}
 
@@ -1487,7 +1520,10 @@ public class Main : MonoBehaviour {
 	
 	static public Task task;
 
-	public TaskExamples task_scene;
+	// Specifies order of tasks.
+	Task[] task_order;
+
+	public TaskScene task_scene;
 
 	// Gameobjects to assign
 	public GameObject typ_main_panel;
@@ -1564,7 +1600,10 @@ public class Main : MonoBehaviour {
 		comp_task = new CompTask(this);
 		screen_task = new ScreenTask(this);
 		typ_task = new TypTask(this);
-	
+		
+		
+		task_order = new Task[] {screen_task,sv_task,sv_mod_task,comp_task,typ_task};
+
 		None_toggle = None_toggle_obj.GetComponent(typeof(Toggle)) as Toggle;
 
 		//Add listener for when the state of the Toggle changes, to take action
@@ -1594,7 +1633,7 @@ public class Main : MonoBehaviour {
 		{	
 		
 		// Set which task to begin
-		task = typ_task;
+		task = task_order[0];
 
 		loadingImage.SetActive(false);
 		clear_object_player_prefs();
@@ -1690,7 +1729,7 @@ public class Main : MonoBehaviour {
 		loadingImage.SetActive(true);
 		// takes a scene name and loads it for the task
 		
-		task_scene = new TaskExamples(sceneName);
+		task_scene = new TaskScene(sceneName);
 		
 		StartCoroutine(task_scene.set_scene_coroutine());
 
@@ -1717,26 +1756,9 @@ public class Main : MonoBehaviour {
 			change_task();
 		}
 
-		else if(task == typ_task){
-			unload_current_scene();
-			// Only uses on scene camera:main.
-			task_scene = new TaskExamples(main_scene_name);
-			StartCoroutine(task_scene.set_scene_coroutine());
-			task.new_example();
-		}
-
 		else{
-			int r = rnd.Next(task.list_of_scenes_to_do.Count);
-
-			// unloads current scene and loads the next scene
+			task.load_next_scene();
 			
-			unload_current_scene();
-			string new_scene = task.list_of_scenes_to_do[r];
-			load_scene(new_scene);
-
-			task.list_of_scenes_to_do.Remove(new_scene);
-
-			task.number_scenes_done += 1;
 		}	
 
 	}
@@ -1751,23 +1773,17 @@ public class Main : MonoBehaviour {
 		Debug.Log("Changing Task"); //Add to change task button in editor
 		reset_task_values();
 
-		if (task == screen_task){
-			task = typ_task;
-			
-		}
-		
-		else if (task == typ_task){
-			task = sv_mod_task;
-			
-		}
+		int keyIndex = Array.FindIndex(task_order, x => x == task);
 
-		else if (task == sv_mod_task){
-
+		if(keyIndex<task_order.Count()){
+			task = task_order[keyIndex+1];
+		}
+		else{
 			Debug.Log("Finished");
 			finish();
 			return;
-			
 		}
+
 		unload_current_scene();
 		
 		load_instructions();
@@ -1795,7 +1811,8 @@ public class Main : MonoBehaviour {
 			task.list_of_scenes_to_do.Add(s); // Add them back into list of scnes to do
 		}
 
-		task.number_scenes_done = 0;
+		task.reset_number_of_examples();
+		task.reset_input_values();
 	
 		UnityEngine.SceneManagement.SceneManager.LoadScene(fail_scene_name,LoadSceneMode.Additive);
 		
@@ -1834,37 +1851,7 @@ public class Main : MonoBehaviour {
 		}
 	}
 	
-	/// <summary>
-	/// Handles annotation submission.
-	/// </summary>
-	/// <remarks>
-	/// Attached to submit button.
-	/// </remarks>
-	public void submit(){
-		task.submit();
-	}
 	
-	/// <summary>
-	/// Sets object as figure for associated raycast object.
-	/// </summary>
-	public void click_figure(RaycastHit fig){
-		TaskExamples.set_figure(fig.transform.gameObject);
-		
-	}
-
-	public void left_image_click(){
-		string c1 = PlayerPrefs.GetString(config1_player_pref,"");
-		PlayerPrefs.SetString(selection_player_pref,c1);
-		confirm = true;
-		accept();
-	}
-
-	public void right_image_click(){
-		string c2 = PlayerPrefs.GetString(config2_player_pref,"");
-		PlayerPrefs.SetString(selection_player_pref,c2);
-		confirm = true;
-		accept();
-	}
 
 	
 	/// <summary>
@@ -1884,6 +1871,44 @@ public class Main : MonoBehaviour {
 
 	}
 
+	// Buttons.
+
+	/// <summary>
+	/// Handles annotation submission.
+	/// </summary>
+	/// <remarks>
+	/// Attached to submit button.
+	/// </remarks>
+	public void submit(){
+		task.submit();
+	}
+	
+	/// <summary>
+	/// Handles clicking image for typ task.
+	/// </summary>
+	/// <remarks>
+	/// Attached to left image button.
+	/// </remarks>
+	public void left_image_click(){
+		string c1 = PlayerPrefs.GetString(config1_player_pref,"");
+		PlayerPrefs.SetString(selection_player_pref,c1);
+		confirm = true;
+		accept();
+	}
+
+	/// <summary>
+	/// Handles clicking image for typ task.
+	/// </summary>
+	/// <remarks>
+	/// Attached to right image button.
+	/// </remarks>
+	public void right_image_click(){
+		string c2 = PlayerPrefs.GetString(config2_player_pref,"");
+		PlayerPrefs.SetString(selection_player_pref,c2);
+		confirm = true;
+		accept();
+	}
+
 	/// <summary>
 	/// If confirm click dialogue is shown, hides confirm click dialogue and submits annotation.
 	/// </summary>
@@ -1897,6 +1922,8 @@ public class Main : MonoBehaviour {
 		}
 		
 	}
+
+
 
 	/// <summary>
 	/// Handles user clicking select none.
@@ -1936,8 +1963,8 @@ public class Main : MonoBehaviour {
 	/// </summary>
 	public void clear_any_object_selections(){
 		if(task_scene != null){
-			TaskExamples.deselect_figure();
-			TaskExamples.deselect_ground();
+			Task.deselect_figure();
+			Task.deselect_ground();
 		}
 		clear_object_player_prefs();
 
@@ -1964,7 +1991,7 @@ public class Main : MonoBehaviour {
 	    Ray ray = task_scene.main_camera.ScreenPointToRay(Input.mousePosition);
 	    RaycastHit hit;
 		// Deselect old figure object.
-		TaskExamples.deselect_figure();
+		Task.deselect_figure();
 		hide_confirm_click();
 		
 	  	// If something is hit.
