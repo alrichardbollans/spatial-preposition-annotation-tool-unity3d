@@ -48,7 +48,7 @@ public class Player_Menu_Main : MonoBehaviour {
     /// </summary>
     void set_form_values(){
        
-        now = DateTime.UtcNow.ToString("yyyyMMdd-HHMMss");
+        now = DateTime.UtcNow.ToString("ddMMyyyy-HHmmss");
     }
 
     /// <summary>

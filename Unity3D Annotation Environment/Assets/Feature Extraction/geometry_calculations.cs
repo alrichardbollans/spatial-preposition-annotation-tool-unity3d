@@ -1,5 +1,5 @@
 // Provides classes which calculate geometric properties between objects and saves to csv.
-
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -603,3 +603,5 @@ public class Pair{
 		return vol;
 	}
 }
+
+#endif

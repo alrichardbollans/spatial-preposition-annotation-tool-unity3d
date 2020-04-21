@@ -22,16 +22,21 @@ using UnityEngine.EventSystems;
 
 public class Config  
 {  
-     public string scene;  
-     public string figure;
-     public string ground;
+	public string scene;  
+	public string figure;
+	public string ground;
 
-     public Config(string scn, string fig,string gr){
-     	scene= scn;
-     	figure = fig;
-     	ground = gr;
-     	
-     }
+	public Config(string scn, string fig,string gr){
+		scene= scn;
+		figure = fig;
+		ground = gr;
+		
+	}
+
+	public string out_string(){
+		string x = scene +";"+figure + ";" +ground;
+		return x;
+	}
 }   
 
 /// <summary>
@@ -665,8 +670,7 @@ public class TypTask : Task {
 	                         scene, figure, ground);
 	}
 
-	public static Config get_config_from_img(Texture2D img){
-		string old = img.name;
+	public static Config get_config_from_img_name(String old){
 		string fig;
 		string grd;
 		string scene;
@@ -699,8 +703,8 @@ public class TypTask : Task {
     /// Checks if two configs match an image pair by scenes.
     /// </summary>
 	bool is_there_a_pair_match(Config c1, Config c2,List<Texture2D> img_pair){
-		Config ic1 = get_config_from_img(img_pair[0]);
-		Config ic2 = get_config_from_img(img_pair[1]);
+		Config ic1 = get_config_from_img_name(img_pair[0].name);
+		Config ic2 = get_config_from_img_name(img_pair[1].name);
 		if(c1.scene == ic1.scene && c2.scene == ic2.scene){
 			return true;
 		}
@@ -752,12 +756,12 @@ public class TypTask : Task {
 		// Now go through lists and create pairs for task.
 		foreach(string prep in preposition_list){
 			foreach(Texture2D img1 in typicality_images[prep]){
-				Config c1 = get_config_from_img(img1);
+				Config c1 = get_config_from_img_name(img1.name);
 				Debug.Log(c1.scene);
 				Debug.Log(c1.figure);
 				Debug.Log(c1.ground);
 				foreach(Texture2D img2 in typicality_images[prep]){
-					Config c2 = get_config_from_img(img2);
+					Config c2 = get_config_from_img_name(img2.name);
 					if(c1.scene != c2.scene){
 						if(!typicality_image_pairs[prep].Any(img_pair => is_there_a_pair_match(c1, c2,img_pair))){
 							List<Texture2D> new_pair = new List<Texture2D>() {img1,img2};
@@ -842,10 +846,24 @@ public class TypTask : Task {
         string c2 = PlayerPrefs.GetString(Main.config2_player_pref,"");
         string selection = PlayerPrefs.GetString(Main.selection_player_pref,"");
 
+        Config C1 = get_config_from_img_name(c1);
+        Config C2 = get_config_from_img_name(c2);
+        string c1_out = C1.out_string();
+        string c2_out = C2.out_string();
+
+        string s_out = "";
+
+        if(selection != ""){
+        	Config S = get_config_from_img_name(selection);
+        	s_out = S.out_string();
+        }
+        
+        
+
         string p = PlayerPrefs.GetString(Main.prep_playerpref,"");
         string u = PlayerPrefs.GetString(Main.userid_player_pref,"");
         string ta = PlayerPrefs.GetString(Main.task_player_pref,"");
-        string now = System.DateTime.UtcNow.ToString("yyyyMMdd-HHMMss");
+        string now = System.DateTime.UtcNow.ToString("ddMMyyyy-HHmmss");
         string ID = System.Guid.NewGuid().ToString();
 	
         bool successful = true; //Not yet used here
@@ -860,9 +878,9 @@ public class TypTask : Task {
         form.AddField("preposition",p);
 
 		Debug.Log("outputting");
-    	form.AddField("c1",c1);
-    	form.AddField("c2",c2);
-    	form.AddField("selection",selection);
+    	form.AddField("c1",c1_out);
+    	form.AddField("c2",c2_out);
+    	form.AddField("selection",s_out);
     	
         // Send the form to the php script
         // Upload to a cgi script
@@ -1031,7 +1049,7 @@ public class SVTask : Task{
 		string ta = PlayerPrefs.GetString(Main.task_player_pref,"");
 		string u = PlayerPrefs.GetString(Main.userid_player_pref,"");
 		string sc = PlayerPrefs.GetString(Main.scene_player_pref,"");
-		string now = System.DateTime.UtcNow.ToString("yyyyMMdd-HHMMss");
+		string now = System.DateTime.UtcNow.ToString("ddMMyyyy-HHmmss");
 		string ID = System.Guid.NewGuid().ToString();
 		string prepositions = "";
 
@@ -1223,7 +1241,7 @@ public class CompTask : Task{
 		string ta = PlayerPrefs.GetString(Main.task_player_pref,"");
 		string u = PlayerPrefs.GetString(Main.userid_player_pref,"");
 		string sc = PlayerPrefs.GetString(Main.scene_player_pref,"");
-		string now = System.DateTime.UtcNow.ToString("yyyyMMdd-HHMMss");
+		string now = System.DateTime.UtcNow.ToString("ddMMyyyy-HHmmss");
 		string ID = System.Guid.NewGuid().ToString();
 		string prepositions = "";
 
@@ -1600,7 +1618,7 @@ public class Main : MonoBehaviour {
 		typ_task = new TypTask(this);
 		
 		
-		task_order = new Task[] {sv_task,sv_mod_task,comp_task,typ_task};
+		task_order = new Task[] {typ_task,sv_mod_task};
 
 		None_toggle = None_toggle_obj.GetComponent(typeof(Toggle)) as Toggle;
 

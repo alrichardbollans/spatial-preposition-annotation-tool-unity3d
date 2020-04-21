@@ -1,10 +1,10 @@
 // Script which executes geometric feature extraction.
+#if UNITY_EDITOR
 
 using UnityEngine;
-#if UNITY_EDITOR
+
 using UnityEditor;
 using UnityEditor.SceneManagement;
-#endif
 
 using System;
 using System.Linq;
@@ -14,7 +14,6 @@ using System.Collections.Generic;
 
 
 
-#if UNITY_EDITOR
 
 public class Feature_Extraction: EditorWindow{
 	

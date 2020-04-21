@@ -1,14 +1,16 @@
-using UnityEngine;
 #if UNITY_EDITOR
+
+using UnityEngine;
+
 using UnityEditor;
 using UnityEditor.SceneManagement;
-#endif
+
 using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
-#if UNITY_EDITOR
+
 
 
 public class SceneInfoButton: EditorWindow{

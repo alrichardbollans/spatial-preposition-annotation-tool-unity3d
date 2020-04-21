@@ -1,10 +1,9 @@
 // Provides buttons which prepares physics for all objects in scene for either positioning or game.
-
-using UnityEngine;
 #if UNITY_EDITOR
+using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-#endif
+
 
 using System;
 using System.Linq;
@@ -12,7 +11,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
-#if UNITY_EDITOR
+
 
 /// <summary>
 /// Class which provides button which prepares all objects in scene for positioning.

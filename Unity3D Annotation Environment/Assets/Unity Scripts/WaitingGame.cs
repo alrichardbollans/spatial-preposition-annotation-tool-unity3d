@@ -2,7 +2,7 @@
 // and positions after some time.
 // Refernced by set_objects_at_rest.
 
-
+#if UNITY_EDITOR
 using UnityEngine;
 using System;
 using System.Linq;
@@ -11,7 +11,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
-#if UNITY_EDITOR
+
 using UnityEditor;
 
 public class WaitingGame : MonoBehaviour

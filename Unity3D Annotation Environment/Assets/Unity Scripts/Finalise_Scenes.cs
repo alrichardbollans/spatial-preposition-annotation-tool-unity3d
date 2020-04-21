@@ -1,16 +1,16 @@
 // This script finalises scenes and should be executed via menuitem
 // once all scenes have been finished.
-
-using UnityEngine;
 #if UNITY_EDITOR
+using UnityEngine;
+
 using UnityEditor;
 using UnityEditor.SceneManagement;
-#endif
+
 
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-#if UNITY_EDITOR
+
 public class Finalise_Scenes : EditorWindow
 {   
     

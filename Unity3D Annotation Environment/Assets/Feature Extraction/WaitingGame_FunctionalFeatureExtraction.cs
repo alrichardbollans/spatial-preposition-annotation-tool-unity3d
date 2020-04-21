@@ -1,5 +1,5 @@
 // In game script which is used to calculate functional relations and also set objects at rest.
-
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
@@ -9,7 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
-#if UNITY_EDITOR
+
 using UnityEditor;
 
 public class WaitingGame_FunctionalFeatureExtraction : MonoBehaviour

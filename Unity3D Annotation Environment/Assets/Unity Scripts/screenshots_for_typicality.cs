@@ -1,15 +1,15 @@
 // This is useful but causing a crash..
-
-using UnityEngine;
 #if UNITY_EDITOR
+using UnityEngine;
+
 using UnityEditor;
 using UnityEditor.SceneManagement;
-#endif
+
 
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
- #if UNITY_EDITOR
+
 public class screenshots_for_typicality : EditorWindow
 {   
     // Resolution for screenshots.

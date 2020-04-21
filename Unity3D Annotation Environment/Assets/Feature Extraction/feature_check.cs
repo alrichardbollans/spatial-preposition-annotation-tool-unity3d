@@ -1,9 +1,9 @@
 // Script to make it easier to check features in the editor.
 // Adds script to each mesh object. 
 // Each object is treated as a ground and can change the given figure to see value.
-
-using UnityEngine;
 #if UNITY_EDITOR
+using UnityEngine;
+
 using UnityEditor;
 using UnityEditor.SceneManagement;
 
