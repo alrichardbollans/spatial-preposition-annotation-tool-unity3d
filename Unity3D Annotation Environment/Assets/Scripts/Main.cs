@@ -927,7 +927,7 @@ public class SVTask : Task{
 		"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",
 		"Remember, you can use the arrow keys to move around and while holding down the '0' key you can use the mouse to look around.\n\n Also, use the '1' and '2' keys to move up and down if you need to."};
 		
-		instruction = "Select <b>all</b> words which could fill in the blank:\n \n   ':a: :figure: (____) the :ground:'";
+		instruction = "Select <b>all</b> words which could fill in the blank:\n   ':a: :figure: (____) the :ground:'";
 
 		
 	}
@@ -1098,7 +1098,7 @@ public class SVModTask : SVTask{
 		"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",
 		};
 		
-		instruction = "Select <b>all</b> words which could fill in the blank:\n \n   'a <color=green><b>green object</b></color> (____) the <color=red><b>red object</b></color>'";
+		instruction = "Select <b>all</b> words which could fill in the blank:\n   'a <color=green><b>green object</b></color> (____) the <color=red><b>red object</b></color>'";
 
 		
 	}
@@ -1395,7 +1395,7 @@ public class ScreenTask : Task{
 			GameObject f = active_configuration[0];
 		
 			GameObject g = active_configuration[1];
-			
+
 			
 			set_preposition(screening_preposition);
 			set_ground(g);
@@ -1553,8 +1553,6 @@ public class Main : MonoBehaviour {
 	// Objetcs to hide/show if in dev mode.
 	bool dev_mode = false;
 	public GameObject dev_panel;
-	// Create random object for random number generation later
-	static System.Random rnd = new System.Random();
 	
 	
 
@@ -1602,7 +1600,7 @@ public class Main : MonoBehaviour {
 		typ_task = new TypTask(this);
 		
 		
-		task_order = new Task[] {screen_task,sv_task,sv_mod_task,comp_task,typ_task};
+		task_order = new Task[] {sv_task,sv_mod_task,comp_task,typ_task};
 
 		None_toggle = None_toggle_obj.GetComponent(typeof(Toggle)) as Toggle;
 
@@ -1775,7 +1773,7 @@ public class Main : MonoBehaviour {
 
 		int keyIndex = Array.FindIndex(task_order, x => x == task);
 
-		if(keyIndex<task_order.Count()){
+		if(keyIndex<task_order.Count()-1){
 			task = task_order[keyIndex+1];
 		}
 		else{
