@@ -479,7 +479,7 @@ MonoBehaviour:
     To look around using the mouse, hold down the ''0'' button.
 
 
-    Press delete again to close this window.
+    Press ''h'' again to close this window.
 
 
     Press ''Esc'' or close the window to quit.'
@@ -1040,10 +1040,10 @@ RectTransform:
   m_Father: {fileID: 1900725530}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.000005722, y: -0.000012398}
-  m_SizeDelta: {x: 639, y: 38}
+  m_AnchorMin: {x: 0.5, y: 0.43234375}
+  m_AnchorMax: {x: 0.5, y: 0.43234375}
+  m_AnchoredPosition: {x: 0.0000076296, y: 370.31}
+  m_SizeDelta: {x: 518.3, y: 82.7}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &351963655
 MonoBehaviour:
@@ -1057,7 +1057,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.397}
+  m_Color: {r: 0.9098039, g: 0.9098039, b: 0.9098039, a: 0.962}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -3794,8 +3794,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 673.8, y: 44.6}
+  m_AnchoredPosition: {x: 0, y: -0.52502}
+  m_SizeDelta: {x: 518.3, y: 83.75}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1282316398
 MonoBehaviour:
@@ -3820,14 +3820,14 @@ MonoBehaviour:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
     m_FontSize: 32
     m_FontStyle: 1
-    m_BestFit: 0
+    m_BestFit: 1
     m_MinSize: 2
     m_MaxSize: 40
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 1
-    m_VerticalOverflow: 1
+    m_HorizontalOverflow: 0
+    m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: Press Enter or click 'Accept' to Confirm
 --- !u!222 &1282316399
@@ -4247,7 +4247,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.575}
+  m_Color: {r: 0.9117647, g: 0.9117647, b: 0.9117647, a: 1}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -6801,7 +6801,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Press 'Delete' for help
+  m_Text: Press 'h' for help
 --- !u!222 &2145625448
 CanvasRenderer:
   m_ObjectHideFlags: 0

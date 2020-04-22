@@ -1343,7 +1343,7 @@ public class ScreenTask : Task{
 		
 		instruction_text_component = main.comp_instruction_text;
 		instruction_list = new string[] {"Before beginning you will be given <b>two quick examples</b> to complete\n \n \nClick Next..",	"You will be shown an indoor scene and a description of an object will be provided at the bottom of the screen. \n \n Click on the object that best fits the description.\n \n You will be prompted to press enter or click accept to confirm your selection. \n \nIf you are correct you will move on to the next stage.",
-		"To move around the scene: \n - Use the <b>arrow keys</b> to move around \n - <b>Hold down the '0' key</b> to use the mouse to look around \n - Use the <b>'1' and '2' keys</b> to move up and down if you need to \n - Press the <b>'Delete' key</b> for help"	};
+		"To move around the scene: \n - Use the <b>arrow keys</b> to move around \n - <b>Hold down the '0' key</b> to use the mouse to look around \n - Use the <b>'1' and '2' keys</b> to move up and down if you need to \n - Press the <b>'h' key</b> for help"	};
 		
 		instruction_title = "Instructions";
 		instruction = "Select the object which best fits the description:\n 'the object :preposition: the :ground:'";
@@ -1539,8 +1539,9 @@ public class Main : MonoBehaviour {
 	
 
 	// Input keys
-	static public KeyCode ShowHelpKey = KeyCode.Delete;
-	static public KeyCode quitKey = KeyCode.Escape;
+	static public KeyCode ShowHelpKey = KeyCode.H;
+	static public KeyCode quitKey = KeyCode.Escape; 
+	static public KeyCode acceptKey = KeyCode.Return;
 
 	Task sv_task;
 	Task sv_mod_task;
@@ -2027,32 +2028,48 @@ public class Main : MonoBehaviour {
 	/// Toggles displaying help panel.
 	/// </summary>
 	void toggle_help_panel(){
+		
 		if (Input.GetKeyDown (ShowHelpKey)){
 			if(player_in_game()){
 				if(!help_panel.activeSelf){
-					help_panel.SetActive(true);
+					if(task.allow_camera_movement){
+						help_panel.SetActive(true);
+					}
 				}
 				else{
 					help_panel.SetActive(false);
 				}
 			}
 		}
+		
 	}
 
 	/// <summary>
 	/// Checks if user is pressing quit key and takes action.
 	/// </summary>
-	void quit_input(){
+	void toggle_quit_panel(){
 		
 		if(Input.GetKeyDown (quitKey)) {
-		    confirmQuit_text.SetActive(true);
-		    confirm_quit = true;
-
+			if(!confirm_quit){
+				show_quit_panel();
+			}
+			else{
+				hide_quit_panel();
+			}
 		}
 	}
 
+	void show_quit_panel(){
+		hide_confirm_click();
+		help_panel.SetActive(false);
+	    confirmQuit_text.SetActive(true);
+	    confirm_quit = true;
+	}
 
-
+	void hide_quit_panel(){
+		confirmQuit_text.SetActive(false);
+	    confirm_quit = false;
+	}
 
 	/// <summary>
 	/// Update is called once per frame.
@@ -2061,10 +2078,10 @@ public class Main : MonoBehaviour {
 		// Show/hide help panel on key press.
 		toggle_help_panel();
 
-		quit_input();
+		toggle_quit_panel();
 
 		// Finish if user confirms quit.
-		if (Input.GetKeyDown (KeyCode.Return) && confirm_quit == true){
+		if (Input.GetKeyDown (acceptKey) && confirm_quit == true){
 		  	finish();
 		  	#if UNITY_EDITOR
 	        //Stop playing the scene
@@ -2074,8 +2091,7 @@ public class Main : MonoBehaviour {
 
 		// Remove panels if user clicks.
 	    if (Input.GetMouseButtonDown(0)){
-	    	confirmQuit_text.SetActive(false);
-		    confirm_quit = false;
+	    	hide_quit_panel();
 
 		    help_panel.SetActive(false);
 	    }
@@ -2105,7 +2121,7 @@ public class Main : MonoBehaviour {
 			
 		
 			// If return is pressed.
-			if (Input.GetKeyDown (KeyCode.Return)){
+			if (Input.GetKeyDown (acceptKey)){
 		  		accept();
 			}
 
