@@ -644,6 +644,9 @@ public class TypTask : Task {
 	static public int number_typ_configs_done = 0;
 	static public int number_typ_configs_to_do = 10;
 
+	// String to use to delimit substrings in filenames.
+	static public string file_string_delimiter = "__"; 
+
 	public TypTask(Main m) : base(Main.typ_abv, m, m.typ_main_panel){
 		allow_camera_movement = false;
 
@@ -651,7 +654,7 @@ public class TypTask : Task {
 		instruction_list =  new string[] {"In this task you will be shown two configurations of objects and asked to select which configuration <b>best fits</b> a given description.",
 		"A simple description will be given of a green object and its relationship to a red object, e.g. 'the <color=green><b>green object</b></color> <b>on</b> the <color=red><b>red object</b></color>'. You need to <b>click</b> the image <b>which best fits the description</b>.\n\n If you feel that <b>no image fits</b> the given description, click 'Select None'."};
 		instruction_title = "Instructions";
-		instruction = "Select the pair of objects which best fits the description:\n'a <color=green><b>green object</b></color> :preposition: the <color=red><b>red object</b></color>'";
+		instruction = "Select the pair of objects which best fits the description:\n'the <color=green><b>green object</b></color> :preposition: the <color=red><b>red object</b></color>'";
 		
 
 	
@@ -666,7 +669,7 @@ public class TypTask : Task {
 	/// String, screenshot name.
 	/// </returns>
 	public static string ScreenShotName(string scene, string figure, string ground) {
-	    return string.Format("typtask_scene_{0}__figure_{1}__ground_{2}__.png", 
+	    return string.Format("typtask_scene_{0}"+file_string_delimiter+"figure_{1}"+file_string_delimiter+"ground_{2}"+file_string_delimiter+".png", 
 	                         scene, figure, ground);
 	}
 
@@ -689,12 +692,15 @@ public class TypTask : Task {
 	
 	}
 
+	/// <summary>
+    /// Gets string from file_string from the given index up to the first instance of file_string_delimiter.
+    /// </summary>
 	static string get_string_from_img_file(string file_string,int first_ch_index){
 		string out_string;
 		int end = file_string.Length - first_ch_index;
 		out_string = file_string.Substring(first_ch_index,end);
 		
-		out_string = out_string.Substring(0,out_string.IndexOf("__"));
+		out_string = out_string.Substring(0,out_string.IndexOf(file_string_delimiter));
 		
 		return out_string;
 	}
@@ -723,6 +729,9 @@ public class TypTask : Task {
 		new_example();
 	}
 
+	/// <summary>
+    /// Adds pairs of images to typicality_image_pairs.
+    /// </summary>
 	public override void  populate_config_list(){
 		typicality_images.Clear();
 		typicality_image_pairs.Clear();
@@ -746,20 +755,17 @@ public class TypTask : Task {
 		typicality_images["below"] = typicality_images["under"];
 		typicality_images["on top of"] = typicality_images["on"];
 		
-		// Now shuffle the lists.
+		
 		foreach(string prep in preposition_list){
+			// Now shuffle the lists.
 			typicality_images[prep] = typicality_images[prep].OrderBy(a => rnd.Next()).ToList();
 			typicality_image_pairs[prep] = new List<List<Texture2D>>() {};
-		}
 		
 		
-		// Now go through lists and create pairs for task.
-		foreach(string prep in preposition_list){
+		
+			// Now go through lists and create pairs for task.
 			foreach(Texture2D img1 in typicality_images[prep]){
 				Config c1 = get_config_from_img_name(img1.name);
-				Debug.Log(c1.scene);
-				Debug.Log(c1.figure);
-				Debug.Log(c1.ground);
 				foreach(Texture2D img2 in typicality_images[prep]){
 					Config c2 = get_config_from_img_name(img2.name);
 					if(c1.scene != c2.scene){
@@ -1116,7 +1122,7 @@ public class SVModTask : SVTask{
 		"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",
 		};
 		
-		instruction = "Select <b>all</b> words which could fill in the blank:\n   'a <color=green><b>green object</b></color> (____) the <color=red><b>red object</b></color>'";
+		instruction = "Select <b>all</b> words which could fill in the blank:\n   'the <color=green><b>green object</b></color> (____) the <color=red><b>red object</b></color>'";
 
 		
 	}
