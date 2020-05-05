@@ -7,7 +7,7 @@ Below gives brief information on how to amend/build the game.
 Note that some scripts require the NonConvexMeshCollider Asset, which is available on the Unity Store.
 
 ## Scenes
-To create new scenes to test on, it is easiest to begin with the given scene_template. Scenes should be saved in 'Assets/Scenes'.
+To create new scenes to test on, it is easiest to begin with the given `scene_template`. Scenes should be saved in 'Assets/Scenes'.
 
 ### Naming
 * `Main` class contains names of various non-testing scenes which need referencing in scripts. If names of any of the non-test scenes are changed, make sure they are also updated here. `first_scene_name` is also set here which defines which scene is opened first.

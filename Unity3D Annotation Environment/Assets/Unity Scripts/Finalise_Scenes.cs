@@ -61,6 +61,15 @@ public class Finalise_Scenes : EditorWindow
         
     }
 
+    public static void bake_light_maps(){
+        //Bake Lighting settings
+
+        Lightmapping.giWorkflowMode = Lightmapping.GIWorkflowMode.OnDemand;
+        LightmapEditorSettings.bakeResolution = 1f;
+        Lightmapping.realtimeGI = false; // Realtime GI does not show up on WebGL build
+        Lightmapping.Bake();
+    }
+
     static void make_edits_to_scene(string ith_file){
         string scenePath = get_scene_path(ith_file);
         string scene_name =  simplify_scene_name(ith_file);
@@ -127,12 +136,8 @@ public class Finalise_Scenes : EditorWindow
             }
         }
 
-        //Bake Lighting settings
-
-        Lightmapping.giWorkflowMode = Lightmapping.GIWorkflowMode.OnDemand;
-        LightmapEditorSettings.bakeResolution = 1f;
-        Lightmapping.realtimeGI = false; // Realtime GI does not show up on WebGL build
-        Lightmapping.Bake();
+        bake_light_maps();
+        
         
         Debug.Log ("Saving active scene");
         // EditorSceneManager.SaveOpenScenes();

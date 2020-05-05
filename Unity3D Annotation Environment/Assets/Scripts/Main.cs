@@ -642,7 +642,7 @@ public class TypTask : Task {
 	Dictionary<string,List<List<Texture2D>>> typicality_image_pairs = new Dictionary<string,List<List<Texture2D>>>();
 
 	static public int number_typ_configs_done = 0;
-	static public int number_typ_configs_to_do = 10;
+	static public int number_typ_configs_to_do = 15;
 
 	// String to use to delimit substrings in filenames.
 	static public string file_string_delimiter = "__"; 
@@ -1116,7 +1116,7 @@ public class SVTask : Task{
 public class SVModTask : SVTask{
 	public SVModTask(Main m) : base(Main.sv_mod_abv, m){
 		allow_camera_movement = false;
-
+		number_scenes_to_do = 6;
 		instruction_list = new string[] {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
 		"A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.",
 		"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",

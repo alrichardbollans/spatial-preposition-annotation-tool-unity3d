@@ -77,6 +77,10 @@ public class MeshObject{
 				{"ball", 0.1f},
 				{"plate", 0.2f},
 				{"shelf", 1f},
+				{"pan", 1f},
+				{"lid", 0.5f},
+				{"tap", 0.5f},
+				{"cabinet", 20f},
 				{"clock", 1f}
              };
         
