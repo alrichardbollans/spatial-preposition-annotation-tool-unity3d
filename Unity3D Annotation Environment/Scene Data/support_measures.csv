@@ -1,870 +1,186 @@
 Support Calculations
 Scene, Figure,Ground, Movement,Normalized Movement,Support
-compsvu25,book (1),book (1),0,0,0
-compsvu25,cube,book (1),-0.00128019,-0.0151879,0
-compsvu25,book,book (1),-0.000560582,-0.00415549,0
-compsvu25,table,book (1),-1.10269E-05,-6.83569E-05,0
-compsvu25,book (1),cube,0.0123746,0.140073,0.140073
-compsvu25,cube,cube,0,0,0
-compsvu25,book,cube,0.10994,0.779707,0.779707
-compsvu25,table,cube,-1.44839E-05,-8.01186E-05,0
-compsvu25,book (1),book,0.0561417,0.674202,0.674202
-compsvu25,cube,book,0.00176108,0.0206416,0.0206416
-compsvu25,book,book,0,0,0
-compsvu25,table,book,-1.2517E-05,-4.60325E-05,0
-compsvu25,book (1),table,0.821985,1.00425,1
-compsvu25,cube,table,0.816793,1.0054,1
-compsvu25,book,table,0.825428,1.00973,1
-compsvu25,table,table,0,0,0
-compsva12,box,box,0,0,0
-compsva12,book,box,-0.00140923,-0.0041917,0
-compsva12,table,box,-6.31809E-06,-1.87929E-05,0
-compsva12,pear,box,-0.00203741,-0.0302405,0
-compsva12,box,book,0.0485883,0.985843,0.985843
-compsva12,book,book,0,0,0
-compsva12,table,book,-6.07967E-06,-0.000119398,0
-compsva12,pear,book,0.0500187,3.99829,1
-compsva12,box,table,0.867642,1.05928,1
-compsva12,book,table,20.2546,24.7714,1
-compsva12,table,table,0,0,0
-compsva12,pear,table,0.869112,1.06108,1
-compsva12,box,pear,0.000342965,0.00932579,0.00932579
-compsva12,book,pear,-0.000914991,-0.0706426,0
-compsva12,table,pear,-4.88758E-06,-3.52098E-05,0
-compsva12,pear,pear,0,0,0
-compsva13,balloon,balloon,0,0,0
-compsva13,book,balloon,0.000453651,0.000451817,0.000451817
-compsva13,table,balloon,-9.05991E-06,-9.02327E-06,0
-compsva13,pear,balloon,0.0014779,0.00147192,0.00147192
-compsva13,book,book,0,0,0
-compsva13,table,book,-9.35793E-06,-0.000179272,0
-compsva13,pear,book,0.0514755,1.01014,1
-compsva13,balloon,book,0,0,0
-compsva13,book,table,21.9534,26.8218,1
-compsva13,table,table,0,0,0
-compsva13,pear,table,0.762392,0.930794,0.930794
-compsva13,balloon,table,0,0,0
-compsva13,book,pear,0.000185549,0.001389,0.001389
-compsva13,table,pear,-8.88109E-06,-6.64827E-05,0
-compsva13,pear,pear,0,0,0
-compsva13,balloon,pear,0,0,0
-compsva14,box,box,0,0,0
-compsva14,book,box,40.0499,120.307,1
-compsva14,table,box,-9.29833E-06,-1.52902E-05,0
-compsva14,box,book,-0.00348103,-0.0666871,0
-compsva14,book,book,0,0,0
-compsva14,table,book,-9.29833E-06,-3.37841E-05,0
-compsva14,box,table,-0.00350934,-0.00428451,0
-compsva14,book,table,0.000147402,0.000447484,0.000447484
-compsva14,table,table,0,0,0
-compsva15,balloon,balloon,0,0,0
-compsva15,book,balloon,0.000453651,0.000451817,0.000451817
-compsva15,table,balloon,-9.05991E-06,-9.02327E-06,0
-compsva15,pear,balloon,0.0014779,0.00147192,0.00147192
-compsva15,book,book,0,0,0
-compsva15,table,book,-9.35793E-06,-0.000179272,0
-compsva15,balloon,book,0,0,0
-compsva15,pear,book,0.0514755,1.01014,1
-compsva15,book,table,20.3394,24.8499,1
-compsva15,table,table,0,0,0
-compsva15,balloon,table,0,0,0
-compsva15,pear,table,0.762392,0.930794,0.930794
-compsva15,book,pear,0.000185549,0.001389,0.001389
-compsva15,table,pear,-8.88109E-06,-6.64827E-05,0
-compsva15,balloon,pear,0,0,0
-compsva15,pear,pear,0,0,0
-compsva23,balloon,balloon,0,0,0
-compsva23,box,balloon,0.000122249,0.000121755,0.000121755
-compsva23,book,balloon,0.000836909,0.000833525,0.000833525
-compsva23,table,balloon,-6.07967E-06,-6.05509E-06,0
-compsva23,balloon,box,0,0,0
-compsva23,box,box,0,0,0
-compsva23,book,box,0.000231803,0.000680058,0.000680058
-compsva23,table,box,-7.45058E-06,-2.18584E-05,0
-compsva23,balloon,book,0,0,0
-compsva23,box,book,0.0483863,1.01548,1
-compsva23,book,book,0,0,0
-compsva23,table,book,-7.45058E-06,-0.000138128,0
-compsva23,balloon,table,0,0,0
-compsva23,box,table,0.867457,1.05906,1
-compsva23,book,table,18.6075,22.776,1
-compsva23,table,table,0,0,0
-compsva24,picture,picture,0,0,0
-compsva24,bin,picture,0.00157426,0.0405557,0.0405557
-compsva24,table,picture,-1.19805E-05,-6.65508E-05,0
-compsva24,picture,bin,0.427516,1.00459,1
-compsva24,bin,bin,0,0,0
-compsva24,table,bin,-1.20401E-05,-1.98818E-05,0
-compsva24,picture,table,0.00648597,0.0152738,0.0152738
-compsva24,bin,table,0.00145285,0.00729524,0.00729524
-compsva24,table,table,0,0,0
-compsva25,picture,picture,0,0,0
-compsva25,bin,picture,0.00158618,0.0307277,0.0307277
-compsva25,table,picture,-9.89437E-06,-5.23639E-05,0
-compsva25,picture,bin,0.360083,0.865986,0.865986
-compsva25,bin,bin,0,0,0
-compsva25,table,bin,-1.26362E-05,-2.08945E-05,0
-compsva25,picture,table,0.00401229,0.00965258,0.00965258
-compsva25,bin,table,0.0015267,0.00766702,0.00766702
-compsva25,table,table,0,0,0
-compsva34,balloon,balloon,0,0,0
-compsva34,bin,balloon,0.00162002,0.00161347,0.00161347
-compsva34,table,balloon,-9.77516E-06,-9.73564E-06,0
-compsva34,balloon,bin,0,0,0
-compsva34,bin,bin,0,0,0
-compsva34,table,bin,-9.89437E-06,-1.63608E-05,0
-compsva34,balloon,table,0,0,0
-compsva34,bin,table,0.00161444,0.00810659,0.00810659
-compsva34,table,table,0,0,0
-compsvi12,pencil,pencil,0,0,0
-compsvi12,cup,pencil,0.00415337,0.101495,0.101495
-compsvi12,table,pencil,-3.03984E-06,-1.13171E-05,0
-compsvi12,cube,pencil,0.00612634,0.022808,0.022808
-compsvi12,cup,cup,0,0,0
-compsvi12,table,cup,-3.03984E-06,-1.25744E-05,0
-compsvi12,pencil,cup,0.198878,2.50878,1
-compsvi12,cube,cup,0.0198333,0.396545,0.396545
-compsvi12,cup,table,0.823289,0.997878,0.997878
-compsvi12,table,table,0,0,0
-compsvi12,pencil,table,0.795978,0.97177,0.97177
-compsvi12,cube,table,0.825584,0.998495,0.998495
-compsvi12,cup,cube,0.00420696,0.03553,0.03553
-compsvi12,table,cube,-3.21865E-06,-3.33702E-05,0
-compsvi12,pencil,cube,-0.0128775,-0.166195,0
-compsvi12,cube,cube,0,0,0
-compsvi13,table,table,0,0,0
-compsvi13,pencil (1),table,0.799309,0.969669,0.969669
-compsvi13,pencil,table,0.817675,0.99957,0.99957
-compsvi13,mug,table,0.819569,1.00094,1
-compsvi13,table,pencil (1),-8.70228E-06,-3.39227E-05,0
-compsvi13,pencil (1),pencil (1),0,0,0
-compsvi13,pencil,pencil (1),-0.000582218,-0.0191482,0
-compsvi13,mug,pencil (1),0.00050211,0.00736735,0.00736735
-compsvi13,table,pencil,-8.52346E-06,-0.00012378,0
-compsvi13,pencil (1),pencil,-0.00489044,-0.0397591,0
-compsvi13,pencil,pencil,0,0,0
-compsvi13,mug,pencil,0.000503004,0.00675741,0.00675741
-compsvi13,table,mug,-8.70228E-06,-5.38281E-05,0
-compsvi13,pencil (1),mug,0.103656,0.848036,0.848036
-compsvi13,pencil,mug,0.0274742,0.764895,0.764895
-compsvi13,mug,mug,0,0,0
-compsvi14,bowl,bowl,0,0,0
-compsvi14,ball,bowl,0.0154914,0.249239,0.249239
-compsvi14,table,bowl,-5.72205E-06,-6.06549E-05,0
-compsvi14,pencil,bowl,0.091778,1.00631,1
-compsvi14,bowl,ball,-0.000984371,-0.0183326,0
-compsvi14,ball,ball,0,0,0
-compsvi14,table,ball,-5.66244E-06,-4.3388E-05,0
-compsvi14,pencil,ball,1.93119E-05,0.000204788,0.000204788
-compsvi14,bowl,table,0.8181,0.999944,0.999944
-compsvi14,ball,table,0.81992,1.00598,1
-compsvi14,table,table,0,0,0
-compsvi14,pencil,table,0.81892,0.999804,0.999804
-compsvi14,bowl,pencil,-0.000995517,-0.0502261,0
-compsvi14,ball,pencil,0.000677764,0.0341948,0.0341948
-compsvi14,table,pencil,-5.72205E-06,-0.00028869,0
-compsvi14,pencil,pencil,0,0,0
-compsvi14a,bowl,bowl,0,0,0
-compsvi14a,cube,bowl,0.0523391,1.26411,1
-compsvi14a,table,bowl,-1.12057E-05,-0.00012167,0
-compsvi14a,pear,bowl,0.0852063,1.57114,1
-compsvi14a,bowl,cube,-0.00144261,-0.0142355,0
-compsvi14a,cube,cube,0,0,0
-compsvi14a,table,cube,-1.13249E-05,-0.000111753,0
-compsvi14a,pear,cube,0.0192224,1.49848,1
-compsvi14a,bowl,table,0.817659,0.998379,0.998379
-compsvi14a,cube,table,0.871442,1.06394,1
-compsvi14a,table,table,0,0,0
-compsvi14a,pear,table,0.921149,1.12463,1
-compsvi14a,bowl,pear,-0.00143707,-0.0106352,0
-compsvi14a,cube,pear,0.0119573,0.31598,0.31598
-compsvi14a,table,pear,-1.13249E-05,-8.3811E-05,0
-compsvi14a,pear,pear,0,0,0
-compsvi15,jar,jar,0,0,0
-compsvi15,pencil,jar,0.0683762,0.326269,0.326269
-compsvi15,table,jar,-6.19888E-06,-2.95737E-05,0
-compsvi15,box,jar,-1.8537E-05,-0.000202777,0
-compsvi15,pear,jar,0.000562728,0.00498531,0.00498531
-compsvi15,jar,pencil,1.19209E-06,6.96117E-05,6.96117E-05
-compsvi15,pencil,pencil,0,0,0
-compsvi15,table,pencil,-6.19888E-06,-0.000361981,0
-compsvi15,box,pencil,-6.25849E-06,-0.000365461,0
-compsvi15,pear,pencil,0.000316024,0.0184541,0.0184541
-compsvi15,jar,table,0.819066,1.00001,1
-compsvi15,pencil,table,0.819062,0.999994,0.999994
-compsvi15,table,table,0,0,0
-compsvi15,box,table,0.819059,0.999994,0.999994
-compsvi15,pear,table,0.819717,1.00524,1
-compsvi15,jar,box,8.9407E-07,8.53177E-06,8.53177E-06
-compsvi15,pencil,box,-1.04904E-05,-5.00583E-05,0
-compsvi15,table,box,-6.07967E-06,-1.4811E-05,0
-compsvi15,box,box,0,0,0
-compsvi15,pear,box,0.0133559,0.118328,0.118328
-compsvi15,jar,pear,1.72854E-06,1.59446E-05,1.59446E-05
-compsvi15,pencil,pear,-1.0252E-05,-4.80908E-05,0
-compsvi15,table,pear,-6.07967E-06,-1.86178E-05,0
-compsvi15,box,pear,-6.85453E-06,-7.21334E-05,0
-compsvi15,pear,pear,0,0,0
-compsvi16,table,table,0,0,0
-compsvi16,bowl,table,0.817585,0.998412,0.998412
-compsvi16,pear,table,0.815291,1.00056,1
-compsvi16,pencil,table,0.820124,1.00129,1
-compsvi16,table,bowl,-8.04663E-06,-8.70637E-05,0
-compsvi16,bowl,bowl,0,0,0
-compsvi16,pear,bowl,-0.00336117,-0.0820629,0
-compsvi16,pencil,bowl,0.080221,1.8608,1
-compsvi16,table,pear,-8.16584E-06,-5.76394E-05,0
-compsvi16,bowl,pear,-0.00150996,-0.0283114,0
-compsvi16,pear,pear,0,0,0
-compsvi16,pencil,pear,9.23872E-06,0.000195902,0.000195902
-compsvi16,table,pencil,-8.16584E-06,-8.45149E-05,0
-compsvi16,bowl,pencil,-0.00150877,-0.0156155,0
-compsvi16,pear,pencil,0.00335527,0.0347264,0.0347264
-compsvi16,pencil,pencil,0,0,0
-compsvi23,table,table,0,0,0
-compsvi23,box,table,0.270788,1,1
-compsvi23,box (1),table,-1.3113E-06,-1.60097E-06,0
-compsvi23,table,box,-1.19805E-05,-3.58876E-05,0
-compsvi23,box,box,0,0,0
-compsvi23,box (1),box,-1.3113E-06,-4.19703E-06,0
-compsvi23,table,box (1),-1.18613E-05,-1.96177E-05,0
-compsvi23,box,box (1),-0.0158873,-0.0586705,0
-compsvi23,box (1),box (1),0,0,0
-compsvi24,cup,cup,0,0,0
-compsvi24,table,cup,-1.11461E-05,-4.64068E-05,0
-compsvi24,cube,cup,0.0134803,0.270938,0.270938
-compsvi24,pencil,cup,0.240122,1.00052,1
-compsvi24,cup,table,0.816541,0.996901,0.996901
-compsvi24,table,table,0,0,0
-compsvi24,cube,table,0.818358,0.999421,0.999421
-compsvi24,pencil,table,0.819086,1.00002,1
-compsvi24,cup,cube,-0.00253433,-0.0211816,0
-compsvi24,table,cube,-1.11461E-05,-0.000111456,0
-compsvi24,cube,cube,0,0,0
-compsvi24,pencil,cube,2.39611E-05,0.000239601,0.000239601
-compsvi24,cup,pencil,-0.0025723,-0.14889,0
-compsvi24,table,pencil,-1.10865E-05,-0.000641708,0
-compsvi24,cube,pencil,-0.000122607,-0.00709674,0
-compsvi24,pencil,pencil,0,0,0
-compsvi24a,pear,pear,0,0,0
-compsvi24a,cup,pear,-0.00225967,-0.0107388,0
-compsvi24a,table,pear,-6.07967E-06,-2.88928E-05,0
-compsvi24a,cube,pear,0.000907719,0.0043138,0.0043138
-compsvi24a,pear,cup,0.161905,0.989253,0.989253
-compsvi24a,cup,cup,0,0,0
-compsvi24a,table,cup,-5.72205E-06,-2.38289E-05,0
-compsvi24a,cube,cup,0.0178711,0.403184,0.403184
-compsvi24a,pear,table,0.833231,1.01729,1
-compsvi24a,cup,table,0.816738,0.997141,0.997141
-compsvi24a,table,table,0,0,0
-compsvi24a,cube,table,0.836932,1.01624,1
-compsvi24a,pear,cube,0.00814629,0.102226,0.102226
-compsvi24a,cup,cube,-0.00231224,-0.0200814,0
-compsvi24a,table,cube,-5.96046E-06,-7.47962E-05,0
-compsvi24a,cube,cube,0,0,0
-compsvi25,jar,jar,0,0,0
-compsvi25,pencil,jar,0.210613,1.00382,1
-compsvi25,table,jar,-6.97374E-06,-3.28659E-05,0
-compsvi25,box,jar,4.02331E-05,0.00057015,0.00057015
-compsvi25,pencil (1),jar,0.163867,0.99304,0.99304
-compsvi25,jar,pencil,-0.000214517,-0.0102432,0
-compsvi25,pencil,pencil,0,0,0
-compsvi25,table,pencil,-6.97374E-06,-0.000332995,0
-compsvi25,box,pencil,2.32458E-05,0.00110998,0.00110998
-compsvi25,pencil (1),pencil,0.163869,7.82472,1
-compsvi25,jar,table,0.819054,1.00159,1
-compsvi25,pencil,table,1.02967,1.25713,1
-compsvi25,table,table,0,0,0
-compsvi25,box,table,0.819103,1.00003,1
-compsvi25,pencil (1),table,0.982949,1.20008,1
-compsvi25,jar,box,-1.12057E-05,-0.000106956,0
-compsvi25,pencil,box,0.00101602,0.00487319,0.00487319
-compsvi25,table,box,-6.85453E-06,-1.66964E-05,0
-compsvi25,box,box,0,0,0
-compsvi25,pencil (1),box,0.163879,1.00112,1
-compsvi25,jar,pencil (1),-1.04308E-05,-0.000597905,0
-compsvi25,pencil,pencil (1),0.210607,12.0722,1
-compsvi25,table,pencil (1),-6.79493E-06,-0.000389493,0
-compsvi25,box,pencil (1),1.78814E-06,0.000102498,0.000102498
-compsvi25,pencil (1),pencil (1),0,0,0
-compsvi26,cup,cup,0,0,0
-compsvi26,table,cup,-1.0252E-05,-4.26973E-05,0
-compsvi26,cube,cup,0.0141485,0.281143,0.281143
-compsvi26,pencil,cup,-1.96695E-06,-8.19192E-06,0
-compsvi26,cup,table,0.816545,0.996923,0.996923
-compsvi26,table,table,0,0,0
-compsvi26,cube,table,0.820341,1.00266,1
-compsvi26,pencil,table,0.819064,1,1
-compsvi26,cup,cube,-0.00249308,-0.0207182,0
-compsvi26,table,cube,-1.01924E-05,-9.94875E-05,0
-compsvi26,cube,cube,0,0,0
-compsvi26,pencil,cube,-1.78814E-06,-1.7454E-05,0
-compsvi26,cup,pencil,-0.00252819,-0.0211672,0
-compsvi26,table,pencil,-1.07288E-05,-0.000628281,0
-compsvi26,cube,pencil,-0.000475407,-0.00944578,0
-compsvi26,pencil,pencil,0,0,0
-compsvi26a,lamp,lamp,0,0,0
-compsvi26a,pencil,lamp,0.0328773,0.391154,0.391154
-compsvi26a,bowl,lamp,-0.00159103,-0.026415,0
-compsvi26a,table,lamp,-1.055E-05,-1.59786E-05,0
-compsvi26a,lamp,pencil,-0.053877,-0.210554,0
-compsvi26a,pencil,pencil,0,0,0
-compsvi26a,bowl,pencil,-0.00159204,-0.0630606,0
-compsvi26a,table,pencil,-1.06096E-05,-0.000308736,0
-compsvi26a,lamp,bowl,-0.0340297,-0.121664,0
-compsvi26a,pencil,bowl,-0.0259512,-1.08947,0
-compsvi26a,bowl,bowl,0,0,0
-compsvi26a,table,bowl,-1.06096E-05,-0.000115388,0
-compsvi26a,lamp,table,0.866186,1.14151,1
-compsvi26a,pencil,table,0.851943,1.04013,1
-compsvi26a,bowl,table,0.817512,0.99813,0.99813
-compsvi26a,table,table,0,0,0
-compsvi3,table,table,0,0,0
-compsvi3,pencil,table,0.819256,1.00198,1
-compsvi3,pear,table,0.817903,0.999149,0.999149
-compsvi3,mug,table,0.819075,1.00003,1
-compsvi3,table,pencil,-6.67572E-06,-9.44827E-05,0
-compsvi3,pencil,pencil,0,0,0
-compsvi3,pear,pencil,-0.000198543,-0.00437209,0
-compsvi3,mug,pencil,-7.15256E-06,-9.62389E-05,0
-compsvi3,table,pear,-6.67572E-06,-5.01742E-05,0
-compsvi3,pencil,pear,-0.000101447,-0.00276453,0
-compsvi3,pear,pear,0,0,0
-compsvi3,mug,pear,-2.6226E-06,-3.57508E-05,0
-compsvi3,table,mug,-6.67572E-06,-4.16657E-05,0
-compsvi3,pencil,mug,0.0276802,0.763656,0.763656
-compsvi3,pear,mug,-0.000296712,-0.00674353,0
-compsvi3,mug,mug,0,0,0
-compsvi34,table,table,0,0,0
-compsvi34,pencil (1),table,0.819083,1.00002,1
-compsvi34,pencil,table,0.819043,1.00199,1
-compsvi34,mug,table,0.819073,1.00002,1
-compsvi34,table,pencil (1),-9.83477E-06,-0.000657945,0
-compsvi34,pencil (1),pencil (1),0,0,0
-compsvi34,pencil,pencil (1),0.000113666,0.00760425,0.00760425
-compsvi34,mug,pencil (1),2.92063E-06,0.00019539,0.00019539
-compsvi34,table,pencil,-9.83477E-06,-0.00013842,0
-compsvi34,pencil (1),pencil,-4.05312E-06,-5.70457E-05,0
-compsvi34,pencil,pencil,0,0,0
-compsvi34,mug,pencil,-7.56979E-06,-0.000101547,0
-compsvi34,table,mug,-1.00136E-05,-6.25064E-05,0
-compsvi34,pencil (1),mug,0.152235,0.950738,0.950738
-compsvi34,pencil,mug,0.027676,0.764637,0.764637
-compsvi34,mug,mug,0,0,0
-compsvi36,table,table,0,0,0
-compsvi36,pencil,table,0.819268,1.00198,1
-compsvi36,pear,table,0.818364,0.999696,0.999696
-compsvi36,mug,table,0.819072,1.00001,1
-compsvi36,table,pencil,-6.67572E-06,-9.44827E-05,0
-compsvi36,pencil,pencil,0,0,0
-compsvi36,pear,pencil,-0.000198543,-0.00437209,0
-compsvi36,mug,pencil,-7.15256E-06,-9.62389E-05,0
-compsvi36,table,pear,-6.67572E-06,-5.01742E-05,0
-compsvi36,pencil,pear,-0.000101447,-0.00276453,0
-compsvi36,pear,pear,0,0,0
-compsvi36,mug,pear,-2.6226E-06,-3.57508E-05,0
-compsvi36,table,mug,-6.67572E-06,-4.16657E-05,0
-compsvi36,pencil,mug,0.0276802,0.76372,0.76372
-compsvi36,pear,mug,-0.000296712,-0.006744,0
-compsvi36,mug,mug,0,0,0
-compsvi45,table,table,0,0,0
-compsvi45,pencil,table,0.81766,1.0003,1
-compsvi45,cup,table,0.814262,0.997121,0.997121
-compsvi45,mug,table,0.819056,0.999996,0.999996
-compsvi45,table,pencil,-9.83477E-06,-0.00013842,0
-compsvi45,pencil,pencil,0,0,0
-compsvi45,cup,pencil,-0.00492412,-0.0304142,0
-compsvi45,mug,pencil,-0.00011158,-0.00149681,0
-compsvi45,table,cup,-9.83477E-06,-3.00566E-05,0
-compsvi45,pencil,cup,0.000113666,0.0029416,0.0029416
-compsvi45,cup,cup,0,0,0
-compsvi45,mug,cup,2.92063E-06,3.87635E-05,3.87635E-05
-compsvi45,table,mug,-9.71556E-06,-6.06461E-05,0
-compsvi45,pencil,mug,0.027608,0.762758,0.762758
-compsvi45,cup,mug,-0.00477916,-0.0298221,0
-compsvi45,mug,mug,0,0,0
-compsvi46,bowl,bowl,0,0,0
-compsvi46,ball,bowl,0.0154919,0.249247,0.249247
-compsvi46,table,bowl,-5.72205E-06,-6.06549E-05,0
-compsvi46,pencil,bowl,0.0904426,1.00638,1
-compsvi46,bowl,ball,-0.000983536,-0.0183171,0
-compsvi46,ball,ball,0,0,0
-compsvi46,table,ball,-5.54323E-06,-4.24746E-05,0
-compsvi46,pencil,ball,-0.00132448,-0.0142466,0
-compsvi46,bowl,table,0.818148,1,1
-compsvi46,ball,table,0.834557,1.02394,1
-compsvi46,table,table,0,0,0
-compsvi46,pencil,table,0.817676,0.998285,0.998285
-compsvi46,bowl,pencil,-0.000941634,-0.0475076,0
-compsvi46,ball,pencil,0.0154916,0.781584,0.781584
-compsvi46,table,pencil,-5.42402E-06,-0.000273654,0
-compsvi46,pencil,pencil,0,0,0
-compsvinew1,plate,plate,0,0,0
-compsvinew1,table,plate,-4.17233E-06,-0.000150193,0
-compsvinew1,cube,plate,0.015195,0.999996,0.999996
-compsvinew1,pencil,plate,-0.000481844,-0.0173452,0
-compsvinew1,plate,table,0.820794,1.00219,1
-compsvinew1,table,table,0,0,0
-compsvinew1,cube,table,0.819123,1.00007,1
-compsvinew1,pencil,table,0.818708,1.00118,1
-compsvinew1,plate,cube,0.00184721,0.0254853,0.0254853
-compsvinew1,table,cube,-4.23193E-06,-5.83864E-05,0
-compsvinew1,cube,cube,0,0,0
-compsvinew1,pencil,cube,-0.000459194,-0.00633534,0
-compsvinew1,plate,pencil,0.00173622,0.109405,0.109405
-compsvinew1,table,pencil,-4.17233E-06,-0.000223644,0
-compsvinew1,cube,pencil,3.89218E-05,0.00236506,0.00236506
-compsvinew1,pencil,pencil,0,0,0
-compsvinew2,shelf,shelf,0,0,0
-compsvinew2,mug,shelf,0.392797,1.00055,1
-compsvinew2,table,shelf,-6.31809E-06,-7.78033E-06,0
-compsvinew2,box,shelf,0.000841677,0.0336043,0.0336043
-compsvinew2,shelf,mug,0.000194907,0.00140729,0.00140729
-compsvinew2,mug,mug,0,0,0
-compsvinew2,table,mug,-6.31809E-06,-4.56187E-05,0
-compsvinew2,box,mug,0.000460327,0.00332371,0.00332371
-compsvinew2,shelf,table,0.819264,1.0001,1
-compsvinew2,mug,table,0.806164,0.984241,0.984241
-compsvinew2,table,table,0,0,0
-compsvinew2,box,table,0.817831,1.00143,1
-compsvinew2,shelf,box,0.000447035,0.00299445,0.00299445
-compsvinew2,mug,box,-0.0130863,-0.0876582,0
-compsvinew2,table,box,-6.19888E-06,-4.1523E-05,0
-compsvinew2,box,box,0,0,0
-compsvo12,box,box,0,0,0
-compsvo12,book (1),box,0.000135481,0.000249455,0.000249455
-compsvo12,book,box,0.000129283,0.000238042,0.000238042
-compsvo12,table,box,-1.40071E-05,-2.38618E-05,0
-compsvo12,book (1),book (1),0,0,0
-compsvo12,box,book (1),0.0306127,0.618609,0.618609
-compsvo12,book,book (1),0.000148296,0.00598725,0.00598725
-compsvo12,table,book (1),-1.39475E-05,-0.000281845,0
-compsvo12,book (1),book,0.00013727,0.00545341,0.00545341
-compsvo12,box,book,0.0305573,0.606074,0.606074
-compsvo12,book,book,0,0,0
-compsvo12,table,book,-1.38283E-05,-0.000274271,0
-compsvo12,book (1),table,0.818347,0.999124,0.999124
-compsvo12,box,table,0.10016,5.68639,1
-compsvo12,book,table,21.5516,26.3264,1
-compsvo12,table,table,0,0,0
-compsvo12v,board,board,0,0,0
-compsvo12v,book,board,1.81589,1.82305,1
-compsvo12v,table,board,-1.34707E-05,-1.3518E-05,0
-compsvo12v,clock,board,0.812859,0.975839,0.975839
-compsvo12v,board,book,-2.92063E-05,-0.000853932,0
-compsvo12v,book,book,0,0,0
-compsvo12v,table,book,-1.49012E-05,-0.00043568,0
-compsvo12v,clock,book,-0.00730264,-0.213514,0
-compsvo12v,board,table,0.819103,1.00003,1
-compsvo12v,book,table,0.819002,0.999897,0.999897
-compsvo12v,table,table,0,0,0
-compsvo12v,clock,table,1.63211,1.99259,1
-compsvo12v,board,clock,-3.96967E-05,-0.000258355,0
-compsvo12v,book,clock,0.000185013,0.00113442,0.00113442
-compsvo12v,table,clock,-9.89437E-06,-6.18039E-05,0
-compsvo12v,clock,clock,0,0,0
-compsvo13v,jar,jar,0,0,0
-compsvo13v,board,jar,-1.8239E-05,-1.84859E-05,0
-compsvo13v,book,jar,0.000334144,0.00159412,0.00159412
-compsvo13v,table,jar,-9.89437E-06,-4.72037E-05,0
-compsvo13v,board,board,0,0,0
-compsvo13v,jar,board,9.0003E-06,8.58879E-05,8.58879E-05
-compsvo13v,book,board,1.81595,1.82311,1
-compsvo13v,table,board,-1.23978E-05,-1.24414E-05,0
-compsvo13v,board,book,-4.39882E-05,-0.00128613,0
-compsvo13v,jar,book,-0.00132817,-0.038833,0
-compsvo13v,book,book,0,0,0
-compsvo13v,table,book,-7.51019E-06,-0.000219583,0
-compsvo13v,board,table,0.819102,1.00003,1
-compsvo13v,jar,table,0.819073,0.999999,0.999999
-compsvo13v,book,table,0.818995,0.999888,0.999888
-compsvo13v,table,table,0,0,0
-compsvo14,book (1),book (1),0,0,0
-compsvo14,book,book (1),-0.000786066,-0.0153587,0
-compsvo14,table,book (1),-5.54323E-06,-0.000108307,0
-compsvo14,book (1),book,0.0471654,0.94197,0.94197
-compsvo14,book,book,0,0,0
-compsvo14,table,book,-6.07967E-06,-0.000116456,0
-compsvo14,book (1),table,20.6395,25.1984,1
-compsvo14,book,table,20.8022,25.433,1
-compsvo14,table,table,0,0,0
-compsvo14a,box,box,0,0,0
-compsvo14a,book,box,0.330609,1.00012,1
-compsvo14a,table,box,-1.14441E-05,-3.45954E-05,0
-compsvo14a,box,book,-0.000110447,-0.00223048,0
-compsvo14a,book,book,0,0,0
-compsvo14a,table,book,-1.12653E-05,-0.000227501,0
-compsvo14a,box,table,0.818888,0.999891,0.999891
-compsvo14a,book,table,0.819585,1.00063,1
-compsvo14a,table,table,0,0,0
-compsvo14v,jar,jar,0,0,0
-compsvo14v,board,jar,-1.8239E-05,-1.84859E-05,0
-compsvo14v,book,jar,0.000334144,0.00159412,0.00159412
-compsvo14v,table,jar,-9.89437E-06,-4.72037E-05,0
-compsvo14v,board,board,0,0,0
-compsvo14v,jar,board,1.57952E-05,0.00015073,0.00015073
-compsvo14v,book,board,1.81594,1.8231,1
-compsvo14v,table,board,-7.98702E-06,-8.01512E-06,0
-compsvo14v,board,book,-3.75509E-05,-0.00109791,0
-compsvo14v,jar,book,-1.24574E-05,-0.000364228,0
-compsvo14v,book,book,0,0,0
-compsvo14v,table,book,-9.77516E-06,-0.000285806,0
-compsvo14v,board,table,0.819103,1.00003,1
-compsvo14v,jar,table,0.819073,0.999999,0.999999
-compsvo14v,book,table,1.8283,2.23211,1
-compsvo14v,table,table,0,0,0
-compsvo16,balloon,balloon,0,0,0
-compsvo16,book,balloon,8.34465E-05,8.31091E-05,8.31091E-05
-compsvo16,table,balloon,-5.72205E-06,-5.69891E-06,0
-compsvo16,book,book,0,0,0
-compsvo16,balloon,book,0,0,0
-compsvo16,table,book,-5.60284E-06,-0.00011208,0
-compsvo16,book,table,0.819148,1.00047,1
-compsvo16,balloon,table,0,0,0
-compsvo16,table,table,0,0,0
-compsvo16a,balloon,balloon,0,0,0
-compsvo16a,book,balloon,8.34465E-05,0.000657644,0.000657644
-compsvo16a,table,balloon,-5.72205E-06,-5.69891E-06,0
-compsvo16a,balloon,book,-0.0716591,-0.255403,0
-compsvo16a,book,book,0,0,0
-compsvo16a,table,book,-5.60284E-06,-0.00011208,0
-compsvo16a,balloon,table,0,0,0
-compsvo16a,book,table,0.819148,1.00047,1
-compsvo16a,table,table,0,0,0
-compsvo17,box,box,0,0,0
-compsvo17,book,box,1.19209E-06,3.60504E-06,3.60504E-06
-compsvo17,table,box,-8.82149E-06,-1.459E-05,0
-compsvo17,box,book,0,0,0
-compsvo17,book,book,0,0,0
-compsvo17,table,book,-8.88109E-06,-0.000179086,0
-compsvo17,box,table,-2.3663E-05,-2.88902E-05,0
-compsvo17,book,table,0.488962,0.597117,0.597117
-compsvo17,table,table,0,0,0
-compsvo18,box,box,0,0,0
-compsvo18,book,box,2.40803E-05,5.37079E-05,5.37079E-05
-compsvo18,table,box,6.55651E-07,1.08264E-06,1.08264E-06
-compsvo18,box,book,0.00489628,0.0987883,0.0987883
-compsvo18,book,book,0,0,0
-compsvo18,table,book,-5.36442E-07,-1.08234E-05,0
-compsvo18,box,table,-0.0169742,-0.0295728,0
-compsvo18,book,table,0.819088,1.00013,1
-compsvo18,table,table,0,0,0
-compsvo19,box,box,0,0,0
-compsvo19,book,box,2.40803E-05,5.37079E-05,5.37079E-05
-compsvo19,table,box,6.55651E-07,1.08264E-06,1.08264E-06
-compsvo19,box,book,-0.0169745,-0.342481,0
-compsvo19,book,book,0,0,0
-compsvo19,table,book,5.96046E-07,1.20259E-05,1.20259E-05
-compsvo19,box,table,-0.0169745,-0.0295734,0
-compsvo19,book,table,0.819088,1.00013,1
-compsvo19,table,table,0,0,0
-compsvo23v,jar,jar,0,0,0
-compsvo23v,board,jar,6.55651E-06,6.64526E-06,6.64526E-06
-compsvo23v,table,jar,-1.27554E-05,-6.0853E-05,0
-compsvo23v,clock,jar,-0.0125899,-0.0600636,0
-compsvo23v,board,board,0,0,0
-compsvo23v,jar,board,8.70228E-06,8.3044E-05,8.3044E-05
-compsvo23v,table,board,-1.26362E-05,-1.26806E-05,0
-compsvo23v,clock,board,0.812941,0.975938,0.975938
-compsvo23v,board,table,0.819102,1.00003,1
-compsvo23v,jar,table,0.819073,0.999999,0.999999
-compsvo23v,table,table,0,0,0
-compsvo23v,clock,table,0.803966,0.981539,0.981539
-compsvo23v,board,clock,-4.39882E-05,-0.000286285,0
-compsvo23v,jar,clock,-0.00132817,-0.00829624,0
-compsvo23v,table,clock,-7.51019E-06,-4.69114E-05,0
-compsvo23v,clock,clock,0,0,0
-compsvo24,pear,pear,0,0,0
-compsvo24,book,pear,-1.78218E-05,-0.000131049,0
-compsvo24,table,pear,-1.2815E-05,-9.42328E-05,0
-compsvo24,pear,book,0.0491562,1.02691,1
-compsvo24,book,book,0,0,0
-compsvo24,table,book,-1.2815E-05,-0.000257682,0
-compsvo24,pear,table,0.705531,0.861382,0.861382
-compsvo24,book,table,0.813817,0.993915,0.993915
-compsvo24,table,table,0,0,0
-compsvo24v,jar,jar,0,0,0
-compsvo24v,board,jar,6.55651E-06,6.64526E-06,6.64526E-06
-compsvo24v,table,jar,-1.27554E-05,-6.0853E-05,0
-compsvo24v,clock,jar,-0.0125899,-0.0600636,0
-compsvo24v,board,board,0,0,0
-compsvo24v,jar,board,8.40426E-06,8.01999E-05,8.01999E-05
-compsvo24v,table,board,-1.2517E-05,-1.2561E-05,0
-compsvo24v,clock,board,0.812941,0.975938,0.975938
-compsvo24v,board,table,0.819103,1.00003,1
-compsvo24v,jar,table,0.819073,0.999999,0.999999
-compsvo24v,table,table,0,0,0
-compsvo24v,clock,table,1.55133,1.89398,1
-compsvo24v,board,clock,-3.77893E-05,-0.000245941,0
-compsvo24v,jar,clock,-1.508E-05,-9.41951E-05,0
-compsvo24v,table,clock,-9.77516E-06,-6.10593E-05,0
-compsvo24v,clock,clock,0,0,0
-compsvo26,balloon,balloon,0,0,0
-compsvo26,book,balloon,7.83801E-05,7.80632E-05,7.80632E-05
-compsvo26,table,balloon,-5.60284E-06,-5.58018E-06,0
-compsvo26,balloon,book,0,0,0
-compsvo26,book,book,0,0,0
-compsvo26,table,book,-5.60284E-06,-0.00011208,0
-compsvo26,balloon,table,0,0,0
-compsvo26,book,table,0.819148,1.00047,1
-compsvo26,table,table,0,0,0
-compsvo27,box,box,0,0,0
-compsvo27,book,box,-5.126E-06,-1.55017E-05,0
-compsvo27,table,box,-4.70877E-06,-7.78787E-06,0
-compsvo27,box,book,0,0,0
-compsvo27,book,book,0,0,0
-compsvo27,table,book,-4.76837E-06,-9.61429E-05,0
-compsvo27,box,table,0,0,0
-compsvo27,book,table,0.819066,1.00024,1
-compsvo27,table,table,0,0,0
-compsvo28,box,box,0,0,0
-compsvo28,book,box,3.89218E-05,8.66308E-05,8.66308E-05
-compsvo28,table,box,-6.55651E-07,-1.08308E-06,0
-compsvo28,box,book,0.00473142,0.0923128,0.0923128
-compsvo28,book,book,0,0,0
-compsvo28,table,book,-1.78814E-06,-3.48877E-05,0
-compsvo28,box,table,-0.0190414,-0.0332955,0
-compsvo28,book,table,0.819091,1.00106,1
-compsvo28,table,table,0,0,0
-compsvo29,box,box,0,0,0
-compsvo29,book,box,3.89218E-05,8.66308E-05,8.66308E-05
-compsvo29,table,box,-6.55651E-07,-1.08308E-06,0
-compsvo29,box,book,-0.0190456,-0.371591,0
-compsvo29,book,book,0,0,0
-compsvo29,table,book,-5.36442E-07,-1.04663E-05,0
-compsvo29,box,table,-0.0190456,-0.0333029,0
-compsvo29,book,table,0.819089,1.00106,1
-compsvo29,table,table,0,0,0
-compsvo34v,jar,jar,0,0,0
-compsvo34v,book,jar,-0.000857711,-0.0341081,0
-compsvo34v,board,jar,-1.2517E-05,-1.26864E-05,0
-compsvo34v,table,jar,-9.53674E-06,-4.54976E-05,0
-compsvo34v,board,book,-4.39882E-05,-4.45811E-05,0
-compsvo34v,jar,book,-0.00132817,-0.0126667,0
-compsvo34v,book,book,0,0,0
-compsvo34v,table,book,-7.51019E-06,-0.000148957,0
-compsvo34v,board,board,0,0,0
-compsvo34v,jar,board,8.28505E-06,7.90624E-05,7.90624E-05
-compsvo34v,book,board,-0.000855804,-0.0340431,0
-compsvo34v,table,board,-1.2517E-05,-1.2561E-05,0
-compsvo34v,board,table,0.819102,1.00003,1
-compsvo34v,jar,table,0.819073,0.999999,0.999999
-compsvo34v,book,table,21.1434,25.8156,1
-compsvo34v,table,table,0,0,0
-compsvo67,balloon,balloon,0,0,0
-compsvo67,box,balloon,0,0,0
-compsvo67,table,balloon,-5.60284E-06,-5.58018E-06,0
-compsvo67,box,box,0,0,0
-compsvo67,balloon,box,0,0,0
-compsvo67,table,box,-5.60284E-06,-9.26659E-06,0
-compsvo67,box,table,0,0,0
-compsvo67,balloon,table,0,0,0
-compsvo67,table,table,0,0,0
-compsvo68,balloon,balloon,0,0,0
-compsvo68,box,balloon,-0.0169745,-0.0169058,0
-compsvo68,table,balloon,-5.60284E-06,-5.58018E-06,0
-compsvo68,box,box,0,0,0
-compsvo68,balloon,box,0,0,0
-compsvo68,table,box,-5.60284E-06,-9.25175E-06,0
-compsvo68,box,table,-0.0169745,-0.029577,0
-compsvo68,balloon,table,0,0,0
-compsvo68,table,table,0,0,0
-compsvo68a,balloon,balloon,0,0,0
-compsvo68a,box,balloon,-0.0169745,-0.0169058,0
-compsvo68a,table,balloon,-5.60284E-06,-5.58018E-06,0
-compsvo68a,box,box,0,0,0
-compsvo68a,balloon,box,-0.0682776,-0.152284,0
-compsvo68a,table,box,-5.60284E-06,-9.25175E-06,0
-compsvo68a,box,table,-0.0169745,-0.029577,0
-compsvo68a,balloon,table,0,0,0
-compsvo68a,table,table,0,0,0
-compsvo69a,balloon,balloon,0,0,0
-compsvo69a,box,balloon,-0.0169745,-0.0169058,0
-compsvo69a,table,balloon,-5.60284E-06,-5.58018E-06,0
-compsvo69a,box,box,0,0,0
-compsvo69a,balloon,box,-0.000925183,-0.0020635,0
-compsvo69a,table,box,-5.96046E-06,-9.84229E-06,0
-compsvo69a,box,table,-0.0169745,-0.029577,0
-compsvo69a,balloon,table,0,0,0
-compsvo69a,table,table,0,0,0
-compsvo78,box,box,0,0,0
-compsvo78,box (1),box,-0.0169726,-0.0295239,0
-compsvo78,table,box,5.96046E-07,9.84219E-07,9.84219E-07
-compsvo78,box,box (1),0.00489628,0.00851715,0.00851715
-compsvo78,box (1),box (1),0,0,0
-compsvo78,table,box (1),-5.36442E-07,-8.85802E-07,0
-compsvo78,box,table,-0.0169742,-0.0295728,0
-compsvo78,box (1),table,-0.0169726,-0.0295701,0
-compsvo78,table,table,0,0,0
-compsvo79,box,box,0,0,0
-compsvo79,box (1),box,-0.0169726,-0.0295239,0
-compsvo79,table,box,5.96046E-07,9.84219E-07,9.84219E-07
-compsvo79,box,box (1),-0.016974,-0.0295264,0
-compsvo79,box (1),box (1),0,0,0
-compsvo79,table,box (1),5.96046E-07,9.84224E-07,9.84224E-07
-compsvo79,box,table,-0.016974,-0.0295725,0
-compsvo79,box (1),table,-0.0169726,-0.0295701,0
-compsvo79,table,table,0,0,0
-compsvo89,box,box,0,0,0
-compsvo89,box (1),box,-0.0169739,-0.0295262,0
-compsvo89,table,box,5.96046E-07,9.84219E-07,9.84219E-07
-compsvo89,box,box (1),0.00489628,0.00851715,0.00851715
-compsvo89,box (1),box (1),0,0,0
-compsvo89,table,box (1),-5.36442E-07,-8.85802E-07,0
-compsvo89,box,table,-0.0169742,-0.0295728,0
-compsvo89,box (1),table,-0.0169739,-0.0295724,0
-compsvo89,table,table,0,0,0
-compsvu15,balloon,balloon,0,0,0
-compsvu15,book,balloon,0.000353932,0.000352501,0.000352501
-compsvu15,table,balloon,-9.35793E-06,-9.32009E-06,0
-compsvu15,balloon,book,0,0,0
-compsvu15,book,book,0,0,0
-compsvu15,table,book,-9.29833E-06,-0.000178131,0
-compsvu15,balloon,table,0,0,0
-compsvu15,book,table,20.737,25.3357,1
-compsvu15,table,table,0,0,0
-compsvu16,balloon,balloon,0,0,0
-compsvu16,book,balloon,0.00100714,0.00100307,0.00100307
-compsvu16,table,balloon,-9.41753E-06,-9.37945E-06,0
-compsvu16,book,book,0,0,0
-compsvu16,balloon,book,0,0,0
-compsvu16,table,book,-9.29833E-06,-0.000178131,0
-compsvu16,book,table,20.3394,24.8499,1
-compsvu16,balloon,table,0,0,0
-compsvu16,table,table,0,0,0
-compsvu17,box,box,0,0,0
-compsvu17,box (1),box,1.19209E-07,3.60504E-07,3.60504E-07
-compsvu17,table,box,-8.88109E-06,-1.46886E-05,0
-compsvu17,box,box (1),-1.19209E-07,-3.60504E-07,0
-compsvu17,box (1),box (1),0,0,0
-compsvu17,table,box (1),-8.88109E-06,-1.46886E-05,0
-compsvu17,box,table,-1.19209E-07,-1.45543E-07,0
-compsvu17,box (1),table,1.19209E-07,1.45543E-07,1.45543E-07
-compsvu17,table,table,0,0,0
-compsvu23,box,box,0,0,0
-compsvu23,pear,box,3.5882E-05,0.000802612,0.000802612
-compsvu23,table,box,-5.1856E-06,-1.56761E-05,0
-compsvu23,book,box,0.329547,1.00608,1
-compsvu23,box,pear,0.000562072,0.00424526,0.00424526
-compsvu23,pear,pear,0,0,0
-compsvu23,table,pear,-4.94719E-06,-3.73655E-05,0
-compsvu23,book,pear,-5.36442E-05,-0.000405168,0
-compsvu23,box,table,0.819083,1.00013,1
-compsvu23,pear,table,0.819189,1.00029,1
-compsvu23,table,table,0,0,0
-compsvu23,book,table,0.818929,0.999827,0.999827
-compsvu23,box,book,-0.00011909,-0.00217884,0
-compsvu23,pear,book,0.000385404,0.00705125,0.00705125
-compsvu23,table,book,-5.24521E-06,-9.5965E-05,0
-compsvu23,book,book,0,0,0
-compsvu25,book (1),book (1),0,0,0
-compsvu25,cube,book (1),-0.00128019,-0.0151879,0
-compsvu25,book,book (1),-0.000560582,-0.00415549,0
-compsvu25,table,book (1),-1.10269E-05,-6.83569E-05,0
-compsvu25,book (1),cube,0.0123746,0.140073,0.140073
-compsvu25,cube,cube,0,0,0
-compsvu25,book,cube,0.10994,0.779707,0.779707
-compsvu25,table,cube,-1.44839E-05,-8.01186E-05,0
-compsvu25,book (1),book,0.0561417,0.674202,0.674202
-compsvu25,cube,book,0.00176108,0.0206416,0.0206416
-compsvu25,book,book,0,0,0
-compsvu25,table,book,-1.2517E-05,-4.60325E-05,0
-compsvu25,book (1),table,0.821985,1.00425,1
-compsvu25,cube,table,0.816793,1.0054,1
-compsvu25,book,table,0.825428,1.00973,1
-compsvu25,table,table,0,0,0
-compsvu25a,box,box,0,0,0
-compsvu25a,balloon,box,0,0,0
-compsvu25a,table,box,-9.29833E-06,-1.51408E-05,0
-compsvu25a,balloon,balloon,0,0,0
-compsvu25a,box,balloon,-0.00948101,-0.00944268,0
-compsvu25a,table,balloon,-9.29833E-06,-9.26073E-06,0
-compsvu25a,balloon,table,0,0,0
-compsvu25a,box,table,-0.00948101,-0.0115752,0
-compsvu25a,table,table,0,0,0
-compsvu34,book (1),book (1),0,0,0
-compsvu34,picture,book (1),-7.1764E-05,-0.00142325,0
-compsvu34,table,book (1),-5.66244E-06,-0.000112299,0
-compsvu34,book (1),picture,0.0354627,1.0127,1
-compsvu34,picture,picture,0,0,0
-compsvu34,table,picture,-5.78165E-06,-0.00016042,0
-compsvu34,book (1),table,0.818844,0.999723,0.999723
-compsvu34,picture,table,0.819012,1.00013,1
-compsvu34,table,table,0,0,0
-compsvu53,box,box,0,0,0
-compsvu53,book,box,1.19209E-06,3.60504E-06,3.60504E-06
-compsvu53,table,box,-8.82149E-06,-1.459E-05,0
-compsvu53,box,book,-1.19209E-07,-2.40384E-06,0
-compsvu53,book,book,0,0,0
-compsvu53,table,book,-8.88109E-06,-0.000179086,0
-compsvu53,box,table,0.00011766,0.000143651,0.000143651
-compsvu53,book,table,0.48872,0.596821,0.596821
-compsvu53,table,table,0,0,0
-compsvu56,box,box,0,0,0
-compsvu56,balloon,box,0,0,0
-compsvu56,table,box,-9.29833E-06,-1.51408E-05,0
-compsvu56,box,balloon,-0.00948101,-0.00944268,0
-compsvu56,balloon,balloon,0,0,0
-compsvu56,table,balloon,-9.29833E-06,-9.26073E-06,0
-compsvu56,box,table,-0.00948101,-0.0115752,0
-compsvu56,balloon,table,0,0,0
-compsvu56,table,table,0,0,0
-compsvu63,box,box,0,0,0
-compsvu63,book,box,0,0,0
-compsvu63,table,box,-8.76188E-06,-1.44915E-05,0
-compsvu63,box,book,-1.19209E-07,-2.40384E-06,0
-compsvu63,book,book,0,0,0
-compsvu63,table,book,-8.88109E-06,-0.000179086,0
-compsvu63,box,table,-1.19209E-07,-1.45543E-07,0
-compsvu63,book,table,0.818016,0.998956,0.998956
-compsvu63,table,table,0,0,0
-compsvu67,box,box,0,0,0
-compsvu67,balloon,box,0,0,0
-compsvu67,table,box,-9.29833E-06,-1.51408E-05,0
-compsvu67,box,balloon,-0.00948101,-0.00944268,0
-compsvu67,balloon,balloon,0,0,0
-compsvu67,table,balloon,-9.29833E-06,-9.26073E-06,0
-compsvu67,box,table,-0.00948101,-0.0115752,0
-compsvu67,balloon,table,0,0,0
-compsvu67,table,table,0,0,0
-compsvu67a,box,box,0,0,0
-compsvu67a,balloon,box,0,0,0
-compsvu67a,table,box,-9.29833E-06,-1.51408E-05,0
-compsvu67a,balloon,balloon,0,0,0
-compsvu67a,box,balloon,-0.00948101,-0.00944268,0
-compsvu67a,table,balloon,-9.29833E-06,-9.26073E-06,0
-compsvu67a,balloon,table,0,0,0
-compsvu67a,box,table,-0.00948101,-0.0115752,0
-compsvu67a,table,table,0,0,0
-compsvul,lamp,lamp,0,0,0
-compsvul,pencil,lamp,0.0328769,0.39115,0.39115
-compsvul,bowl,lamp,-0.0017432,-0.0289414,0
-compsvul,table,lamp,-1.06096E-05,-1.60688E-05,0
-compsvul,lamp,pencil,-0.053876,-0.21055,0
-compsvul,pencil,pencil,0,0,0
-compsvul,bowl,pencil,-0.00174272,-0.0694377,0
-compsvul,table,pencil,-1.03712E-05,-0.000301798,0
-compsvul,lamp,bowl,-0.030946,-0.110639,0
-compsvul,pencil,bowl,-0.03014,-1.26532,0
-compsvul,bowl,bowl,0,0,0
-compsvul,table,bowl,-1.0252E-05,-0.000111499,0
-compsvul,lamp,table,0.765184,1.0084,1
-compsvul,pencil,table,0.760177,0.928092,0.928092
-compsvul,bowl,table,0.817354,0.997938,0.997938
-compsvul,table,table,0,0,0
-compsvula,lamp,lamp,0,0,0
-compsvula,pencil,lamp,0.0328777,0.391159,0.391159
-compsvula,bowl,lamp,-0.00158358,-0.0262913,0
-compsvula,table,lamp,-1.055E-05,-1.59786E-05,0
-compsvula,pencil,pencil,0,0,0
-compsvula,bowl,pencil,-0.00158066,-0.0625962,0
-compsvula,lamp,pencil,-0.053921,-0.210726,0
-compsvula,table,pencil,-1.12653E-05,-0.000327815,0
-compsvula,pencil,bowl,-0.0306702,-1.28758,0
-compsvula,bowl,bowl,0,0,0
-compsvula,lamp,bowl,-0.0317839,-0.113635,0
-compsvula,table,bowl,-1.10865E-05,-0.000120574,0
-compsvula,pencil,table,0.851943,1.04013,1
-compsvula,bowl,table,0.817515,0.998134,0.998134
-compsvula,lamp,table,0.764995,1.00815,1
-compsvula,table,table,0,0,0
+sv_modtypu1,lamp,lamp,0,0,0
+sv_modtypu1,notepad,lamp,0.00011307,0.00147459,0.00147459
+sv_modtypu1,table,lamp,7.6294E-05,9.34326E-05,9.34326E-05
+sv_modtypu1,notepad,notepad,0,0,0
+sv_modtypu1,lamp,notepad,-0.0678047,-0.197145,0
+sv_modtypu1,table,notepad,7.6294E-05,0.00317717,0.00317717
+sv_modtypu1,notepad,table,0.819067,1,1
+sv_modtypu1,lamp,table,0.799147,1.07646,1
+sv_modtypu1,table,table,0,0,0
+sv_modtypa1,box,box,0,0,0
+sv_modtypa1,table,box,7.9155E-05,0.000128951,0.000128951
+sv_modtypa1,box,table,0.00188198,0.00229769,0.00229769
+sv_modtypa1,table,table,0,0,0
+sv_modtypa2,box,box,0,0,0
+sv_modtypa2,table,box,6.81877E-05,0.000112536,0.000112536
+sv_modtypa2,box,table,0.0176233,0.0215148,0.0215148
+sv_modtypa2,table,table,0,0,0
+sv_modtypi1,table,table,0,0,0
+sv_modtypi1,shelf,table,0.819045,0.999973,0.999973
+sv_modtypi1,cube,table,0.812628,0.99214,0.99214
+sv_modtypi1,table,shelf,7.236E-05,8.69139E-05,8.69139E-05
+sv_modtypi1,shelf,shelf,0,0,0
+sv_modtypi1,cube,shelf,0.176727,0.99998,0.99998
+sv_modtypi1,table,cube,7.21812E-05,0.000698273,0.000698273
+sv_modtypi1,shelf,cube,-2.19345E-05,-0.000212192,0
+sv_modtypi1,cube,cube,0,0,0
+sv_modtypi2,ball (4),ball (4),0,0,0
+sv_modtypi2,ball (1),ball (4),0.00378895,0.164959,0.164959
+sv_modtypi2,ball (3),ball (4),0.00330389,0.103576,0.103576
+sv_modtypi2,table,ball (4),6.4373E-05,0.000416379,0.000416379
+sv_modtypi2,bowl,ball (4),-0.00409806,-0.13659,0
+sv_modtypi2,ball (2),ball (4),-0.00259256,-0.0680337,0
+sv_modtypi2,ball,ball (4),0.00666565,0.200531,0.200531
+sv_modtypi2,pear,ball (4),0.127349,1.25425,1
+sv_modtypi2,ball (4),ball (1),0.00161296,0.0296871,0.0296871
+sv_modtypi2,ball (1),ball (1),0,0,0
+sv_modtypi2,ball (3),ball (1),0.00018847,0.00123185,0.00123185
+sv_modtypi2,table,ball (1),6.39558E-05,0.00041802,0.00041802
+sv_modtypi2,bowl,ball (1),-0.0041315,-0.0270038,0
+sv_modtypi2,ball (2),ball (1),-0.0010289,-0.0679676,0
+sv_modtypi2,ball,ball (1),0.00186342,0.181425,0.181425
+sv_modtypi2,pear,ball (1),0.0774461,0.985758,0.985758
+sv_modtypi2,ball (4),ball (3),0.0138207,0.731719,0.731719
+sv_modtypi2,ball (1),ball (3),-3.17097E-05,-0.000757571,0
+sv_modtypi2,ball (3),ball (3),0,0,0
+sv_modtypi2,table,ball (3),6.43134E-05,0.000633174,0.000633174
+sv_modtypi2,bowl,ball (3),-0.00417888,-0.0854743,0
+sv_modtypi2,ball (2),ball (3),0.0177677,0.672128,0.672128
+sv_modtypi2,ball,ball (3),0.00328594,0.0630361,0.0630361
+sv_modtypi2,pear,ball (3),0.0231745,0.228156,0.228156
+sv_modtypi2,ball (4),table,0.818524,0.999334,0.999334
+sv_modtypi2,ball (1),table,0.824252,1.00633,1
+sv_modtypi2,ball (3),table,0.813037,0.992634,0.992634
+sv_modtypi2,table,table,0,0,0
+sv_modtypi2,bowl,table,0.814896,0.995402,0.995402
+sv_modtypi2,ball (2),table,0.831596,1.01529,1
+sv_modtypi2,ball,table,0.811396,0.990631,0.990631
+sv_modtypi2,pear,table,0.875653,1.06908,1
+sv_modtypi2,ball (4),bowl,0.880712,28.8862,1
+sv_modtypi2,ball (1),bowl,0.902877,16.8895,1
+sv_modtypi2,ball (3),bowl,0.843982,72.751,1
+sv_modtypi2,table,bowl,6.42538E-05,0.000556426,0.000556426
+sv_modtypi2,bowl,bowl,0,0,0
+sv_modtypi2,ball (2),bowl,0.0408807,1.07479,1
+sv_modtypi2,ball,bowl,0.908848,14.2611,1
+sv_modtypi2,pear,bowl,0.130957,1.13407,1
+sv_modtypi2,ball (4),ball (2),0.00229424,0.0328905,0.0328905
+sv_modtypi2,ball (1),ball (2),-0.00492114,-0.319099,0
+sv_modtypi2,ball (3),ball (2),8.29697E-05,0.00340723,0.00340723
+sv_modtypi2,table,ball (2),6.4373E-05,0.00105321,0.00105321
+sv_modtypi2,bowl,ball (2),-0.00406671,-0.181101,0
+sv_modtypi2,ball (2),ball (2),0,0,0
+sv_modtypi2,ball,ball (2),0.00511378,0.199034,0.199034
+sv_modtypi2,pear,ball (2),0.00731015,0.119601,0.119601
+sv_modtypi2,ball (4),ball,0.00253099,0.0574429,0.0574429
+sv_modtypi2,ball (1),ball,-0.000300407,-0.00453602,0
+sv_modtypi2,ball (3),ball,-0.000473261,-0.00334066,0
+sv_modtypi2,table,ball,6.43134E-05,0.000453976,0.000453976
+sv_modtypi2,bowl,ball,-0.00410426,-0.0289712,0
+sv_modtypi2,ball (2),ball,-0.000152886,-0.00107919,0
+sv_modtypi2,ball,ball,0,0,0
+sv_modtypi2,pear,ball,0.105417,1.54358,1
+sv_modtypi2,ball (4),pear,0.00168502,0.0189773,0.0189773
+sv_modtypi2,ball (1),pear,-0.0040915,-0.0460799,0
+sv_modtypi2,ball (3),pear,0.000103533,0.00116603,0.00116603
+sv_modtypi2,table,pear,6.44922E-05,0.000726334,0.000726334
+sv_modtypi2,bowl,pear,-0.00415766,-0.0468251,0
+sv_modtypi2,ball (2),pear,-0.00218874,-0.0246504,0
+sv_modtypi2,ball,pear,0.00187254,0.0210892,0.0210892
+sv_modtypi2,pear,pear,0,0,0
+sv_modtypi3,table,table,0,0,0
+sv_modtypi3,box,table,0.278483,1.00001,1
+sv_modtypi3,table,box,7.08699E-05,0.000211594,0.000211594
+sv_modtypi3,box,box,0,0,0
+sv_modtypi4,pencil,pencil,0,0,0
+sv_modtypi4,mug,pencil,-0.000111759,-0.00136137,0
+sv_modtypi4,table,pencil,7.53999E-05,0.000228717,0.000228717
+sv_modtypi4,pencil,mug,0.147452,0.931187,0.931187
+sv_modtypi4,mug,mug,0,0,0
+sv_modtypi4,table,mug,7.55787E-05,0.000380531,0.000380531
+sv_modtypi4,pencil,table,0.819478,0.990299,0.990299
+sv_modtypi4,mug,table,0.818953,0.999862,0.999862
+sv_modtypi4,table,table,0,0,0
+sv_modtypo1,spoon,spoon,0,0,0
+sv_modtypo1,plate,spoon,0.00297034,0.113564,0.113564
+sv_modtypo1,table,spoon,6.67572E-05,0.0025523,0.0025523
+sv_modtypo1,spoon,plate,0.0161858,1.11465,1
+sv_modtypo1,plate,plate,0,0,0
+sv_modtypo1,table,plate,6.66976E-05,0.00246052,0.00246052
+sv_modtypo1,spoon,table,0.821096,1.00248,1
+sv_modtypo1,plate,table,0.822816,1.00458,1
+sv_modtypo1,table,table,0,0,0
+sv_modtypo2,pencil,pencil,0,0,0
+sv_modtypo2,mug,pencil,0.0166158,0.154659,0.154659
+sv_modtypo2,table,pencil,7.02143E-05,0.00172366,0.00172366
+sv_modtypo2,pencil,mug,-7.57575E-05,-0.00422167,0
+sv_modtypo2,mug,mug,0,0,0
+sv_modtypo2,table,mug,7.02143E-05,0.000304471,0.000304471
+sv_modtypo2,pencil,table,0.819204,1.00839,1
+sv_modtypo2,mug,table,0.821377,1.00806,1
+sv_modtypo2,table,table,0,0,0
+sv_modtypo3,pear,pear,0,0,0
+sv_modtypo3,bowl,pear,-0.00342304,-0.171392,0
+sv_modtypo3,table,pear,7.68304E-05,0.000284405,0.000284405
+sv_modtypo3,pear,bowl,-0.0831389,-0.557376,0
+sv_modtypo3,bowl,bowl,0,0,0
+sv_modtypo3,table,bowl,7.69496E-05,0.000647038,0.000647038
+sv_modtypo3,pear,table,0.829905,1.03859,1
+sv_modtypo3,bowl,table,0.815644,0.995852,0.995852
+sv_modtypo3,table,table,0,0,0
+sv_modtypo4,clock,clock,0,0,0
+sv_modtypo4,board,clock,0.000844717,0.00539978,0.00539978
+sv_modtypo4,table,clock,6.00815E-05,0.000375291,0.000375291
+sv_modtypo4,clock,board,0.813601,0.975957,0.975957
+sv_modtypo4,board,board,0,0,0
+sv_modtypo4,table,board,6.02007E-05,6.04098E-05,6.04098E-05
+sv_modtypo4,clock,table,0.805685,0.983622,0.983622
+sv_modtypo4,board,table,0.81991,1.00108,1
+sv_modtypo4,table,table,0,0,0
+sv_modtypov1,bin,bin,0,0,0
+sv_modtypov1,picture,bin,0.278648,0.662325,0.662325
+sv_modtypov1,table,bin,5.43594E-05,8.86177E-05,8.86177E-05
+sv_modtypov1,bin,picture,0.00353548,0.0950733,0.0950733
+sv_modtypov1,picture,picture,0,0,0
+sv_modtypov1,table,picture,5.45383E-05,0.000283017,0.000283017
+sv_modtypov1,bin,table,0.00363055,0.0180552,0.0180552
+sv_modtypov1,picture,table,1.95503E-05,4.64715E-05,4.64715E-05
+sv_modtypov1,table,table,0,0,0
+sv_modtypov2,pan,pan,0,0,0
+sv_modtypov2,lid,pan,0.0802925,0.977282,0.977282
+sv_modtypov2,table,pan,7.22408E-05,0.000755455,0.000755455
+sv_modtypov2,pan,lid,-2.93255E-05,-0.00036273,0
+sv_modtypov2,lid,lid,0,0,0
+sv_modtypov2,table,lid,7.23004E-05,0.00152919,0.00152919
+sv_modtypov2,pan,table,0.819035,0.999948,0.999948
+sv_modtypov2,lid,table,0.817745,0.998387,0.998387
+sv_modtypov2,table,table,0,0,0
+sv_modtypov3,pencil,pencil,0,0,0
+sv_modtypov3,shelf,pencil,-1.8239E-05,-0.000441795,0
+sv_modtypov3,table,pencil,7.64132E-05,0.00185092,0.00185092
+sv_modtypov3,pencil,shelf,-4.17233E-07,-3.03202E-05,0
+sv_modtypov3,shelf,shelf,0,0,0
+sv_modtypov3,table,shelf,7.64132E-05,9.60207E-05,9.60207E-05
+sv_modtypov3,pencil,table,0.819066,1.00847,1
+sv_modtypov3,shelf,table,0.81905,0.999981,0.999981
+sv_modtypov3,table,table,0,0,0
+sv_modtypov4,cabinet,cabinet,0,0,0
+sv_modtypov4,sink,cabinet,1.00854,1.03162,1
+sv_modtypov4,tap,cabinet,0.974131,0.999618,0.999618
+sv_modtypov4,cabinet,sink,-0.000635624,-0.00445542,0
+sv_modtypov4,sink,sink,0,0,0
+sv_modtypov4,tap,sink,1.21253,8.49924,1
+sv_modtypov4,cabinet,tap,-0.000559747,-0.00140287,0
+sv_modtypov4,sink,tap,0.013639,0.119717,0.119717
+sv_modtypov4,tap,tap,0,0,0
+sv_modtypu1,lamp,lamp,0,0,0
+sv_modtypu1,notepad,lamp,0.00011307,0.00147459,0.00147459
+sv_modtypu1,table,lamp,7.6294E-05,9.34326E-05,9.34326E-05
+sv_modtypu1,notepad,notepad,0,0,0
+sv_modtypu1,table,notepad,7.6294E-05,0.00317717,0.00317717
+sv_modtypu1,lamp,notepad,-0.0677974,-0.197124,0
+sv_modtypu1,notepad,table,0.819067,1,1
+sv_modtypu1,table,table,0,0,0
+sv_modtypu1,lamp,table,0.799147,1.07646,1
