@@ -264,6 +264,16 @@ public class MeshObject{
 		}
 	}
 
+	public void add_non_convex_colliders(){
+		var non_convex_script = go.GetComponent(typeof(NonConvexMeshCollider)) as NonConvexMeshCollider;
+		if (non_convex_script == null){
+		    non_convex_script = go.AddComponent<NonConvexMeshCollider>();
+		}
+		non_convex_script.boxesPerEdge = 50;
+		non_convex_script.avoidExceedingMesh = false;
+		non_convex_script.Calculate();
+	}
+
 	/// <summary>
 	//// Add a nonconvex collider if necessary.
 	/// </summary>
@@ -288,13 +298,7 @@ public class MeshObject{
 		
 		
 		else{
-			var non_convex_script = go.GetComponent(typeof(NonConvexMeshCollider)) as NonConvexMeshCollider;
-			if (non_convex_script == null){
-			    non_convex_script = go.AddComponent<NonConvexMeshCollider>();
-			}
-			non_convex_script.boxesPerEdge = 50;
-			non_convex_script.avoidExceedingMesh = false;
-			non_convex_script.Calculate();
+			add_non_convex_colliders();
 
 		}
 

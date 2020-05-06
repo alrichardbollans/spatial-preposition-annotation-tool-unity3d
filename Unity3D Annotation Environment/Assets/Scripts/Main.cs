@@ -608,7 +608,7 @@ public class Task {
 	/// Clears playerprefs and selection/highlighting of objects the user inputs.
 	/// </summary>
 	public virtual void reset_input_values(){
-		Debug.Log("Reset inpt values");
+		Debug.Log("Reset input values");
 
 	}
 
@@ -1323,7 +1323,7 @@ public class CompTask : Task{
     	
 	}
 
-	public virtual void reset_input_values(){
+	public override void reset_input_values(){
 
 		deselect_figure();
 

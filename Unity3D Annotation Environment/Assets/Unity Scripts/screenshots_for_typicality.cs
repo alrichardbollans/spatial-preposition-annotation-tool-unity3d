@@ -24,7 +24,10 @@ public class screenshots_for_typicality : EditorWindow
 
     static public GameObject grd;
 
-    public int i;
+    static List<GameObject[]> configuration_list = new List<GameObject[]>();
+    static GameObject[] active_configuration;
+
+    
     public string prep;
 
     /// <summary>
@@ -157,12 +160,73 @@ public class screenshots_for_typicality : EditorWindow
         }
     }
 
-    static void set_fig_grd(){
+    static void unhighlight(){
+        Task.unhighlight_figure(fig);
+        Task.unhighlight_ground(grd);
+    }
+
+    static void  populate_config_list(){
         
-        GameObject[] grd_list = GameObject.FindGameObjectsWithTag(Main.ground_tag);
-        GameObject[] fig_list = GameObject.FindGameObjectsWithTag(Main.figure_tag);
-        fig = fig_list[0];
-        grd = grd_list[0];
+        GameObject[] g_list = GameObject.FindGameObjectsWithTag(Main.ground_tag);
+        GameObject[] f_list = GameObject.FindGameObjectsWithTag(Main.figure_tag);
+        GameObject[] fg_list = GameObject.FindGameObjectsWithTag(Main.fig_grd_tag);
+
+        List<GameObject> grd_list = new List<GameObject>();
+        List<GameObject> fig_list = new List<GameObject>();
+
+        foreach(GameObject gobj in g_list){
+            grd_list.Add(gobj);
+        }
+
+        foreach(GameObject gobj in f_list){
+            fig_list.Add(gobj);
+        }
+
+        foreach(GameObject gobj in fg_list){
+            fig_list.Add(gobj);
+            grd_list.Add(gobj);
+        }
+            
+        foreach (GameObject ground in grd_list){
+            foreach(GameObject fig in fig_list){
+                if(fig.name != ground.name){
+                    GameObject[] config = {fig,ground};
+                    configuration_list.Add(config);
+                }
+            }
+            
+        }
+    }
+
+    static void set_next_fig_grd(){
+        populate_config_list();
+        Debug.Log(configuration_list.Count);
+        if (configuration_list.Contains(active_configuration)){
+            Debug.Log(active_configuration);
+            // If there is an active configuration pick next configuration in list
+            int i = configuration_list.IndexOf(active_configuration);
+            
+            // If there is a next one to pick do that and return true, else return false
+            if (i+1 < configuration_list.Count){
+
+                active_configuration = configuration_list[i+1];
+                             
+                
+            }
+            else{
+                active_configuration = configuration_list[0];
+            }
+            
+        }
+        else if(configuration_list.Count >0) {
+            // If there is no active configuration start with the first one in list
+            active_configuration = configuration_list[0];
+            
+        }
+        
+        fig = active_configuration[0];
+        grd = active_configuration[1];
+        
     }
     // Add menu item in editor.
     [MenuItem ("My Tools/Take Screenshots")]
@@ -178,16 +242,13 @@ public class screenshots_for_typicality : EditorWindow
         var window = GetWindowWithRect<screenshots_for_typicality>(new Rect(50, 50, 300, 200));
         window.Show();
 
+        configuration_list.Clear();
         
         
         // 
 
     }
-    void OnEnable(){
-    	Material fig_mat = Resources.Load("figure_material", typeof(Material)) as Material;
-    	Material grd_mat = Resources.Load("ground_material", typeof(Material)) as Material;
 
-    }
     void OnGUI()
     {   
 
@@ -201,55 +262,46 @@ public class screenshots_for_typicality : EditorWindow
         prep = EditorGUILayout.TextField("Preposition:", prep);
         EditorGUILayout.EndVertical();
 
-        if(fig != null){
-            if (fig.tag!=Main.figure_tag){
-            Debug.Log("Check figure tag!");
-            }
-        }
-        
-        if(grd != null){
-            if (grd.tag!=Main.ground_tag){
-                Debug.Log("Check ground tag!");
-            }
-        }
 
-        if (GUILayout.Button("Highlight!"))
+        if (GUILayout.Button("Highlight Next!"))
         {
             set_main_camera();
-            set_fig_grd();
+            set_next_fig_grd();
 
             Task.highlight_figure(fig);
             Task.highlight_ground(grd);
 
         }
-        // if (GUILayout.Button("Search!"))
-        // {
-        //     set_main_camera();
-        //     set_fig_grd();
+        if (GUILayout.Button("Unhighlight!"))
+        {
+            unhighlight();
+        }
+        if (GUILayout.Button("Search!"))
+        {
 
-        //     position_camera(fig,grd);
-        // }
-        // if (GUILayout.Button("Rotate Left!"))
-        // {
-        //     rotate(-20f,0f);
-        // }
-        // if (GUILayout.Button("Rotate Right!"))
-        // {
-        //     rotate(20f,0f);
-        // }
-        // if (GUILayout.Button("Rotate Up!"))
-        // {
-        //     rotate(0f,20f);
-        // }
-        // if (GUILayout.Button("Rotate Down!"))
-        // {
-        //     rotate(0f,-20f);
-        // }
+            position_camera(fig,grd);
+        }
+        if (GUILayout.Button("Rotate Left!"))
+        {
+            rotate(-20f,0f);
+        }
+        if (GUILayout.Button("Rotate Right!"))
+        {
+            rotate(20f,0f);
+        }
+        if (GUILayout.Button("Rotate Up!"))
+        {
+            rotate(0f,20f);
+        }
+        if (GUILayout.Button("Rotate Down!"))
+        {
+            rotate(0f,-20f);
+        }
         if (GUILayout.Button("Take shot!"))
         {	
-        	set_fig_grd();
+        	
             
-            Debug.Log(prep);
+            
 
 
             string newname= ScreenShotPath(prep, fig.name, grd.name);

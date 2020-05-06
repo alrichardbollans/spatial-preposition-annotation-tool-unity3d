@@ -66,7 +66,7 @@ public class Entity{
 		bbox = boxColl.bounds;
 		// MeshObject class has useful methods
 		MeshObject mobj = new MeshObject(obj);
-		mobj.prepare_physics_for_game();
+		mobj.prepare_physics_for_positioning();
 
 		name =  obj.name;
 		clean_name = mobj.clean_name;
@@ -79,8 +79,8 @@ public class Entity{
 		
 		// Add a mesh collider if there isn't one
 		if(meshColl == null){
-				meshColl = go.AddComponent<MeshCollider>() as MeshCollider;
-			}
+			meshColl = go.AddComponent<MeshCollider>() as MeshCollider;
+		}
 		//Get mesh attached to mesh collider
 		if(meshColl != null){
 			sharedMesh = meshColl.sharedMesh;
@@ -124,7 +124,7 @@ public class Entity{
 		verticality = get_verticality();
 
 
-		mobj.prepare_physics_for_positioning();
+		
 		var collidersTransform = go.transform.Find("Colliders");
         GameObject collidersGo;
         if (collidersTransform != null){
@@ -132,8 +132,11 @@ public class Entity{
             non_convex_colliders = collidersTransform.gameObject;
         }
         
+  //       // Redeclaring these as they are deleted by prepare_physics_for_positioning.
+		// meshColl = obj.GetComponent<MeshCollider>();
 		
-		}
+		// sphColl = obj.GetComponent<SphereCollider>();	
+	}
 
 	
 	
@@ -179,6 +182,7 @@ public class Entity{
 
 	public void set_mesh_collider_for_counting(){
 		if(!complex){
+			Debug.Log(name);
 			meshColl.convex =true;
 		}
 		
