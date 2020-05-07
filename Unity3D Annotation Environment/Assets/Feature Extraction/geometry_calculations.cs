@@ -60,19 +60,51 @@ public class Entity{
 	
 	// Note 'y' dimension is up and down
 	public Entity(GameObject obj){
+		// MeshObject class has useful methods
+		MeshObject mobj = new MeshObject(obj);
+		go = obj;
+		name =  obj.name;
+		clean_name = mobj.clean_name;
+		scene = obj.scene.name;
+
 		BoxCollider boxColl =  new BoxCollider();
 		
 		boxColl = obj.AddComponent<BoxCollider>() as BoxCollider;
 		bbox = boxColl.bounds;
-		// MeshObject class has useful methods
-		MeshObject mobj = new MeshObject(obj);
-		mobj.prepare_physics_for_positioning();
 
-		name =  obj.name;
-		clean_name = mobj.clean_name;
-		go = obj;
+		lowest_point = bbox.min.y;
+		highest_point = bbox.max.y;
+		centre_point = bbox.center;
+		bbox_volume = bbox.size.x * bbox.size.y * bbox.size.z;
+		bbox_area = bbox.size.x * bbox.size.z;
+		centre_of_mass = get_com();
+		verticality = get_verticality();
+
+		// Save state of mesh collider
+		if(MeshObject.convex_objects.Contains(clean_name)){
+            convex = true;
+        }
+        else{
+        	convex = false;
+        }
 		
-		scene = obj.scene.name;
+
+		if(MeshObject.sphere_objects.Contains(clean_name)){
+            sphere = true;
+        }
+        else{
+        	sphere = false;
+        }
+
+		
+		mobj.prepare_physics_for_positioning();
+		var collidersTransform = go.transform.Find("Colliders");
+        if (collidersTransform != null){
+            
+            non_convex_colliders = collidersTransform.gameObject;
+        }
+		
+		
 		meshColl = obj.GetComponent<MeshCollider>();
 		
 		sphColl = obj.GetComponent<SphereCollider>();
@@ -89,15 +121,6 @@ public class Entity{
 				transformed_mesh_vertices.Add(x);
 			}
 		}
-		
-		
-		// Save state of mesh collider
-		if(MeshObject.convex_objects.Contains(clean_name)){
-            convex = true;
-        }
-        else{
-        	convex = false;
-        }
 		// Check if mesh is too complex to make mesh collider convex
 		if(transformed_mesh_vertices.Count >= 256){
 			complex = true;
@@ -105,37 +128,7 @@ public class Entity{
 		}
 		else{
 			complex = false;
-		}
-
-		if(MeshObject.sphere_objects.Contains(clean_name)){
-            sphere = true;
-        }
-        else{
-        	sphere = false;
-        }
-		
-		
-		lowest_point = bbox.min.y;
-		highest_point = bbox.max.y;
-		centre_point = bbox.center;
-		bbox_volume = bbox.size.x * bbox.size.y * bbox.size.z;
-		bbox_area = bbox.size.x * bbox.size.z;
-		centre_of_mass = get_com();
-		verticality = get_verticality();
-
-
-		
-		var collidersTransform = go.transform.Find("Colliders");
-        GameObject collidersGo;
-        if (collidersTransform != null){
-            
-            non_convex_colliders = collidersTransform.gameObject;
-        }
-        
-  //       // Redeclaring these as they are deleted by prepare_physics_for_positioning.
-		// meshColl = obj.GetComponent<MeshCollider>();
-		
-		// sphColl = obj.GetComponent<SphereCollider>();	
+		}	
 	}
 
 	
@@ -182,7 +175,7 @@ public class Entity{
 
 	public void set_mesh_collider_for_counting(){
 		if(!complex){
-			Debug.Log(name);
+			
 			meshColl.convex =true;
 		}
 		
@@ -314,10 +307,19 @@ public class Pair{
 		
 		r.save_to_csv();
 	}
-	 
-	// Note: e1=e2 does not give all vertices
+	
+
+	/// <summary>
+	/// Runs heavier calculations once to collect info about meshes.
+	/// Finds how many vertices in e1 are above/below e2. (avs1&bvs1)
+	/// Finds point on e2 which is closest to any vertex of e1 and calculate distance
+	/// Finds vertices which are sufficiently close to e2 to count as in contact
+	/// </summary>
+	/// <remarks>
+	/// Note: e1=e2 does not give all vertices
+	/// </remarks>
 	public void set_distance_properties(){
-		// Runs heavier calculations once to collect info about meshes
+		// 
 
 		List<Vector3> cvs1 = new List<Vector3>();
 		List<Vector3> avs1 = new List<Vector3>();
