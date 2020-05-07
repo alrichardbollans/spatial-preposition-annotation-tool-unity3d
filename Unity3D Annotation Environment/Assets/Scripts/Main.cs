@@ -1637,7 +1637,7 @@ public class Main : MonoBehaviour {
 		typ_task = new TypTask(this);
 		
 		
-		task_order = new Task[] {sv_mod_task};
+		task_order = new Task[] {screen_task,typ_task,sv_mod_task};
 
 		None_toggle = None_toggle_obj.GetComponent(typeof(Toggle)) as Toggle;
 
