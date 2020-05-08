@@ -1,4 +1,6 @@
-﻿
+﻿// Attributed to https://assetstore.unity.com/packages/tools/physics/non-convex-mesh-collider-84867
+
+#if UNITY_EDITOR
 using System;
 using UnityEngine;
 using System.Collections;
@@ -8,9 +10,9 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Debug = UnityEngine.Debug;
-#if UNITY_EDITOR
+
 using UnityEditor;
-#endif
+
 
 [ExecuteInEditMode]
 public class NonConvexMeshCollider : MonoBehaviour
@@ -998,7 +1000,7 @@ public class NonConvexMeshCollider : MonoBehaviour
 
 }
 
-#if UNITY_EDITOR
+
 [CanEditMultipleObjects]
 [CustomEditor(typeof(NonConvexMeshCollider))]
 public class NonConvexMeshColliderEditor : Editor
