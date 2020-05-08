@@ -127,14 +127,6 @@ public class Task {
     public static string[] input_list_of_scenes = {"finish","instruction","main","player_menu","scene_template","screen0","screen1","screening_fail","sv_modtypa1","sv_modtypa2","sv_modtypi1","sv_modtypi2","sv_modtypi3","sv_modtypi4","sv_modtypo1","sv_modtypo2","sv_modtypo3","sv_modtypo4","sv_modtypov1","sv_modtypov2","sv_modtypov3","sv_modtypov4","sv_modtypu1","test"};
 	//
 
-	// Server strings
-	public static string my_url = "http://adamrichard-bollans.co.uk";
-    public static string auth_username = "game";
-    public static string auth_password =  "REDACTED";
-	public static string appendannotation_url = my_url+"/spatial_language_study/appendannotation.php";
-	public static string writeuserdata_url = my_url+"/spatial_language_study/writeuserdata.php";
-
-
     //task name abbreviations with shared scenes
     List<string> scene_abbreviations =  new List<string>();
     public List<string> list_of_scenes = new List<string> (); // List of all scenes doesn't get chanegd
@@ -860,8 +852,8 @@ public class TypTask : Task {
     /// Writes annotation info to file.
     /// </summary>
 	public IEnumerator sendselectionToFile_coroutine(){
-        string authorization = authenticate(auth_username, auth_password);
-	    string url = appendannotation_url;
+        string authorization = authenticate(ServerStrings.auth_username, ServerStrings.auth_password);
+	    string url = ServerStrings.appendannotation_url;
         yield return null;
         /// Output info
         string c1 = PlayerPrefs.GetString(Main.config1_player_pref,"");
@@ -1075,8 +1067,8 @@ public class SVTask : Task{
     /// Writes annotation info to file.
     /// </summary>
 	public IEnumerator sendselectionToFile_coroutine(){
-        string authorization = authenticate(auth_username, auth_password);
-	    string url = appendannotation_url;
+        string authorization = authenticate(ServerStrings.auth_username, ServerStrings.auth_password);
+	    string url = ServerStrings.appendannotation_url;
         yield return null;
         /// Output info
         string p = PlayerPrefs.GetString(Main.prep_playerpref,"");
@@ -1149,7 +1141,7 @@ public class SVModTask : SVTask{
 	public SVModTask(Main m) : base(Main.sv_mod_abv, m){
 		allow_camera_movement = false;
 		number_scenes_to_do = 6;
-		max_number_configs_to_do_each_scene = 2;
+		max_number_configs_to_do_each_scene = 1;
 		instruction_list = new string[] {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
 		"A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.",
 		"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",
@@ -1269,8 +1261,8 @@ public class CompTask : Task{
     /// Writes annotation info to file.
     /// </summary>
 	public IEnumerator sendselectionToFile_coroutine(){
-        string authorization = authenticate(auth_username, auth_password);
-	    string url = appendannotation_url;
+        string authorization = authenticate(ServerStrings.auth_username, ServerStrings.auth_password);
+	    string url = ServerStrings.appendannotation_url;
         yield return null;
         /// Output info
         string p = PlayerPrefs.GetString(Main.prep_playerpref,"");

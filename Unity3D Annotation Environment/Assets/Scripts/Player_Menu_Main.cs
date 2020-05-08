@@ -76,7 +76,7 @@ public class Player_Menu_Main : MonoBehaviour {
     /// Writes user info to file then loads main scene.
     /// </summary>
     IEnumerator sendUserTextToFile_then_loadscene(){
-        string authorization = Task.authenticate(Task.auth_username, Task.auth_password);
+        string authorization = Task.authenticate(ServerStrings.auth_username, ServerStrings.auth_password);
         yield return null;
         /// Set details
         set_form_values();
@@ -98,7 +98,7 @@ public class Player_Menu_Main : MonoBehaviour {
         }
         // Send the form to the php script to write to server
         // Upload to a cgi script
-        using (var w = UnityWebRequest.Post(Task.writeuserdata_url, form))
+        using (var w = UnityWebRequest.Post(ServerStrings.writeuserdata_url, form))
         {
             w.SetRequestHeader("AUTHORIZATION",authorization);
             yield return w.SendWebRequest();
