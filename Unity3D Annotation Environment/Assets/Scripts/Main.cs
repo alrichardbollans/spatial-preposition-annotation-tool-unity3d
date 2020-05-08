@@ -936,7 +936,8 @@ public class TypTask : Task {
 public class SVTask : Task{
 	public List<GameObject[]> configuration_list = new List<GameObject[]>();
 	public GameObject[] active_configuration; // Figure Ground pair
-
+	public int max_number_configs_to_do_each_scene = 3;
+	public int number_configs_done_in_scene = 0;
 	
 	
 
@@ -976,55 +977,63 @@ public class SVTask : Task{
 		deselect_figure();
 		deselect_ground();
 
-		if (configuration_list.Contains(active_configuration)){
-			// If there is an active configuration pick next configuration in list
-			int i = configuration_list.IndexOf(active_configuration);
-			
-			// If there is a next one to pick do that and return true, else return false
-			if (i+1 < configuration_list.Count){
+		if(number_configs_done_in_scene == max_number_configs_to_do_each_scene){
+			number_configs_done_in_scene = 0;
+			return false;
+		}
+		else{
+			number_configs_done_in_scene +=1;
+			if (configuration_list.Contains(active_configuration)){
+				// If there is an active configuration pick next configuration in list
+				int i = configuration_list.IndexOf(active_configuration);
+				
+				// If there is a next one to pick do that and return true, else return false
+				if (i+1 < configuration_list.Count){
 
-				active_configuration = configuration_list[i+1];
+					active_configuration = configuration_list[i+1];
+					GameObject f = active_configuration[0];
+				
+					GameObject g = active_configuration[1];
+					
+					set_figure(f);
+					set_ground(g);
+					
+					Debug.Log("New example:");
+					Debug.Log("New Figure:" + f.name);
+					Debug.Log("New Ground:" + g.name);
+					
+					return true;
+				}
+				
+				else {
+					Debug.Log("No more configurations, will load next scene");
+					//Load next scene
+					return false;
+				}
+				
+			}
+			else if(configuration_list.Count >0) {
+				// If there is no active configuration start with the first one in list
+				active_configuration = configuration_list[0];
 				GameObject f = active_configuration[0];
 			
 				GameObject g = active_configuration[1];
+
 				
 				set_figure(f);
 				set_ground(g);
-				
-				Debug.Log("New example:");
-				Debug.Log("New Figure:" + f.name);
-				Debug.Log("New Ground:" + g.name);
-				
+
 				return true;
+				
 			}
-			
-			else {
-				Debug.Log("No more configurations, will load next scene");
+
+			else{
+				Debug.Log("No configurations for this task in this scene, will load next scene");
 				//Load next scene
 				return false;
 			}
-			
 		}
-		else if(configuration_list.Count >0) {
-			// If there is no active configuration start with the first one in list
-			active_configuration = configuration_list[0];
-			GameObject f = active_configuration[0];
 		
-			GameObject g = active_configuration[1];
-
-			
-			set_figure(f);
-			set_ground(g);
-
-			return true;
-			
-		}
-
-		else{
-			Debug.Log("No configurations for this task in this scene, will load next scene");
-			//Load next scene
-			return false;
-		}
 	}
 
 	public override void submit(){
@@ -1114,9 +1123,11 @@ public class SVTask : Task{
 }
 
 public class SVModTask : SVTask{
+
 	public SVModTask(Main m) : base(Main.sv_mod_abv, m){
 		allow_camera_movement = false;
 		number_scenes_to_do = 6;
+		max_number_configs_to_do_each_scene = 2;
 		instruction_list = new string[] {"In this task you will be shown some objects and asked to select words which could <b>describe the relationship between them</b>.",
 		"A <b>pair</b> of objects will be highlighted, <b>one in <color=green>green</color></b> and <b>the other in <color=red>red</color></b>. You need to select <b>all</b> the words which describe <b>how the <color=green>green object</color> relates to the <color=red>red object</color></b>.",
 		"The words you may select are: 'on', 'on top of', 'in', 'inside', 'against', 'over', 'under', 'above' and 'below'. \n\n If none of the given words apply, select <b> 'None of the above'</b>.\n\n Once you have made your selections, click 'Submit'. A new pair and/or scene will then be displayed.",
@@ -1637,7 +1648,7 @@ public class Main : MonoBehaviour {
 		typ_task = new TypTask(this);
 		
 		
-		task_order = new Task[] {screen_task,typ_task,sv_mod_task};
+		task_order = new Task[] {sv_mod_task};//{screen_task,sv_mod_task,typ_task,};
 
 		None_toggle = None_toggle_obj.GetComponent(typeof(Toggle)) as Toggle;
 
