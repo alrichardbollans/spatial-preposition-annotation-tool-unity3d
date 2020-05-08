@@ -96,12 +96,6 @@ public class Finalise_Scenes : EditorWindow
             
             camera.GetComponent<AudioListener>().enabled = false;
 
-            Camera camera_component;
-            camera_component = camera.GetComponent<Camera>();
-            camera_component.nearClipPlane = 0.05f;
-            camera_component.fieldOfView = 70f;
-           
-
         }
     }
 
@@ -113,6 +107,7 @@ public class Finalise_Scenes : EditorWindow
         
         EditorSceneManager.SetActiveScene(EditorSceneManager.GetSceneByName(scene_name));
         
+        camera_edits();
         
         // Make edits to objects
         GameObject[] allObjects = Object.FindObjectsOfType<GameObject>();
