@@ -137,8 +137,6 @@ public class Finalise_Scenes : EditorWindow
             }
         }
         
-        
-        Debug.Log ("Saving active scene");
         // EditorSceneManager.SaveOpenScenes();
         EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
     }
@@ -244,7 +242,8 @@ public class Finalise_Scenes : EditorWindow
         string text = File.ReadAllText(ScriptFile);
         text = text.Replace(oldscenetext,newscenetext);
         File.WriteAllText(ScriptFile,text);
-    
+        
+        Debug.Log("Finalise Scenes Completed.");
 
     }
    

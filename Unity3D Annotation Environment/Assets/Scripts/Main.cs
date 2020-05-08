@@ -124,7 +124,7 @@ public class TaskScene {
 public class Task {
 	// Be careful editing below list. It is edited by a script (finalise_scenes.cs) 
 	// (button in the editor)
-    public static string[] input_list_of_scenes = {"finish","instruction","main","player_menu","scene_template","screen0","screen1","screening_fail","sv_modtypa1","sv_modtypa2","sv_modtypi1","sv_modtypi2","sv_modtypi3","sv_modtypi4","sv_modtypo1","sv_modtypo2","sv_modtypo3","sv_modtypo4","sv_modtypov1","sv_modtypov2","sv_modtypov3","sv_modtypu1","sv_modtypu2","sv_modtypu3","sv_modtypu4","test"};
+    public static string[] input_list_of_scenes = {"finish","instruction","main","player_menu","scene_template","screen0","screen1","screening_fail","sv_modtypa1","sv_modtypa2","sv_modtypi1","sv_modtypi2","sv_modtypi3","sv_modtypi4","sv_modtypo1","sv_modtypo2","sv_modtypo3","sv_modtypo4","sv_modtypov1","sv_modtypov2","sv_modtypov3","sv_modtypov4","sv_modtypu1","test"};
 	//
 
 	// Server strings
@@ -350,18 +350,28 @@ public class Task {
 
 	}
 
+	/// <summary>
+	/// If user has done enough scenes for task, changes task.
+	/// Else, unloads current scene and loads new random scene.
+	/// </summary>
 	public virtual void load_next_scene(){
-		int r = rnd.Next(list_of_scenes_to_do.Count);
+		if(should_task_be_changed()){
+			main.change_task();
+		}
+		else{
+			int r = rnd.Next(list_of_scenes_to_do.Count);
 
-		// unloads current scene and loads the next scene
+			// unloads current scene and loads the next scene
+			
+			main.unload_current_scene();
+			string new_scene = list_of_scenes_to_do[r];
+			main.load_scene(new_scene);
+
+			list_of_scenes_to_do.Remove(new_scene);
+
+			number_scenes_done += 1;
+		}
 		
-		main.unload_current_scene();
-		string new_scene = list_of_scenes_to_do[r];
-		main.load_scene(new_scene);
-
-		list_of_scenes_to_do.Remove(new_scene);
-
-		number_scenes_done += 1;
 	}
 
 	/// <summary>
@@ -413,7 +423,7 @@ public class Task {
 			
 		}
 		else {
-			main.load_next_scene();
+			load_next_scene();
 			
 		}
 	}
@@ -618,6 +628,8 @@ public class Task {
 
 	public virtual bool should_task_be_changed(){
     	if(number_scenes_done >= number_scenes_to_do){
+    		Debug.Log("number_scenes_done");
+    		Debug.Log(number_scenes_done);
     		return true;
     	}
     	else if(list_of_scenes_to_do.Count==0){
@@ -722,11 +734,17 @@ public class TypTask : Task {
 	}
 
 	public override void load_next_scene(){
-		main.unload_current_scene();
-		// Only uses on scene camera:main.
-		main.task_scene = new TaskScene(Main.main_scene_name);
-		main.StartCoroutine(main.task_scene.set_scene_coroutine());
-		new_example();
+		if(should_task_be_changed()){
+			main.change_task();
+		}
+		else{
+			main.unload_current_scene();
+			// Only uses on scene camera:main.
+			main.task_scene = new TaskScene(Main.main_scene_name);
+			main.StartCoroutine(main.task_scene.set_scene_coroutine());
+			new_example();
+		}
+		
 	}
 
 	/// <summary>
@@ -958,6 +976,7 @@ public class SVTask : Task{
 	}
 
 	public override void  populate_config_list(){
+		number_configs_done_in_scene = 0;
 		configuration_list.Clear();
 		populate_fig_ground_list();
 			
@@ -970,6 +989,11 @@ public class SVTask : Task{
 			}
 			
 		}
+
+		// Now shuffle list
+		System.Random rd = new System.Random();
+		configuration_list = configuration_list.OrderBy(item => rd.Next()).ToList();
+
 	}
 			
 	public override bool set_new_example(){
@@ -1648,7 +1672,7 @@ public class Main : MonoBehaviour {
 		typ_task = new TypTask(this);
 		
 		
-		task_order = new Task[] {sv_mod_task};//{screen_task,sv_mod_task,typ_task,};
+		task_order = new Task[] {sv_mod_task,typ_task};//{screen_task,sv_mod_task,typ_task};
 
 		None_toggle = None_toggle_obj.GetComponent(typeof(Toggle)) as Toggle;
 
@@ -1793,21 +1817,7 @@ public class Main : MonoBehaviour {
 
 
 
-	/// <summary>
-	/// If user has done enough scenes for task, changes task.
-	/// Else, unloads current scene and loads new random scene.
-	/// </summary>
-	public void load_next_scene(){
-		if(task.should_task_be_changed()){
-			change_task();
-		}
 
-		else{
-			task.load_next_scene();
-			
-		}	
-
-	}
 
     
     

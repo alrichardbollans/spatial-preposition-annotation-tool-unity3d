@@ -81,6 +81,8 @@ public class MeshObject{
 				{"lid", 0.5f},
 				{"tap", 0.5f},
 				{"cabinet", 20f},
+				{"sink", 2f},
+				{"notepad", 0.2f},
 				{"clock", 1f}
              };
         
