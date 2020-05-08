@@ -628,8 +628,6 @@ public class Task {
 
 	public virtual bool should_task_be_changed(){
     	if(number_scenes_done >= number_scenes_to_do){
-    		Debug.Log("number_scenes_done");
-    		Debug.Log(number_scenes_done);
     		return true;
     	}
     	else if(list_of_scenes_to_do.Count==0){
@@ -1672,7 +1670,7 @@ public class Main : MonoBehaviour {
 		typ_task = new TypTask(this);
 		
 		
-		task_order = new Task[] {sv_mod_task,typ_task};//{screen_task,sv_mod_task,typ_task};
+		task_order = new Task[] {screen_task,sv_mod_task,typ_task};
 
 		None_toggle = None_toggle_obj.GetComponent(typeof(Toggle)) as Toggle;
 
