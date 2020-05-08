@@ -1789,6 +1789,20 @@ public class Main : MonoBehaviour {
 		}
 	}
 
+	public void unload_current_scene_and_load_instructions(){
+		hide_confirm_click();
+		// Unloads the active scene
+		reset_scene_values();
+		Scene active_scene = SceneManager.GetActiveScene();
+
+		load_instructions();
+
+		Debug.Log("Unloading Scene:" + active_scene.name);
+		if(active_scene.name != main_scene_name){
+			SceneManager.UnloadSceneAsync(active_scene);
+		}
+	}
+
 	/// <summary>
 	/// Sets some playerprefs and loads scene and sets new example.
 	/// </summary>
@@ -1838,9 +1852,7 @@ public class Main : MonoBehaviour {
 			return;
 		}
 
-		unload_current_scene();
-		
-		load_instructions();
+		unload_current_scene_and_load_instructions();
 
 		task.set_task();
 	}
