@@ -70,14 +70,20 @@ public class Finalise_Scenes : EditorWindow
         Lightmapping.Bake();
     }
 
-    static void make_edits_to_scene(string ith_file){
-        string scenePath = get_scene_path(ith_file);
-        string scene_name =  simplify_scene_name(ith_file);
-        
-        EditorSceneManager.OpenScene(scenePath);
-        
-        EditorSceneManager.SetActiveScene(EditorSceneManager.GetSceneByName(scene_name));
-        
+    public static void edit_scene_lighting(){
+        // Edit lighting in scene
+        Light[] lights = Object.FindObjectsOfType<Light>();
+        foreach(Light l in lights){
+            l.shadows= LightShadows.Soft;
+            // l.lightmapBakeType = LightmapBakeType.Realtime;
+            if(l.lightmapBakeType == LightmapBakeType.Realtime){
+                // Make shadowbias 0 so close objects recieve shadows.
+                l.shadowBias = 0;
+            }
+        }
+    }
+
+    public static void camera_edits(){
         GameObject[] cameras;
         // Edit Main camera properties
         cameras = GameObject.FindGameObjectsWithTag(Main.main_camera_tag);
@@ -97,6 +103,17 @@ public class Finalise_Scenes : EditorWindow
            
 
         }
+    }
+
+    static void make_edits_to_scene(string ith_file){
+        string scenePath = get_scene_path(ith_file);
+        string scene_name =  simplify_scene_name(ith_file);
+        
+        EditorSceneManager.OpenScene(scenePath);
+        
+        EditorSceneManager.SetActiveScene(EditorSceneManager.GetSceneByName(scene_name));
+        
+        
         // Make edits to objects
         GameObject[] allObjects = Object.FindObjectsOfType<GameObject>();
         
@@ -106,7 +123,7 @@ public class Finalise_Scenes : EditorWindow
                 MeshObject mobj = new MeshObject(obj);
                 
                 mobj.prepare_physics_for_game();
-                obj.isStatic = true;
+                
             }
             
             var waiting_script = obj.GetComponent(typeof(WaitingGame)) as WaitingGame;
@@ -125,19 +142,6 @@ public class Finalise_Scenes : EditorWindow
             }
         }
         
-        // Edit lighting in scene
-        Light[] lights = Object.FindObjectsOfType<Light>();
-        foreach(Light l in lights){
-            l.shadows= LightShadows.Soft;
-            // l.lightmapBakeType = LightmapBakeType.Realtime;
-            if(l.lightmapBakeType == LightmapBakeType.Realtime){
-                // Make shadowbias 0 so close objects recieve shadows.
-                l.shadowBias = 0;
-            }
-        }
-
-        bake_light_maps();
-        
         
         Debug.Log ("Saving active scene");
         // EditorSceneManager.SaveOpenScenes();
@@ -154,7 +158,6 @@ public class Finalise_Scenes : EditorWindow
     /// Adds camera_vision script and edit some settings of each object with MainCamera tag.
     /// For each object, removes rigid body, animator and WaitingGame script. If object is mesh object
     /// edits physics properties for in-game.
-    /// Bakes lighting.
     /// Then saves scene.
     /// Edits "Main.cs" script to include scenes in scene input list.
     /// </summary>
