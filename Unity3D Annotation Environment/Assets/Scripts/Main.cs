@@ -124,7 +124,7 @@ public class TaskScene {
 public class Task {
 	// Be careful editing below list. It is edited by a script (finalise_scenes.cs) 
 	// (button in the editor)
-    public static string[] input_list_of_scenes = {"finish","instruction","main","player_menu","scene_template","screen0","screen1","screening_fail","sv_modtypa1","sv_modtypa2","sv_modtypi1","sv_modtypi2","sv_modtypi3","sv_modtypi4","sv_modtypo1","sv_modtypo2","sv_modtypo3","sv_modtypo4","sv_modtypov1","sv_modtypov2","sv_modtypov3","sv_modtypov4","sv_modtypu1","test"};
+    public static string[] input_list_of_scenes = {"finish","instruction","main","player_menu","scene_template","screen0","screen1","screening_fail","sv_modtypa1","sv_modtypa2","sv_modtypi1","sv_modtypi2","sv_modtypi3","sv_modtypi4","sv_modtypo1","sv_modtypo2","sv_modtypo3","sv_modtypo4","sv_modtypov1","sv_modtypov2","sv_modtypov3","sv_modtypov4","sv_modtypu1","sv_modtypu2","sv_modtypu3","sv_modtypu4","test"};
 	//
 
     //task name abbreviations with shared scenes
