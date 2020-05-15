@@ -934,43 +934,43 @@ if __name__ == '__main__':
 
 	# 
 	# Load and process semantic annotations
-	# semantic_data = SemanticData(userdata)
+	semantic_data = SemanticData(userdata)
 
 
 
-	# # Output semantic csv
-	# semantic_data.output_clean_annotation_list()
+	# Output semantic csv
+	semantic_data.output_clean_annotation_list()
 
-	# semantic_data.output_statistics()
+	semantic_data.output_statistics()
 
-	# semantic_data.write_user_agreements()
+	semantic_data.write_user_agreements()
 	
 	# #Load and process comparative annotations
-	# comparative_data = ComparativeData(userdata)
+	comparative_data = ComparativeData(userdata)
 
 
 
 	# # output comparative csv
 
-	# comparative_data.output_clean_annotation_list()
+	comparative_data.output_clean_annotation_list()
 
-	# comparative_data.output_statistics()
+	comparative_data.output_statistics()
 
 
-	# comparative_data.write_user_agreements()
+	comparative_data.write_user_agreements()
 
 
 	## typicality data
-	typ_data = TypicalityData(userdata)
+	# typ_data = TypicalityData(userdata)
 
 
 
 	# output comparative csv
 
-	typ_data.output_clean_annotation_list()
+	# typ_data.output_clean_annotation_list()
 
-	typ_data.output_statistics()
+	# typ_data.output_statistics()
 
 
-	typ_data.write_user_agreements()
+	# typ_data.write_user_agreements()
 

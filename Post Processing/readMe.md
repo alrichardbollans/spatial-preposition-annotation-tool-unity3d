@@ -14,7 +14,9 @@ Input: features calculated from unity scripts.
 Outputs to feature values folder.
 
 ## compile_instances.py
-Run process_data and preprocess_features before this.
+Run process_data before this.
+
+Runs preprocess_features.py before executing.
 
 Input: cleaned annotation, user lists and list of feature values for configurations (see Relationship class)
 Compiles annotation instances, adds feature values to them
@@ -26,7 +28,7 @@ First run compile_instances.py
 Input: Configuration selection info from compile_instances. Constraints from Comp task
 Looks at how features relate to categorisation and likelihood of selection
 Outputs prototypes and plots
-Can be run after compile_instances
+Runs tests of models
 
 ## polysemy_analysis.py
 First run compile_instances.py

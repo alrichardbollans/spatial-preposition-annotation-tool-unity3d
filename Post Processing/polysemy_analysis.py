@@ -1,5 +1,13 @@
-import math
+# First run compile_instances.py
 
+# Standard imports
+import csv
+import pandas as pd  
+import numpy as np
+import math
+import itertools
+
+## Ml modules
 from sklearn import metrics
 from sklearn.cluster import KMeans, DBSCAN
 from scipy.spatial.distance import cdist, minkowski
@@ -11,8 +19,15 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-from feature_analysis import Model, Features, MultipleRuns
-from classes import Constraint, BasicInfo
+from feature_analysis import TestModels, PrepositionModels, Model, Features, MultipleRuns, SemanticMethods
+from classes import Relationship, Constraint, BasicInfo, Configuration
+
+# Useful global variables
+sv_filetag = 'semantic' # Tag for sv task files
+comp_filetag = 'comparative'# Tag for comp task files
+preposition_list = BasicInfo.preposition_list
+feature_keys = Relationship.get_feature_keys() # Feature keys are all features
+relation_keys = Relationship.get_relation_keys() # Relation keys are feature keys with some features removed e.g. properties of ground
 
 
 all_preposition_list = BasicInfo.preposition_list
@@ -1078,10 +1093,12 @@ class MultipleRunsPolysemyModels(MultipleRuns):
 
 	
 def output_all_polyseme_info():
+	print("outputting all polyseme info")
 	generated_polyseme_models = GeneratePolysemeModels(Clustering.all_scenes,Clustering.all_scenes,constraint_dict,preserve_rank=True)
 	generated_polyseme_models.output_polyseme_info()
 	
 def test_on_all_scenes():
+	print("test on all scenes")
 	generated_polyseme_models = GeneratePolysemeModels(Clustering.all_scenes,Clustering.all_scenes,constraint_dict)
 
 	p_models= generated_polyseme_models.models
@@ -1109,10 +1126,11 @@ def test_models():
 
 	
 	test_on_all_scenes()
-	test_model(2,2)
+	# test_model(2,2)
 	test_model(10,10)
 
 def output_typicality():
+	print("outputting typicalities")
 	generated_polyseme_models = GeneratePolysemeModels(Clustering.all_scenes,Clustering.all_scenes)
 	p_models= generated_polyseme_models.models
 	for model in p_models:
@@ -1130,6 +1148,7 @@ def compare_kmeans():
 		
 		c.plot_elbow_polyseme_inertia()
 def output_initial_inertias():
+	print("Outputting initial inertias")
 	for preposition in preposition_list:
 		c =Clustering(preposition)
 		c.output_initial_inertia()
@@ -1154,21 +1173,20 @@ def work_out_kmeans_clusters():
 def main(constraint_dict):
 	"""Un/comment functions to run tests and outputs"""
 	# Clustering
-	# work_out_kmeans_clusters()
-	# output_initial_inertias()
-	# work_out_all_kmeans_clusters()
-	# work_out_all_hry_clusters()
+	work_out_kmeans_clusters()
+	output_initial_inertias()
+	work_out_all_hry_clusters()
 
 	# Polysemes and performance
-	# output_all_polyseme_info()
+	output_all_polyseme_info()
 	
-	# output_typicality()
+	output_typicality()
 	test_models()
 
 
-	# mpl.rcParams['axes.titlesize'] = 'large'
-	# mpl.rcParams['axes.labelsize'] = 'large'
-	# compare_kmeans()
+	mpl.rcParams['axes.titlesize'] = 'large'
+	mpl.rcParams['axes.labelsize'] = 'large'
+	compare_kmeans()
 
 
 if __name__ == '__main__':
