@@ -24,7 +24,7 @@ def remove_dot_unity(scene_name):
 		clean_name = scene_name[:scene_name.find(".unity")]
 	
 	return clean_name
-def get_project_directory():
+def get_git_project_directory():
 		'''Returns path to base unity project folder'''
 		unity_folder_name = "Unity Projects"
 		repo_name = "spatial-preposition-annotation-tool-unity3d"
@@ -43,13 +43,13 @@ class BasicInfo:
 	
 
 	#paths and filenames
-	project_folder_name = "Unity3D Annotation Environment"
-
+	unity_project_folder_name = "Unity3D Annotation Environment"
+	analysis_folder_name = "Analysis"
 	feature_data_folder_name = "Scene Data"
 	
-	project_path = get_project_directory()
+	project_path = get_git_project_directory()
 
-	feature_data_folder_path = project_path + "/"+project_folder_name+ "/"+feature_data_folder_name;
+	feature_data_folder_path = project_path + "/"+analysis_folder_name+ "/"+feature_data_folder_name;
 
 
 	feature_output_csv = "feature values/standardised_values.csv" # Path for outputting feature values

@@ -75,7 +75,7 @@ Four seperate calculations are performed for each cardinal direction. These valu
 In one cardinal direction a force is applied to the ground object. The horizontal movement in the direction of the force of the centre of mass of the figure is measured. This is then divided by the movement (in direction of force) of the centre of mass of the ground. This value is then capped between 0 and 1.
 
 # Annotator Agreement
-Annotator agreements are calculated by process_data.py in Post Processing and saved in the stats folder.
+Annotator agreements are calculated by process_data.py in Analysis and saved in the stats folder.
 
 In each task agreement is calculated for each pair of Native English speaking users.
 

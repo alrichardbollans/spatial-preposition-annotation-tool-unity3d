@@ -55,7 +55,7 @@ def convert_index(x,number_of_columns):
 	return [i,j]
 
 
-class SemanticMethods():
+class SemanticMethods:
 	"""Class for reusable methods related to semantic measurements"""
 	def semantic_distance(self,weight_array,x,y,feature_to_remove=None):
 		"""
@@ -99,6 +99,7 @@ class PrepositionModels():
 	
 
 	interval = np.array([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]).reshape(-1,1)
+
 	def __init__(self,preposition,train_scenes, feature_to_remove = None,polyseme = None):
 		self.train_scenes= train_scenes
 		self.feature_to_remove = feature_to_remove

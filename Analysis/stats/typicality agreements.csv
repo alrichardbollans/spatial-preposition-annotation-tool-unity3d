@@ -1,0 +1,13 @@
+Task: typ,Number of Native English users: 2
+Preposition,Number of Shared Annotations,Average Expected agreement,Average observed Agreement,Average cohens_kappa
+in,3,0.5,1.0,1.0
+inside,3,0.3333333333333333,1.0,1.0
+against,4,0.5,1.0,1.0
+on,0,0,0,0
+on top of,4,0.5,1.0,1.0
+under,3,0.5,1.0,1.0
+below,1,0.5,1.0,1.0
+over,2,0.5,1.0,1.0
+above,4,0.5,1.0,1.0
+Total Number of Shared Annotations,Average Expected Agreements,Average observed agreements,Average Cohens Kappa
+24,0.4791666666666667,1.0,1.0
