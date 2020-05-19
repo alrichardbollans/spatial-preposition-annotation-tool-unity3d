@@ -39,32 +39,17 @@ def get_git_project_directory():
 			return user_home + '/Dropbox/' + unity_folder_name + "/" + repo_name
 class BasicInfo:
 	# Class containing basic info related to data collection
-
-	
-
-	#paths and filenames
 	unity_project_folder_name = "Unity3D Annotation Environment"
 	analysis_folder_name = "Analysis"
-	feature_data_folder_name = "Scene Data"
-	
-	project_path = get_git_project_directory()
+	base_feature_data_folder_name = "Scene Data"
 
-	feature_data_folder_path = project_path + "/"+analysis_folder_name+ "/"+feature_data_folder_name;
-
-
-	feature_output_csv = "feature values/standardised_values.csv" # Path for outputting feature values
-	human_readable_feature_output_csv = "feature values/human_readable_values.csv" # Path for outputting human-readable feature values
-	
-	data_folder_name = "collected data"
-	stats_folder_name = "stats"
+	base_data_folder_name = "collected data"
 	sem_annotations_name  = "clean semantic annotation list.csv"
+	svmod_annotations_name  = "clean svmod annotation list.csv"
 	comp_annotations_name  = "clean comparative annotation list.csv"
 	typ_annotations_name = "clean typicality annotation list.csv"
-	
 
-	raw_user_list = "userlist.csv"
-
-	raw_annotation_list = "annotationlist.csv"
+	base_stats_folder_name = "stats"
 
 	# Prepositions Used
 	preposition_list=['in', 'inside', 'against','on','on top of', 'under',  'below',  'over','above'] # list of prepositions which exist in the data
@@ -78,7 +63,8 @@ class BasicInfo:
 	sv_task = "sv"
 	comp_task = "comp"
 	typ_task = "typ"
-	semantic_abbreviations = [sv_task]
+	svmod_task = "sv_mod"
+	semantic_abbreviations = [sv_task,svmod_task]
 
 	comparative_abbreviations = [comp_task]
 
@@ -87,6 +73,34 @@ class BasicInfo:
 	a_index = {'id':0,'userid':1,'time':2,'figure':3,'ground':4,'task':5,'scene':6,'preposition':7,'prepositions':8,'cam_rot':9,'cam_loc':10}
 	# indexs for typ task
 	typ_a_index = {'id':0,'userid':1,'time':2,'c1':3,'c2':4,'task':5,'selection':6,'preposition':7}
+	
+	project_path = get_git_project_directory()
+
+	def __init__(self,study):
+		
+		# Abbreviation for files and folders
+		self.abv = study
+
+		#paths and filenames
+	
+
+		self.feature_data_folder = project_path + "/"+analysis_folder_name+ "/"+base_feature_data_folder_name + "/"+self.abv
+
+		self.feature_output_folder = "feature values" + "/"+self.abv
+		self.feature_output_csv = feature_output_folder + "/standardised_values.csv" # Path for outputting feature values
+		self.human_readable_feature_output_csv = feature_output_folder + "/human_readable_values.csv" # Path for outputting human-readable feature values
+
+	
+		self.data_folder = base_data_folder_name + "/" + self.abv
+	
+		self.raw_user_csv = data_folder + "/" + "userlist.csv"
+
+		self.raw_annotation_csv = data_folder + "/" +"annotationlist.csv"
+
+		self.stats_folder = base_stats_folder_name + "/" + self.abv
+	
+
+
 	@staticmethod
 	def get_scene_list():
 		scene_list = []
@@ -655,6 +669,14 @@ class Configuration:
 			if self.configuration_match(i) and i.preposition == preposition:
 				counter += 1
 		return counter
+	def number_of_selections_from_annotationlist(self,preposition,annotationlist):
+		counter = 0
+		for an in annotationlist:
+			if self.annotation_row_match(an) and preposition in an.prepositions:
+			
+				counter += 1
+		return counter
+
 	def number_of_tests(self,annotationlist):
 		# Need to use annotation list here as instances are separated by preposition
 		counter = 0

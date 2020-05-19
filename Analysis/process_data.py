@@ -36,14 +36,15 @@ class User():
 			return False
 
 class UserData():
-	def __init__(self):
+	def __init__(self,study):
+		self.basic_info = BasicInfo(study)
 		self.raw_data_list=self.load_raw_users_from_csv()
 		self.user_list = self.get_users()
 		
 	def load_raw_users_from_csv(self):
 		
 
-		with open(BasicInfo.data_folder_name + '/'  + BasicInfo.raw_user_list, "r") as f: 
+		with open(basic_info.raw_user_csv, "r") as f: 
 			reader = csv.reader(f)     
 			datalist = list( reader )
 		return datalist
@@ -62,7 +63,7 @@ class UserData():
 		return out
 
 	def output_clean_user_list(self):
-		with open(BasicInfo.data_folder_name + '/' +'clean_users.csv', "w") as csvfile:
+		with open(basic_info.data_folder + '/' +'clean_users.csv', "w") as csvfile:
 			writer = csv.writer(csvfile)
 
 			heading = User.list_headings
@@ -190,7 +191,11 @@ class Data():
 	
 	
 
-	def __init__(self,userdata):
+	def __init__(self,userdata,study):
+		self.task = "all"
+		self.clean_csv_name = "all_clean_annotations.csv"
+		self.basic_info = BasicInfo(study)
+
 		self.alldata = self.load_annotations_from_csv()
 		self.annotation_list = self.get_annotations(userdata)
 		
@@ -202,26 +207,35 @@ class Data():
 		# Scene list is used for checking sv and comp task
 		self.scene_list = self.get_scenes()
 		
-		self.clean_csv_name = "all_clean_annotations.csv"
-		self.task = "all"
+		
+		
 
 		
 
 	def load_annotations_from_csv(self):
 
-		with open(BasicInfo.data_folder_name + '/'  + BasicInfo.raw_annotation_list, "r") as f: 
+		with open(self.basic_info.raw_annotation_csv, "r") as f: 
 			reader = csv.reader(f)     
 			datalist = list( reader )
 		return datalist
 	
 	def get_annotations(self,userdata):
-		
+
 		out = []
-		for annotation in self.alldata:
+		for annotation in self.data_list:
 			ann = Annotation(userdata,annotation)
-			
-			out.append(ann)
-		# print(len(out))	
+			if self.task == "all":
+				out.append(ann)
+			elif ann.task == self.task:
+				if self.task == BasicInfo.typ_task:
+					an = TypicalityAnnotation(userdata,annotation)
+				if self.task in BasicInfo.semantic_abbreviations:
+					an = SemanticAnnotation(userdata,annotation)
+				if self.task in BasicInfo.comparative_abbreviations:
+					an = ComparativeAnnotation(userdata,annotation)
+				
+				out.append(an)
+				
 		return out
 
 
@@ -335,9 +349,7 @@ class Data():
 		for user in self.user_list:
 			x = self.number_of_scenes_done_by_user(user,BasicInfo.sv_task)
 			y = self.number_of_scenes_done_by_user(user,BasicInfo.comp_task)
-			# print(user)
-			# print(x)
-			# print(y)
+
 
 			if  x == 10 and  y == 10:
 				i+=1
@@ -348,7 +360,7 @@ class Data():
 		return len(self.user_list)
 
 	def output_clean_annotation_list(self):
-		with open(BasicInfo.data_folder_name + '/'  + self.clean_csv_name, "w") as csvfile:
+		with open(self.basic_info.data_folder + '/'  + self.clean_csv_name, "w") as csvfile:
 			writer = csv.writer(csvfile)
 			# self.list_format = [self.id,self.clean_user_id,self.task,self.scene,self.preposition,self.figure,self.ground,self.time]
 			heading = self.clean_data_list[0].list_headings
@@ -373,22 +385,6 @@ class Data():
 			if a.task == task:
 				if user1.annotation_match(a):# a.clean_user_id == user1 or a.user_id == user1:
 					out.append(a)
-		return out
-
-	# Gets user annotations for a particular task where they didn't select none
-	def get_user_affirmative_task_annotations(self,user1,task):
-		out = []
-		for a in self.annotation_list:
-			if a.task == task:
-				if user1.annotation_match(a):
-
-					if task in BasicInfo.comparative_abbreviations and a.figure != "none":
-						
-						out.append(a)
-
-					if task in BasicInfo.semantic_abbreviations and "none" not in a.prepositions:
-						out.append(a)
-
 		return out
 	
 
@@ -421,7 +417,7 @@ class Data():
 			return False
 
 	def write_user_agreements(self):
-		with open(BasicInfo.stats_folder_name+'/' + self.agreements_csv_name, "w") as csvfile:
+		with open(self.basic_info.stats_folder+'/' + self.agreements_csv_name, "w") as csvfile:
 			writer = csv.writer(csvfile)
 			writer.writerow(["Task: " + self.task,'Number of Native English users: ' + str(len(self.native_users))])
 			# writer.writerow(['User1','User2', 'observed_agreement','Number of Shared Annotations', 'Number of agreements', 'Expected Number of Agreements','observed_agreement(AFF)','Number of Shared Annotations(AFF)', 'NUmber of agreements(AFF)', 'Expected Agreement(AFF)'])
@@ -502,37 +498,20 @@ class Data():
 		
 
 class ComparativeData(Data):
-	def __init__(self,userdata):
-		self.userdata = userdata
+	def __init__(self,userdata,study):
 		self.task = BasicInfo.comp_task
+		self.clean_csv_name = BasicInfo.comp_annotations_name
+		self.stats_csv_name = "comparative stats.csv"
+		self.agreements_csv_name = "comparative agreements.csv"
+		self.basic_info = BasicInfo(study)
+		
 		self.data_list = self.load_annotations_from_csv()
-		self.annotation_list = self.get_comp_annotations(userdata)
+		self.annotation_list = self.get_annotations(userdata)
 		self.clean_data_list = self.clean_list()
 		self.user_list = self.get_users()
 		self.native_users = self.get_native_users()
 		self.preposition_list = self.get_prepositions()
-		self.clean_csv_name = BasicInfo.comp_annotations_name
-		self.stats_csv_name = "comparative stats.csv"
-		self.agreements_csv_name = "comparative agreements.csv"
 		self.scene_list = self.get_scenes()
-
-
-	def get_comp_annotations(self,userdata):
-		# datalist.pop(0) #removes first line of data list which is headings
-		# datalist=datalist[::-1] #inverts data list to put in time order
-		out = []
-		for annotation in self.data_list:
-			ann = Annotation(userdata,annotation)
-			if ann.task in BasicInfo.comparative_abbreviations:
-				#__init__(self,userdata,ID,UserID,now,selectedFigure,selectedGround,task,scene,prepositions)
-				# Match with appendannotation.php
-				an = ComparativeAnnotation(userdata,annotation)#[BasicInfo.a_index['id']],annotation[1],annotation[2],annotation[3],annotation[4],annotation[5],annotation[6],annotation[7],annotation[8],annotation[9],annotation[10],annotation[11])
-
-				out.append(an)
-				# self.data_list.append(an)
-
-				# self.clean_data_list.append(an)
-		return out
 	
 	def get_prepositions(self):
 		out = []
@@ -570,7 +549,7 @@ class ComparativeData(Data):
 	# This is a very basic list of information about the task
 	# compile_instances gives a better overview
 	def output_statistics(self):
-		with open(BasicInfo.stats_folder_name+'/' + self.stats_csv_name, "w") as csvfile:
+		with open(basic_info.stats_folder+'/' + self.stats_csv_name, "w") as csvfile:
 			writer = csv.writer(csvfile)
 			writer.writerow(['Number of Native English users: ' + str(len(self.native_users))])
 			writer.writerow(['Scene','Number of Users Annotating', 'Selection Info'])
@@ -584,35 +563,23 @@ class ComparativeData(Data):
 	
 	
 class SemanticData(Data):
-	def __init__(self,userdata):
-		#The object from this class will be a list containing all the semantic annotations
+	def __init__(self,userdata,study):
 		self.task = BasicInfo.sv_task
+		self.clean_csv_name = BasicInfo.sem_annotations_name
+		self.stats_csv_name = "semantic stats.csv"
+		self.categorisation_stats_csv = "categorisation stats.csv"
+		self.agreements_csv_name = "semantic agreements.csv"
+		self.basic_info = BasicInfo(study)
+
 		self.data_list = self.load_annotations_from_csv()
-		self.annotation_list = self.get_semantic_annotations(userdata)
+		self.annotation_list = self.get_annotations(userdata)
 		self.clean_data_list = self.clean_list()
 		# self.configuration_list = self.get_configurations()
 		self.user_list = self.get_users()
 		self.native_users = self.get_native_users()
-		self.clean_csv_name = BasicInfo.sem_annotations_name
-		self.stats_csv_name = "semantic stats.csv"
-		self.agreements_csv_name = "semantic agreements.csv"
+
 		# self.preposition_list = self.get_prepositions()
 		self.scene_list = self.get_scenes()
-
-
-	def get_semantic_annotations(self,userdata):
-		# datalist.pop(0) #removes first line of data list which is headings
-		# datalist=datalist[::-1] #inverts data list to put in time order
-		out = []
-		for annotation in self.data_list:
-			ann = Annotation(userdata,annotation)
-			if ann.task in BasicInfo.semantic_abbreviations:
-				
-				an = SemanticAnnotation(userdata,annotation)
-				out.append(an)
-				
-		return out
-	
 
 
 
@@ -649,10 +616,45 @@ class SemanticData(Data):
 					negative_selections += 1
 		return[positive_selections,negative_selections]
 
+	def check_categorisation_difference(self,preposition,c1,c2):
+		"""Calculates whether c1 is significantly better category member than c2 and vice versa.
+
+		    Parameters:
+		    preposition -- preposition
+		    c1 --  configuration to compare
+			c2 -- configuration to compare
+	    """
+	    
+	    c1_times_labelled = float(c1.number_of_selections_from_annotationlist(preposition,self.clean_data_list))
+	    c1_times_not_labelled = float(c1.number_of_tests(self.clean_data_list)) - c1_times_labelled
+
+	    c2_times_labelled = float(c2.number_of_selections_from_annotationlist(preposition,self.clean_data_list))
+	    c2_times_not_labelled = float(c2.number_of_tests(self.clean_data_list)) - c2_times_labelled
+	    
+	    # I think this needs flipping. Also set alternative parameter
+	    # Also need to check if c1>c2 or c2>c1 seperately
+	    oddsratio, p_value = scipy.stats.fisher_exact([c1_times_labelled,c2_times_labelled],[c1_times_not_labelled,c2_times_not_labelled])
+
+	    return [c1_times_labelled,c1_times_not_labelled,c2_times_labelled,c2_times_not_labelled,p_value]
+	def output_categorisation_check(self):
+		
+		# Change how relations.csv is found and loaded so we can look at multiple studies.
+		config_list = Relationship.load_all()
+		for preposition in preposition_list:
+			with open(self.basic_info.stats_folder+'/'+preposition+'/' + self.categorisation_stats_csv, "w") as csvfile:
+				writer = csv.writer(csvfile)
+				writer.writerow(['Scene1','Figure1', 'Ground1','Scene2','Figure2', 'Ground2','c1_times_labelled','c1_times_not_labelled','c2_times_labelled','c2_times_not_labelled','p_value'])
+				for row in config_list:
+					c1 = Configuration(row[0],row[1],row[2])
+					for row2 in config_list:
+						c2 = Configuration(row2[0],row2[1],row2[2])
+						stat = self.check_categorisation_difference(preposition,c1,c2)
+						to_write = [c1.scene,c1.figure,c1.ground] + [c2.scene,c2.figure,c2.ground] + stat
+						writer.writerow(to_write)
 	# This is a very basic list of information about the task
 	# compile_instances gives a better overview
 	def output_statistics(self):
-		with open(BasicInfo.stats_folder_name+'/' + self.stats_csv_name, "w") as csvfile:
+		with open(self.basic_info.stats_folder+'/' + self.stats_csv_name, "w") as csvfile:
 			writer = csv.writer(csvfile)
 			writer.writerow(['Number of Native English users: ' + str(len(self.native_users))])
 
@@ -664,33 +666,41 @@ class SemanticData(Data):
 			
 			for s in self.scene_list:
 				writer.writerow([s,self.number_of_users_per_scene(s,self.task),self.get_prepositions_for_scene(s)])
-class TypicalityData(Data):
-	def __init__(self,userdata):
-		#The object from this class will be a list containing all the semantic annotations
-		self.task = BasicInfo.typ_task
+
+class ModSemanticData(SemanticData):
+	def __init__(self,userdata,study):
+		self.task = BasicInfo.svmod_task
+		self.clean_csv_name = BasicInfo.svmod_annotations_name
+		self.stats_csv_name = "svmod stats.csv"
+		self.categorisation_stats_csv = "categorisation stats.csv"
+		self.agreements_csv_name = "svmod agreements.csv"
+		self.basic_info = BasicInfo(study)
+
 		self.data_list = self.load_annotations_from_csv()
-		self.annotation_list = self.get_typ_annotations(userdata)
+		self.annotation_list = self.getannotations(userdata)
 		self.clean_data_list = self.clean_list()
+		# self.configuration_list = self.get_configurations()
 		self.user_list = self.get_users()
 		self.native_users = self.get_native_users()
+
+		# self.preposition_list = self.get_prepositions()
+		self.scene_list = self.get_scenes()
+
+
+class TypicalityData(Data):
+	def __init__(self,userdata,study):
+		self.task = BasicInfo.typ_task
 		self.clean_csv_name = BasicInfo.typ_annotations_name
 		self.stats_csv_name = "typicality stats.csv"
 		self.agreements_csv_name = "typicality agreements.csv"
+		self.basic_info = BasicInfo(study)
 
+		self.data_list = self.load_annotations_from_csv()
+		self.annotation_list = self.get_annotations(userdata)
+		self.clean_data_list = self.clean_list()
+		self.user_list = self.get_users()
+		self.native_users = self.get_native_users()
 
-
-	def get_typ_annotations(self,userdata):
-		# datalist.pop(0) #removes first line of data list which is headings
-		# datalist=datalist[::-1] #inverts data list to put in time order
-		out = []
-		for annotation in self.data_list:
-			ann = Annotation(userdata,annotation)
-			if ann.task == BasicInfo.typ_task:
-				
-				an = TypicalityAnnotation(userdata,annotation)
-				out.append(an)
-				
-		return out
 
 
 
@@ -698,11 +708,11 @@ class TypicalityData(Data):
 	# This is a very basic list of information about the task
 	# compile_instances gives a better overview
 	def output_statistics(self):
-		with open(BasicInfo.stats_folder_name+'/' + self.stats_csv_name, "w") as csvfile:
+		with open(self.basic_info.stats_folder+'/' + self.stats_csv_name, "w") as csvfile:
 			writer = csv.writer(csvfile)
 			writer.writerow(['Number of Native English users: ' + str(len(self.native_users))])
 
-	
+
 class Agreements(Data):
 	# Looks at agreements between two users for a particular task and particular preposition
 	def __init__(self,annotation_list,task, preposition,user1,user2=None,agent_task_annotations=None):
@@ -824,7 +834,7 @@ class Agreements(Data):
 	def calculate_sem_expected_agreement(self,shared_annotations,y1,y2,n1,n2):
 		"""Calculate expected agreement for semantic task between two users.
 
-		    Arguments:
+		    Parameters:
 		    shared_annotations -- Number of shared annotations
 		    y1 --  Times u1 says yes to preposition
     		y2 -- Times u2 says yes to preposition
@@ -907,22 +917,17 @@ class Agreements(Data):
 		self.cohens_kappa = cohens_kappa
 
 		
-		
-
-		
 
 
 
 		
 if __name__ == '__main__':
 	# Begin by loading users  
-	userdata = UserData()
-
-
-
-
+	2019userdata = UserData("2019 study")
+	2020userdata = UserData("2020 study")
 	# Output user list
-	userdata.output_clean_user_list()
+	2019userdata.output_clean_user_list()
+	2020userdata.output_clean_user_list()
 
 	# Load all csv
 	d= Data(userdata)
@@ -934,7 +939,7 @@ if __name__ == '__main__':
 
 	# 
 	# Load and process semantic annotations
-	semantic_data = SemanticData(userdata)
+	semantic_data = SemanticData(2019userdata, "2019 study")
 
 
 
@@ -946,7 +951,7 @@ if __name__ == '__main__':
 	semantic_data.write_user_agreements()
 	
 	# #Load and process comparative annotations
-	comparative_data = ComparativeData(userdata)
+	comparative_data = ComparativeData(2019userdata, "2019 study")
 
 
 
@@ -961,16 +966,28 @@ if __name__ == '__main__':
 
 
 	## typicality data
-	# typ_data = TypicalityData(userdata)
+	typ_data = TypicalityData(2020userdata, "2020 study")
 
 
 
-	# output comparative csv
+	# output typicality csv
 
-	# typ_data.output_clean_annotation_list()
+	typ_data.output_clean_annotation_list()
 
-	# typ_data.output_statistics()
+	typ_data.output_statistics()
 
 
-	# typ_data.write_user_agreements()
+	typ_data.write_user_agreements()
+
+	# Load and process semantic annotations
+	svmod_data = ModSemanticData(2020userdata, "2020 study")
+
+
+
+	# Output semantic csv
+	svmod_data.output_clean_annotation_list()
+
+	svmod_data.output_statistics()
+
+	svmod_data.write_user_agreements()
 
