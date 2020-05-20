@@ -61,10 +61,10 @@ class SemanticMethods:
 		"""
 		Parameters:
 			weight_array: 1-D Array of feature weights
-			x,y: 1-D arrays. Points to compare
+			list_of_annotations,y: 1-D arrays. Points to compare
 			feature_to_remove: Feature to remove from consideration
 		Returns:
-			distance: Float representing semantic distance from x to y
+			distance: Float representing semantic distance from list_of_annotations to y
 		"""
 
 		if feature_to_remove != None:
@@ -594,9 +594,9 @@ class Model:
 	
 	def semantic_similarity(self,weight_array,x,y):
 		sem_methods = SemanticMethods()
-		#Similarity of x to y
-		# x y are 1d arrays
-		# Works out the weighted Euclidean distance of x and y and then negative exponential
+		#Similarity of list_of_annotations to y
+		# list_of_annotations y are 1d arrays
+		# Works out the weighted Euclidean distance of list_of_annotations and y and then negative exponential
 		# Weights are given in class
 		
 		# Square root to get distance

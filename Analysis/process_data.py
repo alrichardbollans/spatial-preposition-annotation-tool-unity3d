@@ -1,11 +1,11 @@
-# pylint: disable=C0330, C0303
 
 """Summary
+Script to run for newly collected data files which:
+Input: annotation and user info csv from data collection
+Output: Clean annotation lists. Basic stats. User agreement calculations
+Feature values are included later
 """
-# Script to run for newly collected data files which:
-# Input: annotation and user info csv from data collection
-# Output: Clean annotation lists. Basic stats. User agreement calculations
-# Feature values are included later
+
 
 import csv
 import itertools
@@ -15,30 +15,32 @@ from classes import Comparison, BasicInfo, SceneInfo
 
 
 class User:
-
-    """Summary
+    """
+    A class to store user information.
     
     Attributes:
-        clean_user_id (TYPE): Description
-        list_format (TYPE): Description
-        list_headings (TYPE): Description
-        native (TYPE): Description
-        time (TYPE): Description
-        user_id (TYPE): Description
+        clean_user_id (TYPE): Human readable ID
+        list_format (TYPE): Formatting of output list.
+        list_headings (TYPE): Headings for outputting
+        native (TYPE): 1 if native, else 0.
+        time (TYPE): Time user began.
+        user_id (TYPE): ID assigned by annotation tool.
+    
+    
     """
 
     list_headings = ["User ID", "Short ID", "Time", "Native=1, Non-Native =0"]
 
     def __init__(
-        self, clean_id, user_id, time, native
+            self, clean_id: str, user_id: str, time: str, native: str
     ):  # The order of this should be the same as in writeuserdata.php
         """Summary
         
         Args:
-            clean_id (TYPE): Description
-            user_id (TYPE): Description
-            time (TYPE): Description
-            native (TYPE): Description
+            clean_id (str): Description
+            user_id (str): Description
+            time (str): Description
+            native (str): Description
         """
         self.user_id = user_id
         self.time = time
@@ -49,17 +51,18 @@ class User:
         self.list_format = [self.user_id, self.clean_user_id, self.time, self.native]
 
     def annotation_match(self, annotation):
-        """Summary
+        """
+        Checks if the annotation was made by this user.
         
         Args:
-            annotation (TYPE): Description
+            annotation (Annotation): Annotation to check.
         
         Returns:
-            TYPE: Description
+            bool: True if match, else False.
         """
         if (
-            annotation.clean_user_id == self.user_id
-            or annotation.clean_user_id == self.clean_user_id
+                annotation.clean_user_id == self.user_id
+                or annotation.clean_user_id == self.clean_user_id
         ):
             return True
         else:
@@ -67,12 +70,12 @@ class User:
 
 
 class UserData:
-
     """Summary
     
     Attributes:
         basic_info (TYPE): Description
         raw_data_list (TYPE): Description
+        study (TYPE): Description
         user_list (TYPE): Description
     """
 
@@ -80,8 +83,9 @@ class UserData:
         """Summary
         
         Args:
-            study (TYPE): Description
+            study (str): Name of
         """
+        self.study = study
         self.basic_info = BasicInfo(study)
         self.raw_data_list = self.load_raw_users_from_csv()
         self.user_list = self.get_users()
@@ -118,8 +122,9 @@ class UserData:
     def output_clean_user_list(self):
         """Summary
         """
+
         with open(
-            self.basic_info.data_folder + "/" + "clean_users.csv", "w"
+                self.basic_info.data_folder + "/" + "clean_users.csv", "w"
         ) as csvfile:
             writer = csv.writer(csvfile)
 
@@ -144,7 +149,6 @@ class UserData:
 
 
 class Annotation:
-
     """Summary
     
     Attributes:
@@ -182,7 +186,7 @@ class Annotation:
     ]
 
     def __init__(
-        self, userdata, annotation
+            self, userdata, annotation
     ):  # ID,UserID,now,selectedFigure,selectedGround,task,scene,preposition,prepositions,cam_rot,cam_loc):
         """Summary
         
@@ -264,7 +268,6 @@ class Annotation:
 
 
 class ComparativeAnnotation(Annotation):
-
     """Summary
     
     Attributes:
@@ -282,9 +285,10 @@ class ComparativeAnnotation(Annotation):
         "Ground",
         "Time",
     ]
+
     # Users selects a figure given a ground and preposition
     def __init__(
-        self, userdata, annotation
+            self, userdata, annotation
     ):  # ID,UserID,now,selectedFigure,selectedGround,scene,preposition,prepositions,cam_rot,cam_loc):
         """Summary
         
@@ -329,7 +333,6 @@ class ComparativeAnnotation(Annotation):
 
 
 class SemanticAnnotation(Annotation):
-
     """Summary
     
     Attributes:
@@ -348,9 +351,10 @@ class SemanticAnnotation(Annotation):
         "Ground",
         "Time",
     ]
+
     # User selects multiple prepositions given a figure and ground
     def __init__(
-        self, userdata, annotation
+            self, userdata, annotation
     ):  # ID,UserID,now,selectedFigure,selectedGround,scene,preposition,prepositions,cam_rot,cam_loc):
         """Summary
         
@@ -397,7 +401,6 @@ class SemanticAnnotation(Annotation):
 
 
 class TypicalityAnnotation(Annotation):
-
     """Summary
     
     Attributes:
@@ -414,9 +417,10 @@ class TypicalityAnnotation(Annotation):
         "Selection",
         "Time",
     ]
+
     # User selects multiple prepositions given a figure and ground
     def __init__(
-        self, userdata, annotation
+            self, userdata, annotation
     ):  # ID,UserID,now,selectedFigure,selectedGround,scene,preposition,prepositions,cam_rot,cam_loc):
         """Summary
         
@@ -433,7 +437,6 @@ class TypicalityAnnotation(Annotation):
 
 
 class Data:
-
     """Summary
     
     Attributes:
@@ -452,23 +455,25 @@ class Data:
     Deleted Attributes:
         alldata (TYPE): Description
     """
+    task = "all"
+    clean_csv_name = "all_clean_annotations.csv"
 
-    def __init__(self, userdata, study):
+    def __init__(self, userdata):
         """Summary
         
         Args:
             userdata (TYPE): Description
+        
+        Deleted Parameters:
             study (TYPE): Description
         """
-        self.task = "all"
-        self.clean_csv_name = "all_clean_annotations.csv"
-        self.study = study
-        self.basic_info = BasicInfo(study)
-        self.scene_info = SceneInfo(study)
+
+        self.study = userdata.study
+        self.basic_info = BasicInfo(self.study)
+        self.scene_info = SceneInfo(self.study)
 
         self.data_list = self.load_annotations_from_csv()
         self.annotation_list = self.get_annotations(userdata)
-        
 
         # Annotation list without non-natives
         self.clean_data_list = self.clean_list()
@@ -480,9 +485,10 @@ class Data:
 
     def load_annotations_from_csv(self):
         """Summary
+        Gets list of annotations from csv.
         
         Returns:
-            TYPE: Description
+            list: strings.
         """
         with open(self.basic_info.raw_annotation_csv, "r") as f:
             reader = csv.reader(f)
@@ -491,12 +497,14 @@ class Data:
 
     def get_annotations(self, userdata):
         """Summary
+        Gets annotations for specific task.
+        Userdata is passed to create the annotations and assign correct clean id.
         
         Args:
             userdata (TYPE): Description
         
         Returns:
-            TYPE: Description
+            List: List of annotations
         """
         out = []
         for annotation in self.data_list:
@@ -506,34 +514,47 @@ class Data:
                 out.append(ann)
             elif ann.task == self.task:
                 if self.task == BasicInfo.typ_task:
-                    an = TypicalityAnnotation(userdata, annotation)
+                    new_annotation = TypicalityAnnotation(userdata, annotation)
                 if self.task in BasicInfo.semantic_abbreviations:
-                    an = SemanticAnnotation(userdata, annotation)
+                    new_annotation = SemanticAnnotation(userdata, annotation)
 
                 if self.task in BasicInfo.comparative_abbreviations:
-                    an = ComparativeAnnotation(userdata, annotation)
-                
-                out.append(an)
-        
+                    new_annotation = ComparativeAnnotation(userdata, annotation)
+
+                out.append(new_annotation)
+
         return out
 
-    def get_non_users(self):
+    def clean_list(self):
         """Summary
+        Creates a clean version of the annotation list.
         
         Returns:
             TYPE: Description
         """
-        out = []
-        for user in userdata.user_list:
-            x = self.number_of_scenes_done_by_user(user, BasicInfo.sv_task)
-            y = self.number_of_scenes_done_by_user(user, BasicInfo.comp_task)
+        out = self.annotation_list[:]
 
-            if x == 0 and y == 0:
-                out.append(user)
+        out = self.remove_non_natives(out)
+
         return out
+
+    def remove_non_natives(self, list_of_annotations):
+        """Summary
+        
+        Args:
+            list_of_annotations (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
+        for annotation in list_of_annotations[:]:
+            if annotation.user.native == "0":
+                list_of_annotations.remove(annotation)
+        return list_of_annotations
 
     def get_users(self):
         """Summary
+        Creates User list of all users.
         
         Returns:
             TYPE: Description
@@ -547,6 +568,7 @@ class Data:
 
     def get_native_users(self):
         """Summary
+        Creates User list of native users.
         
         Returns:
             TYPE: Description
@@ -559,6 +581,7 @@ class Data:
 
     def get_scenes(self):
         """Summary
+        Gets list of scenes completed by any user (native or non-native).
         
         Returns:
             TYPE: Description
@@ -573,6 +596,7 @@ class Data:
 
     def get_scenes_done_x_times(self, x):
         """Summary
+        Finds scenes which have been annotated at least list_of_annotations times by native users.
         
         Args:
             x (TYPE): Description
@@ -619,14 +643,14 @@ class Data:
                 out.append(sc)
                 print(
                     (
-                        "Scene: "
-                        + sc
-                        + " sv done "
-                        + str(x)
-                        + "times"
-                        + " comp done "
-                        + str(y)
-                        + "times"
+                            "Scene: "
+                            + sc
+                            + " sv done "
+                            + str(x)
+                            + "times"
+                            + " comp done "
+                            + str(y)
+                            + "times"
                     )
                 )
         print("Number of scenes left: ")
@@ -649,14 +673,14 @@ class Data:
                 out.append(sc)
                 print(
                     (
-                        "Scene: "
-                        + sc
-                        + " sv done "
-                        + str(x)
-                        + "times"
-                        + " comp done "
-                        + str(y)
-                        + "times"
+                            "Scene: "
+                            + sc
+                            + " sv done "
+                            + str(x)
+                            + "times"
+                            + " comp done "
+                            + str(y)
+                            + "times"
                     )
                 )
         print("Number of scenes to remove: ")
@@ -676,7 +700,7 @@ class Data:
         out = []
         for annotation in self.annotation_list:
             if user.annotation_match(annotation):
-                # if annotation.clean_user_id == user or annotation.user_id == user:
+
                 if annotation.task == task:
                     if annotation.scene not in out:
                         out.append(annotation.scene)
@@ -697,27 +721,13 @@ class Data:
         for annotation in self.clean_data_list:
 
             if (
-                annotation.scene == scene
-                and annotation.clean_user_id not in scenecounter
+                    annotation.scene == scene
+                    and annotation.clean_user_id not in scenecounter
             ):
                 if annotation.task == task:
                     scenecounter.append(annotation.clean_user_id)
 
         return len(scenecounter)
-
-    def remove_non_natives(self, x):
-        """Summary
-        
-        Args:
-            x (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        for annotation in x[:]:
-            if annotation.user.native == "0":  # in userdata.list_non_natives:
-                x.remove(annotation)
-        return x
 
     def number_of_completed_users(self):
         """Summary
@@ -746,27 +756,14 @@ class Data:
         """Summary
         """
         with open(
-            self.basic_info.data_folder + "/" + self.clean_csv_name, "w"
+                self.basic_info.data_folder + "/" + self.clean_csv_name, "w"
         ) as csvfile:
             writer = csv.writer(csvfile)
-            # self.list_format = [self.id,self.clean_user_id,self.task,self.scene,self.preposition,self.figure,self.ground,self.time]
             heading = self.clean_data_list[0].list_headings
             writer.writerow(heading)
 
             for annotation in self.clean_data_list:
                 writer.writerow(annotation.list_format)
-
-    def clean_list(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        out = self.annotation_list[:]
-
-        out = self.remove_non_natives(out)
-
-        return out
 
     # Gets user annotations for a particular task
     def get_user_task_annotations(self, user1, task):
@@ -779,21 +776,20 @@ class Data:
         Returns:
             TYPE: Description
         """
-        
+
         out = []
 
         for a in self.annotation_list:
-            
+
             if a.task == task:
-                if user1.annotation_match(
-                    a
-                ):  # a.clean_user_id == user1 or a.user_id == user1:
+                if user1.annotation_match(a):
                     out.append(a)
         return out
 
-    # Compares two annotations. Returns true if the same question is being asked of the annotators.
+
     def question_match(self, a1, a2):
         """Summary
+        Compares two annotations. Returns true if the same question is being asked of the annotators.
         
         Args:
             a1 (TYPE): Description
@@ -805,18 +801,18 @@ class Data:
         if a1.task == a2.task:
             if a1.task in BasicInfo.comparative_abbreviations:
                 if (
-                    a1.scene == a2.scene
-                    and a1.ground == a2.ground
-                    and a1.preposition == a2.preposition
+                        a1.scene == a2.scene
+                        and a1.ground == a2.ground
+                        and a1.preposition == a2.preposition
                 ):
                     return True
                 else:
                     return False
             elif a1.task in BasicInfo.semantic_abbreviations:
                 if (
-                    a1.scene == a2.scene
-                    and a1.ground == a2.ground
-                    and a1.figure == a2.figure
+                        a1.scene == a2.scene
+                        and a1.ground == a2.ground
+                        and a1.figure == a2.figure
                 ):
                     return True
                 else:
@@ -824,9 +820,9 @@ class Data:
 
             elif a1.task == BasicInfo.typ_task:
                 if (
-                    a1.c1 == a2.c1
-                    and a1.c2 == a2.c2
-                    and a1.preposition == a2.preposition
+                        a1.c1 == a2.c1
+                        and a1.c2 == a2.c2
+                        and a1.preposition == a2.preposition
                 ):
                     return True
                 else:
@@ -842,9 +838,10 @@ class Data:
 
     def write_user_agreements(self):
         """Summary
+        Works out user agreements and writes to file.
         """
         with open(
-            self.basic_info.stats_folder + "/" + self.agreements_csv_name, "w"
+                self.basic_info.stats_folder + "/" + self.agreements_csv_name, "w"
         ) as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(
@@ -889,30 +886,29 @@ class Data:
                         x = Agreements(self.study, self.annotation_list, self.task, p, user1, user2)
 
                         if x.shared_annotations != 0:
-
                             number_of_comparisons += 1
                             p_number_of_comparisons += 1
 
                             preposition_shared_annotations += x.shared_annotations
                             preposition_expected_agreement_sum += (
-                                x.expected_agreement * x.shared_annotations
+                                    x.expected_agreement * x.shared_annotations
                             )
                             preposition_observed_agreement_sum += (
-                                x.observed_agreement * x.shared_annotations
+                                    x.observed_agreement * x.shared_annotations
                             )
                             preposition_cohens_kappa_sum += (
-                                x.cohens_kappa * x.shared_annotations
+                                    x.cohens_kappa * x.shared_annotations
                             )
 
                             total_shared_annotations += x.shared_annotations
                             total_expected_agreement_sum += (
-                                x.expected_agreement * x.shared_annotations
+                                    x.expected_agreement * x.shared_annotations
                             )
                             total_observed_agreement_sum += (
-                                x.observed_agreement * x.shared_annotations
+                                    x.observed_agreement * x.shared_annotations
                             )
                             total_cohens_kappa_sum += (
-                                x.cohens_kappa * x.shared_annotations
+                                    x.cohens_kappa * x.shared_annotations
                             )
 
                 if preposition_shared_annotations != 0:
@@ -974,54 +970,49 @@ class Data:
             writer.writerow(row)
 
 
-
-
 class ComparativeData(Data):
-
     """Summary
+    Stores and handles data from 'comp' task.
     
     Attributes:
         agreements_csv_name (str): Description
+        clean_csv_name (TYPE): Description
+        preposition_list (TYPE): Description
+        stats_csv_name (str): Description
+        task (TYPE): Description
+    
+    Deleted Attributes:
         annotation_list (TYPE): Description
         basic_info (TYPE): Description
-        clean_csv_name (TYPE): Description
         clean_data_list (TYPE): Description
         data_list (TYPE): Description
         native_users (TYPE): Description
-        preposition_list (TYPE): Description
         scene_list (TYPE): Description
-        stats_csv_name (str): Description
         study (TYPE): Description
-        task (TYPE): Description
         user_list (TYPE): Description
     """
+    task = BasicInfo.comp_task
+    clean_csv_name = BasicInfo.comp_annotations_name
+    stats_csv_name = "comparative stats.csv"
+    agreements_csv_name = "comparative agreements.csv"
 
-    def __init__(self, userdata, study):
+    def __init__(self, userdata):
         """Summary
         
         Args:
             userdata (TYPE): Description
+        
+        Deleted Parameters:
             study (TYPE): Description
         """
-        self.task = BasicInfo.comp_task
-        self.clean_csv_name = BasicInfo.comp_annotations_name
-        self.stats_csv_name = "comparative stats.csv"
-        self.agreements_csv_name = "comparative agreements.csv"
-        self.study = study
-        self.basic_info = BasicInfo(study)
 
-        self.data_list = self.load_annotations_from_csv()
-        self.annotation_list = self.get_annotations(userdata)
-        self.clean_data_list = self.clean_list()
-        self.user_list = self.get_users()
-        self.native_users = self.get_native_users()
+        Data.__init__(self, userdata)
+
         self.preposition_list = self.get_prepositions()
-        self.scene_list = self.get_scenes()
-
-
 
     def get_prepositions(self):
         """Summary
+        Get list of prepositions used in comp task.
         
         Returns:
             TYPE: Description
@@ -1091,51 +1082,42 @@ class ComparativeData(Data):
 
 
 class SemanticData(Data):
-
     """Summary
     
     Attributes:
         agreements_csv_name (str): Description
-        annotation_list (TYPE): Description
-        basic_info (TYPE): Description
         categorisation_stats_csv (str): Description
         clean_csv_name (TYPE): Description
+        stats_csv_name (str): Description
+        task (TYPE): Description
+    
+    Deleted Attributes:
+        annotation_list (TYPE): Description
+        basic_info (TYPE): Description
         clean_data_list (TYPE): Description
         data_list (TYPE): Description
         native_users (TYPE): Description
         scene_list (TYPE): Description
-        stats_csv_name (str): Description
         study (TYPE): Description
-        task (TYPE): Description
         user_list (TYPE): Description
     """
+    task = BasicInfo.sv_task
+    clean_csv_name = BasicInfo.sem_annotations_name
+    stats_csv_name = "semantic stats.csv"
+    categorisation_stats_csv = "categorisation stats.csv"
+    agreements_csv_name = "semantic agreements.csv"
 
-    def __init__(self, userdata, study):
+    def __init__(self, userdata):
         """Summary
         
         Args:
             userdata (TYPE): Description
+        
+        Deleted Parameters:
             study (TYPE): Description
         """
-        self.task = BasicInfo.sv_task
-        self.clean_csv_name = BasicInfo.sem_annotations_name
-        self.stats_csv_name = "semantic stats.csv"
-        self.categorisation_stats_csv = "categorisation stats.csv"
-        self.agreements_csv_name = "semantic agreements.csv"
-        self.study = study
-        self.basic_info = BasicInfo(study)
 
-        self.data_list = self.load_annotations_from_csv()
-        self.annotation_list = self.get_annotations(userdata)
-        
-        self.clean_data_list = self.clean_list()
-        # self.configuration_list = self.get_configurations()
-        self.user_list = self.get_users()
-        self.native_users = self.get_native_users()
-
-        # self.preposition_list = self.get_prepositions()
-        self.scene_list = self.get_scenes()
-        
+        Data.__init__(self, userdata)
 
     def get_prepositions_for_scene(self, scene):
         """Summary
@@ -1204,7 +1186,7 @@ class SemanticData(Data):
             )
         )
         c1_times_not_labelled = (
-            float(c1.number_of_tests(self.clean_data_list)) - c1_times_labelled
+                float(c1.number_of_tests(self.clean_data_list)) - c1_times_labelled
         )
 
         c2_times_labelled = float(
@@ -1213,7 +1195,7 @@ class SemanticData(Data):
             )
         )
         c2_times_not_labelled = (
-            float(c2.number_of_tests(self.clean_data_list)) - c2_times_labelled
+                float(c2.number_of_tests(self.clean_data_list)) - c2_times_labelled
         )
 
         # I think this needs flipping. Also set alternative parameter
@@ -1238,12 +1220,12 @@ class SemanticData(Data):
         config_list = Relationship.load_all()
         for preposition in preposition_list:
             with open(
-                self.basic_info.stats_folder
-                + "/"
-                + preposition
-                + "/"
-                + self.categorisation_stats_csv,
-                "w",
+                    self.basic_info.stats_folder
+                    + "/"
+                    + preposition
+                    + "/"
+                    + self.categorisation_stats_csv,
+                    "w",
             ) as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow(
@@ -1267,9 +1249,9 @@ class SemanticData(Data):
                         c2 = Configuration(row2[0], row2[1], row2[2])
                         stat = self.check_categorisation_difference(preposition, c1, c2)
                         to_write = (
-                            [c1.scene, c1.figure, c1.ground]
-                            + [c2.scene, c2.figure, c2.ground]
-                            + stat
+                                [c1.scene, c1.figure, c1.ground]
+                                + [c2.scene, c2.figure, c2.ground]
+                                + stat
                         )
                         writer.writerow(to_write)
 
@@ -1279,7 +1261,7 @@ class SemanticData(Data):
         """Summary
         """
         with open(
-            self.basic_info.stats_folder + "/" + self.stats_csv_name, "w"
+                self.basic_info.stats_folder + "/" + self.stats_csv_name, "w"
         ) as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(
@@ -1304,24 +1286,30 @@ class SemanticData(Data):
 
 
 class ModSemanticData(SemanticData):
-
     """Summary
     
     Attributes:
         agreements_csv_name (str): Description
-        annotation_list (TYPE): Description
-        basic_info (TYPE): Description
         categorisation_stats_csv (str): Description
         clean_csv_name (TYPE): Description
+        stats_csv_name (str): Description
+        task (TYPE): Description
+    
+    Deleted Attributes:
+        annotation_list (TYPE): Description
+        basic_info (TYPE): Description
         clean_data_list (TYPE): Description
         data_list (TYPE): Description
         native_users (TYPE): Description
         scene_list (TYPE): Description
-        stats_csv_name (str): Description
         study (TYPE): Description
-        task (TYPE): Description
         user_list (TYPE): Description
     """
+    task = BasicInfo.svmod_task
+    clean_csv_name = BasicInfo.svmod_annotations_name
+    stats_csv_name = "svmod stats.csv"
+    categorisation_stats_csv = "categorisation stats.csv"
+    agreements_csv_name = "svmod agreements.csv"
 
     def __init__(self, userdata, study):
         """Summary
@@ -1330,27 +1318,11 @@ class ModSemanticData(SemanticData):
             userdata (TYPE): Description
             study (TYPE): Description
         """
-        self.task = BasicInfo.svmod_task
-        self.clean_csv_name = BasicInfo.svmod_annotations_name
-        self.stats_csv_name = "svmod stats.csv"
-        self.categorisation_stats_csv = "categorisation stats.csv"
-        self.agreements_csv_name = "svmod agreements.csv"
-        self.study = study
-        self.basic_info = BasicInfo(study)
 
-        self.data_list = self.load_annotations_from_csv()
-        self.annotation_list = self.get_annotations(userdata)
-        self.clean_data_list = self.clean_list()
-        # self.configuration_list = self.get_configurations()
-        self.user_list = self.get_users()
-        self.native_users = self.get_native_users()
-
-        # self.preposition_list = self.get_prepositions()
-        self.scene_list = self.get_scenes()
+        Data.__init__(self, userdata)
 
 
 class TypicalityData(Data):
-
     """Summary
     
     Attributes:
@@ -1393,7 +1365,7 @@ class TypicalityData(Data):
         """Summary
         """
         with open(
-            self.basic_info.stats_folder + "/" + self.stats_csv_name, "w"
+                self.basic_info.stats_folder + "/" + self.stats_csv_name, "w"
         ) as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(
@@ -1402,7 +1374,6 @@ class TypicalityData(Data):
 
 
 class Agreements(Data):
-
     """Summary
     
     Attributes:
@@ -1422,14 +1393,14 @@ class Agreements(Data):
 
     # Looks at agreements between two users for a particular task and particular preposition
     def __init__(
-        self,
-        study,
-        annotation_list,
-        task,
-        preposition,
-        user1,
-        user2=None,
-        agent_task_annotations=None,
+            self,
+            study,
+            annotation_list,
+            task,
+            preposition,
+            user1,
+            user2=None,
+            agent_task_annotations=None,
     ):
         """Summary
         
@@ -1495,14 +1466,14 @@ class Agreements(Data):
                             n2 += 1
 
                         if (
-                            self.preposition in a1.prepositions
-                            and self.preposition in a2.prepositions
+                                self.preposition in a1.prepositions
+                                and self.preposition in a2.prepositions
                         ):
                             agreements += 1
 
                         elif (
-                            self.preposition not in a1.prepositions
-                            and self.preposition not in a2.prepositions
+                                self.preposition not in a1.prepositions
+                                and self.preposition not in a2.prepositions
                         ):
                             agreements += 1
         return shared_annotations, y1, y2, n1, n2, agreements
@@ -1615,11 +1586,11 @@ class Agreements(Data):
         return expected_agreement
 
     def calculate_comp_expected_agreement(
-        self,
-        shared_annotations,
-        comp_none_selections1,
-        comp_none_selections2,
-        number_of_compared_figures,
+            self,
+            shared_annotations,
+            comp_none_selections1,
+            comp_none_selections2,
+            number_of_compared_figures,
     ):
         """Summary
         
@@ -1640,19 +1611,19 @@ class Agreements(Data):
                 # We make an approximation here and work out there overall chance of agreeing on an object
 
                 average_probability_agree_on_object = (
-                    float(shared_annotations * (1 - u1_p_none) * (1 - u2_p_none))
-                    / number_of_compared_figures
+                        float(shared_annotations * (1 - u1_p_none) * (1 - u2_p_none))
+                        / number_of_compared_figures
                 )
 
                 expected_agreement = (
-                    expected_none_agreement + average_probability_agree_on_object
+                        expected_none_agreement + average_probability_agree_on_object
                 )
             else:
                 expected_agreement = 0
         return expected_agreement
 
     def calculate_typ_expected_agreement(
-        self, shared_annotations, typ_none_selections1, typ_none_selections2
+            self, shared_annotations, typ_none_selections1, typ_none_selections2
     ):
         """Summary
         
@@ -1669,11 +1640,11 @@ class Agreements(Data):
                 expected_none_agreement = float(u1_p_none * u2_p_none)
 
                 average_probability_agree_on_object = (
-                    float((1 - u1_p_none) * (1 - u2_p_none)) / 2
+                        float((1 - u1_p_none) * (1 - u2_p_none)) / 2
                 )
 
                 expected_agreement = (
-                    expected_none_agreement + average_probability_agree_on_object
+                        expected_none_agreement + average_probability_agree_on_object
                 )
             else:
                 expected_agreement = 0
@@ -1741,7 +1712,7 @@ if __name__ == "__main__":
     # userdata2020.output_clean_user_list()
 
     # Load all csv
-    alldata_2019 = Data(userdata2019, "2019 study")
+    alldata_2019 = Data(userdata2019)
     # alldata_2020 = Data(userdata2020, "2020 study")
 
     alldata_2019.output_clean_annotation_list()
@@ -1751,7 +1722,7 @@ if __name__ == "__main__":
 
     #
     # Load and process semantic annotations
-    semantic_data = SemanticData(userdata2019, "2019 study")
+    semantic_data = SemanticData(userdata2019)
 
     # Output semantic csv
     semantic_data.output_clean_annotation_list()
@@ -1761,7 +1732,7 @@ if __name__ == "__main__":
     semantic_data.write_user_agreements()
 
     # #Load and process comparative annotations
-    comparative_data = ComparativeData(userdata2019, "2019 study")
+    comparative_data = ComparativeData(userdata2019)
 
     # # output comparative csv
 
@@ -1772,7 +1743,7 @@ if __name__ == "__main__":
     comparative_data.write_user_agreements()
 
     ## typicality data
-    # typ_data = TypicalityData(userdata2020, "2020 study")
+    # typ_data = TypicalityData(userdata2020)
 
     # # output typicality csv
 
@@ -1783,7 +1754,7 @@ if __name__ == "__main__":
     # typ_data.write_user_agreements()
 
     # # Load and process semantic annotations
-    # svmod_data = ModSemanticData(userdata2020, "2020 study")
+    # svmod_data = ModSemanticData(userdata2020)
 
     # # Output semantic csv
     # svmod_data.output_clean_annotation_list()

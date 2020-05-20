@@ -16,7 +16,7 @@ class Features:
 	human_readable_path = BasicInfo.human_readable_feature_output_csv
 	
 	# Features given in relation.csv that aren't needed for analysis
-	features_to_remove = ["size_ratio","horizontal_distance_normalized","shortest_distance_normalized","location_control_-x","location_control_-z","location_control_x","location_control_z","figure_volume","ground_volume","horizontal_projection_overlap_proportion"]
+	features_to_remove = ["size_ratio","horizontal_distance_normalized","shortest_distance_normalized","location_control_-list_of_annotations","location_control_-z","location_control_x","location_control_z","figure_volume","ground_volume","horizontal_projection_overlap_proportion"]
 	
 	def __init__(self):
 		self.dataset = pd.read_csv(self.property_path)
@@ -25,7 +25,7 @@ class Features:
 		self.dataset = self.dataset[self.dataset.Figure!=self.dataset.Ground]
 		
 		# Calculate location control and append column
-		location_control_parts = ["location_control_x","location_control_-x","location_control_-z","location_control_z"]
+		location_control_parts = ["location_control_x","location_control_-list_of_annotations","location_control_-z","location_control_z"]
 
 		self.dataset["location_control"] = self.dataset[location_control_parts].sum(axis=1)/4
 

@@ -731,7 +731,7 @@ class Comparison:
 
                 if x1 == x2:
                     pass
-                    # if any (x > x1 for x in figure_selection_number.itervalues()):
+                    # if any (list_of_annotations > x1 for list_of_annotations in figure_selection_number.itervalues()):
                     #   # This case may happen because there is a better figure
                     #   # In which case we create no constraint
                     #   pass
