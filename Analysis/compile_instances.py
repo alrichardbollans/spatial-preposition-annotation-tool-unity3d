@@ -501,7 +501,7 @@ class ConfigurationCollection(Collection):
         filetag (str): Description
         instance_list (list): Description
     """
-    self.filetag = 'configs'
+    filetag = 'configs'
 
     def __init__(self, study):
         """Summary

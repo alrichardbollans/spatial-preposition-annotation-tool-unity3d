@@ -180,7 +180,9 @@ class BasicInfo:
 
         self.config_ratio_folder = self.study + "/" + 'preposition data/'
 
-        self.constraint_csv = self.study + "/" "constraint data/constraints.csv"
+        self.constraint_csv = self.study + "/constraint data/constraints.csv"
+
+        self.model_info_folder = self.study + "/model info"
 
     def config_ratio_csv(self, filetag, preposition):
         """Summary

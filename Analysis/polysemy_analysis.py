@@ -85,7 +85,7 @@ class Clustering():
 	# cluster_threshold = {'on':0.75,'in':0.75,'against':0.75,'under':0.8,'over':0.75}
 	def __init__(self,preposition):
 		self.preposition = preposition
-		self.models = PrepositionModels(preposition,self.all_scenes)
+		self.models = PrepositionModels(self.basic_info, preposition, self.all_scenes)
 
 		# All selected instances
 		self.possible_instances = self.models.affFeatures
@@ -415,7 +415,7 @@ class Polyseme():
 		
 
 		self.share_prototype = share_prototype
-		self.preposition_models = PrepositionModels(self.preposition,self.train_scenes,polyseme = self)
+		self.preposition_models = PrepositionModels(self.basic_info, self.preposition, self.train_scenes, polyseme=self)
 		
 		# Assign a rank/hierarchy to polysemes
 		
@@ -466,7 +466,7 @@ class Polyseme():
 		# print(self.prototype)
 		# Input dictionarys of prototype and feature weights for each preposition, stored as arrays
 		if self.share_prototype:
-			preposition_models = PrepositionModels(self.preposition,self.train_scenes)
+			preposition_models = PrepositionModels(self.basic_info, self.preposition, self.train_scenes)
 			preposition_models.work_out_prototype_model()
 			self.prototype = preposition_models.prototype
 			# print("shared")
@@ -547,8 +547,9 @@ class Polyseme_Model(Model):
 	# Also do better with sharing prototytpes
 	
 	# Puts together preposition models and has various functions for testing
-	def __init__(self,name,train_scenes,test_scenes,constraint_dict,polyseme_dict= None,cluster_dict=None):
-		Model.__init__(self,name,train_scenes,test_scenes,constraint_dict=constraint_dict)
+	def __init__(self, name, train_scenes, test_scenes, basic_info, weight_dict=None, constraint_dict=None,
+                 feature_to_remove=None:
+		Model.__init__(name, train_scenes, test_scenes, self.basic_info, constraint_dict=constraint_dict)
 		
 		
 		# Dictionary of polyseme instances for each preposition
@@ -731,18 +732,22 @@ class GeneratePolysemeModels():
 		self.test_scenes = test_scenes
 
 		self.baseline_model_dict = self.get_general_cases()
-		self.baseline_model = Polyseme_Model(self.baseline_model_name,self.train_scenes,self.test_scenes,self.constraint_dict,polyseme_dict= self.baseline_model_dict)
+		self.baseline_model = Polyseme_Model(self.baseline_model_name, self.train_scenes, self.test_scenes,
+                                             self.basic_info, self.constraint_dict)
 		# Cluster dictionary stores list of cluster objects for each preposition
 		self.cluster_dict = self.get_cluster_dict()
-		self.cluster_model = Polyseme_Model(self.cluster_model_name,self.train_scenes,self.test_scenes,self.constraint_dict,cluster_dict=self.cluster_dict)
+		self.cluster_model = Polyseme_Model(self.cluster_model_name, self.train_scenes, self.test_scenes,
+                                            self.basic_info, self.constraint_dict)
 
 
 		self.non_shared_dict = self.get_non_shared_prototype_polyseme_dict()
-		self.non_shared = Polyseme_Model(self.our_model_name,self.train_scenes,self.test_scenes,self.constraint_dict,polyseme_dict= self.non_shared_dict)
+		self.non_shared = Polyseme_Model(self.our_model_name, self.train_scenes, self.test_scenes, self.basic_info,
+                                         self.constraint_dict)
 		
 
 		self.shared_dict = self.get_shared_prototype_polyseme_dict()
-		self.shared = Polyseme_Model(self.other_model_name,self.train_scenes,self.test_scenes,self.constraint_dict,polyseme_dict= self.shared_dict)
+		self.shared = Polyseme_Model(self.other_model_name, self.train_scenes, self.test_scenes, self.basic_info,
+                                     self.constraint_dict)
 	
 	
 		self.models = [self.non_shared,self.shared,self.baseline_model,self.cluster_model]
@@ -756,7 +761,7 @@ class GeneratePolysemeModels():
 		for preposition in polysemous_preposition_list:
 			out[preposition] = []
 			number_clusters = cluster_numbers[preposition]
-			models = PrepositionModels(preposition,self.train_scenes)
+			models = PrepositionModels(self.basic_info, preposition, self.train_scenes)
 
 
 			# All selected instances
@@ -786,11 +791,11 @@ class GeneratePolysemeModels():
 				cluster_number_of_instances.append(0)
 
 			sem_methods = SemanticMethods()
-			for index, row in models.feature_dataframe.iterrows():
+			for index, row in models.relation_dataframe.iterrows():
 				# For each configuration add ratio to totals of closest centre
 
 				ratio_feature_name = models.ratio_feature_name
-				# Note dropping columns from dataset preserves row order i.e. row order of feature_dataframe = train_datset
+				# Note dropping columns from dataset preserves row order i.e. row order of relation_dataframe = train_datset
 				ratio_of_instance = models.train_dataset.at[index,ratio_feature_name]
 
 				v = row.values
@@ -804,7 +809,7 @@ class GeneratePolysemeModels():
 				for i in range(len(km.cluster_centers_)):
 					centre = km.cluster_centers_[i]
 					
-					distance = sem_methods.semantic_distance(weights,v,centre)
+					distance = sem_methods.semantic_distance(weights, v, centre, self.relation_keys)
 
 					if sem_distance == -1:
 						sem_distance= distance
@@ -1065,8 +1070,10 @@ class GeneratePolysemeModels():
 		
 
 class MultipleRunsPolysemyModels(MultipleRuns):
-	def __init__(self,constraint_dict,number_runs=None,test_size= None,k=None,compare = None,features_to_test = None):
-		MultipleRuns.__init__(self,constraint_dict,number_runs=number_runs,test_size= None,k=k,compare = compare,features_to_test = None)
+	def __init__(self, basic_info, constraint_dict, number_runs=None, test_size=None, k=None, compare=None,
+				 features_to_test=None):
+		MultipleRuns.__init__(self.basic_info, constraint_dict, number_runs=number_runs, test_size=None, k=k,
+							  compare=compare, features_to_test=None)
 
  		self.all_csv = "polysemy/"+self.all_csv
  		self.all_plot = "polysemy/" + self.all_plot
@@ -1111,7 +1118,7 @@ def test_on_all_scenes():
 	all_dataframe.to_csv(score_folder+"all_test.csv")
 	print(all_dataframe)
 def test_model(runs,k):
-	m = MultipleRunsPolysemyModels(constraint_dict,number_runs=runs,k =k,compare = "y")
+	m = MultipleRunsPolysemyModels(self.basic_info, constraint_dict, number_runs=runs, k=k, compare="y")
 	print("Test Model k = "+ str(k))
 	m.validation()
 	m.output()
