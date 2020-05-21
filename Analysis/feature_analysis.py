@@ -23,19 +23,18 @@ from scipy.special import comb
 
 # Local module imports
 from preprocess_features import Features
-from compile_instances import InstanceCollection
-from compile_instances import ComparativeCollection
+from compile_instances import InstanceCollection, SemanticCollection, ComparativeCollection
 from classes import Constraint, Relationship, BasicInfo
 
 
 
 # Useful global variables
-sv_filetag = 'semantic' # Tag for sv task files
-comp_filetag = 'comparative'# Tag for comp task files
+sv_filetag = SemanticCollection.filetag # Tag for sv task files
+comp_filetag = ComparativeCollection.filetag# Tag for comp task files
 preposition_list = BasicInfo.preposition_list
 feature_keys = Relationship.get_feature_keys() # Feature keys are all features
 relation_keys = Relationship.get_relation_keys() # Relation keys are feature keys with some features removed e.g. properties of ground
-print("# of Relation Features = "+ str(len(relation_keys)))
+print(("# of Relation Features = "+ str(len(relation_keys))))
 
 
 
@@ -488,9 +487,9 @@ class PrepositionModels():
 		model2.fit(x_poly,Y)
 
 		self.poly_regression_model =model2
-		print(self.preposition)
-		print("Polynomial Score" + str(n))
-		print(model2.score(x_poly,Y))
+		print((self.preposition))
+		print(("Polynomial Score" + str(n)))
+		print((model2.score(x_poly,Y)))
 
 		return model2
 	def output_models(self):
@@ -1361,7 +1360,7 @@ class MultipleRuns:
 	 	for i in range(self.number_runs):
 	 		self.run_count = i
 
-			print("Run Number:" + str(i+1))
+			print(("Run Number:" + str(i+1)))
 	 		
 	 		if self.test_size != None:
 	 			split = self.get_validation_scene_split()
@@ -1375,7 +1374,7 @@ class MultipleRuns:
 
 		 			if self.folds_check(folds):
 		 				for f in folds:
-		 					print("Fold Number:" + str(folds.index(f)))
+		 					print(("Fold Number:" + str(folds.index(f))))
 				 			test_scenes = f
 				 			train_scenes = []
 				 			for s in self.scene_list:
@@ -1446,13 +1445,13 @@ class MultipleRuns:
 
 		
 		# Print some info
-		print("Total Runs:" + str(self.total_number_runs))
+		print(("Total Runs:" + str(self.total_number_runs)))
 		
 		if self.test_size != None:
 			print("# Scenes used for testing")
-			print(len(self.scenes_used_for_testing))
+			print((len(self.scenes_used_for_testing)))
 			print("# Scenes used for training")
-			print(len(self.scenes_used_for_training))
+			print((len(self.scenes_used_for_training)))
 
 		# Finalise by averaging scores in dataframe
 		for key in self.dataframe_dict:
@@ -1490,7 +1489,7 @@ class MultipleRuns:
 			out = dict()
 			
 			for feature in self.features_to_test:
-				print(self.dataframe_dict[feature])
+				print((self.dataframe_dict[feature]))
 				out[feature] = self.dataframe_dict[feature][self.Generate_Models_all_scenes.our_model_name]
 			out["None removed"] = self.average_dataframe[self.Generate_Models_all_scenes.our_model_name]
 			df = pd.DataFrame(out,self.test_prepositions + ["Average", "Overall"])

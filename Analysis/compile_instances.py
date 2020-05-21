@@ -420,6 +420,7 @@ class ComparativeCollection(InstanceCollection):
         constraints (TYPE): Description
         filetag (str): Description
     """
+    filetag = 'comparative'
 
     def __init__(self, study):
         """Summary
@@ -428,7 +429,6 @@ class ComparativeCollection(InstanceCollection):
             study (TYPE): Description
         """
         InstanceCollection.__init__(self, study)
-        self.filetag = 'comparative'
         self.append_annotations()
 
     # self.constraints = self.get_constraints()
@@ -501,6 +501,7 @@ class ConfigurationCollection(Collection):
         filetag (str): Description
         instance_list (list): Description
     """
+    self.filetag = 'configs'
 
     def __init__(self, study):
         """Summary
@@ -509,7 +510,7 @@ class ConfigurationCollection(Collection):
             study (TYPE): Description
         """
         Collection.__init__(self, study)
-        self.filetag = 'configs'
+
         ## List of configuration instances
         self.instance_list = []
         self.append_configurations()
