@@ -29,9 +29,9 @@ class BasicInfo:
 
     Attributes:
         a_index (dict): Description
-        abv (TYPE): Description
+        study (TYPE): Description
         analysis_folder_name (str): Description
-        base_data_folder_name (str): Description
+        base_collected_data_folder_name (str): Description
         base_feature_data_folder_name (str): Description
         base_stats_folder_name (str): Description
         comp_annotations_name (str): Description
@@ -64,7 +64,7 @@ class BasicInfo:
     analysis_folder_name = "Analysis"
     base_feature_data_folder_name = "Scene Data"
 
-    base_data_folder_name = "collected data"
+    base_collected_data_folder_name = "collected data"
     sem_annotations_name = "clean semantic annotation list.csv"
     svmod_annotations_name = "clean svmod annotation list.csv"
     comp_annotations_name = "clean comparative annotation list.csv"
@@ -142,23 +142,22 @@ class BasicInfo:
             study (TYPE): Description
         """
         # Abbreviation for files and folders
-        self.abv = study
+        self.study = study
 
         # paths and filenames
 
         self.input_feature_data_folder = (
-                self.project_path
+
+                self.analysis_folder_name
                 + "/"
-                + self.analysis_folder_name
+                + self.study
                 + "/"
                 + self.base_feature_data_folder_name
-                + "/"
-                + self.abv
         )
 
         self.input_feature_csv = self.input_feature_data_folder + "/relations.csv"
 
-        self.feature_output_folder = "feature values" + "/" + self.abv
+        self.feature_output_folder = self.study + "/" +  "feature values"
         # Path for outputting feature values
         self.feature_output_csv = (
                 self.feature_output_folder + "/standardised_values.csv"
@@ -168,12 +167,12 @@ class BasicInfo:
                 self.feature_output_folder + "/human_readable_values.csv"
         )
 
-        self.data_folder = self.base_data_folder_name + "/" + self.abv
+        self.data_folder = self.study + "/" +  self.base_collected_data_folder_name
         self.raw_user_csv = self.data_folder + "/" + "userlist.csv"
 
         self.raw_annotation_csv = self.data_folder + "/" + "annotationlist.csv"
 
-        self.stats_folder = self.base_stats_folder_name + "/" + self.abv
+        self.stats_folder = self.study + "/" +  self.base_stats_folder_name
 
     # @staticmethod
     # def get_scene_list():
