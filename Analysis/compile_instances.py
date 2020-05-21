@@ -1,105 +1,64 @@
 """Summary
+## Run process_data and preprocess_features before this
 
-Attributes:
+## Input: cleaned annotation, user lists and list of feature values for configurations (see Relationship class)
+## Compiles annotation instances, adds feature values to them
+## Output: For each task: Basic stats for each preposition.
+# For sv task writes a csv of feature values with selection information
+
+## Also has functions to generate constraints from comparative data
+
+Deleted Attributes:
     comp_annotations_name (TYPE): Description
     data_folder_name (TYPE): Description
     feature_data_folder_name (TYPE): Description
     project_folder_name (TYPE): Description
     sem_annotations_name (TYPE): Description
-    stats_folder_name (TYPE): Description
+     (TYPE): Description
 """
-## Run process_data and preprocess_features before this
-
-## Input: cleaned annotation, user lists and list of feature values for configurations (see Relationship class)
-## Compiles annotation instances, adds feature values to them
-## Output: For each task: Basic stats for each preposition. 
-# For sv task writes a csv of feature values with selection information
-
-## Also has functions to generate constraints from comparative data
 
 import csv
-import os
 import numpy as np
-import uuid
-import itertools
-
-from sklearn.model_selection import train_test_split
 
 import preprocess_features
 from classes import Instance, Configuration, SceneInfo, CompInstance, Constraint, Comparison, Relationship, BasicInfo
-
-### Files are shared with process_data
-project_folder_name = BasicInfo.project_folder_name
-feature_data_folder_name = BasicInfo.feature_data_folder_name
-data_folder_name = BasicInfo.data_folder_name
-stats_folder_name = BasicInfo.stats_folder_name
-sem_annotations_name = BasicInfo.sem_annotations_name
-comp_annotations_name = BasicInfo.comp_annotations_name
+from process_data import SemanticAnnotation, ComparativeAnnotation
 
 
-class User:
+class Preposition:
     """Summary
-
-    Attributes:
-        name (TYPE): Description
-        value_list (list): Description
-    """
-
-    def __init__(self, name):
-        """Summary
-
-        Args:
-            name (TYPE): Description
-        """
-        self.name = name
-
-        self.value_list = []
-
-    def append_values(self, instance_list):
-        """Summary
-
-        Args:
-            instance_list (TYPE): Description
-        """
-        for i in instance_list:
-            if i.user == self.name:
-                # if hasattr(i, 'containment'):
-                self.value_list.append(
-                    [i.support, i.containment, i.contact, i.contact_scaled, i.above_measure, i.ground_verticalness])
-
-
-class Preposition():
-    """Summary
-
+    
     Attributes:
         array (TYPE): Description
         config_list (TYPE): Description
         instance_list (TYPE): Description
         name (TYPE): Description
+        study (TYPE): Description
         value_list (list): Description
     """
 
     # Preposition is instantiated for a particular list of instances
     # each preposition ends up with an associated array
-    def __init__(self, name, instance_list):
+    def __init__(self, name, instance_list, study):
         """Summary
-
+        
         Args:
             name (TYPE): Description
             instance_list (TYPE): Description
+            study (TYPE): Description
         """
         self.name = name
-
+        self.study = study
         self.value_list = []
         self.instance_list = self.get_instances(instance_list)
         self.config_list = self.get_configs()
 
     def get_instances(self, instance_list):
         """Summary
-
+        
         Args:
             instance_list (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
@@ -113,13 +72,13 @@ class Preposition():
     ## Get configurations and appends value rows to value list
     def get_configs(self):
         """Summary
-
+        
         Returns:
             TYPE: Description
         """
         configs = []
         for i in self.instance_list:
-            c = Configuration(i.scene, i.figure, i.ground)
+            c = Configuration(i.scene, i.figure, i.ground, self.study)
 
             self.value_list.append(c.row)
             ## Collect distinct configurations
@@ -140,10 +99,10 @@ class Preposition():
 
     def average_value(self, relation):
         """Summary
-
+        
         Args:
             relation (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
@@ -164,25 +123,39 @@ class Preposition():
 
 class Collection:
     """Summary
-
+    Generic collection class
+    Does not require annotations/instances
+    
     Attributes:
         annotation_list (list): Description
+        basic_info (TYPE): Description
+        data_folder_name (TYPE): Description
+        feature_data_csv (TYPE): Description
         feature_keys (TYPE): Description
         instance_list (list): Description
-        preposition_list (list): Description
         relation_keys (TYPE): Description
+        stats_folder (TYPE): Description
+        study (TYPE): Description
+    
+    Deleted Attributes:
+        preposition_list (list): Description
     """
 
-    ## Generic collection class
-    ## Does not require annotations/instances
-    relation_keys = Relationship.get_relation_keys()
-    feature_keys = Relationship.get_feature_keys()
-    preposition_list = ['in', 'inside', 'against', 'on', 'on top of', 'under', 'below', 'over',
-                        'above']  # list of prepositions which exist in the data
-
-    def __init__(self):
+    def __init__(self, study):
         """Summary
+        
+        Args:
+            study (TYPE): Description
         """
+        self.basic_info = BasicInfo(study)
+        self.study = study
+        self.relation_keys = Relationship.get_relation_keys(study)
+        self.feature_keys = Relationship.get_feature_keys(study)
+
+        self.feature_data_csv = self.basic_info.feature_output_csv
+        self.data_folder_name = self.basic_info.data_folder
+        self.stats_folder = self.basic_info.stats_folder
+
         ## Annotation list is raw list of annotations from csv
         ## Useful for counting number of tests of particular configuration
         self.annotation_list = []
@@ -196,7 +169,7 @@ class Collection:
             if i.figure != "none":
                 try:
 
-                    r = Relationship(i.scene, i.figure, i.ground)
+                    r = Relationship(i.scene, i.figure, i.ground, self.study)
                     r.load_from_csv()
 
                     for key in r.feature_keys:
@@ -206,17 +179,18 @@ class Collection:
 
                 except Exception as e:
                     print('Instance not added')
-                    print('Figure: ' + i.figure)
-                    print('Ground: ' + i.ground)
+                    print(('Figure: ' + i.figure))
+                    print(('Ground: ' + i.ground))
 
                     print(e)
 
     def get_relation_values(self, relation):
         """Summary
-
+        Gets values of a particular feature
+        
         Args:
             relation (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
@@ -227,32 +201,33 @@ class Collection:
 
     def get_mean_relation_value(self, relation):
         """Summary
-
+        Gets mean value of a particular feature
+        
         Args:
             relation (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
-        x = numpy.mean(self.get_relation_values(relation))
+        x = np.mean(self.get_relation_values(relation))
         return x
 
     def get_std_relation_value(self, relation):
         """Summary
-
+        
         Args:
             relation (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
-        x = numpy.std(self.get_relation_values(relation))
+        x = np.std(self.get_relation_values(relation))
         return x
 
 
 class InstanceCollection(Collection):
     """Summary
-
+    
     Attributes:
         categorisation_feature_name (str): Description
         fig_feature_name (str): Description
@@ -268,22 +243,25 @@ class InstanceCollection(Collection):
     fig_feature_name = 'Figure'
     ground_feature_name = 'Ground'
 
-    def __init__(self):
+    def __init__(self, study):
         """Summary
+        
+        Args:
+            study (TYPE): Description
         """
-        Collection.__init__(self)
+        Collection.__init__(self, study)
 
     ### Instance Collection contains instances with a preposition
     def get_used_prepositions(self):
         """Summary
-
+        
         Returns:
             TYPE: Description
         """
         out = []
         for i in self.instance_list:
-            if i.preposition not in self.preposition_list:
-                self.preposition_list.append(i.preposition)
+            if i.preposition not in BasicInfo.preposition_list:
+                BasicInfo.preposition_list.append(i.preposition)
             if i.preposition not in out:
                 out.append(i.preposition)
         return out
@@ -294,12 +272,12 @@ class InstanceCollection(Collection):
         """Summary
         """
         scene_list = []
-        s = SceneInfo()
+        s = SceneInfo(self.study)
         for scene in s.scene_list:
             scene_list.append(scene.name)
 
         for preposition in self.get_used_prepositions():
-            config_list = Relationship.load_all()
+            config_list = Relationship.load_all(self.study)
             config_list.pop(0)
 
             ## Write file of all instances
@@ -310,7 +288,7 @@ class InstanceCollection(Collection):
 
                 for row in config_list:
 
-                    c = Configuration(row[0], row[1], row[2])
+                    c = Configuration(row[0], row[1], row[2], self.study)
                     t = float(c.number_of_tests(self.annotation_list))
                     s = float(c.number_of_selections(preposition, self.instance_list))
 
@@ -337,7 +315,7 @@ class InstanceCollection(Collection):
     def write_preposition_data_csvs(self):
         """Summary
         """
-        config_list = Relationship.load_all()
+        config_list = Relationship.load_all(self.study)
 
         # for preposition in self.get_used_prepositions():
 
@@ -353,7 +331,7 @@ class InstanceCollection(Collection):
         # 						outputwriter1.writerow(row)
 
         ### Write file summarizing stats
-        with open(stats_folder_name + '/' + self.filetag + ' preposition stats.csv', "w") as csvfile:
+        with open(self.basic_info.stats_folder + '/' + self.filetag + ' preposition stats.csv', "w") as csvfile:
             outputwriter = csv.writer(csvfile)
             outputwriter.writerow(['', '', '', 'Average Values'])
             outputwriter.writerow(
@@ -363,7 +341,7 @@ class InstanceCollection(Collection):
 
             row = [preposition]
 
-            p = Preposition(preposition, self.instance_list)
+            p = Preposition(preposition, self.instance_list, self.study)
 
             row.append(len(p.instance_list))
             row.append(len(p.config_list))
@@ -377,7 +355,8 @@ class InstanceCollection(Collection):
                 # print(value)
                 row.append(value)
 
-            with open(stats_folder_name + '/' + self.filetag + ' preposition stats.csv', "a") as csvfile:
+            with open(self.basic_info.stats_folder + '/' + self.filetag + ' preposition stats.csv',
+                      "a") as csvfile:
                 outputwriter = csv.writer(csvfile)
 
                 outputwriter.writerow(row)
@@ -385,20 +364,23 @@ class InstanceCollection(Collection):
 
 class SemanticCollection(InstanceCollection):
     """Summary
-
+    
     Attributes:
         filetag (str): Description
+    
+    Deleted Attributes:
         preposition_list (list): Description
     """
 
-    preposition_list = ['in', 'inside', 'against', 'on', 'on top of', 'under', 'below', 'over',
-                        'above']  # list of prepositions which exist in the data
     filetag = 'semantic'
 
-    def __init__(self):
+    def __init__(self, study):
         """Summary
+        
+        Args:
+            study (TYPE): Description
         """
-        InstanceCollection.__init__(self)
+        InstanceCollection.__init__(self, study)
         self.append_annotations()
 
     def append_annotations(self):
@@ -406,7 +388,7 @@ class SemanticCollection(InstanceCollection):
         """
         ### Reads annotations from clean files
         ### Must be updated if process_data prints csvs differently
-        filename = data_folder_name + "/" + sem_annotations_name
+        filename = self.basic_info.data_folder + "/" + self.basic_info.sem_annotations_name
 
         with open(filename, "r") as f:
             reader = csv.reader(f)  # create a 'csv reader' from the file object
@@ -414,16 +396,17 @@ class SemanticCollection(InstanceCollection):
 
         annotationlist.pop(0)  # removes first line of data list which is headings
 
-        for annotation in annotationlist:
-            self.annotation_list.append(annotation)
+        for clean_annotation in annotationlist:
+            self.annotation_list.append(clean_annotation)
 
-            prepositions = annotation[4].split(";")
+            an_id, clean_user_id, task, scene, prepositions, figure, ground, time = SemanticAnnotation.retrieve_from_data_row(
+                clean_annotation)
 
-            for p in prepositions:
+            given_prepositions = prepositions.split(";")
+
+            for p in given_prepositions:
                 if p != "":
-                    # scene = annotation[3][:annotation[3].index('-')] + '.blend'
-                    i = Instance(annotation[0], annotation[1], annotation[2], annotation[3], p, annotation[5],
-                                 annotation[6])
+                    i = Instance(an_id, clean_user_id, task, scene, p, figure, ground, self.study)
 
                     self.instance_list.append(i)
 
@@ -432,16 +415,19 @@ class SemanticCollection(InstanceCollection):
 
 class ComparativeCollection(InstanceCollection):
     """Summary
-
+    
     Attributes:
         constraints (TYPE): Description
         filetag (str): Description
     """
 
-    def __init__(self):
+    def __init__(self, study):
         """Summary
+        
+        Args:
+            study (TYPE): Description
         """
-        InstanceCollection.__init__(self)
+        InstanceCollection.__init__(self, study)
         self.filetag = 'comparative'
         self.append_annotations()
 
@@ -453,7 +439,7 @@ class ComparativeCollection(InstanceCollection):
         """
         ### Reads annotations from clean files
         ### Must be updated if process_data prints csvs differently
-        filename = data_folder_name + "/" + comp_annotations_name
+        filename = self.basic_info.data_folder + "/" + self.basic_info.comp_annotations_name
 
         with open(filename, "r") as f:
             reader = csv.reader(f)  # create a 'csv reader' from the file object
@@ -461,17 +447,14 @@ class ComparativeCollection(InstanceCollection):
 
         annotationlist.pop(0)  # removes first line of data list which is headings
 
-        for annotation in annotationlist:
-            self.annotation_list.append(annotation)
-            possible_figures = []
-            index = 8
-            while index < len(annotation):
-                possible_figures.append(annotation[index])
-                index += 1
+        for clean_annotation in annotationlist:
+            self.annotation_list.append(clean_annotation)
 
-            # scene = annotation[3][:annotation[3].index('-')] + '.blend'
-            i = CompInstance(annotation[0], annotation[1], annotation[2], annotation[3], annotation[4], annotation[5],
-                             annotation[6], possible_figures)
+            an_id, clean_user_id, task, scene, preposition, figure, ground, time, possible_figures = ComparativeAnnotation.retrieve_from_data_row(
+                clean_annotation)
+
+            i = CompInstance(an_id, clean_user_id, task, scene, preposition, figure, ground, possible_figures,
+                             self.study)
 
             self.instance_list.append(i)
 
@@ -479,7 +462,7 @@ class ComparativeCollection(InstanceCollection):
 
     def get_constraints(self):
         """Summary
-
+        
         Returns:
             TYPE: Description
         """
@@ -488,9 +471,9 @@ class ComparativeCollection(InstanceCollection):
         ## Creates a dictionary, prepositions are keys
         ### Values are lists of constraints for the preposition
         out = dict()
-        s_info = SceneInfo()
+        s_info = SceneInfo(self.study)
 
-        for preposition in self.preposition_list:
+        for preposition in BasicInfo.preposition_list:
             # print(preposition)
             C = []
             for s in s_info.scene_list:
@@ -499,7 +482,7 @@ class ComparativeCollection(InstanceCollection):
 
                 for grd in grounds:
 
-                    c = Comparison(s.name, preposition, grd)
+                    c = Comparison(s.name, preposition, grd, self.study)
                     Cons = c.generate_constraints(self.instance_list)
                     for con in Cons:
                         C.append(con)
@@ -513,16 +496,19 @@ class ComparativeCollection(InstanceCollection):
 
 class ConfigurationCollection(Collection):
     """Summary
-
+    
     Attributes:
         filetag (str): Description
         instance_list (list): Description
     """
 
-    def __init__(self):
+    def __init__(self, study):
         """Summary
+        
+        Args:
+            study (TYPE): Description
         """
-        Collection.__init__(self)
+        Collection.__init__(self, study)
         self.filetag = 'configs'
         ## List of configuration instances
         self.instance_list = []
@@ -531,12 +517,12 @@ class ConfigurationCollection(Collection):
     def append_configurations(self):
         """Summary
         """
-        s = SceneInfo()
+        s = SceneInfo(self.study)
         for scene in s.scene_list:
 
             for c in scene.get_all_configs():
                 if c[0] != c[1]:
-                    config = Configuration(scene.name, c[0], c[1])
+                    config = Configuration(scene.name, c[0], c[1], self.study)
 
                     self.instance_list.append(config)
 
@@ -548,12 +534,12 @@ class ConfigurationCollection(Collection):
 
         titles = ['Scene', 'Figure', 'Ground'] + self.feature_keys
 
-        with open(stats_folder_name + '/' + 'configuration data.names', "w") as csvfile:
+        with open(self.basic_info.stats_folder + '/' + 'configuration data.names', "w") as csvfile:
             outputwriter = csv.writer(csvfile)
 
             outputwriter.writerow(titles)
 
-        with open(stats_folder_name + '/' + 'configuration data.csv', "w") as csvfile:
+        with open(self.basic_info.stats_folder + '/' + 'configuration data.csv', "w") as csvfile:
             outputwriter = csv.writer(csvfile)
 
             for c in self.instance_list:
@@ -561,7 +547,7 @@ class ConfigurationCollection(Collection):
 
     def write_preposition_data_csvs(self, preposition, datalist):
         """Summary
-
+        
         Args:
             preposition (TYPE): Description
             datalist (TYPE): Description
@@ -592,11 +578,11 @@ class ConfigurationCollection(Collection):
 
     def greater_than_configs(self, relation, value):
         """Summary
-
+        
         Args:
             relation (TYPE): Description
             value (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
@@ -609,11 +595,11 @@ class ConfigurationCollection(Collection):
 
     def less_than_configs(self, relation, value):
         """Summary
-
+        
         Args:
             relation (TYPE): Description
             value (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
@@ -625,12 +611,12 @@ class ConfigurationCollection(Collection):
 
     def get_instance(self, scene, f, g):
         """Summary
-
+        
         Args:
             scene (TYPE): Description
             f (TYPE): Description
             g (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
@@ -641,21 +627,18 @@ class ConfigurationCollection(Collection):
 
 if __name__ == '__main__':
     # First preprocess features
-    f = preprocess_features.Features()
-    nd = f.standardise_values()
-    f.write_new(nd)
-    f.write_mean_std()
+    f = preprocess_features.process_all_features()
 
     ### Semantic Annotations
     ### Collect annotation instances and attach values to them
-    svcollection = SemanticCollection()
+    svcollection = SemanticCollection("2019 study")
 
     svcollection.write_preposition_data_csvs()
     svcollection.write_config_ratios()
 
     #### Comparative Annotations
 
-    compcollection = ComparativeCollection()
+    compcollection = ComparativeCollection("2019 study")
 
     compcollection.write_preposition_data_csvs()
     compcollection.get_constraints()

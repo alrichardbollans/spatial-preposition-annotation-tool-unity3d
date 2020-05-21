@@ -11,8 +11,8 @@ import csv
 import itertools
 import scipy
 
-from classes import Comparison, BasicInfo, SceneInfo
-
+from classes import Comparison, SceneInfo
+from data_import import BasicInfo
 
 class User:
     """
@@ -32,7 +32,7 @@ class User:
     list_headings = ["User ID", "Short ID", "Time", "Native=1, Non-Native =0"]
 
     def __init__(
-            self, clean_id: str, user_id: str, time: str, native: str
+            self, clean_id, user_row
     ):  # The order of this should be the same as in writeuserdata.php
         """Summary
         
@@ -42,11 +42,12 @@ class User:
             time (str): Description
             native (str): Description
         """
-        self.user_id = user_id
-        self.time = time
-
-        self.native = native
         self.clean_user_id = clean_id
+        self.user_id = user_row[BasicInfo.u_index["user_id"]]
+        self.time = user_row[BasicInfo.u_index["time"]]
+
+        self.native = user_row[BasicInfo.u_index["native"]]
+
 
         self.list_format = [self.user_id, self.clean_user_id, self.time, self.native]
 
@@ -107,12 +108,11 @@ class UserData:
         Returns:
             TYPE: Description
         """
-        # datalist.pop(0) #removes first line of data list which is headings
-        # datalist=datalist[::-1] #inverts data list to put in time order
+
         out = []
         i = 1
-        for user in self.raw_data_list:
-            u = User(i, user[0], user[1], user[2])  # Keep order 1,2,3,etc..
+        for user_row in self.raw_data_list:
+            u = User(i, user_row)
 
             out.append(u)
             i += 1
@@ -187,7 +187,7 @@ class Annotation:
 
     def __init__(
             self, userdata, annotation
-    ):  # ID,UserID,now,selectedFigure,selectedGround,task,scene,preposition,prepositions,cam_rot,cam_loc):
+    ):
         """Summary
         
         Args:
@@ -311,10 +311,29 @@ class ComparativeAnnotation(Annotation):
             self.time,
         ]
 
-        # c = Comparison(self.scene,self.preposition,self.ground)
-        # self.possible_figures = c.possible_figures
-        # for f in self.possible_figures:
-        #   self.list_format.append(f)
+        c = Comparison(self.scene, self.preposition, self.ground, userdata.study)
+        self.possible_figures = c.possible_figures
+        for f in self.possible_figures:
+          self.list_format.append(f)
+
+    @staticmethod
+    def retrieve_from_data_row(row):
+        an_id = row[0]
+        clean_user_id = row[1]
+        task = row[2]
+        scene = row[3]
+        preposition = row[4]
+        figure = row[5]
+        ground = row[6]
+        time = row[7]
+
+        possible_figures = []
+        index = 8
+        while index < len(row):
+            possible_figures.append(row[index])
+            index += 1
+
+        return an_id, clean_user_id, task, scene, preposition, figure, ground, time, possible_figures
 
     def print_list(self):
         """Summary
@@ -355,7 +374,7 @@ class SemanticAnnotation(Annotation):
     # User selects multiple prepositions given a figure and ground
     def __init__(
             self, userdata, annotation
-    ):  # ID,UserID,now,selectedFigure,selectedGround,scene,preposition,prepositions,cam_rot,cam_loc):
+    ):
         """Summary
         
         Args:
@@ -374,6 +393,18 @@ class SemanticAnnotation(Annotation):
             self.ground,
             self.time,
         ]
+    @staticmethod
+    def retrieve_from_data_row(row):
+        an_id = row[0]
+        clean_user_id = row[1]
+        task = row[2]
+        scene = row[3]
+        prepositions = row[4]
+        figure = row[5]
+        ground = row[6]
+        time = row[7]
+
+        return an_id,clean_user_id,task,scene,prepositions,figure,ground,time
 
     def print_list(self):
         """Summary
@@ -421,7 +452,7 @@ class TypicalityAnnotation(Annotation):
     # User selects multiple prepositions given a figure and ground
     def __init__(
             self, userdata, annotation
-    ):  # ID,UserID,now,selectedFigure,selectedGround,scene,preposition,prepositions,cam_rot,cam_loc):
+    ):
         """Summary
         
         Args:

@@ -5,7 +5,7 @@ Basic example: https://alrichardbollans.github.io/spatial-preposition-annotation
 
 ## Data
 
-Data from the 2019 study referenced in "Automatic Generation of Typicality Measures for Spatial Language in Grounded Settings" and "Modelling the Polysemy of Spatial Prepositions in Referring Expressions" is given in `Analysis` folder along with Python2 code for data analysis. The data is also formally archived at: https://doi.org/10.5518/764
+Data from the 2019 study referenced in "Automatic Generation of Typicality Measures for Spatial Language in Grounded Settings" and "Modelling the Polysemy of Spatial Prepositions in Referring Expressions" is given in `Analysis` folder along with Python code for data analysis. The data is also formally archived at: https://doi.org/10.5518/764
 
 For figures, data and scores accompanying the "Modelling the Polysemy of Spatial Prepositions in Referring Expressions" paper, see the `polysemy` folder.
 
