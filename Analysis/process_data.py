@@ -1,11 +1,10 @@
-
 """Summary
-Script to run for newly collected data files which:
-Input: annotation and user info csv from data collection
-Output: Clean annotation lists. Basic stats. User agreement calculations
-Feature values are included later
-"""
 
+Script to run for newly collected data files which:
+    Input: annotation and user info csv from data collection
+    Output: Clean annotation lists. Basic stats. User agreement calculations
+    Feature values are included later
+"""
 
 import csv
 import itertools
@@ -13,6 +12,7 @@ import scipy
 
 from classes import Comparison, SceneInfo
 from data_import import BasicInfo
+
 
 class User:
     """
@@ -38,6 +38,9 @@ class User:
         
         Args:
             clean_id (str): Description
+            user_row (TYPE): Description
+        
+        Deleted Parameters:
             user_id (str): Description
             time (str): Description
             native (str): Description
@@ -47,7 +50,6 @@ class User:
         self.time = user_row[BasicInfo.u_index["time"]]
 
         self.native = user_row[BasicInfo.u_index["native"]]
-
 
         self.list_format = [self.user_id, self.clean_user_id, self.time, self.native]
 
@@ -273,6 +275,7 @@ class ComparativeAnnotation(Annotation):
     Attributes:
         list_format (TYPE): Description
         list_headings (TYPE): Description
+        possible_figures (TYPE): Description
     """
 
     list_headings = [
@@ -314,10 +317,18 @@ class ComparativeAnnotation(Annotation):
         c = Comparison(self.scene, self.preposition, self.ground, userdata.study)
         self.possible_figures = c.possible_figures
         for f in self.possible_figures:
-          self.list_format.append(f)
+            self.list_format.append(f)
 
     @staticmethod
     def retrieve_from_data_row(row):
+        """Summary
+        
+        Args:
+            row (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
         an_id = row[0]
         clean_user_id = row[1]
         task = row[2]
@@ -393,8 +404,17 @@ class SemanticAnnotation(Annotation):
             self.ground,
             self.time,
         ]
+
     @staticmethod
     def retrieve_from_data_row(row):
+        """Summary
+        
+        Args:
+            row (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
         an_id = row[0]
         clean_user_id = row[1]
         task = row[2]
@@ -404,7 +424,7 @@ class SemanticAnnotation(Annotation):
         ground = row[6]
         time = row[7]
 
-        return an_id,clean_user_id,task,scene,prepositions,figure,ground,time
+        return an_id, clean_user_id, task, scene, prepositions, figure, ground, time
 
     def print_list(self):
         """Summary
@@ -816,7 +836,6 @@ class Data:
                 if user1.annotation_match(a):
                     out.append(a)
         return out
-
 
     def question_match(self, a1, a2):
         """Summary

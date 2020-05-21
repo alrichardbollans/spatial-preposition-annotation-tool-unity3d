@@ -4,7 +4,6 @@ Uses "standard score"
 Outputs in given directory
 """
 
-
 import pandas as pd
 
 from classes import BasicInfo
@@ -26,7 +25,6 @@ def process_all_features():
 
 
 class Features:
-
     """Summary
     
     Attributes:
@@ -38,7 +36,7 @@ class Features:
         input_feature_csv (TYPE): Description
         stds (TYPE): Description
     """
-    
+
     # Features given in relation.csv that aren't needed for analysis
     features_to_remove = ["size_ratio", "horizontal_distance_normalized", "shortest_distance_normalized",
                           "location_control_-x", "location_control_-z", "location_control_x",

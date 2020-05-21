@@ -5,6 +5,7 @@ Methods and classes for loading the data, related to data format.
 import os
 import csv
 
+
 def get_git_project_directory():
     """
     Returns:
@@ -24,12 +25,11 @@ def get_git_project_directory():
 
 class BasicInfo:
     """Summary
-
+    
     # Class containing basic info related to data collection
-
+    
     Attributes:
         a_index (dict): Description
-        study (TYPE): Description
         analysis_folder_name (str): Description
         base_collected_data_folder_name (str): Description
         base_feature_data_folder_name (str): Description
@@ -38,11 +38,14 @@ class BasicInfo:
         comp_task (str): Description
         comparative_abbreviations (TYPE): Description
         comparative_preposition_list (TYPE): Description
+        config_ratio_folder (TYPE): Description
+        constraint_csv (TYPE): Description
         data_folder (TYPE): Description
-        input_feature_data_folder (TYPE): Description
         feature_output_csv (TYPE): Description
         feature_output_folder (TYPE): Description
         human_readable_feature_output_csv (TYPE): Description
+        input_feature_csv (TYPE): Description
+        input_feature_data_folder (TYPE): Description
         preposition_list (list): Description
         project_path (TYPE): Description
         raw_annotation_csv (TYPE): Description
@@ -51,12 +54,15 @@ class BasicInfo:
         semantic_abbreviations (TYPE): Description
         semantic_preposition_list (TYPE): Description
         stats_folder (TYPE): Description
+        study (TYPE): Description
+        study_list (list): Description
         sv_task (str): Description
         svmod_annotations_name (str): Description
         svmod_task (str): Description
         typ_a_index (dict): Description
         typ_annotations_name (str): Description
         typ_task (str): Description
+        u_index (TYPE): Description
         unity_project_folder_name (str): Description
     """
 
@@ -128,7 +134,7 @@ class BasicInfo:
     # Dictionary giving index of values in raw userlist
 
     u_index = {
-        "user_id":0,
+        "user_id": 0,
         "time": 1,
         "native": 2
     }
@@ -137,7 +143,7 @@ class BasicInfo:
 
     def __init__(self, study):
         """Summary
-
+        
         Args:
             study (TYPE): Description
         """
@@ -148,16 +154,14 @@ class BasicInfo:
 
         self.input_feature_data_folder = (
 
-                self.analysis_folder_name
-                + "/"
-                + self.study
+                self.study
                 + "/"
                 + self.base_feature_data_folder_name
         )
 
         self.input_feature_csv = self.input_feature_data_folder + "/relations.csv"
 
-        self.feature_output_folder = self.study + "/" +  "feature values"
+        self.feature_output_folder = self.study + "/" + "feature values"
         # Path for outputting feature values
         self.feature_output_csv = (
                 self.feature_output_folder + "/standardised_values.csv"
@@ -167,13 +171,28 @@ class BasicInfo:
                 self.feature_output_folder + "/human_readable_values.csv"
         )
 
-        self.data_folder = self.study + "/" +  self.base_collected_data_folder_name
+        self.data_folder = self.study + "/" + self.base_collected_data_folder_name
         self.raw_user_csv = self.data_folder + "/" + "userlist.csv"
 
         self.raw_annotation_csv = self.data_folder + "/" + "annotationlist.csv"
 
-        self.stats_folder = self.study + "/" +  self.base_stats_folder_name
+        self.stats_folder = self.study + "/" + self.base_stats_folder_name
 
+        self.config_ratio_folder = self.study + "/" + 'preposition data/'
+
+        self.constraint_csv = self.study + "/" "constraint data/constraints.csv"
+
+    def config_ratio_csv(self, filetag, preposition):
+        """Summary
+        
+        Args:
+            filetag (TYPE): Description
+            preposition (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
+        return self.config_ratio_folder + filetag + '-ratio-list' + preposition + ' .csv'
     # @staticmethod
     # def get_scene_list():
     #     """Summary
@@ -191,17 +210,21 @@ class BasicInfo:
 
 class Relationship:
     """class which is used to read feature values
-
+    
     Attributes:
         context_features (list): Description
+        data_path (TYPE): Description
         feature_keys (list): Description
         figure (TYPE): Description
         ground (TYPE): Description
-        output_path (TYPE): Description
-        input_feature_csv (TYPE): Description
         relation_keys (list): Description
         scene (TYPE): Description
         set_of_features (dict): Description
+        study (TYPE): Description
+    
+    Deleted Attributes:
+        output_path (TYPE): Description
+        input_feature_csv (TYPE): Description
     """
 
     # Lots of this could be done with pandas. Doh :/
@@ -216,11 +239,12 @@ class Relationship:
 
     def __init__(self, scene, figure, ground, study):
         """Summary
-
+        
         Args:
             scene (TYPE): Description
             figure (TYPE): Description
             ground (TYPE): Description
+            study (TYPE): Description
         """
         self.study = study
         self.data_path = BasicInfo(study).feature_output_csv
@@ -237,12 +261,15 @@ class Relationship:
     @staticmethod
     def load_all(study):
         """Summary
-
+        
         Args:
-            path (None, optional): Description
-
+            study (TYPE): Description
+        
         Returns:
             TYPE: Description
+        
+        Deleted Parameters:
+            path (None, optional): Description
         """
         # Loads a list of all configurations and feature values, with some features removed
         path = BasicInfo(study).feature_output_csv
@@ -255,9 +282,12 @@ class Relationship:
     @staticmethod
     def get_feature_keys(study):
         """Summary
-
+        
         Returns:
             TYPE: Description
+        
+        Args:
+            study (TYPE): Description
         """
         feature_keys = []
 
@@ -270,9 +300,12 @@ class Relationship:
     @staticmethod
     def get_relation_keys(study):
         """Summary
-
+        
         Returns:
             TYPE: Description
+        
+        Args:
+            study (TYPE): Description
         """
         relation_keys = []
 
@@ -285,8 +318,8 @@ class Relationship:
 
     def load_from_csv(self):
         """Summary
-
-        Args:
+        
+        Deleted Parameters:
             path (None, optional): Description
         """
 

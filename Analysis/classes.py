@@ -1,6 +1,6 @@
 """Summary
 
-Attributes:
+Deleted Attributes:
     preposition_list (list): Description
 """
 import itertools
@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 
 from data_import import BasicInfo, Relationship
-
 
 
 def clean_name(object_name):
@@ -47,24 +46,15 @@ def remove_dot_unity(scene_name):
     return new_clean_name
 
 
-
-
-
-
-
-
 class Constraint:
-
     """Summary
     
     Attributes:
         csv_row (TYPE): Description
         f1 (TYPE): Description
         f2 (TYPE): Description
-        folder_path (str): Description
         ground (TYPE): Description
         lhs (TYPE): Description
-        output_path (TYPE): Description
         parity (TYPE): Description
         preposition (TYPE): Description
         rhs (TYPE): Description
@@ -72,14 +62,17 @@ class Constraint:
         titles (list): Description
         weak (TYPE): Description
         weight (TYPE): Description
+    
+    Deleted Attributes:
+        folder_path (str): Description
+        output_path (TYPE): Description
     """
 
     # A constraint is a linear inequality
     # Left hand side is more typical than right hand side
     # LHS is values of first config
     # RHS is values of second config
-    folder_path = "constraint data/"
-    output_path = folder_path + "constraints.csv"
+
     titles = [
         "scene",
         "preposition",
@@ -94,7 +87,7 @@ class Constraint:
     ]
 
     def __init__(
-        self, scene, preposition, ground, f1, f2, weight, parity, weak, lhs, rhs
+            self, scene, preposition, ground, f1, f2, weight, parity, weak, lhs, rhs
     ):
         """Summary
         
@@ -150,33 +143,35 @@ class Constraint:
 
     # def row_match(self,row):
     #   if self.scene== row[0] and self.f1 == row[1] and self.f2 == row[2]
-    def write_to_csv(self, name=None):
+    def write_to_csv(self, csv_file):
         """Summary
         
         Args:
+            csv_file (TYPE): Description
+        
+        Deleted Parameters:
             name (None, optional): Description
         """
-        if name == None:
-            path = self.output_path
-        else:
-            path = self.folder_path + name + ".csv"
 
-        with open(path, "a") as csvfile:
+        with open(csv_file, "a") as csvfile:
             outputwriter = csv.writer(csvfile)
             outputwriter.writerow(self.csv_row)
 
     @staticmethod
-    def read_from_csv():
+    def read_from_csv(csv_file):
         """Summary
         
         Returns:
             TYPE: Description
+        
+        Args:
+            csv_file (TYPE): Description
         """
         # Outputs dictionary of constraints from csv
         out = dict()
         for p in BasicInfo.preposition_list:
             out[p] = []
-        dataset = pd.read_csv(Constraint.output_path)
+        dataset = pd.read_csv(csv_file)
         for index, line in dataset.iterrows():
             lhs_list = ast.literal_eval(line["lhs"])
             rhs_list = ast.literal_eval(line["rhs"])
@@ -200,17 +195,17 @@ class Constraint:
         return out
 
     @staticmethod
-    def clear_csv(name=None):
+    def clear_csv(csv_file):
         """Summary
         
         Args:
+            csv_file (TYPE): Description
+        
+        Deleted Parameters:
             name (None, optional): Description
         """
-        if name == None:
-            path = Constraint.output_path
-        else:
-            path = Constraint.folder_path + name + ".csv"
-        with open(path, "w") as csvfile:
+
+        with open(csv_file, "w") as csvfile:
             outputwriter = csv.writer(csvfile)
             outputwriter.writerow(Constraint.titles)
             # csvfile.truncate()
@@ -293,7 +288,6 @@ class Constraint:
 
 
 class Comparison:
-
     """Summary
     
     Attributes:
@@ -472,9 +466,9 @@ class Comparison:
             TYPE: Description
         """
         if (
-            i.scene == self.scene
-            and i.preposition == self.preposition
-            and i.ground == self.ground
+                i.scene == self.scene
+                and i.preposition == self.preposition
+                and i.ground == self.ground
         ):  #
             return True
         else:
@@ -516,12 +510,10 @@ class Comparison:
                     if g_object != self.ground and g_object not in out:
                         out.append(g_object)
 
-                
         return out
 
 
 class MyScene:
-
     """Summary
     
     Attributes:
@@ -600,7 +592,6 @@ class MyScene:
 
 
 class SceneInfo:
-
     """Summary
     A class to store info on the scenes
     scene_list is a collection of MyScene objects
@@ -661,7 +652,6 @@ class SceneInfo:
                 my_scene = MyScene(s_name, mesh_objects)
 
                 if my_scene.study_scene:
-
                     scenes_out.append(my_scene)
                     names_out.append(my_scene.name)
 
@@ -669,16 +659,17 @@ class SceneInfo:
 
 
 class Configuration:
-
     """Summary
     
     Attributes:
         figure (TYPE): Description
         full_row (TYPE): Description
         ground (TYPE): Description
+        path (TYPE): Description
         relations_row (list): Description
         row (list): Description
         scene (TYPE): Description
+        study (TYPE): Description
     """
 
     def __init__(self, scene, figure, ground, study):
@@ -688,6 +679,9 @@ class Configuration:
             scene (TYPE): Description
             figure (TYPE): Description
             ground (TYPE): Description
+            study (TYPE): Description
+        
+        Deleted Parameters:
             path (TYPE, optional): Description
         """
         self.scene = scene
@@ -712,19 +706,19 @@ class Configuration:
             TYPE: Description
         """
         return (
-            "["
-            + str(self.scene)
-            + ","
-            + str(self.figure)
-            + ","
-            + str(self.ground)
-            + "]"
+                "["
+                + str(self.scene)
+                + ","
+                + str(self.figure)
+                + ","
+                + str(self.ground)
+                + "]"
         )
 
     def append_values(self):
         """Summary
         
-        Args:
+        Deleted Parameters:
             path (TYPE): Description
         """
         # print(self.figure)
@@ -752,9 +746,9 @@ class Configuration:
             TYPE: Description
         """
         if (
-            self.scene == instance.scene
-            and self.figure == instance.figure
-            and self.ground == instance.ground
+                self.scene == instance.scene
+                and self.figure == instance.figure
+                and self.ground == instance.ground
         ):
             return True
         else:
@@ -789,7 +783,6 @@ class Configuration:
         counter = 0
         for an in annotationlist:
             if self.annotation_row_match(an) and preposition in an.prepositions:
-
                 counter += 1
         return counter
 
@@ -807,7 +800,6 @@ class Configuration:
         for an in annotationlist:
 
             if self.annotation_row_match(an):
-
                 counter += 1
         # print(counter)
         return counter
@@ -856,9 +848,9 @@ class Configuration:
             TYPE: Description
         """
         if (
-            self.scene == value[0]
-            and self.figure == value[1]
-            and self.ground == value[2]
+                self.scene == value[0]
+                and self.figure == value[1]
+                and self.ground == value[2]
         ):
             return True
         else:
@@ -887,7 +879,6 @@ class Configuration:
 
 
 class Instance(Configuration):
-
     """Summary
     
     Attributes:
@@ -908,6 +899,7 @@ class Instance(Configuration):
             preposition (TYPE): Description
             figure (TYPE): Description
             ground (TYPE): Description
+            study (TYPE): Description
         """
         Configuration.__init__(self, scene, figure, ground, study)
         self.task = task
@@ -922,13 +914,13 @@ class Instance(Configuration):
             TYPE: Description
         """
         return (
-            "["
-            + str(self.scene)
-            + ","
-            + str(self.figure)
-            + ","
-            + str(self.ground)
-            + "]"
+                "["
+                + str(self.scene)
+                + ","
+                + str(self.figure)
+                + ","
+                + str(self.ground)
+                + "]"
         )
 
     def print_info(self):
@@ -941,7 +933,6 @@ class Instance(Configuration):
 
 
 class CompInstance(Configuration):
-
     """Summary
     
     Attributes:
@@ -956,7 +947,7 @@ class CompInstance(Configuration):
     # We can consider this as a usual preposition instance and plot it
     # /compare with selection instances
     def __init__(
-        self, ID, user, task, scene, preposition, figure, ground, possible_figures, study
+            self, ID, user, task, scene, preposition, figure, ground, possible_figures, study
     ):
         """Summary
         
@@ -969,6 +960,7 @@ class CompInstance(Configuration):
             figure (TYPE): Description
             ground (TYPE): Description
             possible_figures (TYPE): Description
+            study (TYPE): Description
         """
         Configuration.__init__(self, scene, figure, ground, study)
         self.possible_figures = possible_figures

@@ -281,7 +281,7 @@ class InstanceCollection(Collection):
             config_list.pop(0)
 
             ## Write file of all instances
-            with open('preposition data/' + self.filetag + '-ratio-list' + preposition + ' .csv', "w") as csvfile:
+            with open(self.basic_info.config_ratio_csv(self.filetag, preposition), "w") as csvfile:
                 outputwriter = csv.writer(csvfile)
                 outputwriter.writerow(['Scene', 'Figure', 'Ground'] + self.feature_keys + [self.ratio_feature_name,
                                                                                            self.categorisation_feature_name])
@@ -312,7 +312,7 @@ class InstanceCollection(Collection):
                         outputwriter.writerow(row)
 
     #### Write General Stats for each preposition
-    def write_preposition_data_csvs(self):
+    def write_preposition_stats_csvs(self):
         """Summary
         """
         config_list = Relationship.load_all(self.study)
@@ -467,7 +467,7 @@ class ComparativeCollection(InstanceCollection):
             TYPE: Description
         """
         # First clear written constraints
-        Constraint.clear_csv()
+        Constraint.clear_csv(self.basic_info.constraint_csv)
         ## Creates a dictionary, prepositions are keys
         ### Values are lists of constraints for the preposition
         out = dict()
@@ -489,7 +489,7 @@ class ComparativeCollection(InstanceCollection):
             out[preposition] = C
             # print(C)
             for con in C:
-                con.write_to_csv()
+                con.write_to_csv(self.basic_info.constraint_csv)
         self.constraints = out
         return out
 
@@ -627,20 +627,20 @@ class ConfigurationCollection(Collection):
 
 if __name__ == '__main__':
     # First preprocess features
-    f = preprocess_features.process_all_features()
+    preprocess_features.process_all_features()
 
     ### Semantic Annotations
     ### Collect annotation instances and attach values to them
     svcollection = SemanticCollection("2019 study")
 
-    svcollection.write_preposition_data_csvs()
+    svcollection.write_preposition_stats_csvs()
     svcollection.write_config_ratios()
 
     #### Comparative Annotations
 
     compcollection = ComparativeCollection("2019 study")
 
-    compcollection.write_preposition_data_csvs()
+    compcollection.write_preposition_stats_csvs()
     compcollection.get_constraints()
 # compcollection.write_config_ratios()
 
