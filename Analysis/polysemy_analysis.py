@@ -135,11 +135,11 @@ class Clustering():
 		# Check if any typical instances are  being labelled as noise
 		# If so, eps += 0.1 and run again
 		# Else, output
-		print(self.instances)
-		print(self.sample_weights)
+		print((self.instances))
+		print((self.sample_weights))
 		clustering = DBSCAN(eps=3,min_samples=2,metric=self.custom_metric).fit(self.instances,sample_weight=self.sample_weights)
-		print(clustering.labels_)
-		print(clustering.components_)
+		print((clustering.labels_))
+		print((clustering.components_))
 
 	def work_out_hierarchy_model(self):
 		
@@ -175,7 +175,7 @@ class Clustering():
 				cluster_instances = instances.iloc[cluster_instances_index,:]
 				cluster = Cluster(self.preposition,cluster_instances,c, alg_typ = "hry")
 				cluster.output()
-		print("Number of clusters: " + str(len(done_clusters)))
+		print(("Number of clusters: " + str(len(done_clusters))))
 		# if self.preposition == "on":
 		# 	print(instances.iloc[25,:])
 		# 	print(instances.iloc[26,:])
@@ -215,7 +215,7 @@ class Clustering():
 
 
 		df = pd.DataFrame(out,relation_keys)
-		print(self.preposition)
+		print((self.preposition))
 		print(df)
 
 		df.to_csv(self.cluster_centres_csv)
@@ -242,7 +242,7 @@ class Clustering():
 		i = self.calculate_inertia_from_centres(km.cluster_centers_)
 		print(i)
 		print("proper inertia")
-		print(km.inertia_)
+		print((km.inertia_))
 
 
 
@@ -296,8 +296,8 @@ class Clustering():
 			centres.append(df["value"].values)
 
 		i = self.calculate_inertia_from_centres(centres)
-		print(self.preposition)
-		print("Number of clusters:" + str(len(centres)))
+		print((self.preposition))
+		print(("Number of clusters:" + str(len(centres))))
 		return i
 		
 			
@@ -312,7 +312,7 @@ class Clustering():
 		polysemes_inertia = self.calculate_polysemes_inertia(polysemes)
 
 		inertias = []
-		K = range(1,10)
+		K = list(range(1,10))
 		for k in K:
 		    kmeanModel = self.work_out_kmeans_model(k)			    
 		    
@@ -507,7 +507,7 @@ class Polyseme():
 		for feature in relation_keys:
 
 			if self.eq_feature_dict != None:
-				if self.eq_feature_dict.has_key(feature):
+				if feature in self.eq_feature_dict:
 				
 					out["eq_feature_dict"].append(round(self.eq_feature_dict[feature],6))
 				else:
@@ -516,7 +516,7 @@ class Polyseme():
 				out["eq_feature_dict"].append("None")
 
 			if self.greater_feature_dict != None:
-				if self.greater_feature_dict.has_key(feature):
+				if feature in self.greater_feature_dict:
 				
 					out["greater_feature_dict"].append(round(self.greater_feature_dict[feature],6))
 				else:
@@ -525,7 +525,7 @@ class Polyseme():
 				out["greater_feature_dict"].append("None")
 
 			if self.less_feature_dict != None:
-				if self.less_feature_dict.has_key(feature):
+				if feature in self.less_feature_dict:
 				
 					out["less_feature_dict"].append(round(self.less_feature_dict[feature],6))
 				else:
@@ -548,7 +548,7 @@ class Polyseme_Model(Model):
 	
 	# Puts together preposition models and has various functions for testing
 	def __init__(self, name, train_scenes, test_scenes, basic_info, weight_dict=None, constraint_dict=None,
-                 feature_to_remove=None:
+                 feature_to_remove=None):
 		Model.__init__(name, train_scenes, test_scenes, self.basic_info, constraint_dict=constraint_dict)
 		
 		
@@ -843,7 +843,7 @@ class GeneratePolysemeModels():
 		
 		for preposition in d:
 			out = dict()
-			print("Outputting:" + preposition)
+			print(("Outputting:" + preposition))
 			for polyseme in d[preposition]:
 				polyseme.output_prototype_weight()
 				polyseme.output_definition()
@@ -1119,10 +1119,10 @@ def test_on_all_scenes():
 	print(all_dataframe)
 def test_model(runs,k):
 	m = MultipleRunsPolysemyModels(self.basic_info, constraint_dict, number_runs=runs, k=k, compare="y")
-	print("Test Model k = "+ str(k))
+	print(("Test Model k = "+ str(k)))
 	m.validation()
 	m.output()
-	print(m.average_dataframe)
+	print((m.average_dataframe))
 
 def test_models():
 	mpl.rcParams['font.size'] = 40
