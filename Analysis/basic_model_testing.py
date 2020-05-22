@@ -16,9 +16,9 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 # Modules for testing and model making
-from sklearn.model_selection import train_test_split, KFold
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import PolynomialFeatures
-from sklearn.linear_model import LinearRegression, TheilSenRegressor
+from sklearn.linear_model import LinearRegression
 from scipy.special import comb
 
 # Local module imports
@@ -68,7 +68,7 @@ class SemanticMethods:
             print(len(weight_array))
             print(len(relation_keys))
 
-        if feature_to_remove != None:
+        if feature_to_remove is not None:
             i = relation_keys.index(feature_to_remove)
             weight_array[i] = 0
 
@@ -116,7 +116,7 @@ class PrepositionModels():
         self.dataset = dataset
 
         self.possible_instances_dataset = self.dataset.copy()
-        if self.polyseme != None:
+        if self.polyseme is not None:
             # # Remove none polyseme preposition instances from dataset
             indexes_to_drop = []
             indexes_to_drop_pid = []
@@ -210,7 +210,7 @@ class PrepositionModels():
     def remove_nonrelations(self, d):
         # Remove features which are for identifying polysemes
         new_d = d.drop(Relationship.context_features, axis=1)
-        if self.feature_to_remove != None:
+        if self.feature_to_remove is not None:
             # Remove features to remove
             new_d = new_d.drop([self.feature_to_remove], axis=1)
         return new_d
@@ -301,7 +301,7 @@ class PrepositionModels():
     def get_plot_filename(self, file_no):
         x = str(file_no)
 
-        if self.polyseme != None:
+        if self.polyseme is not None:
             filename = self.polyseme.plot_folder + self.preposition + "-" + self.polyseme.polyseme_name + x + ' .pdf'
         else:
 
@@ -543,17 +543,17 @@ class Model:
     def get_typicality(self, preposition, point):
         # Works out the typicality of the given point (1D array)
         # Point taken as input is from one side of constraint inequality
-        if self.regression_model_dict != None:
+        if self.regression_model_dict is not None:
 
             point_array = np.array(point).reshape(1, -1)
-            if self.regression_dimension != None:
+            if self.regression_dimension is not None:
                 # Must transform the point for polynomial regression
                 polynomial_features = PolynomialFeatures(degree=self.regression_dimension)
                 point_array = polynomial_features.fit_transform(point_array)
 
             t = self.regression_model_dict[preposition].predict(point_array)
             return t
-        if self.prototype_dict != None:
+        if self.prototype_dict is not None:
             prototype_array = self.prototype_dict[preposition]
             weight_array = self.weight_dict[preposition]
             out = self.semantic_similarity(weight_array, point, prototype_array)
@@ -1066,10 +1066,10 @@ class MultipleRuns:
         else:
             self.scores_tables_folder = self.basic_info.study + "/scores/tables/removed features"
             self.scores_plots_folder = self.basic_info.study + "/scores/plots/removed features"
-        if self.test_size != None:
+        if self.test_size is not None:
             self.file_tag = "rss" + str(self.test_size)
             self.average_plot_title = "Scores Using RRSS Validation"
-        if self.k != None:
+        if self.k is not None:
             self.file_tag = str(self.k) + "fold"
             self.average_plot_title = "Scores Using Repeated K-Fold Validation. K = " + str(self.k) + " N = " + str(
                 self.number_runs)
@@ -1078,7 +1078,7 @@ class MultipleRuns:
             self.average_csv = self.scores_tables_folder + "/averagemodel scores " + self.file_tag + ".csv"
             self.comparison_csv = self.scores_tables_folder + "/repeatedcomparisons " + self.file_tag + ".csv"
 
-        if self.features_to_test != None:
+        if self.features_to_test is not None:
             self.feature_removed_average_csv = dict()
             for feature in self.features_to_test:
                 self.feature_removed_average_csv[
@@ -1086,7 +1086,7 @@ class MultipleRuns:
 
         self.prepare_comparison_dicts()
 
-        if self.features_to_test != None:
+        if self.features_to_test is not None:
             for feature in self.features_to_test:
                 self.count_without_feature_better[feature] = dict()
                 self.count_with_feature_better[feature] = dict()
@@ -1121,7 +1121,7 @@ class MultipleRuns:
                     self.count_other_model_beats_cluster[other_model] = 0
 
     def generate_models(self, train_scenes, test_scenes):
-        if self.features_to_test != None:
+        if self.features_to_test is not None:
             # Test model with no removed features
             generate_models = self.model_generator(train_scenes, test_scenes, self.constraint_dict, self.basic_info,
                                                    only_test_our_model=True)
@@ -1160,7 +1160,7 @@ class MultipleRuns:
         our_score = dataset.at["Overall", generate_models.our_model_name]
 
         # Compare Models
-        if self.compare != None:
+        if self.compare is not None:
             for other_model in generate_models.other_name_list:
 
                 # Get score
@@ -1185,7 +1185,7 @@ class MultipleRuns:
                             self.count_other_model_beats_cluster[other_model] += 1
 
         # Add scores to dataframe
-        if self.features_to_test != None:
+        if self.features_to_test is not None:
 
             for feature in self.features_to_test:
                 generate_models = GenerateBasicModels(train_scenes, test_scenes, self.constraint_dict, self.basic_info,
@@ -1214,7 +1214,7 @@ class MultipleRuns:
     def get_validation_scene_split(self):
 
         # Get train-test scenes
-        if self.test_size != None:
+        if self.test_size is not None:
             train_scenes, test_scenes = train_test_split(self.scene_list, test_size=self.test_size)
 
             # Update scene lists
@@ -1226,7 +1226,7 @@ class MultipleRuns:
                 if sc not in self.scenes_used_for_testing:
                     self.scenes_used_for_testing.append(sc)
             return [train_scenes, test_scenes]
-        if self.k != None:
+        if self.k is not None:
             # Create random folds for testing
             folds = []
 
@@ -1268,12 +1268,12 @@ class MultipleRuns:
 
             print(("Run Number:" + str(i + 1)))
 
-            if self.test_size != None:
+            if self.test_size is not None:
                 split = self.get_validation_scene_split()
                 train_scenes = split[0]
                 test_scenes = split[1]
                 self.single_validation_test(train_scenes, test_scenes)
-            if self.k != None:
+            if self.k is not None:
                 # This handles the case where test_scenes do not produce any constraints
                 while True:
                     folds = self.get_validation_scene_split()
@@ -1293,12 +1293,12 @@ class MultipleRuns:
                     # print("Fold with no constraints to test. Retrying...")
 
         # First update value of number of runs to account for folds
-        if self.k != None:
+        if self.k is not None:
             self.total_number_runs = self.number_runs * self.k
         else:
             self.total_number_runs = self.number_runs
         # Output comparison of models and p-value
-        if self.compare != None:
+        if self.compare is not None:
             other_model_p_value = dict()
             for other_model in self.Generate_Models_all_scenes.other_name_list:
                 p_value = calculate_p_value(self.total_number_runs, self.count_our_model_wins[other_model])
@@ -1327,7 +1327,7 @@ class MultipleRuns:
             km_new_df = km_p_value_df.append([cluster_model_win_count, km_other_model_win_count], sort=False)
             self.km_comparison_df = km_new_df
 
-        if self.features_to_test != None:
+        if self.features_to_test is not None:
             feature_p_value = dict()
             with_feature_better = dict()
             without_feature_better = dict()
@@ -1349,7 +1349,7 @@ class MultipleRuns:
         # Print some info
         print(("Total Runs:" + str(self.total_number_runs)))
 
-        if self.test_size != None:
+        if self.test_size is not None:
             print("# Scenes used for testing")
             print((len(self.scenes_used_for_testing)))
             print("# Scenes used for training")
@@ -1372,11 +1372,11 @@ class MultipleRuns:
 
         self.plot_dataframe_bar_chart(self.average_dataframe, self.average_plot_pdf, "Preposition", "Score",
                                       self.average_plot_title)
-        if self.compare != None:
+        if self.compare is not None:
             # Output to csv
             self.comparison_df.to_csv(self.comparison_csv)
             self.km_comparison_df.to_csv(self.km_comparison_csv)
-        if self.features_to_test != None:
+        if self.features_to_test is not None:
 
             # Output to csv
             self.feature_comparison_df.to_csv(self.comparison_csv)
@@ -1436,7 +1436,7 @@ class MultipleRuns:
     def plot_bar_from_csv(self, file, file_to_save, x_label, y_label, plot_title, columns_to_drop=None):
 
         dataset = pd.read_csv(file, index_col=0)
-        if columns_to_drop != None:
+        if columns_to_drop is not None:
             dataset = dataset.drop(columns_to_drop, axis=1)
         self.plot_dataframe_bar_chart(dataset, file_to_save, x_label, y_label, plot_title)
 
@@ -1461,34 +1461,34 @@ def calculate_p_value(N, x):
     return total
 
 
-def test_features(basic_info):
+def test_features(basic_info_, constraint_dict_):
     functional_features = ["location_control", "support"]
-    m = MultipleRuns(GenerateBasicModels, basic_info, constraint_dict, number_runs=100, k=2, features_to_test=functional_features)
+    m = MultipleRuns(GenerateBasicModels, basic_info_, constraint_dict_, number_runs=100, k=2, features_to_test=functional_features)
     print("Test Features")
     m.validation()
     m.output()
 
 
-def initial_test(basic_info):
-    m = MultipleRuns(GenerateBasicModels, basic_info, constraint_dict)
+def initial_test(basic_info_, constraint_dict_):
+    m = MultipleRuns(GenerateBasicModels, basic_info_, constraint_dict_)
     print("Test on all scenes")
     m.test_all_scenes()
 
 
-def test_models(basic_info):
-    m = MultipleRuns(GenerateBasicModels, basic_info, constraint_dict, number_runs=100, k=2, compare="y")
+def test_models(basic_info_, constraint_dict_):
+    m = MultipleRuns(GenerateBasicModels, basic_info_, constraint_dict_, number_runs=100, k=2, compare="y")
     print("Test Model k = 2")
     m.validation()
     m.output()
 
-    m = MultipleRuns(GenerateBasicModels, basic_info, constraint_dict, number_runs=100, k=3, compare="y")
+    m = MultipleRuns(GenerateBasicModels, basic_info_, constraint_dict_, number_runs=100, k=3, compare="y")
     print("Test Model k = 3")
     m.validation()
     m.output()
 
 
-def plot_all_csv(basic_info):
-    m = MultipleRuns(GenerateBasicModels, basic_info, constraint_dict)
+def plot_all_csv(basic_info_, constraint_dict_):
+    m = MultipleRuns(GenerateBasicModels, basic_info_, constraint_dict_)
     file = m.all_csv
     out_file = m.all_plot
 
@@ -1496,17 +1496,17 @@ def plot_all_csv(basic_info):
     m.plot_bar_from_csv(file, out_file, "Preposition", "Score", "Scores Using All Data")
 
 
-def plot_kfold_csv(k, basic_info):
-    m = MultipleRuns(GenerateBasicModels, basic_info, constraint_dict, number_runs=100, k=k)
+def plot_kfold_csv(k, basic_info_, constraint_dict_):
+    m = MultipleRuns(GenerateBasicModels, basic_info_, constraint_dict_, number_runs=100, k=k)
     file = m.average_csv
     out_file = m.average_plot_pdf
 
     m.plot_bar_from_csv(file, out_file, "Preposition", "Score", m.average_plot_title)
 
 
-def plot_feature_csv(k, basic_info):
+def plot_feature_csv(k, basic_info_, constraint_dict_):
     functional_features = ["location_control", "support"]
-    m = MultipleRuns(GenerateBasicModels, basic_info, constraint_dict, number_runs=100, k=k, features_to_test=functional_features)
+    m = MultipleRuns(GenerateBasicModels, basic_info_, constraint_dict_, number_runs=100, k=k, features_to_test=functional_features)
     file = m.scores_tables_folder + "/functional_feature_analysis.csv"
     output_file = m.scores_plots_folder + "/ScoresWithRemovedFeatures.pdf"
     x_label = "Preposition"
@@ -1516,7 +1516,7 @@ def plot_feature_csv(k, basic_info):
     m.plot_bar_from_csv(file, output_file, x_label, y_label, plot_title)
 
 
-def main(constraint_dict, basic_info):
+def main(constraint_dict_, basic_info_):
     plot_preposition_graphs(basic_info)
     # Edit plot settings
     mpl.rcParams['font.size'] = 40
@@ -1525,9 +1525,9 @@ def main(constraint_dict, basic_info):
     mpl.rcParams['axes.labelsize'] = 'medium'
     mpl.rcParams['ytick.labelsize'] = 'small'
 
-    initial_test(basic_info)
-    test_models(basic_info)
-    test_features(basic_info)
+    initial_test(basic_info_, constraint_dict_)
+    test_models(basic_info_, constraint_dict_)
+    test_features(basic_info_, constraint_dict_)
 
 
 # plot_all_csv()

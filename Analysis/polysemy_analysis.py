@@ -39,7 +39,8 @@ import matplotlib.ticker as ticker
 
 from basic_model_testing import TestModels, PrepositionModels, Model, Features, MultipleRuns, SemanticMethods
 from data_import import Relationship, BasicInfo
-from classes import  Constraint, Configuration
+from classes import Constraint, Configuration, SceneInfo
+from compile_instances import SemanticCollection, ComparativeCollection
 
 # Useful global variables
 sv_filetag = SemanticCollection.filetag  # Tag for sv task files
@@ -52,11 +53,7 @@ feature_keys = Relationship.get_feature_keys()  # Feature keys are all features
 relation_keys = Relationship.get_relation_keys()  # Relation keys are feature keys with some features removed e.g. properties of ground
 
 
-
-
-
-class Cluster():
-
+class Cluster:
     """Summary
     
     Attributes:
@@ -70,8 +67,8 @@ class Cluster():
         means (TYPE): Description
         preposition (TYPE): Description
     """
-    
-    def __init__(self, preposition, instances, label, alg_typ=None):
+
+    def __init__(self, basic_info_, preposition, instances, label, alg_typ=None):
         """Summary
         
         Args:
@@ -80,6 +77,7 @@ class Cluster():
             label (TYPE): Description
             alg_typ (None, optional): Description
         """
+        self.basic_info = basic_info_
         self.preposition = preposition
         self.label = label
         self.instances = instances
@@ -89,9 +87,9 @@ class Cluster():
         self.means = self.means.set_index(self.mean_series.index)
         self.means = self.means.transpose()
         if alg_typ == "kmeans":
-            base_folder = kmeans_folder
+            base_folder = self.basic_info.kmeans_folder
         elif alg_typ == "hry":
-            base_folder = hry_folder
+            base_folder = self.basic_info.hry_folder
         else:
             print("Error: No cluster type given")
 
@@ -107,13 +105,12 @@ class Cluster():
         # self.mean_series["cardinality"] = len(self.instances.index)
         self.means.to_csv(self.mean_csv)
         self.instances.to_csv(self.instances_csv)
-        feature_processer = Features()
+        feature_processer = Features(self.basic_info.study)
         self.hr_means = feature_processer.convert_standard_df_to_normal(self.means)
         self.hr_means.to_csv(self.hr_means_csv)
 
 
-class Clustering():
-
+class Clustering:
     """Summary
     
     Attributes:
@@ -139,8 +136,7 @@ class Clustering():
         sample_weights (TYPE): Description
         typical_instances (TYPE): Description
     """
-    
-    all_scenes = BasicInfo.get_scene_list()
+
     # Number of clusters created by inspecting dendograms?
     cluster_numbers = {'on': 3, 'in': 2, 'against': 3, 'under': 2, 'over': 2}
 
@@ -148,12 +144,15 @@ class Clustering():
     # color_threshold = {'on':0.75,'in':0.75,'against':0.75,'under':0.78,'over':0.75}
     # # Thresholds for assigning clusters. I think they need to be different in order to account for metric?
     # cluster_threshold = {'on':0.75,'in':0.75,'against':0.75,'under':0.8,'over':0.75}
-    def __init__(self, preposition):
+    def __init__(self, basic_info_, preposition):
         """Summary
         
         Args:
             preposition (TYPE): Description
         """
+        self.basic_info = basic_info_
+        s = SceneInfo(self.basic_info.study)
+        self.all_scenes = s.scene_name_list
         self.preposition = preposition
         self.models = PrepositionModels(self.basic_info, preposition, self.all_scenes)
 
@@ -176,10 +175,10 @@ class Clustering():
         # self.feature_weights= self.models.read_all_feature_weights()
         self.relation_weights = self.models.read_regression_weights()
 
-        self.cluster_centres_csv = kmeans_folder + "cluster centres/clusters-" + preposition + ".csv"
-        self.dendrogram_pdf = hry_folder + "figures/dendrogram/dendrogram-" + preposition + ".pdf"
-        self.elbow_pdf = kmeans_folder + "figures/elbow/" + preposition + ".pdf"
-        self.initial_inertia_csv = kmeans_folder + "initial inertia/initial_inertias.csv"
+        self.cluster_centres_csv = self.basic_info.kmeans_folder + "cluster centres/clusters-" + preposition + ".csv"
+        self.dendrogram_pdf = self.basic_info.hry_folder + "figures/dendrogram/dendrogram-" + preposition + ".pdf"
+        self.elbow_pdf = self.basic_info.kmeans_folder + "figures/elbow/" + preposition + ".pdf"
+        self.initial_inertia_csv = self.basic_info.kmeans_folder + "initial inertia/initial_inertias.csv"
         # The dataframe we use for clustering
         self.instances_to_cluster = self.good_instance_relations.copy()
         self.km_instances_to_cluster = self.possible_instances_relations.copy()
@@ -187,11 +186,11 @@ class Clustering():
         self.sample_weights = self.models.aff_dataset[
             self.models.ratio_feature_name]  # self.good_dataset[self.models.ratio_feature_name]
         # Output good instances to read
-        self.good_instance_csv = cluster_data_folder + "good preposition instances/good instances - " + self.preposition + ".csv"
+        self.good_instance_csv = self.basic_info.cluster_data_folder + "good preposition instances/good instances - " + self.preposition + ".csv"
         self.instances_to_cluster.to_csv(self.good_instance_csv)
 
         feature_processer = Features()
-        self.hr_good_instance_csv = cluster_data_folder + "good preposition instances/human readable/good instances - " + self.preposition + ".csv"
+        self.hr_good_instance_csv = self.basic_info.cluster_data_folder + "good preposition instances/human readable/good instances - " + self.preposition + ".csv"
 
         self.hr_good_instances = feature_processer.convert_standard_df_to_normal(self.instances_to_cluster)
 
@@ -414,7 +413,7 @@ class Clustering():
         """Summary
         """
         generated_polyseme_models = GeneratePolysemeModels(Clustering.all_scenes, Clustering.all_scenes,
-                                                           constraint_dict, preserve_rank=True)
+                                                           self.basic_info, constraint_dict, preserve_rank=True)
         d = generated_polyseme_models.non_shared_dict
 
         polysemes = d[self.preposition]
@@ -490,7 +489,6 @@ class Clustering():
 
 
 class Cluster_in_Model():
-
     """Summary
     
     Attributes:
@@ -499,7 +497,7 @@ class Cluster_in_Model():
         rank (TYPE): Description
         weights (TYPE): Description
     """
-    
+
     def __init__(self, preposition, centre, weights, rank):
         """Summary
         
@@ -516,7 +514,6 @@ class Cluster_in_Model():
 
 
 class Polyseme():
-
     """Summary
     
     Attributes:
@@ -538,9 +535,9 @@ class Polyseme():
         train_scenes (TYPE): Description
         weights (TYPE): Description
     """
-    
-    def __init__(self, preposition, polyseme_name, train_scenes, eq_feature_dict=None, greater_feature_dict=None,
-                 less_feature_dict=None, share_prototype=False):
+
+    def __init__(self, basic_info_, preposition, polyseme_name, train_scenes, eq_feature_dict=None,
+                 greater_feature_dict=None, less_feature_dict=None, share_prototype=False):
         """Summary
         
         Args:
@@ -551,7 +548,9 @@ class Polyseme():
             greater_feature_dict (None, optional): Description
             less_feature_dict (None, optional): Description
             share_prototype (bool, optional): Description
+            :param basic_info_:
         """
+        self.basic_info = basic_info_
         self.polyseme_name = polyseme_name
         self.preposition = preposition
         self.train_scenes = train_scenes
@@ -561,12 +560,12 @@ class Polyseme():
         self.greater_feature_dict = greater_feature_dict
         self.less_feature_dict = less_feature_dict
 
-        self.annotation_csv = polyseme_data_folder + 'annotations/' + self.preposition + "-" + self.polyseme_name + ' .csv'
-        self.prototype_csv = polyseme_data_folder + 'prototypes/' + self.preposition + "-" + self.polyseme_name + ' .csv'
-        self.mean_csv = polyseme_data_folder + 'means/' + self.preposition + "-" + self.polyseme_name + ' .csv'
+        self.annotation_csv = self.basic_info.polyseme_data_folder + 'annotations/' + self.preposition + "-" + self.polyseme_name + ' .csv'
+        self.prototype_csv = self.basic_info.polyseme_data_folder + 'prototypes/' + self.preposition + "-" + self.polyseme_name + ' .csv'
+        self.mean_csv = self.basic_info.polyseme_data_folder + 'means/' + self.preposition + "-" + self.polyseme_name + ' .csv'
 
-        self.regression_weights_csv = polyseme_data_folder + 'regression weights/' + self.preposition + "-" + self.polyseme_name + ' .csv'
-        self.plot_folder = polyseme_data_folder + 'plots/'
+        self.regression_weights_csv = self.basic_info.polyseme_data_folder + 'regression weights/' + self.preposition + "-" + self.polyseme_name + ' .csv'
+        self.plot_folder = self.basic_info.polyseme_data_folder + 'plots/'
 
         self.share_prototype = share_prototype
         self.preposition_models = PrepositionModels(self.basic_info, self.preposition, self.train_scenes, polyseme=self)
@@ -708,11 +707,11 @@ class Polyseme():
 
         wf = pd.DataFrame(out, relation_keys)  # ["equality", "greater than", "less than"])
 
-        wf.to_csv(polyseme_data_folder + "/definitions/" + self.preposition + "-" + self.polyseme_name + ".csv")
+        wf.to_csv(
+            self.basic_info.polyseme_data_folder + "/definitions/" + self.preposition + "-" + self.polyseme_name + ".csv")
 
 
 class PolysemeModel(Model):
-
     """Summary
     
     Attributes:
@@ -720,7 +719,7 @@ class PolysemeModel(Model):
         polyseme_dict (TYPE): Description
         test_prepositions (TYPE): Description
     """
-    
+
     # Note we should also test the idea that polysemes affect*weight* rather than prototype.
     # Intuitively this seems better to me.
 
@@ -728,8 +727,9 @@ class PolysemeModel(Model):
     # Also do better with sharing prototytpes
 
     # Puts together preposition models and has various functions for testing
-    def __init__(self, name, train_scenes, test_scenes, basic_info, weight_dict=None, constraint_dict=None,
-                 feature_to_remove=None):
+    def __init__(self, name, train_scenes, test_scenes, basic_info_, weight_dict=None, constraint_dict=None,
+                 polyseme_dict=None, cluster_dict=None
+                 ):
         """Summary
         
         Args:
@@ -741,6 +741,7 @@ class PolysemeModel(Model):
             constraint_dict (None, optional): Description
             feature_to_remove (None, optional): Description
         """
+        self.basic_info = basic_info_
         Model.__init__(name, train_scenes, test_scenes, self.basic_info, constraint_dict=constraint_dict)
 
         # Dictionary of polyseme instances for each preposition
@@ -874,7 +875,7 @@ class PolysemeModel(Model):
             preposition (TYPE): Description
         """
         # output_csv = base_polysemy_folder+ "config typicalities/"+self.name+"-typicality_test-"+preposition+".csv"
-        input_csv = base_polysemy_folder + "config typicalities/typicality-" + preposition + ".csv"
+        input_csv = self.basic_info.base_polysemy_folder + "config typicalities/typicality-" + preposition + ".csv"
         geom_relations = Relationship.load_all(self.basic_info.feature_output_csv)
         geom_relations.pop(0)
         new_csv = False
@@ -913,7 +914,7 @@ class PolysemeModel(Model):
                         ignore_index=True)
                 else:
                     row_index_in_df = in_df[(in_df['scene'] == c.scene) & (in_df['figure'] == c.figure) & (
-                                in_df['ground'] == c.ground)].index.tolist()
+                            in_df['ground'] == c.ground)].index.tolist()
 
                     # if self.name in df_columns:
 
@@ -925,7 +926,6 @@ class PolysemeModel(Model):
 
 
 class SalientFeature():
-
     """Summary
     
     Attributes:
@@ -933,7 +933,7 @@ class SalientFeature():
         gorl (TYPE): Description
         value (TYPE): Description
     """
-    
+
     def __init__(self, feature, value, gorl):
         """Summary
         
@@ -948,7 +948,6 @@ class SalientFeature():
 
 
 class GeneratePolysemeModels():
-
     """Summary
     
     Attributes:
@@ -973,8 +972,6 @@ class GeneratePolysemeModels():
         test_scenes (TYPE): Description
         train_scenes (TYPE): Description
     """
-    
-    feature_processer = Features()
 
     our_model_name = "Distinct Prototype"
 
@@ -988,7 +985,7 @@ class GeneratePolysemeModels():
     # List of model names except ours
     other_name_list = [other_model_name, baseline_model_name, cluster_model_name]
 
-    def __init__(self, train_scenes, test_scenes, constraint_dict=None, preserve_rank=False):
+    def __init__(self, train_scenes, test_scenes, basic_info_, constraint_dict=None, preserve_rank=False):
         """Summary
         
         Args:
@@ -996,7 +993,11 @@ class GeneratePolysemeModels():
             test_scenes (TYPE): Description
             constraint_dict (None, optional): Description
             preserve_rank (bool, optional): Description
+            :param basic_info_:
         """
+
+        self.basic_info = basic_info_
+        self.feature_processer = Features(self.basic_info.study)
         # Dictionary of constraints to satisfy
         self.constraint_dict = constraint_dict
         # Variable set to true if want to generate polysemes and not edit the rank
@@ -1130,7 +1131,7 @@ class GeneratePolysemeModels():
                 out[preposition + "-" + polyseme.polyseme_name] = [polyseme.get_number_of_instances(), polyseme.rank]
 
             number_df = pd.DataFrame(out, ["Number", "Rank"])
-            number_df.to_csv(polyseme_data_folder + "/ranks/" + preposition + " -ranks.csv")
+            number_df.to_csv(self.basic_info.polyseme_data_folder + "/ranks/" + preposition + " -ranks.csv")
 
     def get_general_cases(self):
         """Summary
@@ -1140,7 +1141,7 @@ class GeneratePolysemeModels():
         """
         d = dict()
         for preposition in preposition_list:
-            general_polyseme = Polyseme(preposition, "general_case", self.train_scenes)
+            general_polyseme = Polyseme(self.basic_info, preposition, "general_case", self.train_scenes)
             d[preposition] = [general_polyseme]
         # print(preposition)
         # print(general_polyseme.prototype)
@@ -1159,10 +1160,10 @@ class GeneratePolysemeModels():
         for preposition in old_dict:
             out[preposition] = []
             for polyseme in old_dict[preposition]:
-                new_pol = Polyseme(polyseme.preposition, polyseme.polyseme_name, self.train_scenes,
-                                   share_prototype=True, greater_feature_dict=polyseme.greater_feature_dict,
+                new_pol = Polyseme(self.basic_info, polyseme.preposition, polyseme.polyseme_name, self.train_scenes,
                                    eq_feature_dict=polyseme.eq_feature_dict,
-                                   less_feature_dict=polyseme.less_feature_dict)
+                                   greater_feature_dict=polyseme.greater_feature_dict,
+                                   less_feature_dict=polyseme.less_feature_dict, share_prototype=True)
 
                 out[preposition].append(new_pol)
 
@@ -1192,7 +1193,8 @@ class GeneratePolysemeModels():
 
         # Canon
 
-        p1 = Polyseme(preposition, "canon", self.train_scenes, greater_feature_dict=g_dict, less_feature_dict=l_dict)
+        p1 = Polyseme(self.basic_info, preposition, "canon", self.train_scenes, greater_feature_dict=g_dict,
+                      less_feature_dict=l_dict)
         polysemes.append(p1)
 
         # Nearly canon
@@ -1225,8 +1227,8 @@ class GeneratePolysemeModels():
                     p_name = "near" + str(name_count)
                 else:
                     p_name = "not far" + str(name_count)
-                ply = Polyseme(preposition, p_name, self.train_scenes, greater_feature_dict=g_feature_dict,
-                               less_feature_dict=l_feature_dict)
+                ply = Polyseme(self.basic_info, preposition, p_name, self.train_scenes,
+                               greater_feature_dict=g_feature_dict, less_feature_dict=l_feature_dict)
                 polysemes.append(ply)
             x = x - 1
         return polysemes
@@ -1358,7 +1360,6 @@ class GeneratePolysemeModels():
 
 
 class MultipleRunsPolysemyModels(MultipleRuns):
-
     """Summary
     
     Attributes:
@@ -1373,8 +1374,8 @@ class MultipleRunsPolysemyModels(MultipleRuns):
         scores_plots_folder (TYPE): Description
         scores_tables_folder (TYPE): Description
     """
-    
-    def __init__(self, basic_info, constraint_dict, number_runs=None, test_size=None, k=None, compare=None,
+
+    def __init__(self, basic_info_, constraint_dict, number_runs=None, test_size=None, k=None, compare=None,
                  features_to_test=None):
         """Summary
         
@@ -1387,14 +1388,17 @@ class MultipleRunsPolysemyModels(MultipleRuns):
             compare (None, optional): Description
             features_to_test (None, optional): Description
         """
-        MultipleRuns.__init__(self.basic_info, constraint_dict, number_runs=number_runs, test_size=None, k=k,
+        self.basic_info = basic_info_
+
+        MultipleRuns.__init__(GeneratePolysemeModels, self.basic_info, constraint_dict, number_runs=number_runs,
+                              test_size=None, k=k,
                               compare=compare, features_to_test=None)
 
-        self.all_csv = "polysemy/" + self.all_csv
-        self.all_plot = "polysemy/" + self.all_plot
+        self.all_csv = self.basic_info.base_polysemy_folder + "/" + self.all_csv
+        self.all_plot = self.basic_info.base_polysemy_folder + "/" + self.all_plot
 
-        self.scores_tables_folder = "polysemy/" + "scores/tables"
-        self.scores_plots_folder = "polysemy/" + "scores/plots"
+        self.scores_tables_folder = self.basic_info.score_folder + "/tables"
+        self.scores_plots_folder = self.basic_info.score_folder + "/plots"
 
         if self.k != None:
             self.file_tag = str(self.k) + "fold"
@@ -1407,20 +1411,26 @@ class MultipleRunsPolysemyModels(MultipleRuns):
             self.km_comparison_csv = self.scores_tables_folder + "/km_repeatedcomparisons " + self.file_tag + ".csv"
 
 
-def output_all_polyseme_info():
+def output_all_polyseme_info(basic_info_):
     """Summary
+    :param basic_info_:
     """
     print("outputting all polyseme info")
-    generated_polyseme_models = GeneratePolysemeModels(Clustering.all_scenes, Clustering.all_scenes, constraint_dict,
-                                                       preserve_rank=True)
+    s = SceneInfo(basic_info_.study)
+    all_scenes = s.scene_name_list
+    generated_polyseme_models = GeneratePolysemeModels(all_scenes, all_scenes, basic_info_,
+                                                       constraint_dict, preserve_rank=True)
     generated_polyseme_models.output_polyseme_info()
 
 
-def test_on_all_scenes():
+def test_on_all_scenes(basic_info_):
     """Summary
+    :param basic_info_:
     """
     print("test on all scenes")
-    generated_polyseme_models = GeneratePolysemeModels(Clustering.all_scenes, Clustering.all_scenes, constraint_dict)
+    s = SceneInfo(basic_info_.study)
+    all_scenes = s.scene_name_list
+    generated_polyseme_models = GeneratePolysemeModels(all_scenes, all_scenes, basic_info_, constraint_dict)
 
     p_models = generated_polyseme_models.models
 
@@ -1429,25 +1439,26 @@ def test_on_all_scenes():
 
     # all_dataframe =all_dataframe.drop(non_polysemous_prepositions)
 
-    all_dataframe.to_csv(score_folder + "all_test.csv")
+    all_dataframe.to_csv(basic_info_.score_folder + "all_test.csv")
     print(all_dataframe)
 
 
-def test_model(runs, k):
+def test_model(runs, k, basic_info_):
     """Summary
     
     Args:
         runs (TYPE): Description
         k (TYPE): Description
+        :param basic_info_:
     """
-    m = MultipleRunsPolysemyModels(self.basic_info, constraint_dict, number_runs=runs, k=k, compare="y")
+    m = MultipleRunsPolysemyModels(basic_info_, constraint_dict, number_runs=runs, k=k, compare="y")
     print(("Test Model k = " + str(k)))
     m.validation()
     m.output()
     print((m.average_dataframe))
 
 
-def test_models():
+def test_models(basic_info_):
     """Summary
     """
     mpl.rcParams['font.size'] = 40
@@ -1456,16 +1467,19 @@ def test_models():
     mpl.rcParams['axes.labelsize'] = 'medium'
     mpl.rcParams['ytick.labelsize'] = 'small'
 
-    test_on_all_scenes()
+    test_on_all_scenes(basic_info_)
     # test_model(2,2)
-    test_model(10, 10)
+    test_model(10, 10, basic_info_)
 
 
-def output_typicality():
+def output_typicality(basic_info_):
     """Summary
+    :param basic_info_:
     """
     print("outputting typicalities")
-    generated_polyseme_models = GeneratePolysemeModels(Clustering.all_scenes, Clustering.all_scenes)
+    s = SceneInfo(basic_info_.study)
+    all_scenes = s.scene_name_list
+    generated_polyseme_models = GeneratePolysemeModels(all_scenes, all_scenes, basic_info_)
     p_models = generated_polyseme_models.models
     for model in p_models:
 
@@ -1473,86 +1487,93 @@ def output_typicality():
             model.output_typicalities(preposition)
 
 
-def compare_kmeans():
+def compare_kmeans(basic_info_):
     """Summary
+    :param basic_info_:
     """
     mpl.rcParams['font.size'] = 15
     mpl.rcParams['legend.fontsize'] = 12
     for preposition in polysemous_preposition_list:
-        c = Clustering(preposition)
+        c = Clustering(basic_info_, preposition)
 
         c.plot_elbow_polyseme_inertia()
 
 
-def output_initial_inertias():
+def output_initial_inertias(basic_info_):
     """Summary
+    :param basic_info_:
     """
     print("Outputting initial inertias")
     for preposition in preposition_list:
-        c = Clustering(preposition)
+        c = Clustering(basic_info_, preposition)
         c.output_initial_inertia()
 
 
-def work_out_all_dbsccan_clusters():
+def work_out_all_dbsccan_clusters(basic_info_):
     """Summary
+    :param basic_info_:
     """
     for preposition in polysemous_preposition_list:
         print(preposition)
-        c = Clustering(preposition)
+        c = Clustering(basic_info_, preposition)
         km = c.DBScan_cluster()
 
 
-def work_out_all_hry_clusters():
+def work_out_all_hry_clusters(basic_info_):
     """Summary
+    :param basic_info_:
     """
     print("Working out hry clusters")
     for preposition in polysemous_preposition_list:
         print(preposition)
-        c = Clustering(preposition)
+        c = Clustering(basic_info_, preposition)
         km = c.work_out_hierarchy_model()
 
 
-def work_out_kmeans_clusters():
+def work_out_kmeans_clusters(basic_info_):
     """Summary
+    :param basic_info_:
     """
     print("Working out kmeans clusters")
     for preposition in polysemous_preposition_list:
         print(preposition)
-        c = Clustering(preposition)
+        c = Clustering(basic_info_, preposition)
         c.output_expected_kmeans_model()
 
 
-def main(constraint_dict):
+def main(constraint_dict, basic_info_):
     """Un/comment functions to run tests and outputs
     
     Args:
         constraint_dict (TYPE): Description
+        :param basic_info_:
     """
     # Clustering
-    work_out_kmeans_clusters()
-    output_initial_inertias()
-    work_out_all_hry_clusters()
+    work_out_kmeans_clusters(basic_info_)
+    output_initial_inertias(basic_info_)
+    work_out_all_hry_clusters(basic_info_)
 
     # Polysemes and performance
-    output_all_polyseme_info()
+    output_all_polyseme_info(basic_info_)
 
-    output_typicality()
+    output_typicality(basic_info_)
     test_models()
 
     mpl.rcParams['axes.titlesize'] = 'large'
     mpl.rcParams['axes.labelsize'] = 'large'
-    compare_kmeans()
+    compare_kmeans(basic_info_)
 
 
 if __name__ == '__main__':
 
+    basic_info = BasicInfo("2019 study")
     name = "n"  # raw_input("Generate new constraints? y/n  ")
     if name == "y":
-        compcollection = ComparativeCollection()
+        compcollection = ComparativeCollection(basic_info.study)
         constraint_dict = compcollection.get_constraints()
     elif name == "n":
-        constraint_dict = Constraint.read_from_csv()
+        constraint_dict = Constraint.read_from_csv(basic_info.constraint_csv)
     else:
         print("Error unrecognized input")
 
-    main(constraint_dict)
+    main(constraint_dict, basic_info)
