@@ -19,7 +19,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-from feature_analysis import TestModels, PrepositionModels, Model, Features, MultipleRuns, SemanticMethods
+from basic_model_testing import TestModels, PrepositionModels, Model, Features, MultipleRuns, SemanticMethods
 from classes import Relationship, Constraint, BasicInfo, Configuration
 
 # Useful global variables

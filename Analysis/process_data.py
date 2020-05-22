@@ -1,9 +1,8 @@
 """Summary
-
 Script to run for newly collected data files which:
-    Input: annotation and user info csv from data collection
-    Output: Clean annotation lists. Basic stats. User agreement calculations
-    Feature values are included later
+Input: annotation and user info csv from data collection
+Output: Clean annotation lists. Basic stats. User agreement calculations
+Feature values are included later
 """
 
 import csv
