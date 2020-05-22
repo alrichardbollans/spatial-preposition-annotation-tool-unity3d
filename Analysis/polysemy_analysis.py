@@ -1,20 +1,21 @@
 """Summary
 
 Attributes:
+    comp_filetag (str): Description
+    non_polysemous_prepositions (list): Description
+    polysemous_preposition_list (list): Description
     preposition_list (TYPE): Description
+    sv_filetag (str): Description
+
+Deleted Attributes:
     base_polysemy_folder (str): Description
     cluster_data_folder (TYPE): Description
-    comp_filetag (str): Description
     feature_keys (TYPE): Description
     hry_folder (TYPE): Description
     kmeans_folder (TYPE): Description
-    non_polysemous_prepositions (list): Description
     polyseme_data_folder (TYPE): Description
-    polysemous_preposition_list (list): Description
-    preposition_list (TYPE): Description
     relation_keys (TYPE): Description
     score_folder (TYPE): Description
-    sv_filetag (str): Description
 """
 # First run compile_instances.py
 
@@ -39,7 +40,7 @@ import matplotlib.ticker as ticker
 
 from basic_model_testing import TestModels, PrepositionModels, Model, Features, MultipleRuns, SemanticMethods
 from data_import import Relationship, StudyInfo
-from classes import Constraint, Configuration, SceneInfo
+from classes import Constraint, Configuration
 from compile_instances import SemanticCollection, ComparativeCollection
 
 # Useful global variables
@@ -48,9 +49,6 @@ comp_filetag = ComparativeCollection.filetag  # Tag for comp task files
 preposition_list = StudyInfo.preposition_list
 polysemous_preposition_list = ['in', 'on', 'under', 'over']  # list of prepositions which exist in the data
 non_polysemous_prepositions = ["inside", "above", "below", "on top of", 'against']
-
-feature_keys = Relationship.get_feature_keys()  # Feature keys are all features
-relation_keys = Relationship.get_relation_keys()  # Relation keys are feature keys with some features removed e.g. properties of ground
 
 
 class Cluster:
@@ -66,12 +64,14 @@ class Cluster:
         mean_series (TYPE): Description
         means (TYPE): Description
         preposition (TYPE): Description
+        study_info (TYPE): Description
     """
 
     def __init__(self, study_info_, preposition, instances, label, alg_typ=None):
         """Summary
         
         Args:
+            study_info_ (TYPE): Description
             preposition (TYPE): Description
             instances (TYPE): Description
             label (TYPE): Description
@@ -134,6 +134,7 @@ class Clustering:
         preposition (TYPE): Description
         relation_weights (TYPE): Description
         sample_weights (TYPE): Description
+        study_info (TYPE): Description
         typical_instances (TYPE): Description
     """
 
@@ -148,11 +149,12 @@ class Clustering:
         """Summary
         
         Args:
+            study_info_ (TYPE): Description
             preposition (TYPE): Description
         """
         self.study_info = study_info_
-        s = SceneInfo(self.study_info.name)
-        self.all_scenes = s.scene_name_list
+
+        self.all_scenes = self.study_info.scene_name_list
         self.preposition = preposition
         self.models = PrepositionModels(self.study_info, preposition, self.all_scenes)
 
@@ -299,7 +301,7 @@ class Clustering:
         for i in range(len(km.cluster_centers_)):
             out["cluster_" + str(i)] = km.cluster_centers_[i]
 
-        df = pd.DataFrame(out, relation_keys)
+        df = pd.DataFrame(out, self.study_info.relation_keys)
         print((self.preposition))
         print(df)
 
@@ -413,7 +415,7 @@ class Clustering:
         """Summary
         """
         generated_polyseme_models = GeneratePolysemeModels(Clustering.all_scenes, Clustering.all_scenes,
-                                                           self.study_info, constraint_dict, preserve_rank=True)
+                                                           self.study_info, preserve_rank=True)
         d = generated_polyseme_models.non_shared_dict
 
         polysemes = d[self.preposition]
@@ -532,6 +534,7 @@ class Polyseme():
         rank (int): Description
         regression_weights_csv (TYPE): Description
         share_prototype (TYPE): Description
+        study_info (TYPE): Description
         train_scenes (TYPE): Description
         weights (TYPE): Description
     """
@@ -541,6 +544,7 @@ class Polyseme():
         """Summary
         
         Args:
+            study_info_ (TYPE): Description
             preposition (TYPE): Description
             polyseme_name (TYPE): Description
             train_scenes (TYPE): Description
@@ -592,7 +596,7 @@ class Polyseme():
         """
         # boolean checks whether the configuration could be an instance
 
-        r = Relationship(scene, figure, ground)
+        r = Relationship(scene, figure, ground, self.study_info)
 
         r.load_from_csv()
         if self.eq_feature_dict != None:
@@ -661,11 +665,11 @@ class Polyseme():
     def output_prototype_weight(self):
         """Summary
         """
-        pf = pd.DataFrame(self.prototype, relation_keys)
+        pf = pd.DataFrame(self.prototype, self.study_info.relation_keys)
 
         pf.to_csv(self.prototype_csv)
 
-        wf = pd.DataFrame(self.weights, relation_keys)
+        wf = pd.DataFrame(self.weights, self.study_info.relation_keys)
 
         wf.to_csv(self.regression_weights_csv)
 
@@ -676,7 +680,7 @@ class Polyseme():
         out["eq_feature_dict"] = []
         out["greater_feature_dict"] = []
         out["less_feature_dict"] = []
-        for feature in relation_keys:
+        for feature in self.study_info.relation_keys:
 
             if self.eq_feature_dict != None:
                 if feature in self.eq_feature_dict:
@@ -705,7 +709,7 @@ class Polyseme():
             else:
                 out["less_feature_dict"].append("None")
 
-        wf = pd.DataFrame(out, relation_keys)  # ["equality", "greater than", "less than"])
+        wf = pd.DataFrame(out, self.study_info.relation_keys)  # ["equality", "greater than", "less than"])
 
         wf.to_csv(
             self.study_info.polyseme_data_folder + "/definitions/" + self.preposition + "-" + self.polyseme_name + ".csv")
@@ -716,7 +720,9 @@ class PolysemeModel(Model):
     
     Attributes:
         cluster_dict (TYPE): Description
+        constraint_dict (TYPE): Description
         polyseme_dict (TYPE): Description
+        study_info (TYPE): Description
         test_prepositions (TYPE): Description
     """
 
@@ -727,23 +733,27 @@ class PolysemeModel(Model):
     # Also do better with sharing prototytpes
 
     # Puts together preposition models and has various functions for testing
-    def __init__(self, name, train_scenes, test_scenes, study_info_, weight_dict=None, constraint_dict=None,
-                 polyseme_dict=None, cluster_dict=None
-                 ):
+    def __init__(self, name, train_scenes, test_scenes, study_info_, weight_dict=None, polyseme_dict=None,
+                 cluster_dict=None):
         """Summary
         
         Args:
             name (TYPE): Description
             train_scenes (TYPE): Description
             test_scenes (TYPE): Description
-            study_info (TYPE): Description
+            study_info_ (TYPE): Description
             weight_dict (None, optional): Description
+            polyseme_dict (None, optional): Description
+            cluster_dict (None, optional): Description
+        
+        Deleted Parameters:
+            study_info (TYPE): Description
             constraint_dict (None, optional): Description
             feature_to_remove (None, optional): Description
         """
         self.study_info = study_info_
-        Model.__init__(name, train_scenes, test_scenes, self.study_info, constraint_dict=constraint_dict)
-
+        Model.__init__(self, name, train_scenes, test_scenes, self.study_info)
+        self.constraint_dict = Constraint.read_from_csv(self.study_info.constraint_csv)
         # Dictionary of polyseme instances for each preposition
         self.polyseme_dict = polyseme_dict
         self.test_prepositions = polysemous_preposition_list
@@ -969,6 +979,7 @@ class GeneratePolysemeModels():
         preserve_rank (TYPE): Description
         shared (TYPE): Description
         shared_dict (TYPE): Description
+        study_info (TYPE): Description
         test_scenes (TYPE): Description
         train_scenes (TYPE): Description
     """
@@ -985,21 +996,24 @@ class GeneratePolysemeModels():
     # List of model names except ours
     other_name_list = [other_model_name, baseline_model_name, cluster_model_name]
 
-    def __init__(self, train_scenes, test_scenes, study_info_, constraint_dict=None, preserve_rank=False):
+    def __init__(self, train_scenes, test_scenes, study_info_, preserve_rank=False):
         """Summary
         
         Args:
             train_scenes (TYPE): Description
             test_scenes (TYPE): Description
-            constraint_dict (None, optional): Description
+            study_info_ (TYPE): Description
             preserve_rank (bool, optional): Description
             :param study_info_:
+        
+        Deleted Parameters:
+            constraint_dict (None, optional): Description
         """
 
         self.study_info = study_info_
         self.feature_processer = Features(self.study_info.name)
         # Dictionary of constraints to satisfy
-        self.constraint_dict = constraint_dict
+        self.constraint_dict = Constraint.read_from_csv(self.study_info.constraint_csv)
         # Variable set to true if want to generate polysemes and not edit the rank
         self.preserve_rank = preserve_rank
 
@@ -1010,19 +1024,19 @@ class GeneratePolysemeModels():
 
         self.baseline_model_dict = self.get_general_cases()
         self.baseline_model = PolysemeModel(self.baseline_model_name, self.train_scenes, self.test_scenes,
-                                            self.study_info, self.constraint_dict)
+                                            self.study_info, polyseme_dict=self.baseline_model_dict)
         # Cluster dictionary stores list of cluster objects for each preposition
         self.cluster_dict = self.get_cluster_dict()
         self.cluster_model = PolysemeModel(self.cluster_model_name, self.train_scenes, self.test_scenes,
-                                           self.study_info, self.constraint_dict)
+                                           self.study_info, cluster_dict=self.cluster_dict)
 
         self.non_shared_dict = self.get_non_shared_prototype_polyseme_dict()
         self.non_shared = PolysemeModel(self.our_model_name, self.train_scenes, self.test_scenes, self.study_info,
-                                        self.constraint_dict)
+                                        polyseme_dict=self.non_shared_dict)
 
         self.shared_dict = self.get_shared_prototype_polyseme_dict()
         self.shared = PolysemeModel(self.other_model_name, self.train_scenes, self.test_scenes, self.study_info,
-                                    self.constraint_dict)
+                                    polyseme_dict=self.shared_dict)
 
         self.models = [self.non_shared, self.shared, self.baseline_model, self.cluster_model]
 
@@ -1086,7 +1100,7 @@ class GeneratePolysemeModels():
                 for i in range(len(km.cluster_centers_)):
                     centre = km.cluster_centers_[i]
 
-                    distance = sem_methods.semantic_distance(weights, v, centre, self.relation_keys)
+                    distance = sem_methods.semantic_distance(weights, v, centre, self.study_info.relation_keys)
 
                     if sem_distance == -1:
                         sem_distance = distance
@@ -1373,32 +1387,35 @@ class MultipleRunsPolysemyModels(MultipleRuns):
         km_comparison_csv (TYPE): Description
         scores_plots_folder (TYPE): Description
         scores_tables_folder (TYPE): Description
+        study_info (TYPE): Description
     """
 
-    def __init__(self, study_info_, constraint_dict, number_runs=None, test_size=None, k=None, compare=None,
-                 features_to_test=None):
+    def __init__(self, study_info_, number_runs=None, test_size=None, k=None, compare=None):
         """Summary
         
         Args:
-            study_info (TYPE): Description
-            constraint_dict (TYPE): Description
+            study_info_ (TYPE): Description
             number_runs (None, optional): Description
             test_size (None, optional): Description
             k (None, optional): Description
             compare (None, optional): Description
+        
+        Deleted Parameters:
+            study_info (TYPE): Description
+            constraint_dict (TYPE): Description
             features_to_test (None, optional): Description
         """
         self.study_info = study_info_
 
-        MultipleRuns.__init__(GeneratePolysemeModels, self.study_info, constraint_dict, number_runs=number_runs,
-                              test_size=None, k=k,
+        MultipleRuns.__init__(self, GeneratePolysemeModels, self.study_info, number_runs=number_runs, test_size=None,
+                              k=k,
                               compare=compare, features_to_test=None)
 
-        self.all_csv = self.study_info.base_polysemy_folder + "/" + self.all_csv
-        self.all_plot = self.study_info.base_polysemy_folder + "/" + self.all_plot
+        self.scores_tables_folder = self.study_info.polysemy_score_folder + "tables"
+        self.scores_plots_folder = self.study_info.polysemy_score_folder + "plots"
 
-        self.scores_tables_folder = self.study_info.score_folder + "/tables"
-        self.scores_plots_folder = self.study_info.score_folder + "/plots"
+        self.all_csv = self.study_info.polysemy_score_folder + "all_test.csv"
+        self.all_plot = self.study_info.polysemy_score_folder + "ScoresUsingAllData.pdf"
 
         if self.k != None:
             self.file_tag = str(self.k) + "fold"
@@ -1414,23 +1431,27 @@ class MultipleRunsPolysemyModels(MultipleRuns):
 def output_all_polyseme_info(study_info_):
     """Summary
     :param study_info_:
+    
+    Args:
+        study_info_ (TYPE): Description
     """
     print("outputting all polyseme info")
-    s = SceneInfo(study_info_.name)
-    all_scenes = s.scene_name_list
-    generated_polyseme_models = GeneratePolysemeModels(all_scenes, all_scenes, study_info_,
-                                                       constraint_dict, preserve_rank=True)
+    all_scenes = study_info_.scene_name_list
+    generated_polyseme_models = GeneratePolysemeModels(all_scenes, all_scenes, study_info_, preserve_rank=True)
     generated_polyseme_models.output_polyseme_info()
 
 
 def test_on_all_scenes(study_info_):
     """Summary
     :param study_info_:
+    
+    Args:
+        study_info_ (TYPE): Description
     """
     print("test on all scenes")
-    s = SceneInfo(study_info_.name)
-    all_scenes = s.scene_name_list
-    generated_polyseme_models = GeneratePolysemeModels(all_scenes, all_scenes, study_info_, constraint_dict)
+
+    all_scenes = study_info_.scene_name_list
+    generated_polyseme_models = GeneratePolysemeModels(all_scenes, all_scenes, study_info_)
 
     p_models = generated_polyseme_models.models
 
@@ -1449,9 +1470,10 @@ def test_model(runs, k, study_info_):
     Args:
         runs (TYPE): Description
         k (TYPE): Description
+        study_info_ (TYPE): Description
         :param study_info_:
     """
-    m = MultipleRunsPolysemyModels(study_info_, constraint_dict, number_runs=runs, k=k, compare="y")
+    m = MultipleRunsPolysemyModels(study_info_, number_runs=runs, k=k, compare="y")
     print(("Test Model k = " + str(k)))
     m.validation()
     m.output()
@@ -1460,6 +1482,9 @@ def test_model(runs, k, study_info_):
 
 def test_models(study_info_):
     """Summary
+    
+    Args:
+        study_info_ (TYPE): Description
     """
     mpl.rcParams['font.size'] = 40
     mpl.rcParams['legend.fontsize'] = 37
@@ -1475,10 +1500,13 @@ def test_models(study_info_):
 def output_typicality(study_info_):
     """Summary
     :param study_info_:
+    
+    Args:
+        study_info_ (TYPE): Description
     """
     print("outputting typicalities")
-    s = SceneInfo(study_info_.name)
-    all_scenes = s.scene_name_list
+
+    all_scenes = study_info_.scene_name_list
     generated_polyseme_models = GeneratePolysemeModels(all_scenes, all_scenes, study_info_)
     p_models = generated_polyseme_models.models
     for model in p_models:
@@ -1490,6 +1518,9 @@ def output_typicality(study_info_):
 def compare_kmeans(study_info_):
     """Summary
     :param study_info_:
+    
+    Args:
+        study_info_ (TYPE): Description
     """
     mpl.rcParams['font.size'] = 15
     mpl.rcParams['legend.fontsize'] = 12
@@ -1502,6 +1533,9 @@ def compare_kmeans(study_info_):
 def output_initial_inertias(study_info_):
     """Summary
     :param study_info_:
+    
+    Args:
+        study_info_ (TYPE): Description
     """
     print("Outputting initial inertias")
     for preposition in preposition_list:
@@ -1512,6 +1546,9 @@ def output_initial_inertias(study_info_):
 def work_out_all_dbsccan_clusters(study_info_):
     """Summary
     :param study_info_:
+    
+    Args:
+        study_info_ (TYPE): Description
     """
     for preposition in polysemous_preposition_list:
         print(preposition)
@@ -1522,6 +1559,9 @@ def work_out_all_dbsccan_clusters(study_info_):
 def work_out_all_hry_clusters(study_info_):
     """Summary
     :param study_info_:
+    
+    Args:
+        study_info_ (TYPE): Description
     """
     print("Working out hry clusters")
     for preposition in polysemous_preposition_list:
@@ -1533,6 +1573,9 @@ def work_out_all_hry_clusters(study_info_):
 def work_out_kmeans_clusters(study_info_):
     """Summary
     :param study_info_:
+    
+    Args:
+        study_info_ (TYPE): Description
     """
     print("Working out kmeans clusters")
     for preposition in polysemous_preposition_list:
@@ -1541,12 +1584,15 @@ def work_out_kmeans_clusters(study_info_):
         c.output_expected_kmeans_model()
 
 
-def main(constraint_dict, study_info_):
+def main(study_info_):
     """Un/comment functions to run tests and outputs
     
     Args:
-        constraint_dict (TYPE): Description
+        study_info_ (TYPE): Description
         :param study_info_:
+    
+    Deleted Parameters:
+        constraint_dict (TYPE): Description
     """
     # Clustering
     work_out_kmeans_clusters(study_info_)
@@ -1557,7 +1603,7 @@ def main(constraint_dict, study_info_):
     output_all_polyseme_info(study_info_)
 
     output_typicality(study_info_)
-    test_models()
+    test_models(study_info_)
 
     mpl.rcParams['axes.titlesize'] = 'large'
     mpl.rcParams['axes.labelsize'] = 'large'
@@ -1565,15 +1611,6 @@ def main(constraint_dict, study_info_):
 
 
 if __name__ == '__main__':
+    study_info = StudyInfo("2019 study")
 
-    study_info = StudyInfo("2019 name")
-    name = "n"  # raw_input("Generate new constraints? y/n  ")
-    if name == "y":
-        compcollection = ComparativeCollection(study_info.name)
-        constraint_dict = compcollection.get_constraints()
-    elif name == "n":
-        constraint_dict = Constraint.read_from_csv(study_info.constraint_csv)
-    else:
-        print("Error unrecognized input")
-
-    main(constraint_dict, study_info)
+    main(study_info)

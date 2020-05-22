@@ -303,12 +303,12 @@ class StudyInfo:
 
         self.model_info_folder = self.name + "/model info"
 
-        self.base_polysemy_folder = self.name + "polysemy/"
+        self.base_polysemy_folder = self.name + "/polysemy/"
         self.polyseme_data_folder = self.base_polysemy_folder + 'polyseme data/'
         self.cluster_data_folder = self.base_polysemy_folder + 'clustering/'
         self.kmeans_folder = self.cluster_data_folder + 'kmeans/'
         self.hry_folder = self.cluster_data_folder + 'hry/'
-        self.score_folder = self.base_polysemy_folder + 'scores/'
+        self.polysemy_score_folder = self.base_polysemy_folder + 'scores/'
 
     def config_ratio_csv(self, filetag, preposition):
         """Summary

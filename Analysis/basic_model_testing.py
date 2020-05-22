@@ -1,3 +1,10 @@
+"""Summary
+
+Attributes:
+    comp_filetag (TYPE): Description
+    preposition_list (TYPE): Description
+    sv_filetag (TYPE): Description
+"""
 # First run compile_instances.py
 
 # Input: Configuration selection info from compile_instances. Constraints from Comp task
@@ -34,7 +41,15 @@ preposition_list = StudyInfo.preposition_list
 
 
 def convert_index(x, number_of_columns):
-    """Converts index to place in row/columns for plots"""
+    """Converts index to place in row/columns for plots
+    
+    Args:
+        x (TYPE): Description
+        number_of_columns (TYPE): Description
+    
+    Returns:
+        TYPE: Description
+    """
     if x == 0 or x == 6 or x == 12:
         i = 0
         j = 0
@@ -50,18 +65,25 @@ def convert_index(x, number_of_columns):
 
 
 class SemanticMethods:
-    """Class for reusable methods related to semantic measurements"""
+    """Class for reusable methods related to semantic measurements
+    """
 
     @staticmethod
     def semantic_distance(weight_array, x, y, relation_keys, feature_to_remove=None):
         """
         Parameters:
             weight_array: 1-D Array of feature weights
-            list_of_annotations,y: 1-D arrays. Points to compare
+            x (TYPE): Description
+            y: 1-D arrays. Points to compare
+            relation_keys (TYPE): Description
             feature_to_remove: Feature to remove from consideration
+        
         Returns:
             distance: Float representing semantic distance from list_of_annotations to y
             :param relation_keys:
+        
+        Deleted Parameters:
+            list_of_annotations: 1-D arrays. Points to compare
         """
         if len(relation_keys) != len(weight_array):
             print("Error: weight array and relation keys not same length")
@@ -84,6 +106,52 @@ class SemanticMethods:
 
 
 class PrepositionModels():
+    """Summary
+    
+    Attributes:
+        aff_dataset (TYPE): Description
+        affFeatures (TYPE): Description
+        affRelations (TYPE): Description
+        all_features_regression_weight_csv (TYPE): Description
+        allFeatures (TYPE): Description
+        barycentre_csv (TYPE): Description
+        barycentre_prototype (TYPE): Description
+        categorisation_feature_name (TYPE): Description
+        category_index (int): Description
+        dataset (TYPE): Description
+        exemplar_csv (TYPE): Description
+        exemplar_mean (TYPE): Description
+        feature_keys (TYPE): Description
+        feature_to_remove (TYPE): Description
+        fig_feature_name (TYPE): Description
+        ground_feature_name (TYPE): Description
+        interval (TYPE): Description
+        interval_predictions (TYPE): Description
+        linear_regression_model (TYPE): Description
+        neg_dataset (TYPE): Description
+        neg_features (TYPE): Description
+        poly_regression_model (TYPE): Description
+        polyseme (TYPE): Description
+        possible_instances_dataset (TYPE): Description
+        preposition (TYPE): Description
+        prototype (list): Description
+        prototype_csv (TYPE): Description
+        ratio_feature_name (TYPE): Description
+        ratio_index (int): Description
+        regression_weight_csv (TYPE): Description
+        regression_weights (list): Description
+        relation_dataframe (TYPE): Description
+        relation_keys (TYPE): Description
+        scene_feature_name (TYPE): Description
+        scene_index (int): Description
+        study_info (TYPE): Description
+        train_dataset (TYPE): Description
+        train_possible_intances_dataset (TYPE): Description
+        train_scenes (TYPE): Description
+        typical_dataset (TYPE): Description
+        typical_features (TYPE): Description
+    """
+
     # Given training scenes, works out models for individual preposition
     ratio_feature_name = InstanceCollection.ratio_feature_name
     categorisation_feature_name = InstanceCollection.categorisation_feature_name
@@ -98,6 +166,15 @@ class PrepositionModels():
     interval = np.array([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]).reshape(-1, 1)
 
     def __init__(self, study_info_, preposition, train_scenes, feature_to_remove=None, polyseme=None):
+        """Summary
+        
+        Args:
+            study_info_ (TYPE): Description
+            preposition (TYPE): Description
+            train_scenes (TYPE): Description
+            feature_to_remove (None, optional): Description
+            polyseme (None, optional): Description
+        """
         self.study_info = study_info_
         self.relation_keys = self.study_info.relation_keys
         self.feature_keys = self.study_info.feature_keys
@@ -200,14 +277,38 @@ class PrepositionModels():
         self.exemplar_csv = self.study_info.model_info_folder + "/exemplar/" + preposition + "-exemplar_means.csv"
 
     def remove_nontrainingscenes(self, d):
+        """Summary
+        
+        Args:
+            d (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
         copy_d = d.copy()
         return copy_d[(copy_d.iloc[:, self.scene_index].isin(self.train_scenes))]
 
     def remove_nonfeatures(self, d):
+        """Summary
+        
+        Args:
+            d (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
         # Remove seleciton info columns and names to only have features
         return d.drop(["Scene", "Figure", "Ground", self.ratio_feature_name, self.categorisation_feature_name], axis=1)
 
     def remove_nonrelations(self, d):
+        """Summary
+        
+        Args:
+            d (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
         # Remove features which are for identifying polysemes
         new_d = d.drop(Relationship.context_features, axis=1)
         if self.feature_to_remove is not None:
@@ -216,6 +317,16 @@ class PrepositionModels():
         return new_d
 
     def plot_features_ratio(self, no_columns, axes, feature, X, y_pred, Y):
+        """Summary
+        
+        Args:
+            no_columns (TYPE): Description
+            axes (TYPE): Description
+            feature (TYPE): Description
+            X (TYPE): Description
+            y_pred (TYPE): Description
+            Y (TYPE): Description
+        """
         # X = Selection Ratio
         # y_pred =  predicted Y values on unit interval
         # Y =  feature value
@@ -267,6 +378,8 @@ class PrepositionModels():
     # 	ax1.plot(p,end,markersize=10,markeredgewidth=2, marker=(4, 2))
 
     def work_out_models(self):
+        """Summary
+        """
         self.work_out_linear_regression_model()
         # self.work_out_polynomial_regression_model(3)
         self.work_out_barycentre_prototype()
@@ -274,6 +387,11 @@ class PrepositionModels():
         self.work_out_prototype_model()
 
     def work_out_barycentre_prototype(self):
+        """Summary
+        
+        Returns:
+            TYPE: Description
+        """
         out = []
         X = self.affFeatures
 
@@ -287,6 +405,11 @@ class PrepositionModels():
         return self.barycentre_prototype
 
     def work_out_exemplar_mean(self):
+        """Summary
+        
+        Returns:
+            TYPE: Description
+        """
         out = []
         X = self.typical_features
 
@@ -299,6 +422,14 @@ class PrepositionModels():
         return self.exemplar_mean
 
     def get_plot_filename(self, file_no):
+        """Summary
+        
+        Args:
+            file_no (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
         x = str(file_no)
 
         if self.polyseme is not None:
@@ -309,6 +440,8 @@ class PrepositionModels():
         return filename
 
     def plot_models(self):
+        """Summary
+        """
         # Plots simple linear regressions used to find prototypes
         no_rows = 3
         no_columns = 2
@@ -349,6 +482,14 @@ class PrepositionModels():
         plt.savefig(filename, bbox_inches='tight')
 
     def work_out_feature_prototype(self, feature):
+        """Summary
+        
+        Args:
+            feature (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
         # First predict feature value given selection ratio of 1
         # Reshape data first
         X = self.train_dataset[self.ratio_feature_name].values.reshape(-1, 1)
@@ -370,6 +511,11 @@ class PrepositionModels():
         return pro_value
 
     def work_out_linear_regression_model(self):
+        """Summary
+        
+        Returns:
+            TYPE: Description
+        """
         # Next get gradient when feature predicts selection ratio
         # Reshape data first
 
@@ -389,6 +535,8 @@ class PrepositionModels():
         return lin_model
 
     def work_out_feature_weights(self):
+        """Summary
+        """
         if self.linear_regression_model == None:
             model2 = self.work_out_linear_regression_model()
         else:
@@ -419,6 +567,11 @@ class PrepositionModels():
         self.regression_weights = weights
 
     def work_out_prototype_model(self):
+        """Summary
+        
+        Returns:
+            TYPE: Description
+        """
         # Work out linear regression on each feature by comparing to the ratio of times selected
 
         # This step gives prototypes for later steps, which are saved to prototypes folder
@@ -440,6 +593,14 @@ class PrepositionModels():
         return self.prototype
 
     def work_out_polynomial_regression_model(self, n):
+        """Summary
+        
+        Args:
+            n (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
         # Next get gradient when feature predicts selection ratio
         # Reshape data first
         X = self.relation_dataframe
@@ -461,6 +622,8 @@ class PrepositionModels():
         return model2
 
     def output_models(self):
+        """Summary
+        """
         # Only called once when training scenes are all scenes, so these are the best model parameters
         wf = pd.DataFrame(self.regression_weights, self.relation_keys)
 
@@ -479,18 +642,33 @@ class PrepositionModels():
         exf.to_csv(self.exemplar_csv)
 
     def read_all_feature_weights(self):
+        """Summary
+        
+        Returns:
+            TYPE: Description
+        """
         # Read regression weights for all features
         wf = pd.read_csv(self.all_features_regression_weight_csv, index_col=0)
 
         return wf
 
     def read_regression_weights(self):
+        """Summary
+        
+        Returns:
+            TYPE: Description
+        """
         # Read regression weights for relations
         wf = pd.read_csv(self.regression_weight_csv, index_col=0)
 
         return wf
 
     def read_calculations(self, classifier):
+        """Summary
+        
+        Args:
+            classifier (TYPE): Description
+        """
         with open("figures/csv_tables" + self.name + classifier + ":" + self.preposition + ".csv") as csvfile:
             read = csv.reader(csvfile)  # .readlines())
             reader = list(read)
@@ -502,19 +680,52 @@ class PrepositionModels():
 
 
 class Model:
+    """Summary
+    
+    Attributes:
+        constraint_dict (TYPE): Description
+        feature_keys (TYPE): Description
+        feature_to_remove (TYPE): Description
+        name (TYPE): Description
+        prototype_dict (TYPE): Description
+        regression_dimension (TYPE): Description
+        regression_model_dict (TYPE): Description
+        relation_keys (TYPE): Description
+        scores (TYPE): Description
+        study_info (TYPE): Description
+        test_prepositions (TYPE): Description
+        test_scenes (TYPE): Description
+        totals (TYPE): Description
+        train_scenes (TYPE): Description
+        weight_dict (TYPE): Description
+        weight_totals (TYPE): Description
+    """
 
     # Puts together preposition models and has various functions for testing
-    def __init__(self, name, train_scenes, test_scenes, study_info_, weight_dict=None, constraint_dict=None,
+    def __init__(self, name, train_scenes, test_scenes, study_info_, weight_dict=None,
                  feature_to_remove=None, prototype_dict=None, regression_model_dict=None, regression_dimension=None):
-
+        """Summary
+        
+        Args:
+            name (TYPE): Description
+            train_scenes (TYPE): Description
+            test_scenes (TYPE): Description
+            study_info_ (TYPE): Description
+            weight_dict (None, optional): Description
+            feature_to_remove (None, optional): Description
+            prototype_dict (None, optional): Description
+            regression_model_dict (None, optional): Description
+            regression_dimension (None, optional): Description
+        """
         self.study_info = study_info_
+        self.constraint_dict = Constraint.read_from_csv(self.study_info.constraint_csv)
         self.relation_keys = self.study_info.relation_keys
         self.feature_keys = self.study_info.feature_keys
         self.name = name
         # Prepositions to test
         self.test_prepositions = preposition_list
         # Dictionary containing constraints to satisfy
-        self.constraint_dict = constraint_dict
+        self.constraint_dict = Constraint.read_from_csv(self.study_info.constraint_csv)
         # A feature to remove from models to see how results change
         self.feature_to_remove = feature_to_remove
         # Input dictionarys of prototype and feature weights for each preposition, stored as arrays
@@ -527,6 +738,16 @@ class Model:
         self.regression_dimension = regression_dimension
 
     def semantic_similarity(self, weight_array, x, y):
+        """Summary
+        
+        Args:
+            weight_array (TYPE): Description
+            x (TYPE): Description
+            y (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
         sem_methods = SemanticMethods()
         # Similarity of list_of_annotations to y
         # list_of_annotations y are 1d arrays
@@ -541,6 +762,15 @@ class Model:
         return out
 
     def get_typicality(self, preposition, point):
+        """Summary
+        
+        Args:
+            preposition (TYPE): Description
+            point (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
         # Works out the typicality of the given point (1D array)
         # Point taken as input is from one side of constraint inequality
         if self.regression_model_dict is not None:
@@ -591,6 +821,11 @@ class Model:
             return top
 
     def get_score(self):
+        """Summary
+        
+        Returns:
+            TYPE: Description
+        """
         # Calculates scores on all constraints for particular model
         # Prototype dict is a dictionary of prototypes (1D arrays) for each preposition
 
@@ -646,6 +881,15 @@ class Model:
 
     # First score based on number of satisfied constraints
     def unweighted_score(self, preposition, Constraints):
+        """Summary
+        
+        Args:
+            preposition (TYPE): Description
+            Constraints (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
         # Calculates how well W and P satisfy the constraints, NOT accounting for constraint weight
         # W and P are 1D arrays
 
@@ -662,6 +906,15 @@ class Model:
         return counter
 
     def weighted_score(self, preposition, Constraints):
+        """Summary
+        
+        Args:
+            preposition (TYPE): Description
+            Constraints (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
         # Calculates how well W and P satisfy the constraints, accounting for constraint weight
         counter = 0
 
@@ -686,6 +939,35 @@ class Model:
 
 
 class GenerateBasicModels:
+    """Summary
+    
+    Attributes:
+        all_regression_weights (TYPE): Description
+        barycentre_prototypes (TYPE): Description
+        best_guess_model_name (str): Description
+        constraint_dict (TYPE): Description
+        cs_model_name (str): Description
+        exemplar_model_name (str): Description
+        feature_keys (TYPE): Description
+        feature_processer (TYPE): Description
+        feature_to_remove (TYPE): Description
+        lin_model_name (str): Description
+        linear_regression_model_dict (TYPE): Description
+        model_name_list (TYPE): Description
+        models (TYPE): Description
+        other_name_list (TYPE): Description
+        our_model_name (str): Description
+        poly_model_name (str): Description
+        poly_regression_model_dict (TYPE): Description
+        prototypes (TYPE): Description
+        proximity_model_name (str): Description
+        relation_keys (TYPE): Description
+        simple_model_name (str): Description
+        study_info (TYPE): Description
+        test_scenes (TYPE): Description
+        train_scenes (TYPE): Description
+    """
+
     lin_model_name = "Linear Regression"
     poly_model_name = "Polynomial Regression"
     our_model_name = "Our Prototype"
@@ -704,14 +986,22 @@ class GenerateBasicModels:
                        proximity_model_name]
 
     # Generating models to test
-    def __init__(self, train_scenes, test_scenes, constraint_dict, study_info_, feature_to_remove=None,
-                 only_test_our_model=None):
+    def __init__(self, train_scenes, test_scenes, study_info_, feature_to_remove=None, only_test_our_model=None):
+        """Summary
+        
+        Args:
+            train_scenes (TYPE): Description
+            test_scenes (TYPE): Description
+            study_info_ (TYPE): Description
+            feature_to_remove (None, optional): Description
+            only_test_our_model (None, optional): Description
+        """
         self.study_info = study_info_
         self.relation_keys = self.study_info.relation_keys
         self.feature_keys = self.study_info.feature_keys
         self.feature_processer = Features(self.study_info.name)
         # Dictionary of constraints to satisfy
-        self.constraint_dict = constraint_dict
+        self.constraint_dict = Constraint.read_from_csv(self.study_info.constraint_csv)
 
         # Values of prototypes and feature weights
         self.prototypes = dict()
@@ -737,19 +1027,18 @@ class GenerateBasicModels:
             self.poly_regression_model_dict[p] = M.poly_regression_model
 
         m = Model(self.our_model_name, self.train_scenes, self.test_scenes, self.study_info,
-                  weight_dict=self.all_regression_weights, constraint_dict=self.constraint_dict,
-                  feature_to_remove=self.feature_to_remove, prototype_dict=self.prototypes)
+                  weight_dict=self.all_regression_weights, feature_to_remove=self.feature_to_remove,
+                  prototype_dict=self.prototypes)
         # linear_r_model = Model(self.lin_model_name,self.all_regression_weights,self.train_scenes,self.test_scenes,self.constraint_dict,regression_model_dict = self.linear_regression_model_dict)
         # poly_r_model = Model(self.poly_model_name,self.all_regression_weights,self.train_scenes,self.test_scenes,self.constraint_dict,regression_model_dict = self.poly_regression_model_dict, regression_dimension = 3)
         if only_test_our_model == None:  # feature_to_remove == None:
 
             # Only include others if not testing features
             m1 = Model(self.exemplar_model_name, self.train_scenes, self.test_scenes, self.study_info,
-                       weight_dict=self.all_regression_weights, constraint_dict=self.constraint_dict,
-                       feature_to_remove=self.feature_to_remove)
+                       weight_dict=self.all_regression_weights, feature_to_remove=self.feature_to_remove)
             m2 = Model(self.cs_model_name, self.train_scenes, self.test_scenes, self.study_info,
-                       weight_dict=self.all_regression_weights, constraint_dict=self.constraint_dict,
-                       feature_to_remove=self.feature_to_remove, prototype_dict=self.barycentre_prototypes)
+                       weight_dict=self.all_regression_weights, feature_to_remove=self.feature_to_remove,
+                       prototype_dict=self.barycentre_prototypes)
             m3 = self.get_proximity_model()
             m4 = self.get_simple_model()
             m5 = self.get_best_guess_model()
@@ -762,6 +1051,11 @@ class GenerateBasicModels:
         self.models = models
 
     def get_proximity_model(self):
+        """Summary
+        
+        Returns:
+            TYPE: Description
+        """
         #
         pro_dict = dict()
         weight_dict = dict()
@@ -784,11 +1078,15 @@ class GenerateBasicModels:
             weight_dict[preposition] = weight_array
 
         m = Model(self.proximity_model_name, self.train_scenes, self.test_scenes, self.study_info,
-                  weight_dict=weight_dict, constraint_dict=self.constraint_dict,
-                  feature_to_remove=self.feature_to_remove, prototype_dict=pro_dict)
+                  weight_dict=weight_dict, feature_to_remove=self.feature_to_remove, prototype_dict=pro_dict)
         return m
 
     def get_best_guess_model(self):
+        """Summary
+        
+        Returns:
+            TYPE: Description
+        """
         # best guess model uses intuition
         pro_dict = dict()
         weight_dict = dict()
@@ -915,11 +1213,15 @@ class GenerateBasicModels:
             pro_dict[preposition] = pro_array
             weight_dict[preposition] = weight_array
         m = Model(self.best_guess_model_name, self.train_scenes, self.test_scenes, self.study_info,
-                  weight_dict=weight_dict, constraint_dict=self.constraint_dict,
-                  feature_to_remove=self.feature_to_remove, prototype_dict=pro_dict)
+                  weight_dict=weight_dict, feature_to_remove=self.feature_to_remove, prototype_dict=pro_dict)
         return m
 
     def get_simple_model(self):
+        """Summary
+        
+        Returns:
+            TYPE: Description
+        """
         # Simple model uses simple geometric features which are equally weighted
 
         pro_dict = dict()
@@ -1000,15 +1302,29 @@ class GenerateBasicModels:
             pro_dict[preposition] = pro_array
             weight_dict[preposition] = weight_array
         m = Model(self.simple_model_name, self.train_scenes, self.test_scenes, self.study_info, weight_dict=weight_dict,
-                  constraint_dict=self.constraint_dict, feature_to_remove=self.feature_to_remove,
-                  prototype_dict=pro_dict)
+                  feature_to_remove=self.feature_to_remove, prototype_dict=pro_dict)
         return m
 
 
 class TestModels:
+    """Summary
+    
+    Attributes:
+        model_name_list (list): Description
+        models (TYPE): Description
+        score_dataframe (TYPE): Description
+        version_name (TYPE): Description
+    """
+
     # Takes input set of models and outputs database of scores
 
     def __init__(self, models, version_name):
+        """Summary
+        
+        Args:
+            models (TYPE): Description
+            version_name (TYPE): Description
+        """
         self.version_name = version_name
         self.models = models
         self.model_name_list = []
@@ -1032,15 +1348,68 @@ class TestModels:
 
 
 class MultipleRuns:
+    """Summary
+    
+    Attributes:
+        all_csv (TYPE): Description
+        all_dataframe (TYPE): Description
+        all_plot (TYPE): Description
+        average_csv (TYPE): Description
+        average_dataframe (TYPE): Description
+        average_plot_pdf (TYPE): Description
+        average_plot_title (str): Description
+        compare (TYPE): Description
+        comparison_csv (TYPE): Description
+        comparison_df (TYPE): Description
+        constraint_dict (TYPE): Description
+        count_cluster_model_wins (TYPE): Description
+        count_other_model_beats_cluster (TYPE): Description
+        count_other_model_wins (TYPE): Description
+        count_our_model_wins (TYPE): Description
+        count_with_feature_better (TYPE): Description
+        count_without_feature_better (TYPE): Description
+        dataframe_dict (TYPE): Description
+        feature_comparison_df (TYPE): Description
+        feature_removed_average_csv (TYPE): Description
+        features_to_test (TYPE): Description
+        file_tag (TYPE): Description
+        Generate_Models_all_scenes (TYPE): Description
+        k (TYPE): Description
+        km_comparison_df (TYPE): Description
+        model_generator (TYPE): Description
+        number_runs (TYPE): Description
+        run_count (int): Description
+        scene_list (TYPE): Description
+        scenes_used_for_testing (list): Description
+        scenes_used_for_training (list): Description
+        scores_plots_folder (TYPE): Description
+        scores_tables_folder (TYPE): Description
+        study_info (TYPE): Description
+        test_prepositions (TYPE): Description
+        test_size (TYPE): Description
+        total_number_runs (TYPE): Description
+    """
+
     # This class carries out multiple runs of model tests and outputs the results
     # Number of runs must be specified as well as either test_size for standard repeated sampling
     # or k for repeated k-fold sampling
-    def __init__(self, model_generator, study_info_, constraint_dict_, number_runs=None, test_size=None, k=None,
+    def __init__(self, model_generator, study_info_, number_runs=None, test_size=None, k=None,
                  compare=None,
                  features_to_test=None):
-
+        """Summary
+        
+        Args:
+            model_generator (TYPE): Description
+            study_info_ (TYPE): Description
+            number_runs (None, optional): Description
+            test_size (None, optional): Description
+            k (None, optional): Description
+            compare (None, optional): Description
+            features_to_test (None, optional): Description
+        """
+        self.study_info = study_info_
         self.model_generator = model_generator
-        self.constraint_dict = constraint_dict_
+        self.constraint_dict = Constraint.read_from_csv(self.study_info.constraint_csv)
         self.number_runs = number_runs
         self.test_size = test_size
         self.k = k
@@ -1050,9 +1419,6 @@ class MultipleRuns:
         self.run_count = 0
         # Dictionary of dataframes giving scores. Indexed by removed features.
         self.dataframe_dict = dict()
-
-        self.study_info = study_info_
-
 
         self.scene_list = self.study_info.scene_name_list
         self.Generate_Models_all_scenes = self.generate_models(self.scene_list, self.scene_list)
@@ -1098,6 +1464,8 @@ class MultipleRuns:
         self.scenes_used_for_training = []
 
     def prepare_comparison_dicts(self):
+        """Summary
+        """
         # Dealing with these values could be improved..
         # Counts to compare models
         self.count_cluster_model_wins = dict()
@@ -1121,17 +1489,28 @@ class MultipleRuns:
                     self.count_other_model_beats_cluster[other_model] = 0
 
     def generate_models(self, train_scenes, test_scenes):
+        """Summary
+        
+        Args:
+            train_scenes (TYPE): Description
+            test_scenes (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
         if self.features_to_test is not None:
             # Test model with no removed features
-            generate_models = self.model_generator(train_scenes, test_scenes, self.constraint_dict, self.study_info,
+            generate_models = self.model_generator(train_scenes, test_scenes, self.study_info,
                                                    only_test_our_model=True)
 
         else:
             # Test all models with no removed features
-            generate_models = self.model_generator(train_scenes, test_scenes, self.constraint_dict, self.study_info)
+            generate_models = self.model_generator(train_scenes, test_scenes, self.study_info)
         return generate_models
 
     def test_all_scenes(self):
+        """Summary
+        """
         generate_models = self.Generate_Models_all_scenes
         models = generate_models.models
         t = TestModels(models, "all")
@@ -1143,6 +1522,12 @@ class MultipleRuns:
                                       "Scores Using All Data")
 
     def single_validation_test(self, train_scenes, test_scenes):
+        """Summary
+        
+        Args:
+            train_scenes (TYPE): Description
+            test_scenes (TYPE): Description
+        """
         generate_models = self.generate_models(train_scenes, test_scenes)
 
         t = TestModels(generate_models.models, str(self.run_count))
@@ -1188,7 +1573,7 @@ class MultipleRuns:
         if self.features_to_test is not None:
 
             for feature in self.features_to_test:
-                generate_models = GenerateBasicModels(train_scenes, test_scenes, self.constraint_dict, self.study_info,
+                generate_models = GenerateBasicModels(train_scenes, test_scenes, self.study_info,
                                                       feature_to_remove=feature, only_test_our_model=True)
                 t = TestModels(generate_models.models, str(self.run_count))
 
@@ -1212,7 +1597,11 @@ class MultipleRuns:
                     self.dataframe_dict[feature] = feature_dataset
 
     def get_validation_scene_split(self):
-
+        """Summary
+        
+        Returns:
+            TYPE: Description
+        """
         # Get train-test scenes
         if self.test_size is not None:
             train_scenes, test_scenes = train_test_split(self.scene_list, test_size=self.test_size)
@@ -1244,6 +1633,14 @@ class MultipleRuns:
             return folds
 
     def folds_check(self, folds):
+        """Summary
+        
+        Args:
+            folds (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
         # Check all folds have some constraints to test
         for f in folds:
             for preposition in self.test_prepositions:
@@ -1260,7 +1657,8 @@ class MultipleRuns:
         return True
 
     def validation(self):
-
+        """Summary
+        """
         # Perform Repeated random sub-sampling validation
         # Either using k-fold or standard method
         for i in range(self.number_runs):
@@ -1360,6 +1758,8 @@ class MultipleRuns:
             self.dataframe_dict[key] = self.dataframe_dict[key].div(self.total_number_runs)
 
     def output(self):
+        """Summary
+        """
         # Handle outputting here so we're not always outputting
         self.average_dataframe = self.dataframe_dict["all_features"]
         # Reorder columns for output
@@ -1412,6 +1812,15 @@ class MultipleRuns:
         # plt.savefig(self.scores_plots_folder+"/ScoresWithRemovedFeatures.pdf", bbox_inches='tight')
 
     def plot_dataframe_bar_chart(self, dataset, file_to_save, x_label, y_label, plot_title):
+        """Summary
+        
+        Args:
+            dataset (TYPE): Description
+            file_to_save (TYPE): Description
+            x_label (TYPE): Description
+            y_label (TYPE): Description
+            plot_title (TYPE): Description
+        """
         if self.features_to_test == None:
             new_column_order = self.Generate_Models_all_scenes.model_name_list
             reordered_df = dataset[new_column_order]
@@ -1434,7 +1843,16 @@ class MultipleRuns:
         plt.savefig(file_to_save, bbox_inches='tight')
 
     def plot_bar_from_csv(self, file, file_to_save, x_label, y_label, plot_title, columns_to_drop=None):
-
+        """Summary
+        
+        Args:
+            file (TYPE): Description
+            file_to_save (TYPE): Description
+            x_label (TYPE): Description
+            y_label (TYPE): Description
+            plot_title (TYPE): Description
+            columns_to_drop (None, optional): Description
+        """
         dataset = pd.read_csv(file, index_col=0)
         if columns_to_drop is not None:
             dataset = dataset.drop(columns_to_drop, axis=1)
@@ -1442,7 +1860,11 @@ class MultipleRuns:
 
 
 def plot_preposition_graphs(study_info):
-
+    """Summary
+    
+    Args:
+        study_info (TYPE): Description
+    """
     scene_list = study_info.scene_name_list
 
     for p in preposition_list:
@@ -1453,6 +1875,15 @@ def plot_preposition_graphs(study_info):
 
 
 def calculate_p_value(N, x):
+    """Summary
+    
+    Args:
+        N (TYPE): Description
+        x (TYPE): Description
+    
+    Returns:
+        TYPE: Description
+    """
     total = 0
     for i in range(x, N + 1):
         v = comb(N, i) * (math.pow(0.5, N))
@@ -1461,34 +1892,54 @@ def calculate_p_value(N, x):
     return total
 
 
-def test_features(study_info_, constraint_dict_):
+def test_features(study_info_):
+    """Summary
+    
+    Args:
+        study_info_ (TYPE): Description
+    """
     functional_features = ["location_control", "support"]
-    m = MultipleRuns(GenerateBasicModels, study_info_, constraint_dict_, number_runs=100, k=2, features_to_test=functional_features)
+    m = MultipleRuns(GenerateBasicModels, study_info_, number_runs=100, k=2, features_to_test=functional_features)
     print("Test Features")
     m.validation()
     m.output()
 
 
-def initial_test(study_info_, constraint_dict_):
-    m = MultipleRuns(GenerateBasicModels, study_info_, constraint_dict_)
+def initial_test(study_info_):
+    """Summary
+    
+    Args:
+        study_info_ (TYPE): Description
+    """
+    m = MultipleRuns(GenerateBasicModels, study_info_)
     print("Test on all scenes")
     m.test_all_scenes()
 
 
-def test_models(study_info_, constraint_dict_):
-    m = MultipleRuns(GenerateBasicModels, study_info_, constraint_dict_, number_runs=100, k=2, compare="y")
+def test_models(study_info_):
+    """Summary
+    
+    Args:
+        study_info_ (TYPE): Description
+    """
+    m = MultipleRuns(GenerateBasicModels, study_info_, number_runs=100, k=2, compare="y")
     print("Test Model k = 2")
     m.validation()
     m.output()
 
-    m = MultipleRuns(GenerateBasicModels, study_info_, constraint_dict_, number_runs=100, k=3, compare="y")
+    m = MultipleRuns(GenerateBasicModels, study_info_, number_runs=100, k=3, compare="y")
     print("Test Model k = 3")
     m.validation()
     m.output()
 
 
-def plot_all_csv(study_info_, constraint_dict_):
-    m = MultipleRuns(GenerateBasicModels, study_info_, constraint_dict_)
+def plot_all_csv(study_info_):
+    """Summary
+    
+    Args:
+        study_info_ (TYPE): Description
+    """
+    m = MultipleRuns(GenerateBasicModels, study_info_)
     file = m.all_csv
     out_file = m.all_plot
 
@@ -1496,17 +1947,29 @@ def plot_all_csv(study_info_, constraint_dict_):
     m.plot_bar_from_csv(file, out_file, "Preposition", "Score", "Scores Using All Data")
 
 
-def plot_kfold_csv(k, study_info_, constraint_dict_):
-    m = MultipleRuns(GenerateBasicModels, study_info_, constraint_dict_, number_runs=100, k=k)
+def plot_kfold_csv(k, study_info_):
+    """Summary
+    
+    Args:
+        k (TYPE): Description
+        study_info_ (TYPE): Description
+    """
+    m = MultipleRuns(GenerateBasicModels, study_info_, number_runs=100, k=k)
     file = m.average_csv
     out_file = m.average_plot_pdf
 
     m.plot_bar_from_csv(file, out_file, "Preposition", "Score", m.average_plot_title)
 
 
-def plot_feature_csv(k, study_info_, constraint_dict_):
+def plot_feature_csv(k, study_info_):
+    """Summary
+    
+    Args:
+        k (TYPE): Description
+        study_info_ (TYPE): Description
+    """
     functional_features = ["location_control", "support"]
-    m = MultipleRuns(GenerateBasicModels, study_info_, constraint_dict_, number_runs=100, k=k, features_to_test=functional_features)
+    m = MultipleRuns(GenerateBasicModels, study_info_, number_runs=100, k=k, features_to_test=functional_features)
     file = m.scores_tables_folder + "/functional_feature_analysis.csv"
     output_file = m.scores_plots_folder + "/ScoresWithRemovedFeatures.pdf"
     x_label = "Preposition"
@@ -1516,7 +1979,12 @@ def plot_feature_csv(k, study_info_, constraint_dict_):
     m.plot_bar_from_csv(file, output_file, x_label, y_label, plot_title)
 
 
-def main(constraint_dict_, study_info_):
+def main(study_info_):
+    """Summary
+    
+    Args:
+        study_info_ (TYPE): Description
+    """
     plot_preposition_graphs(study_info)
     # Edit plot settings
     mpl.rcParams['font.size'] = 40
@@ -1525,9 +1993,9 @@ def main(constraint_dict_, study_info_):
     mpl.rcParams['axes.labelsize'] = 'medium'
     mpl.rcParams['ytick.labelsize'] = 'small'
 
-    initial_test(study_info_, constraint_dict_)
-    test_models(study_info_, constraint_dict_)
-    test_features(study_info_, constraint_dict_)
+    initial_test(study_info_)
+    test_models(study_info_)
+    test_features(study_info_)
 
 
 # plot_all_csv()
@@ -1536,15 +2004,6 @@ def main(constraint_dict_, study_info_):
 
 
 if __name__ == '__main__':
-
     study_info = StudyInfo("2019 name")
-    name = "n"  # raw_input("Generate new constraints? y/n  ")
-    if name == "y":
-        compcollection = ComparativeCollection(study_info.name)
-        constraint_dict = compcollection.get_constraints()
-    elif name == "n":
-        constraint_dict = Constraint.read_from_csv(study_info.constraint_csv)
-    else:
-        print("Error unrecognized input")
 
-    main(constraint_dict, study_info)
+    main(study_info)
