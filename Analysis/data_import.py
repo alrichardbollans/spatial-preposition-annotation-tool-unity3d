@@ -171,6 +171,9 @@ class BasicInfo:
                 self.feature_output_folder + "/human_readable_values.csv"
         )
 
+        self.relation_keys = Relationship.get_relation_keys(self.feature_output_csv)
+        self.feature_keys = Relationship.get_feature_keys(self.feature_output_csv)
+
         self.data_folder = self.study + "/" + self.base_collected_data_folder_name
         self.raw_user_csv = self.data_folder + "/" + "userlist.csv"
 
@@ -183,6 +186,13 @@ class BasicInfo:
         self.constraint_csv = self.study + "/constraint data/constraints.csv"
 
         self.model_info_folder = self.study + "/model info"
+
+        self.base_polysemy_folder = self.study + "polysemy/"
+        self.polyseme_data_folder = self.base_polysemy_folder + 'polyseme data/'
+        self.cluster_data_folder = self.base_polysemy_folder + 'clustering/'
+        self.kmeans_folder = self.cluster_data_folder + 'kmeans/'
+        self.hry_folder = self.cluster_data_folder + 'hry/'
+        self.score_folder = self.base_polysemy_folder + 'scores/'
 
     def config_ratio_csv(self, filetag, preposition):
         """Summary
@@ -261,7 +271,7 @@ class Relationship:
         self.relation_keys = []
 
     @staticmethod
-    def load_all(study):
+    def load_all(feature_path):
         """Summary
         
         Args:
@@ -274,15 +284,15 @@ class Relationship:
             path (None, optional): Description
         """
         # Loads a list of all configurations and feature values, with some features removed
-        path = BasicInfo(study).feature_output_csv
-        with open(path, "r") as f:
+
+        with open(feature_path, "r") as f:
             reader = csv.reader(f)  # create a 'csv reader' from the file object
             geom_relations = list(reader)  # create a list from the reader
 
         return geom_relations
 
     @staticmethod
-    def get_feature_keys(study):
+    def get_feature_keys(feature_path):
         """Summary
         
         Returns:
@@ -293,14 +303,14 @@ class Relationship:
         """
         feature_keys = []
 
-        geom_relations = Relationship.load_all(study)
+        geom_relations = Relationship.load_all(feature_path)
         for title in geom_relations[0][3:]:
             feature_keys.append(title)
 
         return feature_keys
 
     @staticmethod
-    def get_relation_keys(study):
+    def get_relation_keys(feature_path):
         """Summary
         
         Returns:
@@ -311,7 +321,7 @@ class Relationship:
         """
         relation_keys = []
 
-        geom_relations = Relationship.load_all(study)
+        geom_relations = Relationship.load_all(feature_path)
         for title in geom_relations[0][3:]:
             if title not in Relationship.context_features:
                 relation_keys.append(title)
@@ -325,7 +335,7 @@ class Relationship:
             path (None, optional): Description
         """
 
-        geom_relations = Relationship.load_all(self.study)
+        geom_relations = Relationship.load_all(self.data_path)
 
         for title in geom_relations[0][3:]:
             self.feature_keys.append(title)

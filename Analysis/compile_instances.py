@@ -149,8 +149,8 @@ class Collection:
         """
         self.basic_info = BasicInfo(study)
         self.study = study
-        self.relation_keys = Relationship.get_relation_keys(study)
-        self.feature_keys = Relationship.get_feature_keys(study)
+        self.relation_keys = self.basic_info.relation_keys
+        self.feature_keys = self.basic_info.feature_keys
 
         self.feature_data_csv = self.basic_info.feature_output_csv
         self.data_folder_name = self.basic_info.data_folder
@@ -277,7 +277,7 @@ class InstanceCollection(Collection):
             scene_list.append(scene.name)
 
         for preposition in self.get_used_prepositions():
-            config_list = Relationship.load_all(self.study)
+            config_list = Relationship.load_all(self.basic_info.feature_output_csv)
             config_list.pop(0)
 
             ## Write file of all instances
@@ -315,7 +315,7 @@ class InstanceCollection(Collection):
     def write_preposition_stats_csvs(self):
         """Summary
         """
-        config_list = Relationship.load_all(self.study)
+        config_list = Relationship.load_all(self.basic_info.feature_output_csv)
 
         # for preposition in self.get_used_prepositions():
 

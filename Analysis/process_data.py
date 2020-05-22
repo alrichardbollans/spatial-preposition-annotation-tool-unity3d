@@ -1266,7 +1266,7 @@ class SemanticData(Data):
         """Summary
         """
         # Change how relations.csv is found and loaded so we can look at multiple studies.
-        config_list = Relationship.load_all()
+        config_list = Relationship.load_all(self.basic_info.feature_output_csv)
         for preposition in preposition_list:
             with open(
                     self.basic_info.stats_folder
