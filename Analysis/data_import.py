@@ -249,7 +249,7 @@ class StudyInfo:
         "time": 1,
         "native": 2
     }
-    study_list = ["2019 study_name", "2020 study_name"]
+    study_list = ["2019 study", "2020 study"]
     project_path = get_git_project_directory()
 
     scene_info_filename = "scene_info.csv"

@@ -517,9 +517,7 @@ class Data:
             name (TYPE): Description
         """
 
-
         self.study_info = userdata.study_info
-
 
         self.data_list = self.load_annotations_from_csv()
         self.annotation_list = self.get_annotations(userdata)
@@ -836,7 +834,7 @@ class Data:
         return out
 
     @staticmethod
-    def question_match( a1, a2):
+    def question_match(a1, a2):
         """Summary
         Compares two annotations. Returns true if the same question is being asked of the annotators.
         
@@ -1400,7 +1398,6 @@ class TypicalityData(Data):
             study (TYPE): Description
         """
         Data.__init__(self, userdata)
-
 
     # This is a very basic list of information about the task
     # compile_instances gives a better overview

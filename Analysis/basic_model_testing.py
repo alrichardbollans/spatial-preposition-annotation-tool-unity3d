@@ -25,7 +25,7 @@ from scipy.special import comb
 from preprocess_features import Features
 from compile_instances import InstanceCollection, SemanticCollection, ComparativeCollection
 from data_import import Relationship, StudyInfo
-from classes import Constraint, SceneInfo
+from classes import Constraint
 
 # Useful global variables
 sv_filetag = SemanticCollection.filetag  # Tag for sv task files
@@ -97,10 +97,10 @@ class PrepositionModels():
 
     interval = np.array([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]).reshape(-1, 1)
 
-    def __init__(self, basic_info_, preposition, train_scenes, feature_to_remove=None, polyseme=None):
-        self.basic_info = basic_info_
-        self.relation_keys = self.basic_info.relation_keys
-        self.feature_keys = self.basic_info.feature_keys
+    def __init__(self, study_info_, preposition, train_scenes, feature_to_remove=None, polyseme=None):
+        self.study_info = study_info_
+        self.relation_keys = self.study_info.relation_keys
+        self.feature_keys = self.study_info.feature_keys
         self.train_scenes = train_scenes
         self.feature_to_remove = feature_to_remove
         # Given polyseme if being used to model polyseme
@@ -111,7 +111,7 @@ class PrepositionModels():
         # Created in compile_instances write_config_ratios()
         # Row is created in dataset only if the configuration was tested
         # Set of values with selection information
-        config_ratio_csv = self.basic_info.config_ratio_csv(sv_filetag, preposition)
+        config_ratio_csv = self.study_info.config_ratio_csv(sv_filetag, preposition)
         dataset = pd.read_csv(config_ratio_csv)
         self.dataset = dataset
 
@@ -176,15 +176,15 @@ class PrepositionModels():
         # prototype calculated using regression. Stored as array
         self.prototype = []
 
-        self.prototype_csv = self.basic_info.model_info_folder + "/prototypes/" + preposition + ".csv"
+        self.prototype_csv = self.study_info.model_info_folder + "/prototypes/" + preposition + ".csv"
 
         # regression weights calculated by linear regression. stored as array and dataframe
         self.poly_regression_model = None
         self.linear_regression_model = None
 
         self.regression_weights = []
-        self.regression_weight_csv = self.basic_info.model_info_folder + "/regression weights/" + preposition + ".csv"
-        self.all_features_regression_weight_csv = self.basic_info.model_info_folder + "/regression weights/allfeatures_" + preposition + ".csv"
+        self.regression_weight_csv = self.study_info.model_info_folder + "/regression weights/" + preposition + ".csv"
+        self.all_features_regression_weight_csv = self.study_info.model_info_folder + "/regression weights/allfeatures_" + preposition + ".csv"
 
         # Stores model predictions for later plotting
         self.interval_predictions = dict()
@@ -192,12 +192,12 @@ class PrepositionModels():
         # barycentre_prototype . stored as array
         self.barycentre_prototype = None
 
-        self.barycentre_csv = self.basic_info.model_info_folder + "/barycentre model/" + preposition + "-prototype.csv"
+        self.barycentre_csv = self.study_info.model_info_folder + "/barycentre model/" + preposition + "-prototype.csv"
 
         # exemplar_mean . stored as array
         self.exemplar_mean = None
 
-        self.exemplar_csv = self.basic_info.model_info_folder + "/exemplar/" + preposition + "-exemplar_means.csv"
+        self.exemplar_csv = self.study_info.model_info_folder + "/exemplar/" + preposition + "-exemplar_means.csv"
 
     def remove_nontrainingscenes(self, d):
         copy_d = d.copy()
@@ -305,7 +305,7 @@ class PrepositionModels():
             filename = self.polyseme.plot_folder + self.preposition + "-" + self.polyseme.polyseme_name + x + ' .pdf'
         else:
 
-            filename = self.basic_info.model_info_folder + "/plots/" + self.preposition + x + ".pdf"
+            filename = self.study_info.model_info_folder + "/plots/" + self.preposition + x + ".pdf"
         return filename
 
     def plot_models(self):
@@ -504,12 +504,12 @@ class PrepositionModels():
 class Model:
 
     # Puts together preposition models and has various functions for testing
-    def __init__(self, name, train_scenes, test_scenes, basic_info_, weight_dict=None, constraint_dict=None,
+    def __init__(self, name, train_scenes, test_scenes, study_info_, weight_dict=None, constraint_dict=None,
                  feature_to_remove=None, prototype_dict=None, regression_model_dict=None, regression_dimension=None):
 
-        self.basic_info = basic_info_
-        self.relation_keys = self.basic_info.relation_keys
-        self.feature_keys = self.basic_info.feature_keys
+        self.study_info = study_info_
+        self.relation_keys = self.study_info.relation_keys
+        self.feature_keys = self.study_info.feature_keys
         self.name = name
         # Prepositions to test
         self.test_prepositions = preposition_list
@@ -562,7 +562,7 @@ class Model:
         if self.prototype_dict == None:
             # When no prototype_dict is given calculate typicality using exemplar model
             # Load exemplars and non instancesfor preposition and remove context features
-            p = PrepositionModels(self.basic_info, preposition, self.train_scenes)
+            p = PrepositionModels(self.study_info, preposition, self.train_scenes)
 
             exemplars = p.typical_features.drop(Relationship.context_features, axis=1)
             none_instances = p.neg_features.drop(Relationship.context_features, axis=1)
@@ -704,12 +704,12 @@ class GenerateBasicModels:
                        proximity_model_name]
 
     # Generating models to test
-    def __init__(self, train_scenes, test_scenes, constraint_dict, basic_info_, feature_to_remove=None,
+    def __init__(self, train_scenes, test_scenes, constraint_dict, study_info_, feature_to_remove=None,
                  only_test_our_model=None):
-        self.basic_info = basic_info_
-        self.relation_keys = self.basic_info.relation_keys
-        self.feature_keys = self.basic_info.feature_keys
-        self.feature_processer = Features(self.basic_info.name)
+        self.study_info = study_info_
+        self.relation_keys = self.study_info.relation_keys
+        self.feature_keys = self.study_info.feature_keys
+        self.feature_processer = Features(self.study_info.name)
         # Dictionary of constraints to satisfy
         self.constraint_dict = constraint_dict
 
@@ -727,7 +727,7 @@ class GenerateBasicModels:
 
         # Get data models
         for p in preposition_list:
-            M = PrepositionModels(self.basic_info, p, self.train_scenes, feature_to_remove=self.feature_to_remove)
+            M = PrepositionModels(self.study_info, p, self.train_scenes, feature_to_remove=self.feature_to_remove)
             M.work_out_models()
 
             self.prototypes[p] = M.prototype
@@ -736,7 +736,7 @@ class GenerateBasicModels:
             self.linear_regression_model_dict[p] = M.linear_regression_model
             self.poly_regression_model_dict[p] = M.poly_regression_model
 
-        m = Model(self.our_model_name, self.train_scenes, self.test_scenes, self.basic_info,
+        m = Model(self.our_model_name, self.train_scenes, self.test_scenes, self.study_info,
                   weight_dict=self.all_regression_weights, constraint_dict=self.constraint_dict,
                   feature_to_remove=self.feature_to_remove, prototype_dict=self.prototypes)
         # linear_r_model = Model(self.lin_model_name,self.all_regression_weights,self.train_scenes,self.test_scenes,self.constraint_dict,regression_model_dict = self.linear_regression_model_dict)
@@ -744,10 +744,10 @@ class GenerateBasicModels:
         if only_test_our_model == None:  # feature_to_remove == None:
 
             # Only include others if not testing features
-            m1 = Model(self.exemplar_model_name, self.train_scenes, self.test_scenes, self.basic_info,
+            m1 = Model(self.exemplar_model_name, self.train_scenes, self.test_scenes, self.study_info,
                        weight_dict=self.all_regression_weights, constraint_dict=self.constraint_dict,
                        feature_to_remove=self.feature_to_remove)
-            m2 = Model(self.cs_model_name, self.train_scenes, self.test_scenes, self.basic_info,
+            m2 = Model(self.cs_model_name, self.train_scenes, self.test_scenes, self.study_info,
                        weight_dict=self.all_regression_weights, constraint_dict=self.constraint_dict,
                        feature_to_remove=self.feature_to_remove, prototype_dict=self.barycentre_prototypes)
             m3 = self.get_proximity_model()
@@ -783,7 +783,7 @@ class GenerateBasicModels:
             pro_dict[preposition] = pro_array
             weight_dict[preposition] = weight_array
 
-        m = Model(self.proximity_model_name, self.train_scenes, self.test_scenes, self.basic_info,
+        m = Model(self.proximity_model_name, self.train_scenes, self.test_scenes, self.study_info,
                   weight_dict=weight_dict, constraint_dict=self.constraint_dict,
                   feature_to_remove=self.feature_to_remove, prototype_dict=pro_dict)
         return m
@@ -914,7 +914,7 @@ class GenerateBasicModels:
             weight_array = np.array(weight_array)
             pro_dict[preposition] = pro_array
             weight_dict[preposition] = weight_array
-        m = Model(self.best_guess_model_name, self.train_scenes, self.test_scenes, self.basic_info,
+        m = Model(self.best_guess_model_name, self.train_scenes, self.test_scenes, self.study_info,
                   weight_dict=weight_dict, constraint_dict=self.constraint_dict,
                   feature_to_remove=self.feature_to_remove, prototype_dict=pro_dict)
         return m
@@ -999,7 +999,7 @@ class GenerateBasicModels:
             weight_array = np.array(weight_array)
             pro_dict[preposition] = pro_array
             weight_dict[preposition] = weight_array
-        m = Model(self.simple_model_name, self.train_scenes, self.test_scenes, self.basic_info, weight_dict=weight_dict,
+        m = Model(self.simple_model_name, self.train_scenes, self.test_scenes, self.study_info, weight_dict=weight_dict,
                   constraint_dict=self.constraint_dict, feature_to_remove=self.feature_to_remove,
                   prototype_dict=pro_dict)
         return m
@@ -1035,7 +1035,7 @@ class MultipleRuns:
     # This class carries out multiple runs of model tests and outputs the results
     # Number of runs must be specified as well as either test_size for standard repeated sampling
     # or k for repeated k-fold sampling
-    def __init__(self, model_generator, basic_info_, constraint_dict_, number_runs=None, test_size=None, k=None,
+    def __init__(self, model_generator, study_info_, constraint_dict_, number_runs=None, test_size=None, k=None,
                  compare=None,
                  features_to_test=None):
 
@@ -1051,21 +1051,21 @@ class MultipleRuns:
         # Dictionary of dataframes giving scores. Indexed by removed features.
         self.dataframe_dict = dict()
 
-        self.basic_info = basic_info_
+        self.study_info = study_info_
 
-        s = SceneInfo(self.basic_info.name)
-        self.scene_list = s.scene_name_list
+
+        self.scene_list = self.study_info.scene_name_list
         self.Generate_Models_all_scenes = self.generate_models(self.scene_list, self.scene_list)
         self.test_prepositions = self.Generate_Models_all_scenes.models[0].test_prepositions
-        self.all_csv = self.basic_info.name + "/scores/tables/all-model scores.csv"
-        self.all_plot = self.basic_info.name + "/scores/plots/ScoresUsingAllData.pdf"
+        self.all_csv = self.study_info.name + "/scores/tables/all-model scores.csv"
+        self.all_plot = self.study_info.name + "/scores/plots/ScoresUsingAllData.pdf"
         if self.features_to_test == None:
 
-            self.scores_tables_folder = self.basic_info.name + "/scores/tables/all features"
-            self.scores_plots_folder = self.basic_info.name + "/scores/plots/all features"
+            self.scores_tables_folder = self.study_info.name + "/scores/tables/all features"
+            self.scores_plots_folder = self.study_info.name + "/scores/plots/all features"
         else:
-            self.scores_tables_folder = self.basic_info.name + "/scores/tables/removed features"
-            self.scores_plots_folder = self.basic_info.name + "/scores/plots/removed features"
+            self.scores_tables_folder = self.study_info.name + "/scores/tables/removed features"
+            self.scores_plots_folder = self.study_info.name + "/scores/plots/removed features"
         if self.test_size is not None:
             self.file_tag = "rss" + str(self.test_size)
             self.average_plot_title = "Scores Using RRSS Validation"
@@ -1123,12 +1123,12 @@ class MultipleRuns:
     def generate_models(self, train_scenes, test_scenes):
         if self.features_to_test is not None:
             # Test model with no removed features
-            generate_models = self.model_generator(train_scenes, test_scenes, self.constraint_dict, self.basic_info,
+            generate_models = self.model_generator(train_scenes, test_scenes, self.constraint_dict, self.study_info,
                                                    only_test_our_model=True)
 
         else:
             # Test all models with no removed features
-            generate_models = self.model_generator(train_scenes, test_scenes, self.constraint_dict, self.basic_info)
+            generate_models = self.model_generator(train_scenes, test_scenes, self.constraint_dict, self.study_info)
         return generate_models
 
     def test_all_scenes(self):
@@ -1188,7 +1188,7 @@ class MultipleRuns:
         if self.features_to_test is not None:
 
             for feature in self.features_to_test:
-                generate_models = GenerateBasicModels(train_scenes, test_scenes, self.constraint_dict, self.basic_info,
+                generate_models = GenerateBasicModels(train_scenes, test_scenes, self.constraint_dict, self.study_info,
                                                       feature_to_remove=feature, only_test_our_model=True)
                 t = TestModels(generate_models.models, str(self.run_count))
 
@@ -1441,12 +1441,12 @@ class MultipleRuns:
         self.plot_dataframe_bar_chart(dataset, file_to_save, x_label, y_label, plot_title)
 
 
-def plot_preposition_graphs(basic_info):
-    s = SceneInfo(basic_info.name)
-    scene_list = s.scene_name_list
+def plot_preposition_graphs(study_info):
+
+    scene_list = study_info.scene_name_list
 
     for p in preposition_list:
-        M = PrepositionModels(basic_info, p, scene_list)
+        M = PrepositionModels(study_info, p, scene_list)
         M.work_out_models()
         M.output_models()
         M.plot_models()
@@ -1461,34 +1461,34 @@ def calculate_p_value(N, x):
     return total
 
 
-def test_features(basic_info_, constraint_dict_):
+def test_features(study_info_, constraint_dict_):
     functional_features = ["location_control", "support"]
-    m = MultipleRuns(GenerateBasicModels, basic_info_, constraint_dict_, number_runs=100, k=2, features_to_test=functional_features)
+    m = MultipleRuns(GenerateBasicModels, study_info_, constraint_dict_, number_runs=100, k=2, features_to_test=functional_features)
     print("Test Features")
     m.validation()
     m.output()
 
 
-def initial_test(basic_info_, constraint_dict_):
-    m = MultipleRuns(GenerateBasicModels, basic_info_, constraint_dict_)
+def initial_test(study_info_, constraint_dict_):
+    m = MultipleRuns(GenerateBasicModels, study_info_, constraint_dict_)
     print("Test on all scenes")
     m.test_all_scenes()
 
 
-def test_models(basic_info_, constraint_dict_):
-    m = MultipleRuns(GenerateBasicModels, basic_info_, constraint_dict_, number_runs=100, k=2, compare="y")
+def test_models(study_info_, constraint_dict_):
+    m = MultipleRuns(GenerateBasicModels, study_info_, constraint_dict_, number_runs=100, k=2, compare="y")
     print("Test Model k = 2")
     m.validation()
     m.output()
 
-    m = MultipleRuns(GenerateBasicModels, basic_info_, constraint_dict_, number_runs=100, k=3, compare="y")
+    m = MultipleRuns(GenerateBasicModels, study_info_, constraint_dict_, number_runs=100, k=3, compare="y")
     print("Test Model k = 3")
     m.validation()
     m.output()
 
 
-def plot_all_csv(basic_info_, constraint_dict_):
-    m = MultipleRuns(GenerateBasicModels, basic_info_, constraint_dict_)
+def plot_all_csv(study_info_, constraint_dict_):
+    m = MultipleRuns(GenerateBasicModels, study_info_, constraint_dict_)
     file = m.all_csv
     out_file = m.all_plot
 
@@ -1496,17 +1496,17 @@ def plot_all_csv(basic_info_, constraint_dict_):
     m.plot_bar_from_csv(file, out_file, "Preposition", "Score", "Scores Using All Data")
 
 
-def plot_kfold_csv(k, basic_info_, constraint_dict_):
-    m = MultipleRuns(GenerateBasicModels, basic_info_, constraint_dict_, number_runs=100, k=k)
+def plot_kfold_csv(k, study_info_, constraint_dict_):
+    m = MultipleRuns(GenerateBasicModels, study_info_, constraint_dict_, number_runs=100, k=k)
     file = m.average_csv
     out_file = m.average_plot_pdf
 
     m.plot_bar_from_csv(file, out_file, "Preposition", "Score", m.average_plot_title)
 
 
-def plot_feature_csv(k, basic_info_, constraint_dict_):
+def plot_feature_csv(k, study_info_, constraint_dict_):
     functional_features = ["location_control", "support"]
-    m = MultipleRuns(GenerateBasicModels, basic_info_, constraint_dict_, number_runs=100, k=k, features_to_test=functional_features)
+    m = MultipleRuns(GenerateBasicModels, study_info_, constraint_dict_, number_runs=100, k=k, features_to_test=functional_features)
     file = m.scores_tables_folder + "/functional_feature_analysis.csv"
     output_file = m.scores_plots_folder + "/ScoresWithRemovedFeatures.pdf"
     x_label = "Preposition"
@@ -1516,8 +1516,8 @@ def plot_feature_csv(k, basic_info_, constraint_dict_):
     m.plot_bar_from_csv(file, output_file, x_label, y_label, plot_title)
 
 
-def main(constraint_dict_, basic_info_):
-    plot_preposition_graphs(basic_info)
+def main(constraint_dict_, study_info_):
+    plot_preposition_graphs(study_info)
     # Edit plot settings
     mpl.rcParams['font.size'] = 40
     mpl.rcParams['legend.fontsize'] = 37
@@ -1525,9 +1525,9 @@ def main(constraint_dict_, basic_info_):
     mpl.rcParams['axes.labelsize'] = 'medium'
     mpl.rcParams['ytick.labelsize'] = 'small'
 
-    initial_test(basic_info_, constraint_dict_)
-    test_models(basic_info_, constraint_dict_)
-    test_features(basic_info_, constraint_dict_)
+    initial_test(study_info_, constraint_dict_)
+    test_models(study_info_, constraint_dict_)
+    test_features(study_info_, constraint_dict_)
 
 
 # plot_all_csv()
@@ -1537,14 +1537,14 @@ def main(constraint_dict_, basic_info_):
 
 if __name__ == '__main__':
 
-    basic_info = StudyInfo("2019 name")
+    study_info = StudyInfo("2019 name")
     name = "n"  # raw_input("Generate new constraints? y/n  ")
     if name == "y":
-        compcollection = ComparativeCollection(basic_info.name)
+        compcollection = ComparativeCollection(study_info.name)
         constraint_dict = compcollection.get_constraints()
     elif name == "n":
-        constraint_dict = Constraint.read_from_csv(basic_info.constraint_csv)
+        constraint_dict = Constraint.read_from_csv(study_info.constraint_csv)
     else:
         print("Error unrecognized input")
 
-    main(constraint_dict, basic_info)
+    main(constraint_dict, study_info)

@@ -13,9 +13,6 @@ import pandas as pd
 from data_import import StudyInfo, Relationship
 
 
-
-
-
 class Constraint:
     """Summary
     
@@ -481,9 +478,6 @@ class Comparison:
                         out.append(g_object)
 
         return out
-
-
-
 
 
 class Configuration:

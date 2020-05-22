@@ -468,7 +468,6 @@ class ComparativeCollection(InstanceCollection):
         ### Values are lists of constraints for the preposition
         out = dict()
 
-
         for preposition in StudyInfo.preposition_list:
             # print(preposition)
             C = []
@@ -623,7 +622,7 @@ class ConfigurationCollection(Collection):
 
 
 if __name__ == '__main__':
-    study_info = StudyInfo("2019 name")
+    study_info = StudyInfo("2019 study")
     # First preprocess features
     preprocess_features.process_all_features()
 
