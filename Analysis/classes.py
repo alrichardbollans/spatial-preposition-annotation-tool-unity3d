@@ -10,40 +10,10 @@ import csv
 import numpy as np
 import pandas as pd
 
-from data_import import BasicInfo, Relationship
+from data_import import StudyInfo, Relationship
 
 
-def clean_name(object_name):
-    """Summary
-    
-    Args:
-        object_name (string): Description
-    
-    Returns:
-        string: Description
-    """
-    if "." in object_name:
-        new_clean_name = object_name[: object_name.find(".")]
-    elif "_" in object_name:
-        new_clean_name = object_name[: object_name.find("_")]
-    else:
-        new_clean_name = object_name
-    return new_clean_name.lower()
 
-
-def remove_dot_unity(scene_name):
-    """Summary
-    
-    Args:
-        scene_name (TYPE): Description
-    
-    Returns:
-        TYPE: Description
-    """
-    new_clean_name = scene_name
-    if ".unity" in scene_name:
-        new_clean_name = scene_name[: scene_name.find(".unity")]
-    return new_clean_name
 
 
 class Constraint:
@@ -169,7 +139,7 @@ class Constraint:
         """
         # Outputs dictionary of constraints from csv
         out = dict()
-        for p in BasicInfo.preposition_list:
+        for p in StudyInfo.preposition_list:
             out[p] = []
         dataset = pd.read_csv(csv_file)
         for index, line in dataset.iterrows():
@@ -309,7 +279,7 @@ class Comparison:
             ground (TYPE): Description
             study (TYPE): Description
         """
-        self.study = study
+        self.study_info = study
         self.preposition = preposition
         self.scene = scene
         self.ground = ground
@@ -351,8 +321,8 @@ class Comparison:
 
                 x2 = figure_selection_number[f2]
 
-                c1 = Configuration(self.scene, f1, self.ground, self.study)
-                c2 = Configuration(self.scene, f2, self.ground, self.study)
+                c1 = Configuration(self.scene, f1, self.ground, self.study_info)
+                c2 = Configuration(self.scene, f2, self.ground, self.study_info)
 
                 # Only use values that are not from 'context' features
                 c1_array = np.array(c1.relations_row)
@@ -501,10 +471,10 @@ class Comparison:
         Returns:
             TYPE: Description
         """
-        s_info = SceneInfo(self.study)
+
         out = []
 
-        for my_scene in s_info.scene_list:
+        for my_scene in self.study_info.scene_list:
             if my_scene.name == self.scene:
                 for g_object in my_scene.selectable_objects:
                     if g_object != self.ground and g_object not in out:
@@ -513,149 +483,7 @@ class Comparison:
         return out
 
 
-class MyScene:
-    """Summary
-    
-    Attributes:
-        example_scenes (list): Description
-        mesh_objects (TYPE): Description
-        name (TYPE): Description
-        selectable_objects (TYPE): Description
-        study_scene (TYPE): Description
-        unselectable_scene_objects (list): Description
-    """
 
-    # Class to store info about scenes
-    unselectable_scene_objects = ["wall", "floor", "ceiling"]
-    # This is given in MyScene class in Unity
-
-    example_scenes = [
-        "example",
-        "finish",
-        "instruction",
-        "template",
-        "main",
-        "player",
-        "screen",
-        "test",
-    ]
-
-    def __init__(self, name, mesh_objects):
-        """Summary
-        
-        Args:
-            name (TYPE): Description
-            mesh_objects (TYPE): Description
-        """
-        self.name = name
-        self.mesh_objects = mesh_objects
-        self.selectable_objects = self.get_selectable_objects()  #
-        # Bool. Is this scene used for study?
-        self.study_scene = self.study_scene_check()
-
-    def get_selectable_objects(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        out = []
-        for obj in self.mesh_objects:
-            if not any(x in obj for x in self.unselectable_scene_objects):
-                out.append(obj)
-        return out
-
-    def get_all_configs(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        out = []
-
-        x = list(itertools.permutations(self.selectable_objects, 2))
-
-        return x
-
-    def study_scene_check(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        if any(x in self.name for x in self.example_scenes):
-            return False
-            # print(self.name)
-        else:
-            return True
-            # print(self.name)
-
-
-class SceneInfo:
-    """Summary
-    A class to store info on the scenes
-    scene_list is a collection of MyScene objects
-    Relies on creating a csv file in Unity Editor using write_scene_info.cs script
-    Then also run commonsense properties script to get ground info
-    
-    Attributes:
-        basic_info (TYPE): Description
-        csv_file (TYPE): Description
-        data_list (TYPE): Description
-        filename (TYPE): Description
-        output_path (TYPE): Description
-    
-    Deleted Attributes:
-        scene_list (TYPE): Description
-    """
-
-    filename = "scene_info.csv"
-
-    def __init__(self, study):
-        """Summary
-        
-        Args:
-            study (TYPE): Description
-        """
-        self.basic_info = BasicInfo(study)
-        self.output_path = self.basic_info.input_feature_data_folder
-        self.csv_file = self.output_path + "/" + self.filename
-        self.data_list = self.get_list()
-        self.scene_list, self.scene_name_list = self.get_scenes()
-
-    def get_list(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        with open(self.csv_file, "r") as file:
-            reader = csv.reader(file)
-            datalist = list(reader)
-        return datalist
-
-    def get_scenes(self):
-        """Summary
-        
-        Returns:
-            list: Description
-        """
-        scenes_out = []
-        names_out = []
-
-        for scene_info in self.data_list:
-            mesh_objects = []
-            for i in range(1, len(scene_info)):
-                mesh_objects.append(scene_info[i])
-            if len(mesh_objects) != 0 and ".unity" in scene_info[0]:
-                s_name = remove_dot_unity(scene_info[0])
-                my_scene = MyScene(s_name, mesh_objects)
-
-                if my_scene.study_scene:
-                    scenes_out.append(my_scene)
-                    names_out.append(my_scene.name)
-
-        return scenes_out, names_out
 
 
 class Configuration:
@@ -689,7 +517,7 @@ class Configuration:
         self.ground = ground
         self.study = study
 
-        self.path = BasicInfo(study).feature_output_csv
+        self.path = study.feature_output_csv
         # Row of feature values for outputing to csv
         self.row = []
         # Row beginning with names

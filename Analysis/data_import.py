@@ -4,6 +4,7 @@ Methods and classes for loading the data, related to data format.
 
 import os
 import csv
+import itertools
 
 
 def get_git_project_directory():
@@ -23,10 +24,120 @@ def get_git_project_directory():
     return user_home + "/Dropbox/" + unity_folder_name + "/" + repo_name
 
 
-class BasicInfo:
+def clean_name(object_name):
+    """Summary
+
+    Args:
+        object_name (string): Description
+
+    Returns:
+        string: Description
+    """
+    if "." in object_name:
+        new_clean_name = object_name[: object_name.find(".")]
+    elif "_" in object_name:
+        new_clean_name = object_name[: object_name.find("_")]
+    else:
+        new_clean_name = object_name
+    return new_clean_name.lower()
+
+
+def remove_dot_unity(scene_name):
+    """Summary
+
+    Args:
+        scene_name (TYPE): Description
+
+    Returns:
+        TYPE: Description
+    """
+    new_clean_name = scene_name
+    if ".unity" in scene_name:
+        new_clean_name = scene_name[: scene_name.find(".unity")]
+    return new_clean_name
+
+
+class MyScene:
+    """Summary
+
+    Attributes:
+        example_scenes (list): Description
+        mesh_objects (TYPE): Description
+        name (TYPE): Description
+        selectable_objects (TYPE): Description
+        study_scene (TYPE): Description
+        unselectable_scene_objects (list): Description
+    """
+
+    # Class to store info about scenes
+    unselectable_scene_objects = ["wall", "floor", "ceiling"]
+    # This is given in MyScene class in Unity
+
+    example_scenes = [
+        "example",
+        "finish",
+        "instruction",
+        "template",
+        "main",
+        "player",
+        "screen",
+        "test",
+    ]
+
+    def __init__(self, name, mesh_objects):
+        """Summary
+
+        Args:
+            name (TYPE): Description
+            mesh_objects (TYPE): Description
+        """
+        self.name = name
+        self.mesh_objects = mesh_objects
+        self.selectable_objects = self.get_selectable_objects()  #
+        # Bool. Is this scene used for study_name?
+        self.study_scene = self.study_scene_check()
+
+    def get_selectable_objects(self):
+        """Summary
+
+        Returns:
+            TYPE: Description
+        """
+        out = []
+        for obj in self.mesh_objects:
+            if not any(x in obj for x in self.unselectable_scene_objects):
+                out.append(obj)
+        return out
+
+    def get_all_configs(self):
+        """Summary
+
+        Returns:
+            TYPE: Description
+        """
+        out = []
+
+        x = list(itertools.permutations(self.selectable_objects, 2))
+
+        return x
+
+    def study_scene_check(self):
+        """Summary
+
+        Returns:
+            TYPE: Description
+        """
+        if any(x in self.name for x in self.example_scenes):
+            return False
+            # print(self.name)
+        else:
+            return True
+            # print(self.name)
+
+class StudyInfo:
     """Summary
     
-    # Class containing basic info related to data collection
+    Class containing basic info related to data collection and directory structure
     
     Attributes:
         a_index (dict): Description
@@ -54,7 +165,7 @@ class BasicInfo:
         semantic_abbreviations (TYPE): Description
         semantic_preposition_list (TYPE): Description
         stats_folder (TYPE): Description
-        study (TYPE): Description
+        study_name (TYPE): Description
         study_list (list): Description
         sv_task (str): Description
         svmod_annotations_name (str): Description
@@ -138,30 +249,32 @@ class BasicInfo:
         "time": 1,
         "native": 2
     }
-    study_list = ["2019 study", "2020 study"]
+    study_list = ["2019 study_name", "2020 study_name"]
     project_path = get_git_project_directory()
 
-    def __init__(self, study):
+    scene_info_filename = "scene_info.csv"
+
+    def __init__(self, study_name):
         """Summary
         
         Args:
-            study (TYPE): Description
+            study_name (TYPE): Description
         """
         # Abbreviation for files and folders
-        self.study = study
+        self.name = study_name
 
         # paths and filenames
 
         self.input_feature_data_folder = (
 
-                self.study
+                self.name
                 + "/"
                 + self.base_feature_data_folder_name
         )
 
         self.input_feature_csv = self.input_feature_data_folder + "/relations.csv"
 
-        self.feature_output_folder = self.study + "/" + "feature values"
+        self.feature_output_folder = self.name + "/" + "feature values"
         # Path for outputting feature values
         self.feature_output_csv = (
                 self.feature_output_folder + "/standardised_values.csv"
@@ -171,23 +284,26 @@ class BasicInfo:
                 self.feature_output_folder + "/human_readable_values.csv"
         )
 
+        self.scene_info_csv_file = self.input_feature_data_folder + "/" + self.scene_info_filename
+        self.scene_list, self.scene_name_list = self.get_scenes()
+
         self.relation_keys = Relationship.get_relation_keys(self.feature_output_csv)
         self.feature_keys = Relationship.get_feature_keys(self.feature_output_csv)
 
-        self.data_folder = self.study + "/" + self.base_collected_data_folder_name
+        self.data_folder = self.name + "/" + self.base_collected_data_folder_name
         self.raw_user_csv = self.data_folder + "/" + "userlist.csv"
 
         self.raw_annotation_csv = self.data_folder + "/" + "annotationlist.csv"
 
-        self.stats_folder = self.study + "/" + self.base_stats_folder_name
+        self.stats_folder = self.name + "/" + self.base_stats_folder_name
 
-        self.config_ratio_folder = self.study + "/" + 'preposition data/'
+        self.config_ratio_folder = self.name + "/" + 'preposition data/'
 
-        self.constraint_csv = self.study + "/constraint data/constraints.csv"
+        self.constraint_csv = self.name + "/constraint data/constraints.csv"
 
-        self.model_info_folder = self.study + "/model info"
+        self.model_info_folder = self.name + "/model info"
 
-        self.base_polysemy_folder = self.study + "polysemy/"
+        self.base_polysemy_folder = self.name + "polysemy/"
         self.polyseme_data_folder = self.base_polysemy_folder + 'polyseme data/'
         self.cluster_data_folder = self.base_polysemy_folder + 'clustering/'
         self.kmeans_folder = self.cluster_data_folder + 'kmeans/'
@@ -205,6 +321,32 @@ class BasicInfo:
             TYPE: Description
         """
         return self.config_ratio_folder + filetag + '-ratio-list' + preposition + ' .csv'
+
+    def get_scenes(self):
+        """Summary
+
+        Returns:
+            list: Description
+        """
+        scenes_out = []
+        names_out = []
+        with open(self.scene_info_csv_file, "r") as file:
+            reader = csv.reader(file)
+            datalist = list(reader)
+
+            for scene_info in datalist:
+                mesh_objects = []
+                for i in range(1, len(scene_info)):
+                    mesh_objects.append(scene_info[i])
+                if len(mesh_objects) != 0 and ".unity" in scene_info[0]:
+                    s_name = remove_dot_unity(scene_info[0])
+                    my_scene = MyScene(s_name, mesh_objects)
+
+                    if my_scene.study_scene:
+                        scenes_out.append(my_scene)
+                        names_out.append(my_scene.name)
+
+        return scenes_out, names_out
     # @staticmethod
     # def get_scene_list():
     #     """Summary
@@ -241,7 +383,7 @@ class Relationship:
 
     # Lots of this could be done with pandas. Doh :/
 
-    # input_feature_csv = BasicInfo.feature_output_csv
+    # input_feature_csv = StudyInfo.feature_output_csv
     # output_path = input_feature_csv
 
     # additional_features = ["location_control"]
@@ -259,7 +401,7 @@ class Relationship:
             study (TYPE): Description
         """
         self.study = study
-        self.data_path = BasicInfo(study).feature_output_csv
+        self.data_path = study.feature_output_csv
         self.scene = scene
         self.figure = figure
         self.ground = ground
@@ -275,7 +417,7 @@ class Relationship:
         """Summary
         
         Args:
-            study (TYPE): Description
+            study_name (TYPE): Description
         
         Returns:
             TYPE: Description
@@ -299,7 +441,7 @@ class Relationship:
             TYPE: Description
         
         Args:
-            study (TYPE): Description
+            study_name (TYPE): Description
         """
         feature_keys = []
 
@@ -317,7 +459,7 @@ class Relationship:
             TYPE: Description
         
         Args:
-            study (TYPE): Description
+            study_name (TYPE): Description
         """
         relation_keys = []
 

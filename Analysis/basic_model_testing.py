@@ -24,13 +24,13 @@ from scipy.special import comb
 # Local module imports
 from preprocess_features import Features
 from compile_instances import InstanceCollection, SemanticCollection, ComparativeCollection
-from data_import import Relationship, BasicInfo
+from data_import import Relationship, StudyInfo
 from classes import Constraint, SceneInfo
 
 # Useful global variables
 sv_filetag = SemanticCollection.filetag  # Tag for sv task files
 comp_filetag = ComparativeCollection.filetag  # Tag for comp task files
-preposition_list = BasicInfo.preposition_list
+preposition_list = StudyInfo.preposition_list
 
 
 def convert_index(x, number_of_columns):
@@ -709,7 +709,7 @@ class GenerateBasicModels:
         self.basic_info = basic_info_
         self.relation_keys = self.basic_info.relation_keys
         self.feature_keys = self.basic_info.feature_keys
-        self.feature_processer = Features(self.basic_info.study)
+        self.feature_processer = Features(self.basic_info.name)
         # Dictionary of constraints to satisfy
         self.constraint_dict = constraint_dict
 
@@ -1053,19 +1053,19 @@ class MultipleRuns:
 
         self.basic_info = basic_info_
 
-        s = SceneInfo(self.basic_info.study)
+        s = SceneInfo(self.basic_info.name)
         self.scene_list = s.scene_name_list
         self.Generate_Models_all_scenes = self.generate_models(self.scene_list, self.scene_list)
         self.test_prepositions = self.Generate_Models_all_scenes.models[0].test_prepositions
-        self.all_csv = self.basic_info.study + "/scores/tables/all-model scores.csv"
-        self.all_plot = self.basic_info.study + "/scores/plots/ScoresUsingAllData.pdf"
+        self.all_csv = self.basic_info.name + "/scores/tables/all-model scores.csv"
+        self.all_plot = self.basic_info.name + "/scores/plots/ScoresUsingAllData.pdf"
         if self.features_to_test == None:
 
-            self.scores_tables_folder = self.basic_info.study + "/scores/tables/all features"
-            self.scores_plots_folder = self.basic_info.study + "/scores/plots/all features"
+            self.scores_tables_folder = self.basic_info.name + "/scores/tables/all features"
+            self.scores_plots_folder = self.basic_info.name + "/scores/plots/all features"
         else:
-            self.scores_tables_folder = self.basic_info.study + "/scores/tables/removed features"
-            self.scores_plots_folder = self.basic_info.study + "/scores/plots/removed features"
+            self.scores_tables_folder = self.basic_info.name + "/scores/tables/removed features"
+            self.scores_plots_folder = self.basic_info.name + "/scores/plots/removed features"
         if self.test_size is not None:
             self.file_tag = "rss" + str(self.test_size)
             self.average_plot_title = "Scores Using RRSS Validation"
@@ -1442,7 +1442,7 @@ class MultipleRuns:
 
 
 def plot_preposition_graphs(basic_info):
-    s = SceneInfo(basic_info.study)
+    s = SceneInfo(basic_info.name)
     scene_list = s.scene_name_list
 
     for p in preposition_list:
@@ -1537,10 +1537,10 @@ def main(constraint_dict_, basic_info_):
 
 if __name__ == '__main__':
 
-    basic_info = BasicInfo("2019 study")
+    basic_info = StudyInfo("2019 name")
     name = "n"  # raw_input("Generate new constraints? y/n  ")
     if name == "y":
-        compcollection = ComparativeCollection(basic_info.study)
+        compcollection = ComparativeCollection(basic_info.name)
         constraint_dict = compcollection.get_constraints()
     elif name == "n":
         constraint_dict = Constraint.read_from_csv(basic_info.constraint_csv)

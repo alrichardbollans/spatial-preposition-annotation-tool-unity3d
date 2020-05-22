@@ -6,13 +6,13 @@ Outputs in given directory
 
 import pandas as pd
 
-from classes import BasicInfo
+from classes import StudyInfo
 
 
 def process_all_features():
     """Summary
     """
-    for study in BasicInfo.study_list:
+    for study in StudyInfo.study_list:
         try:
             f = Features(study)
             nd = f.standardise_values()
@@ -49,7 +49,7 @@ class Features:
         Args:
             study (TYPE): Description
         """
-        basic_info = BasicInfo(study)
+        basic_info = StudyInfo(study)
         # Get path for calculated features
         self.input_feature_csv = basic_info.input_feature_csv
         self.output_path = basic_info.feature_output_csv
