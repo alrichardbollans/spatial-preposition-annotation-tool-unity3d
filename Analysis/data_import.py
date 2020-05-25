@@ -6,8 +6,6 @@ import os
 import csv
 import itertools
 
-from classes import Configuration
-
 
 def get_git_project_directory():
     """
@@ -290,8 +288,7 @@ class StudyInfo:
         self.scene_info_csv_file = self.input_feature_data_folder + "/" + self.scene_info_filename
         self.scene_list, self.scene_name_list = self.get_scenes()
 
-        self.relation_keys = Configuration.get_relation_keys()
-        self.feature_keys = Configuration.get_feature_keys()
+        self.load_all_configs()
 
         self.data_folder = self.name + "/" + self.base_collected_data_folder_name
         self.raw_user_csv = self.data_folder + "/" + "userlist.csv"
@@ -312,6 +309,41 @@ class StudyInfo:
         self.kmeans_folder = self.cluster_data_folder + 'kmeans/'
         self.hry_folder = self.cluster_data_folder + 'hry/'
         self.polysemy_score_folder = self.base_polysemy_folder + 'scores/'
+
+    def load_all_configs(self):
+        """Summary
+
+        Loads a list of all configurations.
+
+        Args:
+            feature_path (str): path to feature values
+
+        Returns:
+            list: list of configurations.
+
+        Deleted Parameters:
+            path (None, optional): Description
+        """
+
+        with open(self.feature_output_csv, "r") as f:
+            reader = csv.reader(f)  # create a 'csv reader' from the file object
+            geom_relations = list(reader)  # create a list from the reader
+
+            self.feature_keys = []
+            self.relation_keys = []
+            for title in geom_relations[0][3:]:
+                self.feature_keys.append(title)
+                if title not in Configuration.context_features:
+                    self.relation_keys.append(title)
+
+            geom_relations.pop(0)
+            config_list = []
+
+            for row in geom_relations:
+                c1 = Configuration(row[0], row[1], row[2], self)
+                config_list.append(c1)
+
+        return config_list
 
     def config_ratio_csv(self, filetag, preposition):
         """Summary
@@ -404,16 +436,11 @@ class Configuration:
             study (TYPE): Description
         """
         self.study = study
-        self.data_path = study.feature_output_csv
         self.scene = scene
         self.figure = figure
         self.ground = ground
         # Dictionary of features and values
         self.set_of_features = {}
-        # Names of all features given by load_all
-        self.feature_keys = []
-        # Names of all features given by load_all, without above context features
-        self.relation_keys = []
 
         # Row of feature values for outputing to csv
         self.row = []
@@ -440,73 +467,6 @@ class Configuration:
                 + "]"
         )
 
-    @staticmethod
-    def load_all(study):
-        """Summary
-
-        Loads a list of all configurations.
-
-        Args:
-            feature_path (str): path to feature values
-        
-        Returns:
-            list: list of configurations.
-        
-        Deleted Parameters:
-            path (None, optional): Description
-        """
-        feature_path = study.feature_output_csv
-
-        with open(feature_path, "r") as f:
-            reader = csv.reader(f)  # create a 'csv reader' from the file object
-            geom_relations = list(reader)  # create a list from the reader
-
-            geom_relations.pop(0)
-            config_list = []
-
-            for row in geom_relations:
-                c1 = Configuration(row[0], row[1], row[2], study)
-                config_list.append(c1)
-
-        return config_list
-
-    @staticmethod
-    def get_feature_keys(study):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        
-        Args:
-            study_name (TYPE): Description
-        """
-        feature_keys = []
-
-        geom_relations = Configuration.load_all(study)
-        for title in geom_relations[0][3:]:
-            feature_keys.append(title)
-
-        return feature_keys
-
-    @staticmethod
-    def get_relation_keys(study):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        
-        Args:
-            study_name (TYPE): Description
-        """
-        feature_keys = Configuration.get_feature_keys(study)
-        relation_keys = []
-
-        for key in feature_keys:
-            if key not in Configuration.context_features:
-                relation_keys.append(key)
-
-        return relation_keys
-
     def load_from_csv(self):
         """Summary
         
@@ -514,10 +474,7 @@ class Configuration:
             path (None, optional): Description
         """
 
-        self.feature_keys = Configuration.get_feature_keys()
-        self.relation_keys = Configuration.get_relation_keys()
-
-        geom_relations = Configuration.load_all()
+        geom_relations = self.study.load_all_configs()
 
         for relation in geom_relations:
             if (
@@ -526,10 +483,10 @@ class Configuration:
                     and self.ground == relation[2]
             ):
                 # print(geom_relations.index(relation))
-                for key in self.feature_keys:
-                    if relation[self.feature_keys.index(key) + 3] != "?":
+                for key in self.study.feature_keys:
+                    if relation[self.study.feature_keys.index(key) + 3] != "?":
                         self.set_of_features[key] = float(
-                            relation[self.feature_keys.index(key) + 3]
+                            relation[self.study.feature_keys.index(key) + 3]
                         )
                     else:
                         self.set_of_features[key] = "?"
@@ -538,7 +495,7 @@ class Configuration:
                     setattr(self, key, value)
                     self.row.append(value)
                     self.full_row.append(value)
-                    if key in self.relation_keys:
+                    if key in self.study.relation_keys:
                         self.relations_row.append(value)
 
     def configuration_match(self, instance):

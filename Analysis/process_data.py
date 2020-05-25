@@ -9,7 +9,7 @@ import csv
 import itertools
 import scipy
 
-from classes import Comparison, Configuration
+from classes import Comparison
 from data_import import StudyInfo, Configuration
 
 

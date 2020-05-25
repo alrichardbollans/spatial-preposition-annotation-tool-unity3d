@@ -21,7 +21,7 @@ import csv
 import numpy as np
 
 import preprocess_features
-from classes import Instance, Configuration, CompInstance, Constraint, Comparison, Configuration, StudyInfo
+from classes import Instance, CompInstance, Constraint, Comparison, Configuration, StudyInfo
 from process_data import SemanticAnnotation, ComparativeAnnotation
 
 
