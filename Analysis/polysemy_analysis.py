@@ -39,7 +39,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
 from basic_model_testing import TestModels, PrepositionModels, Model, Features, MultipleRuns, SemanticMethods
-from data_import import Relationship, StudyInfo
+from data_import import Configuration, StudyInfo
 from classes import Constraint, Configuration
 from compile_instances import SemanticCollection, ComparativeCollection
 
@@ -596,7 +596,7 @@ class Polyseme():
         """
         # boolean checks whether the configuration could be an instance
 
-        r = Relationship(scene, figure, ground, self.study_info)
+        r = Configuration(scene, figure, ground, self.study_info)
 
         r.load_from_csv()
         if self.eq_feature_dict != None:
@@ -886,8 +886,8 @@ class PolysemeModel(Model):
         """
         # output_csv = base_polysemy_folder+ "config typicalities/"+self.name+"-typicality_test-"+preposition+".csv"
         input_csv = self.study_info.base_polysemy_folder + "config typicalities/typicality-" + preposition + ".csv"
-        geom_relations = Relationship.load_all(self.study_info.feature_output_csv)
-        geom_relations.pop(0)
+        config_list = Configuration.load_all(self.study_info)
+
         new_csv = False
 
         try:
@@ -907,12 +907,7 @@ class PolysemeModel(Model):
             # print(in_df)
 
             df_columns = in_df.columns
-            for relation in geom_relations:
-                scene = relation[0]
-                figure = relation[1]
-                ground = relation[2]
-
-                c = Configuration(scene, figure, ground)
+            for c in config_list:
 
                 # Typicality is calculated for each configuration
                 # To check whether a configuration fits a particular polyseme we need to include

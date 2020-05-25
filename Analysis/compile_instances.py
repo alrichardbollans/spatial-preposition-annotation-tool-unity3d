@@ -1,7 +1,7 @@
 """Summary
 ## Run process_data and preprocess_features before this
 
-## Input: cleaned annotation, user lists and list of feature values for configurations (see Relationship class)
+## Input: cleaned annotation, user lists and list of feature values for configurations (see Configuration class)
 ## Compiles annotation instances, adds feature values to them
 ## Output: For each task: Basic stats for each preposition.
 # For sv task writes a csv of feature values with selection information
@@ -21,7 +21,7 @@ import csv
 import numpy as np
 
 import preprocess_features
-from classes import Instance, Configuration, CompInstance, Constraint, Comparison, Relationship, StudyInfo
+from classes import Instance, Configuration, CompInstance, Constraint, Comparison, Configuration, StudyInfo
 from process_data import SemanticAnnotation, ComparativeAnnotation
 
 
@@ -168,7 +168,7 @@ class Collection:
             if i.figure != "none":
                 try:
 
-                    r = Relationship(i.scene, i.figure, i.ground, self.study_info)
+                    r = Configuration(i.scene, i.figure, i.ground, self.study_info)
                     r.load_from_csv()
 
                     for key in r.feature_keys:
@@ -273,8 +273,8 @@ class InstanceCollection(Collection):
         scene_list = self.study_info.scene_list
 
         for preposition in self.get_used_prepositions():
-            config_list = Relationship.load_all(self.study_info.feature_output_csv)
-            config_list.pop(0)
+            config_list = Configuration.load_all(self.study_info)
+
 
             ## Write file of all instances
             with open(self.study_info.config_ratio_csv(self.filetag, preposition), "w") as csvfile:
@@ -282,9 +282,8 @@ class InstanceCollection(Collection):
                 outputwriter.writerow(['Scene', 'Figure', 'Ground'] + self.feature_keys + [self.ratio_feature_name,
                                                                                            self.categorisation_feature_name])
 
-                for row in config_list:
+                for c in config_list:
 
-                    c = Configuration(row[0], row[1], row[2], self.study_info)
                     t = float(c.number_of_tests(self.annotation_list))
                     s = float(c.number_of_selections(preposition, self.instance_list))
 
@@ -311,7 +310,7 @@ class InstanceCollection(Collection):
     def write_preposition_stats_csvs(self):
         """Summary
         """
-        config_list = Relationship.load_all(self.study_info.feature_output_csv)
+        config_list = Configuration.load_all(self.study_info)
 
         # for preposition in self.get_used_prepositions():
 

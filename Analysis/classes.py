@@ -10,7 +10,7 @@ import csv
 import numpy as np
 import pandas as pd
 
-from data_import import StudyInfo, Relationship
+from data_import import StudyInfo, Configuration
 
 
 class Constraint:
@@ -78,7 +78,7 @@ class Constraint:
         self.f1 = f1
         self.f2 = f2
         # lhs and rhs are arrays of coefficients for the problem
-        # coefficients are ordered by Relationship.feature_keys/relation_keys
+        # coefficients are ordered by Configuration.feature_keys/relation_keys
         # These are configuration values for the instances being compared
         self.lhs = lhs  # np.array([lhs])
         self.rhs = rhs  # np.array([rhs])
@@ -521,183 +521,7 @@ class Configuration:
         if self.figure != "none":
             self.append_values()
 
-    def __str__(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        return (
-                "["
-                + str(self.scene)
-                + ","
-                + str(self.figure)
-                + ","
-                + str(self.ground)
-                + "]"
-        )
 
-    def append_values(self):
-        """Summary
-        
-        Deleted Parameters:
-            path (TYPE): Description
-        """
-        # print(self.figure)
-        # print(self.ground)
-        # print(self.scene)
-        r = Relationship(self.scene, self.figure, self.ground, self.study)
-        r.load_from_csv()
-
-        for key in r.feature_keys:
-
-            value = r.set_of_features[key]
-            setattr(self, key, value)
-            self.row.append(value)
-            self.full_row.append(value)
-            if key not in r.context_features:
-                self.relations_row.append(value)
-
-    def configuration_match(self, instance):
-        """Summary
-        
-        Args:
-            instance (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        if (
-                self.scene == instance.scene
-                and self.figure == instance.figure
-                and self.ground == instance.ground
-        ):
-            return True
-        else:
-            return False
-
-    def number_of_selections(self, preposition, instancelist):
-        """Summary
-        
-        Args:
-            preposition (TYPE): Description
-            instancelist (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        counter = 0
-        for i in instancelist:
-            if self.configuration_match(i) and i.preposition == preposition:
-                counter += 1
-        return counter
-
-    def number_of_selections_from_annotationlist(self, preposition, annotationlist):
-        """Summary
-        
-        Args:
-            preposition (TYPE): Description
-            annotationlist (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        counter = 0
-        for an in annotationlist:
-            if self.annotation_row_match(an) and preposition in an.prepositions:
-                counter += 1
-        return counter
-
-    def number_of_tests(self, annotationlist):
-        """Summary
-        
-        Args:
-            annotationlist (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        # Need to use annotation list here as instances are separated by preposition
-        counter = 0
-        for an in annotationlist:
-
-            if self.annotation_row_match(an):
-                counter += 1
-        # print(counter)
-        return counter
-
-    def ratio_semantic_selections(self, preposition, annotationlist, instancelist):
-        """Summary
-        
-        Args:
-            preposition (TYPE): Description
-            annotationlist (TYPE): Description
-            instancelist (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        t = float(self.number_of_tests(annotationlist))
-        s = float(self.number_of_selections(preposition, instancelist))
-
-        if t != 0:
-            return s / t
-        else:
-            return 0
-
-    def annotation_row_match(self, row):
-        """Summary
-        
-        Args:
-            row (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        # If configuration matches with annotation in raw data list
-        if self.scene == row[3] and self.figure == row[5] and self.ground == row[6]:
-            return True
-        else:
-            return False
-
-    def config_row_match(self, value):
-        """Summary
-        
-        Args:
-            value (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        if (
-                self.scene == value[0]
-                and self.figure == value[1]
-                and self.ground == value[2]
-        ):
-            return True
-        else:
-            return False
-
-    # def create_row(self):
-    #   for value in self.value_names:
-    #       try:
-    #           self.row.append(getattr(self,value))
-    #       except Exception as e:
-    #           self.row.append('?')
-    #           print('Value not added')
-    #           print('Figure: ' + self.figure)
-    #           print('Ground: ' + self.ground)
-
-    #           print('Scene: ' + self.scene)
-    #           print('Value: ' + value)
-
-    #           print(e)
-    def print_info(self):
-        """Summary
-        """
-        print(("Scene = " + self.scene))
-        print(("Figure = " + self.figure))
-        print(("Ground = " + self.ground))
 
 
 class Instance(Configuration):

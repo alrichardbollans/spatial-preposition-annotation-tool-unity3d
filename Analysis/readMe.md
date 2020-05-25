@@ -2,7 +2,7 @@
 This file provides explanantion of folders and files in this folder
 
 # Files
-## process_data.py
+## data_import.py
 Script to run for newly collected annotations.
 Input: annotation and user info csv from data collection
 Output: Clean annotation lists. Basic stats. User agreement calculations
@@ -23,7 +23,7 @@ Compiles annotation instances, adds feature values to them
 Output: For each task: Basic stats for each preposition. For sv task writes a csv of feature values with selection information
 Also has functions to generate constraints from comparative data
 
-## feature_analysis.py
+## basic_model_testing.py
 First run compile_instances.py
 Input: Configuration selection info from compile_instances. Constraints from Comp task
 Looks at how features relate to categorisation and likelihood of selection

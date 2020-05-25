@@ -42,6 +42,8 @@ class Features:
                           "location_control_-x", "location_control_-z", "location_control_x",
                           "location_control_z", "figure_volume", "ground_volume",
                           "horizontal_projection_overlap_proportion"]
+    # Number of columns at start of each row which do not contain numeric values.
+    number_of_non_value_columns = 3
 
     def __init__(self, study):
         """Summary
@@ -72,8 +74,8 @@ class Features:
         self.dataset.to_csv(self.human_readable_path, index=False)
         # Calculate means and standard deviations
         # Can be used to convert standardised values back to real values
-        self.means = self.dataset.iloc[:, 3:].mean()
-        self.stds = self.dataset.iloc[:, 3:].std()
+        self.means = self.dataset.iloc[:, self.number_of_non_value_columns:].mean()
+        self.stds = self.dataset.iloc[:, self.number_of_non_value_columns:].std()
 
     def standardise_values(self):
         """Summary
@@ -83,8 +85,10 @@ class Features:
         """
         new_dataframe = self.dataset.copy()
 
-        new_dataframe.iloc[:, 3:] = new_dataframe.iloc[:, 3:] - self.means
-        new_dataframe.iloc[:, 3:] = new_dataframe.iloc[:, 3:] / (self.stds)
+        new_dataframe.iloc[:, self.number_of_non_value_columns:] = new_dataframe.iloc[:,
+                                                                   self.number_of_non_value_columns:] - self.means
+        new_dataframe.iloc[:, self.number_of_non_value_columns:] = new_dataframe.iloc[:,
+                                                                   self.number_of_non_value_columns:] / (self.stds)
 
         return new_dataframe
 

@@ -6,6 +6,8 @@ import os
 import csv
 import itertools
 
+from classes import Configuration
+
 
 def get_git_project_directory():
     """
@@ -133,6 +135,7 @@ class MyScene:
         else:
             return True
             # print(self.name)
+
 
 class StudyInfo:
     """Summary
@@ -287,8 +290,8 @@ class StudyInfo:
         self.scene_info_csv_file = self.input_feature_data_folder + "/" + self.scene_info_filename
         self.scene_list, self.scene_name_list = self.get_scenes()
 
-        self.relation_keys = Relationship.get_relation_keys(self.feature_output_csv)
-        self.feature_keys = Relationship.get_feature_keys(self.feature_output_csv)
+        self.relation_keys = Configuration.get_relation_keys()
+        self.feature_keys = Configuration.get_feature_keys()
 
         self.data_folder = self.name + "/" + self.base_collected_data_folder_name
         self.raw_user_csv = self.data_folder + "/" + "userlist.csv"
@@ -362,7 +365,7 @@ class StudyInfo:
     #     return scene_list
 
 
-class Relationship:
+class Configuration:
     """class which is used to read feature values
     
     Attributes:
@@ -412,29 +415,63 @@ class Relationship:
         # Names of all features given by load_all, without above context features
         self.relation_keys = []
 
-    @staticmethod
-    def load_all(feature_path):
+        # Row of feature values for outputing to csv
+        self.row = []
+        # Row beginning with names
+        self.full_row = [self.scene, self.figure, self.ground]
+        # Row without context features
+        self.relations_row = []
+        if self.figure != "none":
+            self.load_from_csv()
+
+    def __str__(self):
         """Summary
-        
-        Args:
-            study_name (TYPE): Description
-        
+
         Returns:
             TYPE: Description
+        """
+        return (
+                "["
+                + str(self.scene)
+                + ","
+                + str(self.figure)
+                + ","
+                + str(self.ground)
+                + "]"
+        )
+
+    @staticmethod
+    def load_all(study):
+        """Summary
+
+        Loads a list of all configurations.
+
+        Args:
+            feature_path (str): path to feature values
+        
+        Returns:
+            list: list of configurations.
         
         Deleted Parameters:
             path (None, optional): Description
         """
-        # Loads a list of all configurations and feature values, with some features removed
+        feature_path = study.feature_output_csv
 
         with open(feature_path, "r") as f:
             reader = csv.reader(f)  # create a 'csv reader' from the file object
             geom_relations = list(reader)  # create a list from the reader
 
-        return geom_relations
+            geom_relations.pop(0)
+            config_list = []
+
+            for row in geom_relations:
+                c1 = Configuration(row[0], row[1], row[2], study)
+                config_list.append(c1)
+
+        return config_list
 
     @staticmethod
-    def get_feature_keys(feature_path):
+    def get_feature_keys(study):
         """Summary
         
         Returns:
@@ -445,14 +482,14 @@ class Relationship:
         """
         feature_keys = []
 
-        geom_relations = Relationship.load_all(feature_path)
+        geom_relations = Configuration.load_all(study)
         for title in geom_relations[0][3:]:
             feature_keys.append(title)
 
         return feature_keys
 
     @staticmethod
-    def get_relation_keys(feature_path):
+    def get_relation_keys(study):
         """Summary
         
         Returns:
@@ -461,12 +498,12 @@ class Relationship:
         Args:
             study_name (TYPE): Description
         """
+        feature_keys = Configuration.get_feature_keys(study)
         relation_keys = []
 
-        geom_relations = Relationship.load_all(feature_path)
-        for title in geom_relations[0][3:]:
-            if title not in Relationship.context_features:
-                relation_keys.append(title)
+        for key in feature_keys:
+            if key not in Configuration.context_features:
+                relation_keys.append(key)
 
         return relation_keys
 
@@ -477,10 +514,11 @@ class Relationship:
             path (None, optional): Description
         """
 
-        geom_relations = Relationship.load_all(self.data_path)
+        self.feature_keys = Configuration.get_feature_keys()
+        self.relation_keys = Configuration.get_relation_keys()
 
-        for title in geom_relations[0][3:]:
-            self.feature_keys.append(title)
+        geom_relations = Configuration.load_all()
+
         for relation in geom_relations:
             if (
                     self.scene == relation[0]
@@ -488,71 +526,144 @@ class Relationship:
                     and self.ground == relation[2]
             ):
                 # print(geom_relations.index(relation))
-                for r in self.feature_keys:
-                    if relation[self.feature_keys.index(r) + 3] != "?":
-                        self.set_of_features[r] = float(
-                            relation[self.feature_keys.index(r) + 3]
+                for key in self.feature_keys:
+                    if relation[self.feature_keys.index(key) + 3] != "?":
+                        self.set_of_features[key] = float(
+                            relation[self.feature_keys.index(key) + 3]
                         )
                     else:
-                        self.set_of_features[r] = "?"
+                        self.set_of_features[key] = "?"
 
-    # def save_to_csv(self):
-    #     """Summary
-    #     """
-    #     row = [self.scene, self.figure, self.ground]
-    #
-    #     for r in feature_keys:
-    #         if r in self.set_of_features:
-    #             row.append(self.set_of_features[r])
-    #         else:
-    #             row.append("?")
-    #             self.set_of_features[r] = "?"
-    #
-    #     with open(self.data_path) as incsvfile:
-    #         read = csv.reader(incsvfile)  # .readlines())
-    #         reader = list(read)
-    #
-    #         if any(
-    #                 self.scene == line[0]
-    #                 and self.figure == line[1]
-    #                 and self.ground == line[2]
-    #                 for line in reader
-    #         ):
-    #             try:
-    #                 with open(Relationship.output_path, "w") as csvfile:
-    #                     outputwriter = csv.writer(csvfile)
-    #                     titles = ["scene", "figure", "ground"] + feature_keys
-    #                     outputwriter.writerow(titles)
-    #                     for line in reader[:]:
-    #                         if "scene" not in line:
-    #                             if (
-    #                                     self.scene == line[0]
-    #                                     and self.figure == line[1]
-    #                                     and self.ground == line[2]
-    #                             ):
-    #                                 # Must ofset by 3 here due to each row beginning with scene and object names
-    #                                 for x in range(0, len(feature_keys)):
-    #
-    #                                     if self.set_of_features[feature_keys[x]] != "?":
-    #                                         if len(line) > x + 3:
-    #                                             line[x + 3] = self.set_of_features[
-    #                                                 feature_keys[x]
-    #                                             ]
-    #                                         else:
-    #                                             line.append(
-    #                                                 self.set_of_features[
-    #                                                     feature_keys[x]
-    #                                                 ]
-    #                                             )
-    #
-    #                             outputwriter.writerow(line)
-    #             except Exception as e:
-    #
-    #                 print("Writing to CSV Failed")
-    #                 print(("Figure: " + self.figure))
-    #                 print(("Ground:" + self.ground))
-    #                 print(e)
-    #         else:
-    #             with open(Relationship.output_path, "a") as csvfile:
-    #                 outputwriter = csv.writer(csvfile)
-    #                 outputwriter.writerow(row)
+                    value = self.set_of_features[key]
+                    setattr(self, key, value)
+                    self.row.append(value)
+                    self.full_row.append(value)
+                    if key in self.relation_keys:
+                        self.relations_row.append(value)
+
+    def configuration_match(self, instance):
+        """Summary
+
+        Args:
+            instance (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+        if (
+                self.scene == instance.scene
+                and self.figure == instance.figure
+                and self.ground == instance.ground
+        ):
+            return True
+        else:
+            return False
+
+    def number_of_selections(self, preposition, instancelist):
+        """Summary
+
+        Args:
+            preposition (TYPE): Description
+            instancelist (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+        counter = 0
+        for i in instancelist:
+            if self.configuration_match(i) and i.preposition == preposition:
+                counter += 1
+        return counter
+
+    def number_of_selections_from_annotationlist(self, preposition, annotationlist):
+        """Summary
+
+        Args:
+            preposition (TYPE): Description
+            annotationlist (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+        counter = 0
+        for an in annotationlist:
+            if self.annotation_row_match(an) and preposition in an.prepositions:
+                counter += 1
+        return counter
+
+    def number_of_tests(self, annotationlist):
+        """Summary
+
+        Args:
+            annotationlist (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+        # Need to use annotation list here as instances are separated by preposition
+        counter = 0
+        for an in annotationlist:
+
+            if self.annotation_row_match(an):
+                counter += 1
+        # print(counter)
+        return counter
+
+    def ratio_semantic_selections(self, preposition, annotationlist, instancelist):
+        """Summary
+
+        Args:
+            preposition (TYPE): Description
+            annotationlist (TYPE): Description
+            instancelist (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+        t = float(self.number_of_tests(annotationlist))
+        s = float(self.number_of_selections(preposition, instancelist))
+
+        if t != 0:
+            return s / t
+        else:
+            return 0
+
+    def annotation_row_match(self, row):
+        """Summary
+
+        Args:
+            row (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+        # If configuration matches with annotation in raw data list
+        if self.scene == row[3] and self.figure == row[5] and self.ground == row[6]:
+            return True
+        else:
+            return False
+
+    def config_row_match(self, value):
+        """Summary
+
+        Args:
+            value (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+        if (
+                self.scene == value[0]
+                and self.figure == value[1]
+                and self.ground == value[2]
+        ):
+            return True
+        else:
+            return False
+
+    def print_info(self):
+        """Summary
+        """
+        print(("Scene = " + self.scene))
+        print(("Figure = " + self.figure))
+        print(("Ground = " + self.ground))

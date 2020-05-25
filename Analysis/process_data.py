@@ -9,8 +9,8 @@ import csv
 import itertools
 import scipy
 
-from classes import Comparison
-from data_import import StudyInfo
+from classes import Comparison, Configuration
+from data_import import StudyInfo, Configuration
 
 
 class User:
@@ -1130,6 +1130,8 @@ class ComparativeData(Data):
 
 class SemanticData(Data):
     """Summary
+
+    Collection of category annotations.
     
     Attributes:
         agreements_csv_name (str): Description
@@ -1216,15 +1218,12 @@ class SemanticData(Data):
         """Calculates whether c1 is significantly better category member than c2 and vice versa.
         
         Parameters:
-            preposition (TYPE): Description
-            c1 (TYPE): Description
-            c2 (TYPE): Description
             preposition -- preposition
             c1 --  configuration to compare
             c2 -- configuration to compare
         
-        Returns:
-            TYPE: Description
+        Returns: list: Information about how many times c1,c2 are labelled and the p_value for how likely the result
+        is assuming a null hypothesis that they are equally good category members
         """
 
         c1_times_labelled = float(
@@ -1263,9 +1262,9 @@ class SemanticData(Data):
     def output_categorisation_check(self):
         """Summary
         """
-        # Change how relations.csv is found and loaded so we can look at multiple studies.
-        config_list = Relationship.load_all(self.study_info.feature_output_csv)
-        for preposition in preposition_list:
+
+        config_list = Configuration.load_all(self.study_info)
+        for preposition in StudyInfo.preposition_list:
             with open(
                     self.study_info.stats_folder
                     + "/"
@@ -1290,10 +1289,10 @@ class SemanticData(Data):
                         "p_value",
                     ]
                 )
-                for row in config_list:
-                    c1 = Configuration(row[0], row[1], row[2])
-                    for row2 in config_list:
-                        c2 = Configuration(row2[0], row2[1], row2[2])
+                for c1 in config_list:
+
+                    for c2 in config_list:
+
                         stat = self.check_categorisation_difference(preposition, c1, c2)
                         to_write = (
                                 [c1.scene, c1.figure, c1.ground]

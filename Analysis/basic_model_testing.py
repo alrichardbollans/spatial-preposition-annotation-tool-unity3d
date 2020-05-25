@@ -31,7 +31,7 @@ from scipy.special import comb
 # Local module imports
 from preprocess_features import Features
 from compile_instances import InstanceCollection, SemanticCollection, ComparativeCollection
-from data_import import Relationship, StudyInfo
+from data_import import Configuration, StudyInfo
 from classes import Constraint
 
 # Useful global variables
@@ -230,7 +230,7 @@ class PrepositionModels():
         # self.features_keys = self.allFeatures.columns
         # self.relation_keys = []
         # for f in self.features_keys:
-        #     if f not in Relationship.context_features:
+        #     if f not in Configuration.context_features:
         #         self.relation_keys.append(f)
 
         # Remove rows from above where not a preposition instance
@@ -310,7 +310,7 @@ class PrepositionModels():
             TYPE: Description
         """
         # Remove features which are for identifying polysemes
-        new_d = d.drop(Relationship.context_features, axis=1)
+        new_d = d.drop(Configuration.context_features, axis=1)
         if self.feature_to_remove is not None:
             # Remove features to remove
             new_d = new_d.drop([self.feature_to_remove], axis=1)
@@ -794,8 +794,8 @@ class Model:
             # Load exemplars and non instancesfor preposition and remove context features
             p = PrepositionModels(self.study_info, preposition, self.train_scenes)
 
-            exemplars = p.typical_features.drop(Relationship.context_features, axis=1)
-            none_instances = p.neg_features.drop(Relationship.context_features, axis=1)
+            exemplars = p.typical_features.drop(Configuration.context_features, axis=1)
+            none_instances = p.neg_features.drop(Configuration.context_features, axis=1)
 
             # Find average semantic similarity to points in exemplar model
             counter = 0
