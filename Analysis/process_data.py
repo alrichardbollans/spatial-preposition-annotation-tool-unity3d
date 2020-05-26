@@ -8,6 +8,8 @@ Script to run for newly collected data files which:
 
 import csv
 import itertools
+import math
+from scipy.special import comb
 import scipy.stats as stats
 
 from classes import Comparison
@@ -456,7 +458,10 @@ class TypicalityAnnotation(Annotation):
     """Summary
     
     Attributes:
+        c1_config (TYPE): Description
+        c2_config (TYPE): Description
         list_headings (TYPE): Description
+        selection_config (TYPE): Description
     """
 
     list_headings = [
@@ -481,6 +486,17 @@ class TypicalityAnnotation(Annotation):
             annotation (TYPE): Description
         """
         Annotation.__init__(self, userdata, annotation)
+        self.c1_config = self.convert_string_to_config(self.c1)
+        self.c2_config = self.convert_string_to_config(self.c2)
+        self.selection_config = self.convert_string_to_config(self.selection)
+
+    @staticmethod
+    def convert_string_to_config(c_string):
+        '''Creates Configuration object from given string
+        
+        Args:
+            c_string (TYPE): Description
+        '''
 
     def print_list(self):
         """Summary
@@ -1223,19 +1239,18 @@ class SemanticData(Data):
         This is the p_value supposing c1 and c2 are equally likely to be labelled.
         Using a one tailed test, the p_value is the probability of getting an observation at least as extreme,
         in this case more extreme means providing stronger indication that c2 is a better category member than c1
-
+        
         Note some issues with this test code https://github.com/scipy/scipy/issues/4130
-
+        
         Parameters:
             preposition (string): Description
             c1 (Configuration): Description
             c2 (Configuration): Description
-
-
+        
+        
         Returns:
-            list: Information about how many times c1,c2 are labelled and the p_value for how likely the result
-        is assuming a null hypothesis that they are equally good category members
-
+            is assuming a null hypothesis that they are equally good category members
+        
         """
 
         c1_times_labelled = float(
@@ -1255,9 +1270,6 @@ class SemanticData(Data):
         c2_times_not_labelled = (
                 float(c2.number_of_tests(self.clean_data_list)) - c2_times_labelled
         )
-
-
-
 
         oddsratio, p_value_one_tail_less = stats.fisher_exact([
             [c1_times_labelled, c1_times_not_labelled],
@@ -1419,10 +1431,57 @@ class TypicalityData(Data):
         """
         Data.__init__(self, userdata)
 
-    # This is a very basic list of information about the task
-    # compile_instances gives a better overview
+    def get_number_times_c1_c2_compared_selected(self, preposition, c1, c2):
+        """Summary
+        Finds number of times c1, c2 are compared using the given preposition.
+        Also finds frequency of selections.
+        Args:
+            preposition (TYPE): Description
+            c1 (TYPE): Description
+            c2 (TYPE): Description
+        
+        Returns:
+            TYPE: Description
+        """
+        number_comparisons = 0
+        c1_selected = 0
+        c2_selected = 0
+
+        for typ_annot in self.clean_data_list:
+            if typ_annot.preposition == preposition:
+                if (typ_annot.c1_config.configuration_match(c1) and typ_annot.c2_config.configuration_match(c2)) or (
+                        typ_annot.c1_config.configuration_match(c2) and typ_annot.c2_config.configuration_match(c1)):
+                    number_comparisons += 1
+                    if typ_annot.selection_config.configuration_match(c1):
+                        c1_selected += 1
+                    if typ_annot.selection_config.configuration_match(c2):
+                        c2_selected += 1
+
+        return number_comparisons, c1_selected, c2_selected
+
+    def calculate_pvalue_c1_better_than_c2(self, preposition, c1, c2):
+        """Summary
+        Calculates the one-tailed p_value when c1 is better than c2.
+        Args:
+            preposition (TYPE): Description
+            c1 (TYPE): Description
+            c2 (TYPE): Description
+        """
+        number_comparisons, c1_selected_over_c2, c2_selected_over_c1 = self.get_number_times_c1_c2_compared_selected(
+            preposition, c1, c2)
+        p_value = 0
+        i = c1_selected_over_c2
+        while i <= number_comparisons:
+            summand = comb(number_comparisons, i) * math.pow(0.5, number_comparisons)
+            p_value += summand
+            i += 1
+
+        return p_value
+
     def output_statistics(self):
         """Summary
+            # This is a very basic list of information about the task
+            # compile_instances gives a better overview
         """
         with open(
                 self.study_info.stats_folder + "/" + self.stats_csv_name, "w"
@@ -1764,6 +1823,8 @@ class Agreements(Data):
 
 
 def process_2019_study():
+    """Summary
+    """
     ### 2019 study
     study_info = StudyInfo("2019 study")
     # Begin by loading users
@@ -1800,6 +1861,8 @@ def process_2019_study():
 
 
 def process_test_study():
+    """Summary
+    """
     ### 2019 study
     study_info = StudyInfo("test study")
     # Begin by loading users
