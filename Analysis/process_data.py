@@ -1285,7 +1285,7 @@ class SemanticData(Data):
             p_value_one_tail_less
         ]
 
-    def output_categorisation_check(self):
+    def output_categorisation_p_values(self):
         """Summary
         """
 
@@ -1419,6 +1419,7 @@ class TypicalityData(Data):
     clean_csv_name = StudyInfo.typ_annotations_name
     stats_csv_name = "typicality stats.csv"
     agreements_csv_name = "typicality agreements.csv"
+    p_value_csv_name = "typicality pvalues.csv"
 
     def __init__(self, userdata):
         """Summary
@@ -1476,7 +1477,48 @@ class TypicalityData(Data):
             p_value += summand
             i += 1
 
-        return p_value
+        return number_comparisons, c1_selected_over_c2, c2_selected_over_c1, p_value
+    def output_typicality_p_values(self):
+        """Summary
+        """
+
+        config_list = self.study_info.config_list
+        for preposition in StudyInfo.preposition_list:
+            print("Comparing categorisation for:" + str(preposition))
+            with open(
+                    self.study_info.stats_folder
+                    + "/"
+                    + preposition
+                    + "/"
+                    + self.p_value_csv_name,
+                    "w",
+            ) as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(
+                    [
+                        "Scene1",
+                        "Figure1",
+                        "Ground1",
+                        "Scene2",
+                        "Figure2",
+                        "Ground2",
+                        "number of comparisons",
+                        "c1 selected",
+                        "c2 selected",
+                        "p_value_one_tail",
+                    ]
+                )
+                for c1 in config_list:
+
+                    for c2 in config_list:
+                        stat = self.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
+
+                        to_write = (
+                                [c1.scene, c1.figure, c1.ground]
+                                + [c2.scene, c2.figure, c2.ground]
+                                + stat
+                        )
+                        writer.writerow(to_write)
 
     def output_statistics(self):
         """Summary
