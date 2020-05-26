@@ -8,7 +8,7 @@ Script to run for newly collected data files which:
 
 import csv
 import itertools
-import scipy
+import scipy.stats as stats
 
 from classes import Comparison
 from data_import import StudyInfo, Configuration
@@ -1032,7 +1032,7 @@ class ComparativeData(Data):
         task (TYPE): Description
     
     Deleted Attributes:
-        annotation_list (TYPE): Description
+        raw_annotation_list (TYPE): Description
         study_info (TYPE): Description
         clean_data_list (TYPE): Description
         data_list (TYPE): Description
@@ -1144,7 +1144,7 @@ class SemanticData(Data):
         task (TYPE): Description
     
     Deleted Attributes:
-        annotation_list (TYPE): Description
+        raw_annotation_list (TYPE): Description
         study_info (TYPE): Description
         clean_data_list (TYPE): Description
         data_list (TYPE): Description
@@ -1218,19 +1218,24 @@ class SemanticData(Data):
         return [positive_selections, negative_selections]
 
     def check_categorisation_difference(self, preposition, c1, c2):
-        """Calculates whether c1 is significantly better category member than c2 and vice versa.
-        
+        """Calculates whether c2 is significantly better category member than c1.
+        p_value is calculated using one-tailed fishers exact test
+        This is the p_value supposing c1 and c2 are equally likely to be labelled.
+        Using a one tailed test, the p_value is the probability of getting an observation at least as extreme,
+        in this case more extreme means providing stronger indication that c2 is a better category member than c1
+
+        Note some issues with this test code https://github.com/scipy/scipy/issues/4130
+
         Parameters:
-            preposition (TYPE): Description
-            c1 (TYPE): Description
-            c2 (TYPE): Description
-            is assuming a null hypothesis that they are equally good category members
-        
-        Deleted Parameters:
-            Returns: list: Information about how many times c1,c2 are labelled and the p_value for how likely the result
-        
+            preposition (string): Description
+            c1 (Configuration): Description
+            c2 (Configuration): Description
+
+
         Returns:
-            TYPE: Description
+            list: Information about how many times c1,c2 are labelled and the p_value for how likely the result
+        is assuming a null hypothesis that they are equally good category members
+
         """
 
         c1_times_labelled = float(
@@ -1251,19 +1256,21 @@ class SemanticData(Data):
                 float(c2.number_of_tests(self.clean_data_list)) - c2_times_labelled
         )
 
-        # I think this needs flipping. Also set alternative parameter
-        # Also need to check if c1>c2 or c2>c1 seperately
-        oddsratio, p_value = scipy.stats.fisher_exact(
-            [c1_times_labelled, c2_times_labelled],
-            [c1_times_not_labelled, c2_times_not_labelled],
+
+
+
+        oddsratio, p_value_one_tail_less = stats.fisher_exact([
+            [c1_times_labelled, c1_times_not_labelled],
+            [c2_times_labelled, c2_times_not_labelled]], alternative='less'
         )
+        #
 
         return [
             c1_times_labelled,
             c1_times_not_labelled,
             c2_times_labelled,
             c2_times_not_labelled,
-            p_value,
+            p_value_one_tail_less
         ]
 
     def output_categorisation_check(self):
@@ -1272,6 +1279,7 @@ class SemanticData(Data):
 
         config_list = self.study_info.config_list
         for preposition in StudyInfo.preposition_list:
+            print("Comparing categorisation for:" + str(preposition))
             with open(
                     self.study_info.stats_folder
                     + "/"
@@ -1293,13 +1301,14 @@ class SemanticData(Data):
                         "c1_times_not_labelled",
                         "c2_times_labelled",
                         "c2_times_not_labelled",
-                        "p_value",
+                        "p_value_one_tail",
                     ]
                 )
                 for c1 in config_list:
 
                     for c2 in config_list:
                         stat = self.check_categorisation_difference(preposition, c1, c2)
+
                         to_write = (
                                 [c1.scene, c1.figure, c1.ground]
                                 + [c2.scene, c2.figure, c2.ground]
@@ -1348,7 +1357,7 @@ class ModSemanticData(SemanticData):
         task (TYPE): Description
     
     Deleted Attributes:
-        annotation_list (TYPE): Description
+        raw_annotation_list (TYPE): Description
         study_info (TYPE): Description
         clean_data_list (TYPE): Description
         data_list (TYPE): Description
@@ -1386,7 +1395,7 @@ class TypicalityData(Data):
         task (TYPE): Description
     
     Deleted Attributes:
-        annotation_list (TYPE): Description
+        raw_annotation_list (TYPE): Description
         study_info (TYPE): Description
         clean_data_list (TYPE): Description
         data_list (TYPE): Description
@@ -1754,25 +1763,20 @@ class Agreements(Data):
         self.cohens_kappa = cohens_kappa
 
 
-if __name__ == "__main__":
+def process_2019_study():
+    ### 2019 study
     study_info = StudyInfo("2019 study")
     # Begin by loading users
     userdata2019 = UserData(study_info)
-    # userdata2020 = UserData("2020 name")
+
     # Output user list
     userdata2019.output_clean_user_list()
-    # userdata2020.output_clean_user_list()
 
     # Load all csv
     alldata_2019 = Data(userdata2019)
-    # alldata_2020 = Data(userdata2020, "2020 name")
 
     alldata_2019.output_clean_annotation_list()
-    # d.print_scenes_need_doing()
-    # d.print_non_users()
-    # d.output_clean_annotation_list()
 
-    #
     # Load and process semantic annotations
     semantic_data = SemanticData(userdata2019)
 
@@ -1794,6 +1798,13 @@ if __name__ == "__main__":
 
     comparative_data.write_user_agreements()
 
+
+def process_test_study():
+    ### 2019 study
+    study_info = StudyInfo("test study")
+    # Begin by loading users
+    userdata = UserData(study_info)
+
     ## typicality data
     # typ_data = TypicalityData(userdata2020)
 
@@ -1806,11 +1817,18 @@ if __name__ == "__main__":
     # typ_data.write_user_agreements()
 
     # # Load and process semantic annotations
-    # svmod_data = ModSemanticData(userdata2020)
+    svmod_data = ModSemanticData(userdata)
 
-    # # Output semantic csv
-    # svmod_data.output_clean_annotation_list()
+    ## Outputs
+    svmod_data.output_categorisation_check()
 
-    # svmod_data.output_statistics()
+    svmod_data.output_clean_annotation_list()
 
-    # svmod_data.write_user_agreements()
+    svmod_data.output_statistics()
+
+    svmod_data.write_user_agreements()
+
+
+if __name__ == "__main__":
+    # process_2019_study()
+    process_test_study()

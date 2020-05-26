@@ -25,6 +25,20 @@ from classes import Instance, CompInstance, Constraint, Comparison, Configuratio
 from process_data import SemanticAnnotation, ComparativeAnnotation
 
 
+class SimpleConfiguration:
+    """Summary
+    Simple Configuration class which only has scene, figure and ground names
+
+    Attributes:
+
+    """
+
+    def __init__(self, scene, figure, ground):
+        self.scene = scene
+        self.ground = ground
+        self.figure = figure
+
+
 class Preposition:
     """Summary
     
@@ -127,7 +141,7 @@ class Collection:
     Does not require annotations/instances
     
     Attributes:
-        annotation_list (list): Description
+        raw_annotation_list (list): Description
         data_folder_name (TYPE): Description
         feature_data_csv (TYPE): Description
         feature_keys (TYPE): Description
@@ -155,9 +169,6 @@ class Collection:
         self.data_folder_name = self.study_info.data_folder
         self.stats_folder = self.study_info.stats_folder
 
-        ## Annotation list is raw list of annotations from csv
-        ## Useful for counting number of tests of particular configuration
-        self.annotation_list = []
         ## Instance list is processed annotation list into list of separate instance objects
         self.instance_list = []
 
@@ -196,31 +207,6 @@ class Collection:
         for i in self.instance_list:
             set1.append(getattr(i, relation))
         return set1
-
-    def get_mean_relation_value(self, relation):
-        """Summary
-        Gets mean value of a particular feature
-        
-        Args:
-            relation (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        x = np.mean(self.get_relation_values(relation))
-        return x
-
-    def get_std_relation_value(self, relation):
-        """Summary
-        
-        Args:
-            relation (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        x = np.std(self.get_relation_values(relation))
-        return x
 
 
 class InstanceCollection(Collection):
@@ -264,49 +250,6 @@ class InstanceCollection(Collection):
                 out.append(i.preposition)
         return out
 
-    ## Write csvs for each preposition giving feature values and data on number of selections
-    ## Also tags as test/training instance
-    def write_config_ratios(self):
-        """Summary
-        """
-        scene_list = self.study_info.scene_list
-
-        config_list = self.study_info.config_list
-
-        for preposition in self.get_used_prepositions():
-
-            ## Write file of all instances
-            with open(self.study_info.config_ratio_csv(self.filetag, preposition), "w") as csvfile:
-                outputwriter = csv.writer(csvfile)
-                outputwriter.writerow(['Scene', 'Figure', 'Ground'] + self.feature_keys + [self.ratio_feature_name,
-                                                                                           self.categorisation_feature_name])
-
-                for c in config_list:
-                    row = c.full_row.copy()
-
-                    t = float(c.number_of_tests(self.annotation_list))
-                    s = float(c.number_of_selections(preposition, self.instance_list))
-
-                    ## If at least one test has been done for this configuration
-                    if t != 0:
-
-                        ratio = s / t
-
-                        r = str(ratio)
-
-                        row.append(r)
-
-                        if (ratio == 0):
-                            row.append(str(0))
-                        else:
-                            row.append(str(1))
-
-                        # if c.scene in train_scenes:
-                        # 	row.append("train")
-                        # elif c.scene in test_scenes:
-                        # 	row.append("test")
-                        outputwriter.writerow(row)
-
     #### Write General Stats for each preposition
     def write_preposition_stats_csvs(self):
         """Summary
@@ -323,7 +266,7 @@ class InstanceCollection(Collection):
         # 		for i in self.instance_list:
         # 			if i.preposition == preposition:
         # 				for row in config_list:
-        # 					if i.config_row_match(row):
+        # 					if i.configuration_match(row):
         # 						outputwriter1.writerow(row)
 
         ### Write file summarizing stats
@@ -377,36 +320,86 @@ class SemanticCollection(InstanceCollection):
             study (TYPE): Description
         """
         InstanceCollection.__init__(self, study)
+        # List of configs which have been tested. Includes repetitions for counting.
+        self.config_test_list = []
         self.append_annotations()
 
     def append_annotations(self):
         """Summary
-        """
+
         ### Reads annotations from clean files
         ### Must be updated if process_data prints csvs differently
+        """
+
         filename = self.study_info.data_folder + "/" + self.study_info.sem_annotations_name
 
         with open(filename, "r") as f:
             reader = csv.reader(f)  # create a 'csv reader' from the file object
             annotationlist = list(reader)  # create a list from the reader
 
-        annotationlist.pop(0)  # removes first line of data list which is headings
+            annotationlist.pop(0)  # removes first line of data list which is headings
 
-        for clean_annotation in annotationlist:
-            self.annotation_list.append(clean_annotation)
+            for clean_annotation in annotationlist:
 
-            an_id, clean_user_id, task, scene, prepositions, figure, ground, time = SemanticAnnotation.retrieve_from_data_row(
-                clean_annotation)
+                an_id, clean_user_id, task, scene, prepositions, figure, ground, time = SemanticAnnotation.retrieve_from_data_row(
+                    clean_annotation)
 
-            given_prepositions = prepositions.split(";")
+                simple_config = SimpleConfiguration(scene, figure, ground)
+                self.config_test_list.append(simple_config)
 
-            for p in given_prepositions:
-                if p != "":
-                    i = Instance(an_id, clean_user_id, task, scene, p, figure, ground, self.study_info)
+                given_prepositions = prepositions.split(";")
 
-                    self.instance_list.append(i)
+                for p in given_prepositions:
+                    if p != "":
+                        i = Instance(an_id, clean_user_id, task, scene, p, figure, ground, self.study_info)
+
+                        self.instance_list.append(i)
 
         self.append_values()
+
+
+    def write_config_ratios(self):
+        """Summary
+
+        ## Write csvs for each preposition giving feature values and data on number of selections
+        """
+        scene_list = self.study_info.scene_list
+
+        config_list = self.study_info.config_list
+
+        for preposition in self.get_used_prepositions():
+
+            ## Write file of all instances
+            with open(self.study_info.config_ratio_csv(self.filetag, preposition), "w") as csvfile:
+                outputwriter = csv.writer(csvfile)
+                outputwriter.writerow(['Scene', 'Figure', 'Ground'] + self.feature_keys + [self.ratio_feature_name,
+                                                                                           self.categorisation_feature_name])
+
+                for c in config_list:
+                    row = c.full_row.copy()
+
+                    t = float(c.number_of_tests(self.config_test_list))
+                    s = float(c.number_of_selections_from_instancelist(preposition, self.instance_list))
+
+                    ## If at least one test has been done for this configuration
+                    if t != 0:
+
+                        ratio = s / t
+
+                        r = str(ratio)
+
+                        row.append(r)
+
+                        if (ratio == 0):
+                            row.append(str(0))
+                        else:
+                            row.append(str(1))
+
+                        # if c.scene in train_scenes:
+                        # 	row.append("train")
+                        # elif c.scene in test_scenes:
+                        # 	row.append("test")
+                        outputwriter.writerow(row)
 
 
 class ComparativeCollection(InstanceCollection):
@@ -444,7 +437,7 @@ class ComparativeCollection(InstanceCollection):
         annotationlist.pop(0)  # removes first line of data list which is headings
 
         for clean_annotation in annotationlist:
-            self.annotation_list.append(clean_annotation)
+
 
             an_id, clean_user_id, task, scene, preposition, figure, ground, time, possible_figures = ComparativeAnnotation.retrieve_from_data_row(
                 clean_annotation)
@@ -563,8 +556,8 @@ class ConfigurationCollection(Collection):
                 outputwriter = csv.writer(csvfile)
                 for row in config_list:
                     for c in self.instance_list:
-                        if c.config_row_match(row):
-                            x = c.number_of_selections(preposition, datalist)
+                        if c.configuration_match(row):
+                            x = c.number_of_selections_from_instancelist(preposition, datalist)
                             if x > 0:
                                 row.append(1)
                             else:
@@ -617,7 +610,7 @@ class ConfigurationCollection(Collection):
             TYPE: Description
         """
         for i in self.instance_list:
-            if i.config_row_match([scene, f, g]):
+            if i.configuration_match([scene, f, g]):
                 return i
 
 

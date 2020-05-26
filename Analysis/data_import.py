@@ -518,12 +518,12 @@ class Configuration:
 
     def configuration_match(self, instance):
         """Summary
-        
+        Checks if object matches the current configuration. Object may be anything with scene, figure and grounds attribute.
         Args:
             instance (TYPE): Description
         
         Returns:
-            TYPE: Description
+            bool: Description
         """
         if (
                 self.scene == instance.scene
@@ -534,9 +534,10 @@ class Configuration:
         else:
             return False
 
-    def number_of_selections(self, preposition, instancelist):
+    def number_of_selections_from_instancelist(self, preposition, instancelist):
         """Summary
-        
+        Checks how many instances there are of the configuration being assigned with the preposition.
+        From an instance list where annotations are separated by preposition.
         Args:
             preposition (TYPE): Description
             instancelist (TYPE): Description
@@ -562,24 +563,24 @@ class Configuration:
         """
         counter = 0
         for an in annotationlist:
-            if self.annotation_row_match(an) and preposition in an.prepositions:
+            if self.configuration_match(an) and preposition in an.prepositions:
                 counter += 1
         return counter
 
-    def number_of_tests(self, annotationlist):
+    def number_of_tests(self, simple_config_list):
         """Summary
         
         Args:
-            annotationlist (TYPE): Description
+            simple_config_list (TYPE): Description
         
         Returns:
             TYPE: Description
         """
         # Need to use annotation list here as instances are separated by preposition
         counter = 0
-        for an in annotationlist:
+        for c in simple_config_list:
 
-            if self.annotation_row_match(an):
+            if self.configuration_match(c):
                 counter += 1
         # print(counter)
         return counter
@@ -596,45 +597,13 @@ class Configuration:
             TYPE: Description
         """
         t = float(self.number_of_tests(annotationlist))
-        s = float(self.number_of_selections(preposition, instancelist))
+        s = float(self.number_of_selections_from_instancelist(preposition, instancelist))
 
         if t != 0:
             return s / t
         else:
             return 0
 
-    def annotation_row_match(self, row):
-        """Summary
-        
-        Args:
-            row (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        # If configuration matches with annotation in raw data list
-        if self.scene == row[3] and self.figure == row[5] and self.ground == row[6]:
-            return True
-        else:
-            return False
-
-    def config_row_match(self, value):
-        """Summary
-        
-        Args:
-            value (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        if (
-                self.scene == value[0]
-                and self.figure == value[1]
-                and self.ground == value[2]
-        ):
-            return True
-        else:
-            return False
 
     def print_info(self):
         """Summary
