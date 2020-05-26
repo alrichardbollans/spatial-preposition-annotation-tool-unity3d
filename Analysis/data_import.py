@@ -26,10 +26,10 @@ def get_git_project_directory():
 
 def clean_name(object_name):
     """Summary
-
+    
     Args:
         object_name (string): Description
-
+    
     Returns:
         string: Description
     """
@@ -44,10 +44,10 @@ def clean_name(object_name):
 
 def remove_dot_unity(scene_name):
     """Summary
-
+    
     Args:
         scene_name (TYPE): Description
-
+    
     Returns:
         TYPE: Description
     """
@@ -59,7 +59,7 @@ def remove_dot_unity(scene_name):
 
 class MyScene:
     """Summary
-
+    
     Attributes:
         example_scenes (list): Description
         mesh_objects (TYPE): Description
@@ -86,7 +86,7 @@ class MyScene:
 
     def __init__(self, name, mesh_objects):
         """Summary
-
+        
         Args:
             name (TYPE): Description
             mesh_objects (TYPE): Description
@@ -99,7 +99,7 @@ class MyScene:
 
     def get_selectable_objects(self):
         """Summary
-
+        
         Returns:
             TYPE: Description
         """
@@ -111,7 +111,7 @@ class MyScene:
 
     def get_all_configs(self):
         """Summary
-
+        
         Returns:
             TYPE: Description
         """
@@ -123,7 +123,7 @@ class MyScene:
 
     def study_scene_check(self):
         """Summary
-
+        
         Returns:
             TYPE: Description
         """
@@ -145,28 +145,40 @@ class StudyInfo:
         analysis_folder_name (str): Description
         base_collected_data_folder_name (str): Description
         base_feature_data_folder_name (str): Description
+        base_polysemy_folder (TYPE): Description
         base_stats_folder_name (str): Description
+        cluster_data_folder (TYPE): Description
         comp_annotations_name (str): Description
         comp_task (str): Description
         comparative_abbreviations (TYPE): Description
         comparative_preposition_list (TYPE): Description
+        config_list (TYPE): Description
         config_ratio_folder (TYPE): Description
         constraint_csv (TYPE): Description
         data_folder (TYPE): Description
+        feature_keys (list): Description
         feature_output_csv (TYPE): Description
         feature_output_folder (TYPE): Description
+        hry_folder (TYPE): Description
         human_readable_feature_output_csv (TYPE): Description
         input_feature_csv (TYPE): Description
         input_feature_data_folder (TYPE): Description
+        kmeans_folder (TYPE): Description
+        model_info_folder (TYPE): Description
+        name (TYPE): Description
+        polyseme_data_folder (TYPE): Description
+        polysemy_score_folder (TYPE): Description
         preposition_list (list): Description
         project_path (TYPE): Description
         raw_annotation_csv (TYPE): Description
         raw_user_csv (TYPE): Description
+        relation_keys (list): Description
+        scene_info_csv_file (TYPE): Description
+        scene_info_filename (str): Description
         sem_annotations_name (str): Description
         semantic_abbreviations (TYPE): Description
         semantic_preposition_list (TYPE): Description
         stats_folder (TYPE): Description
-        study_name (TYPE): Description
         study_list (list): Description
         sv_task (str): Description
         svmod_annotations_name (str): Description
@@ -176,6 +188,9 @@ class StudyInfo:
         typ_task (str): Description
         u_index (TYPE): Description
         unity_project_folder_name (str): Description
+    
+    Deleted Attributes:
+        study_name (TYPE): Description
     """
 
     unity_project_folder_name = "Unity3D Annotation Environment"
@@ -288,7 +303,7 @@ class StudyInfo:
         self.scene_info_csv_file = self.input_feature_data_folder + "/" + self.scene_info_filename
         self.scene_list, self.scene_name_list = self.get_scenes()
 
-        self.load_all_configs()
+        self.config_list = self.load_all_configs()
 
         self.data_folder = self.name + "/" + self.base_collected_data_folder_name
         self.raw_user_csv = self.data_folder + "/" + "userlist.csv"
@@ -312,17 +327,15 @@ class StudyInfo:
 
     def load_all_configs(self):
         """Summary
-
+        
         Loads a list of all configurations.
-
-        Args:
-            feature_path (str): path to feature values
-
+        
         Returns:
             list: list of configurations.
-
+        
         Deleted Parameters:
             path (None, optional): Description
+            feature_path (str): path to feature values
         """
 
         with open(self.feature_output_csv, "r") as f:
@@ -359,7 +372,7 @@ class StudyInfo:
 
     def get_scenes(self):
         """Summary
-
+        
         Returns:
             list: Description
         """
@@ -402,11 +415,11 @@ class Configuration:
     
     Attributes:
         context_features (list): Description
-        data_path (TYPE): Description
-        feature_keys (list): Description
         figure (TYPE): Description
+        full_row (TYPE): Description
         ground (TYPE): Description
-        relation_keys (list): Description
+        relations_row (list): Description
+        row (list): Description
         scene (TYPE): Description
         set_of_features (dict): Description
         study (TYPE): Description
@@ -414,6 +427,9 @@ class Configuration:
     Deleted Attributes:
         output_path (TYPE): Description
         input_feature_csv (TYPE): Description
+        data_path (TYPE): Description
+        feature_keys (list): Description
+        relation_keys (list): Description
     """
 
     # Lots of this could be done with pandas. Doh :/
@@ -453,7 +469,7 @@ class Configuration:
 
     def __str__(self):
         """Summary
-
+        
         Returns:
             TYPE: Description
         """
@@ -474,36 +490,38 @@ class Configuration:
             path (None, optional): Description
         """
 
-        geom_relations = self.study.load_all_configs()
+        with open(self.study.feature_output_csv, "r") as f:
+            reader = csv.reader(f)  # create a 'csv reader' from the file object
+            geom_relations = list(reader)  # create a list from the reader
 
-        for relation in geom_relations:
-            if (
-                    self.scene == relation[0]
-                    and self.figure == relation[1]
-                    and self.ground == relation[2]
-            ):
-                # print(geom_relations.index(relation))
-                for key in self.study.feature_keys:
-                    if relation[self.study.feature_keys.index(key) + 3] != "?":
-                        self.set_of_features[key] = float(
-                            relation[self.study.feature_keys.index(key) + 3]
-                        )
-                    else:
-                        self.set_of_features[key] = "?"
+            for relation in geom_relations:
+                if (
+                        self.scene == relation[0]
+                        and self.figure == relation[1]
+                        and self.ground == relation[2]
+                ):
+                    # print(geom_relations.index(relation))
+                    for key in self.study.feature_keys:
+                        if relation[self.study.feature_keys.index(key) + 3] != "?":
+                            self.set_of_features[key] = float(
+                                relation[self.study.feature_keys.index(key) + 3]
+                            )
+                        else:
+                            self.set_of_features[key] = "?"
 
-                    value = self.set_of_features[key]
-                    setattr(self, key, value)
-                    self.row.append(value)
-                    self.full_row.append(value)
-                    if key in self.study.relation_keys:
-                        self.relations_row.append(value)
+                        value = self.set_of_features[key]
+                        setattr(self, key, value)
+                        self.row.append(value)
+                        self.full_row.append(value)
+                        if key in self.study.relation_keys:
+                            self.relations_row.append(value)
 
     def configuration_match(self, instance):
         """Summary
-
+        
         Args:
             instance (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
@@ -518,11 +536,11 @@ class Configuration:
 
     def number_of_selections(self, preposition, instancelist):
         """Summary
-
+        
         Args:
             preposition (TYPE): Description
             instancelist (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
@@ -534,11 +552,11 @@ class Configuration:
 
     def number_of_selections_from_annotationlist(self, preposition, annotationlist):
         """Summary
-
+        
         Args:
             preposition (TYPE): Description
             annotationlist (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
@@ -550,10 +568,10 @@ class Configuration:
 
     def number_of_tests(self, annotationlist):
         """Summary
-
+        
         Args:
             annotationlist (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
@@ -568,12 +586,12 @@ class Configuration:
 
     def ratio_semantic_selections(self, preposition, annotationlist, instancelist):
         """Summary
-
+        
         Args:
             preposition (TYPE): Description
             annotationlist (TYPE): Description
             instancelist (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
@@ -587,10 +605,10 @@ class Configuration:
 
     def annotation_row_match(self, row):
         """Summary
-
+        
         Args:
             row (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
@@ -602,10 +620,10 @@ class Configuration:
 
     def config_row_match(self, value):
         """Summary
-
+        
         Args:
             value (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """

@@ -264,6 +264,9 @@ class Comparison:
         possible_figures (TYPE): Description
         preposition (TYPE): Description
         scene (TYPE): Description
+        study_info (TYPE): Description
+    
+    Deleted Attributes:
         study (TYPE): Description
     """
 
@@ -478,50 +481,6 @@ class Comparison:
                         out.append(g_object)
 
         return out
-
-
-class Configuration:
-    """Summary
-    
-    Attributes:
-        figure (TYPE): Description
-        full_row (TYPE): Description
-        ground (TYPE): Description
-        path (TYPE): Description
-        relations_row (list): Description
-        row (list): Description
-        scene (TYPE): Description
-        study (TYPE): Description
-    """
-
-    def __init__(self, scene, figure, ground, study):
-        """Summary
-        
-        Args:
-            scene (TYPE): Description
-            figure (TYPE): Description
-            ground (TYPE): Description
-            study (TYPE): Description
-        
-        Deleted Parameters:
-            path (TYPE, optional): Description
-        """
-        self.scene = scene
-        self.figure = figure
-        self.ground = ground
-        self.study = study
-
-        self.path = study.feature_output_csv
-        # Row of feature values for outputing to csv
-        self.row = []
-        # Row beginning with names
-        self.full_row = [self.scene, self.figure, self.ground]
-        # Row without context features
-        self.relations_row = []
-        if self.figure != "none":
-            self.append_values()
-
-
 
 
 class Instance(Configuration):

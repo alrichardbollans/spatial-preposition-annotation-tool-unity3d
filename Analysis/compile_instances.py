@@ -128,17 +128,17 @@ class Collection:
     
     Attributes:
         annotation_list (list): Description
-        study_info (TYPE): Description
         data_folder_name (TYPE): Description
         feature_data_csv (TYPE): Description
         feature_keys (TYPE): Description
         instance_list (list): Description
         relation_keys (TYPE): Description
         stats_folder (TYPE): Description
-        study (TYPE): Description
+        study_info (TYPE): Description
     
     Deleted Attributes:
         preposition_list (list): Description
+        study (TYPE): Description
     """
 
     def __init__(self, study):
@@ -168,11 +168,10 @@ class Collection:
             if i.figure != "none":
                 try:
 
-                    r = Configuration(i.scene, i.figure, i.ground, self.study_info)
-                    r.load_from_csv()
+                    config = Configuration(i.scene, i.figure, i.ground, self.study_info)
 
-                    for key in r.feature_keys:
-                        setattr(i, key, r.set_of_features[key])
+                    for key, value in config.set_of_features.items():
+                        setattr(i, key, value)
 
 
 
@@ -272,9 +271,9 @@ class InstanceCollection(Collection):
         """
         scene_list = self.study_info.scene_list
 
-        for preposition in self.get_used_prepositions():
-            config_list = Configuration.load_all(self.study_info)
+        config_list = self.study_info.config_list
 
+        for preposition in self.get_used_prepositions():
 
             ## Write file of all instances
             with open(self.study_info.config_ratio_csv(self.filetag, preposition), "w") as csvfile:
@@ -283,12 +282,14 @@ class InstanceCollection(Collection):
                                                                                            self.categorisation_feature_name])
 
                 for c in config_list:
+                    row = c.full_row.copy()
 
                     t = float(c.number_of_tests(self.annotation_list))
                     s = float(c.number_of_selections(preposition, self.instance_list))
 
                     ## If at least one test has been done for this configuration
                     if t != 0:
+
                         ratio = s / t
 
                         r = str(ratio)
@@ -310,7 +311,7 @@ class InstanceCollection(Collection):
     def write_preposition_stats_csvs(self):
         """Summary
         """
-        config_list = Configuration.load_all(self.study_info)
+        config_list = self.study_info.config_list
 
         # for preposition in self.get_used_prepositions():
 

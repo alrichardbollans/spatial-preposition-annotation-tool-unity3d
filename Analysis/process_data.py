@@ -1,8 +1,9 @@
 """Summary
+
 Script to run for newly collected data files which:
-Input: annotation and user info csv from data collection
-Output: Clean annotation lists. Basic stats. User agreement calculations
-Feature values are included later
+    Input: annotation and user info csv from data collection
+    Output: Clean annotation lists. Basic stats. User agreement calculations
+    Feature values are included later
 """
 
 import csv
@@ -75,10 +76,12 @@ class UserData:
     """Summary
     
     Attributes:
-        study_info (TYPE): Description
         raw_data_list (TYPE): Description
-        study (TYPE): Description
+        study_info (TYPE): Description
         user_list (TYPE): Description
+    
+    Deleted Attributes:
+        study (TYPE): Description
     """
 
     def __init__(self, study):
@@ -490,19 +493,19 @@ class Data:
     
     Attributes:
         annotation_list (TYPE): Description
-        study_info (TYPE): Description
         clean_csv_name (str): Description
         clean_data_list (TYPE): Description
         data_list (TYPE): Description
         native_users (TYPE): Description
-        scene_info (TYPE): Description
         scene_list (TYPE): Description
-        study (TYPE): Description
+        study_info (TYPE): Description
         task (str): Description
         user_list (TYPE): Description
     
     Deleted Attributes:
         alldata (TYPE): Description
+        scene_info (TYPE): Description
+        study (TYPE): Description
     """
     task = "all"
     clean_csv_name = "all_clean_annotations.csv"
@@ -1130,7 +1133,7 @@ class ComparativeData(Data):
 
 class SemanticData(Data):
     """Summary
-
+    
     Collection of category annotations.
     
     Attributes:
@@ -1218,12 +1221,16 @@ class SemanticData(Data):
         """Calculates whether c1 is significantly better category member than c2 and vice versa.
         
         Parameters:
-            preposition -- preposition
-            c1 --  configuration to compare
-            c2 -- configuration to compare
+            preposition (TYPE): Description
+            c1 (TYPE): Description
+            c2 (TYPE): Description
+            is assuming a null hypothesis that they are equally good category members
         
-        Returns: list: Information about how many times c1,c2 are labelled and the p_value for how likely the result
-        is assuming a null hypothesis that they are equally good category members
+        Deleted Parameters:
+            Returns: list: Information about how many times c1,c2 are labelled and the p_value for how likely the result
+        
+        Returns:
+            TYPE: Description
         """
 
         c1_times_labelled = float(
@@ -1263,7 +1270,7 @@ class SemanticData(Data):
         """Summary
         """
 
-        config_list = Configuration.load_all(self.study_info)
+        config_list = self.study_info.config_list
         for preposition in StudyInfo.preposition_list:
             with open(
                     self.study_info.stats_folder
@@ -1292,7 +1299,6 @@ class SemanticData(Data):
                 for c1 in config_list:
 
                     for c2 in config_list:
-
                         stat = self.check_categorisation_difference(preposition, c1, c2)
                         to_write = (
                                 [c1.scene, c1.figure, c1.ground]
@@ -1362,6 +1368,8 @@ class ModSemanticData(SemanticData):
         
         Args:
             userdata (TYPE): Description
+        
+        Deleted Parameters:
             study (TYPE): Description
         """
 
@@ -1373,15 +1381,17 @@ class TypicalityData(Data):
     
     Attributes:
         agreements_csv_name (str): Description
+        clean_csv_name (TYPE): Description
+        stats_csv_name (str): Description
+        task (TYPE): Description
+    
+    Deleted Attributes:
         annotation_list (TYPE): Description
         study_info (TYPE): Description
-        clean_csv_name (TYPE): Description
         clean_data_list (TYPE): Description
         data_list (TYPE): Description
         native_users (TYPE): Description
-        stats_csv_name (str): Description
         study (TYPE): Description
-        task (TYPE): Description
         user_list (TYPE): Description
     """
     task = StudyInfo.typ_task
@@ -1394,6 +1404,8 @@ class TypicalityData(Data):
         
         Args:
             userdata (TYPE): Description
+        
+        Deleted Parameters:
             study (TYPE): Description
         """
         Data.__init__(self, userdata)
