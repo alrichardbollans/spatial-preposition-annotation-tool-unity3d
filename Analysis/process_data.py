@@ -916,12 +916,12 @@ class Data:
                     "Number of Native English users: " + str(len(self.native_users)),
                 ]
             )
-            # writer.writerow(['User1','User2', 'observed_agreement','Number of Shared Annotations', 'Number of agreements', 'Expected Number of Agreements','observed_agreement(AFF)','Number of Shared Annotations(AFF)', 'NUmber of agreements(AFF)', 'Expected Agreement(AFF)'])
-            number_of_comparisons = 0
-            total_shared_annotations = 0
-            total_expected_agreement_sum = 0
-            total_observed_agreement_sum = 0
-            total_cohens_kappa_sum = 0
+
+            number_of_comparisons = 0  # Number of compared users
+            total_shared_annotations = 0  # Sum of instances of two users being asked same question
+            total_expected_agreement_sum = 0  # Total number of expected agreements
+            total_observed_agreement_sum = 0  # Total number of observed agreements
+            total_cohens_kappa_sum = 0 # Sum of cohens kappa for each user, weighted by number of shared annotations
 
             writer.writerow(
                 [
@@ -944,15 +944,13 @@ class Data:
                 for user_pair in user_pairs:
                     user1 = user_pair[0]
                     user2 = user_pair[1]
-                    # for user1 in self.native_users:
-                    #   for user2 in self.native_users:
+
                     if user1 != user2:
                         # Calculate agreements for user pair and add values to totals
 
                         x = Agreements(self.study_info, self.annotation_list, self.task, p, user1, user2)
 
                         if x.shared_annotations != 0:
-                            number_of_comparisons += 1
                             p_number_of_comparisons += 1
 
                             preposition_shared_annotations += x.shared_annotations
@@ -963,17 +961,6 @@ class Data:
                                     x.observed_agreement * x.shared_annotations
                             )
                             preposition_cohens_kappa_sum += (
-                                    x.cohens_kappa * x.shared_annotations
-                            )
-
-                            total_shared_annotations += x.shared_annotations
-                            total_expected_agreement_sum += (
-                                    x.expected_agreement * x.shared_annotations
-                            )
-                            total_observed_agreement_sum += (
-                                    x.observed_agreement * x.shared_annotations
-                            )
-                            total_cohens_kappa_sum += (
                                     x.cohens_kappa * x.shared_annotations
                             )
 
@@ -1002,6 +989,13 @@ class Data:
                     p_cohens_kappa,
                 ]
                 writer.writerow(row)
+
+                # Add preposition totals to totals
+                number_of_comparisons += p_number_of_comparisons
+                total_shared_annotations += preposition_shared_annotations
+                total_expected_agreement_sum += preposition_expected_agreement_sum
+                total_observed_agreement_sum += preposition_observed_agreement_sum
+                total_cohens_kappa_sum += preposition_cohens_kappa_sum
 
             if total_shared_annotations != 0:
                 total_expected_agreement = float(total_expected_agreement_sum) / (
@@ -1478,6 +1472,7 @@ class TypicalityData(Data):
             i += 1
 
         return number_comparisons, c1_selected_over_c2, c2_selected_over_c1, p_value
+
     def output_typicality_p_values(self):
         """Summary
         """
@@ -1564,6 +1559,8 @@ class Agreements(Data):
             agent_task_annotations=None,
     ):
         """Summary
+
+        Calculates observed, expected agreement and cohens kappa between users.
         
         Args:
             study (TYPE): Description
@@ -1580,6 +1577,7 @@ class Agreements(Data):
         self.study = study
         self.task = task
         # All user annotations for particular task
+        # Note that if a user does the same question multiple times each instance will be included.
         self.user1_annotations = self.get_user_task_annotations(user1, task)
         if user2 != None:
             self.user2_annotations = self.get_user_task_annotations(user2, task)
@@ -1849,7 +1847,11 @@ class Agreements(Data):
             )
 
         if shared_annotations != 0:
+
+
             observed_agreement = float(agreements) / float(shared_annotations)
+
+
 
         if observed_agreement != 1:
             cohens_kappa = float(observed_agreement - expected_agreement) / float(
@@ -1905,33 +1907,32 @@ def process_2019_study():
 def process_test_study():
     """Summary
     """
-    ### 2019 study
     study_info = StudyInfo("test study")
     # Begin by loading users
     userdata = UserData(study_info)
 
     ## typicality data
-    # typ_data = TypicalityData(userdata2020)
+    typ_data = TypicalityData(userdata)
 
     # # output typicality csv
 
-    # typ_data.output_clean_annotation_list()
+    typ_data.output_clean_annotation_list()
 
-    # typ_data.output_statistics()
+    typ_data.output_statistics()
 
-    # typ_data.write_user_agreements()
+    typ_data.write_user_agreements()
 
     # # Load and process semantic annotations
     svmod_data = ModSemanticData(userdata)
 
     ## Outputs
-    svmod_data.output_categorisation_check()
-
-    svmod_data.output_clean_annotation_list()
-
-    svmod_data.output_statistics()
-
-    svmod_data.write_user_agreements()
+    # svmod_data.output_categorisation_check()
+    #
+    # svmod_data.output_clean_annotation_list()
+    #
+    # svmod_data.output_statistics()
+    #
+    # svmod_data.write_user_agreements()
 
 
 if __name__ == "__main__":
