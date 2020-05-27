@@ -409,8 +409,39 @@ class StudyInfo:
     #         scene_list.append(scene.name)
     #     return scene_list
 
+class SimpleConfiguration:
+    """Summary
+    Simple Configuration class which only has scene, figure and ground names.
+    Avoids loading study info and feature values.
 
-class Configuration:
+    Attributes:
+
+    """
+
+    def __init__(self, scene, figure, ground):
+        self.scene = scene
+        self.ground = ground
+        self.figure = figure
+
+    def configuration_match(self, instance):
+        """Summary
+        Checks if object matches the current configuration. Object may be anything with scene, figure and grounds attribute.
+        Args:
+            instance (TYPE): Description
+
+        Returns:
+            bool: Description
+        """
+        if (
+                self.scene == instance.scene
+                and self.figure == instance.figure
+                and self.ground == instance.ground
+        ):
+            return True
+        else:
+            return False
+
+class Configuration(SimpleConfiguration):
     """class which is used to read feature values
     
     Attributes:
@@ -451,10 +482,8 @@ class Configuration:
             ground (TYPE): Description
             study (TYPE): Description
         """
+        SimpleConfiguration.__init__(self,scene,figure,ground)
         self.study = study
-        self.scene = scene
-        self.figure = figure
-        self.ground = ground
         # Dictionary of features and values
         self.set_of_features = {}
 
@@ -516,23 +545,7 @@ class Configuration:
                         if key in self.study.relation_keys:
                             self.relations_row.append(value)
 
-    def configuration_match(self, instance):
-        """Summary
-        Checks if object matches the current configuration. Object may be anything with scene, figure and grounds attribute.
-        Args:
-            instance (TYPE): Description
-        
-        Returns:
-            bool: Description
-        """
-        if (
-                self.scene == instance.scene
-                and self.figure == instance.figure
-                and self.ground == instance.ground
-        ):
-            return True
-        else:
-            return False
+
 
     def number_of_selections_from_instancelist(self, preposition, instancelist):
         """Summary

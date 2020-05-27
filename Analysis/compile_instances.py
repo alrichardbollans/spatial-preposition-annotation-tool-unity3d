@@ -23,20 +23,10 @@ import numpy as np
 import preprocess_features
 from classes import Instance, CompInstance, Constraint, Comparison, Configuration, StudyInfo
 from process_data import SemanticAnnotation, ComparativeAnnotation
+from data_import import SimpleConfiguration
 
 
-class SimpleConfiguration:
-    """Summary
-    Simple Configuration class which only has scene, figure and ground names
 
-    Attributes:
-
-    """
-
-    def __init__(self, scene, figure, ground):
-        self.scene = scene
-        self.ground = ground
-        self.figure = figure
 
 
 class Preposition:
