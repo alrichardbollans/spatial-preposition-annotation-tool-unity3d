@@ -410,16 +410,27 @@ class StudyInfo:
     #         scene_list.append(scene.name)
     #     return scene_list
 
+
 class SimpleConfiguration:
     """Summary
     Simple Configuration class which only has scene, figure and ground names.
     Avoids loading study info and feature values.
-
+    
     Attributes:
-
+        figure (TYPE): Description
+        ground (TYPE): Description
+        scene (TYPE): Description
+    
     """
 
     def __init__(self, scene, figure, ground):
+        """Summary
+        
+        Args:
+            scene (TYPE): Description
+            figure (TYPE): Description
+            ground (TYPE): Description
+        """
         self.scene = scene
         self.ground = ground
         self.figure = figure
@@ -427,9 +438,10 @@ class SimpleConfiguration:
     def configuration_match(self, instance):
         """Summary
         Checks if object matches the current configuration. Object may be anything with scene, figure and grounds attribute.
+        
         Args:
             instance (TYPE): Description
-
+        
         Returns:
             bool: Description
         """
@@ -446,10 +458,11 @@ class SimpleConfiguration:
         """Summary
         Checks how many instances there are of the configuration being assigned with the preposition.
         From an instance list where annotations are separated by preposition.
+        
         Args:
             preposition (TYPE): Description
             instancelist (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
@@ -461,11 +474,11 @@ class SimpleConfiguration:
 
     def number_of_selections_from_annotationlist(self, preposition, annotationlist):
         """Summary
-
+        
         Args:
             preposition (TYPE): Description
             annotationlist (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
@@ -478,9 +491,10 @@ class SimpleConfiguration:
     def number_of_tests(self, simple_config_list):
         """Summary
         Finds how many times this configuration appears in a list of configurations.
+        
         Args:
             simple_config_list (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
@@ -495,12 +509,12 @@ class SimpleConfiguration:
 
     def ratio_semantic_selections(self, preposition, annotationlist, instancelist):
         """Summary
-
+        
         Args:
             preposition (TYPE): Description
             annotationlist (TYPE): Description
             instancelist (TYPE): Description
-
+        
         Returns:
             TYPE: Description
         """
@@ -518,14 +532,14 @@ class SimpleConfiguration:
         print(("Scene = " + self.scene))
         print(("Figure = " + self.figure))
         print(("Ground = " + self.ground))
+
+
 class Configuration(SimpleConfiguration):
-    """class which is used to read feature values
+    """class which is used to read feature values of configurations.
     
     Attributes:
         context_features (list): Description
-        figure (TYPE): Description
         full_row (TYPE): Description
-        ground (TYPE): Description
         relations_row (list): Description
         row (list): Description
         scene (TYPE): Description
@@ -538,6 +552,8 @@ class Configuration(SimpleConfiguration):
         data_path (TYPE): Description
         feature_keys (list): Description
         relation_keys (list): Description
+        figure (TYPE): Description
+        ground (TYPE): Description
     """
 
     # Lots of this could be done with pandas. Doh :/
@@ -559,7 +575,7 @@ class Configuration(SimpleConfiguration):
             ground (TYPE): Description
             study (TYPE): Description
         """
-        SimpleConfiguration.__init__(self,scene,figure,ground)
+        SimpleConfiguration.__init__(self, scene, figure, ground)
         self.study = study
         # Dictionary of features and values
         self.set_of_features = {}
@@ -621,7 +637,3 @@ class Configuration(SimpleConfiguration):
                         self.full_row.append(value)
                         if key in self.study.relation_keys:
                             self.relations_row.append(value)
-
-
-
-

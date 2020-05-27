@@ -273,8 +273,11 @@ class Annotation:
 
     def get_configurations_appearing_in_annotation(self):
         """Summary
-            Returns the configurations which appear in the annotation.
-
+        Returns the configurations which appear in the annotation.
+        
+        Returns:
+            TYPE: Description
+        
         """
         out = []
         if self.figure != "none":
@@ -507,6 +510,9 @@ class TypicalityAnnotation(Annotation):
         
         Args:
             c_string (TYPE): Description
+        
+        Returns:
+            TYPE: Description
         '''
 
         scene = c_string[:c_string.find(";")]  # scene is first thing before ;
@@ -526,7 +532,10 @@ class TypicalityAnnotation(Annotation):
         """Summary
         Returns the configurations which appear in the annotation.
         Overides method inherited from Annotation.
-                """
+        
+        Returns:
+            TYPE: Description
+        """
         return [self.c1_config, self.c2_config]
 
 
@@ -537,6 +546,7 @@ class Data:
         annotation_list (TYPE): Description
         clean_csv_name (str): Description
         clean_data_list (TYPE): Description
+        config_list (TYPE): Description
         data_list (TYPE): Description
         native_users (TYPE): Description
         scene_list (TYPE): Description
@@ -620,8 +630,10 @@ class Data:
         return out
 
     def get_configs(self):
-        ''' Summary:
-        Get configurations which appear in clean annotation list
+        '''Get configurations which appear in clean annotation list
+        
+        Returns:
+            TYPE: Description
         '''
         config_list = []
         for annotation in self.clean_data_list:
@@ -1190,6 +1202,7 @@ class SemanticData(Data):
         agreements_csv_name (str): Description
         categorisation_stats_csv (str): Description
         clean_csv_name (TYPE): Description
+        significant_configs_csv_name (str): Description
         stats_csv_name (str): Description
         task (TYPE): Description
     
@@ -1364,6 +1377,15 @@ class SemanticData(Data):
                         writer.writerow(to_write)
 
     def get_statistically_different_configurations(self, preposition, sig_level=0.05):
+        """Summary
+        
+        Args:
+            preposition (TYPE): Description
+            sig_level (float, optional): Description
+        
+        Returns:
+            TYPE: Description
+        """
         config_pairs = []
 
         for c1 in self.config_list:
@@ -1376,6 +1398,8 @@ class SemanticData(Data):
         return config_pairs
 
     def output_statistically_different_pairs(self):
+        """Summary
+        """
         for preposition in StudyInfo.preposition_list:
             with open(
                     self.study_info.stats_folder
@@ -1441,6 +1465,7 @@ class ModSemanticData(SemanticData):
         agreements_csv_name (str): Description
         categorisation_stats_csv (str): Description
         clean_csv_name (TYPE): Description
+        significant_configs_csv_name (str): Description
         stats_csv_name (str): Description
         task (TYPE): Description
     
@@ -1480,6 +1505,8 @@ class TypicalityData(Data):
     Attributes:
         agreements_csv_name (str): Description
         clean_csv_name (TYPE): Description
+        p_value_csv_name (str): Description
+        significant_configs_csv_name (str): Description
         stats_csv_name (str): Description
         task (TYPE): Description
     
@@ -1514,6 +1541,7 @@ class TypicalityData(Data):
         """Summary
         Finds number of times c1, c2 are compared using the given preposition.
         Also finds frequency of selections.
+        
         Args:
             preposition (TYPE): Description
             c1 (TYPE): Description
@@ -1541,10 +1569,14 @@ class TypicalityData(Data):
     def calculate_pvalue_c1_better_than_c2(self, preposition, c1, c2):
         """Summary
         Calculates the one-tailed p_value when c1 is better than c2.
+        
         Args:
             preposition (TYPE): Description
             c1 (TYPE): Description
             c2 (TYPE): Description
+        
+        Returns:
+            TYPE: Description
         """
         number_comparisons, c1_selected_over_c2, c2_selected_over_c1 = self.get_number_times_c1_c2_compared_selected(
             preposition, c1, c2)
@@ -1558,6 +1590,15 @@ class TypicalityData(Data):
         return [number_comparisons, c1_selected_over_c2, c2_selected_over_c1, p_value]
 
     def get_statistically_different_configurations(self, preposition, sig_level=0.05):
+        """Summary
+        
+        Args:
+            preposition (TYPE): Description
+            sig_level (float, optional): Description
+        
+        Returns:
+            TYPE: Description
+        """
         config_pairs = []
 
         for c1 in self.config_list:
@@ -1570,6 +1611,8 @@ class TypicalityData(Data):
         return config_pairs
 
     def output_statistically_different_pairs(self):
+        """Summary
+        """
         for preposition in StudyInfo.preposition_list:
             with open(
                     self.study_info.stats_folder
@@ -1642,8 +1685,8 @@ class TypicalityData(Data):
 
     def output_statistics(self):
         """Summary
-            # This is a very basic list of information about the task
-            # compile_instances gives a better overview
+        # This is a very basic list of information about the task
+        # compile_instances gives a better overview
         """
         with open(
                 self.study_info.stats_folder + "/" + self.stats_csv_name, "w"
@@ -1684,7 +1727,7 @@ class Agreements(Data):
             agent_task_annotations=None,
     ):
         """Summary
-
+        
         Calculates observed, expected agreement and cohens kappa between users.
         
         Args:
