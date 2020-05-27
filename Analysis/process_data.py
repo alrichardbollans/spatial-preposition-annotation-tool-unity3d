@@ -1282,11 +1282,11 @@ class SemanticData(Data):
         return [positive_selections, negative_selections]
 
     def calculate_pvalue_c1_better_than_c2(self, preposition, c1, c2):
-        """Calculates whether c2 is significantly better category member than c1.
+        """Calculates whether c1 is significantly better category member than c2.
         p_value is calculated using one-tailed fishers exact test
         This is the p_value supposing c1 and c2 are equally likely to be labelled.
         Using a one tailed test, the p_value is the probability of getting an observation at least as extreme,
-        in this case more extreme means providing stronger indication that c2 is a better category member than c1
+        in this case more extreme means providing stronger indication that c1 is a better category member than c2
         
         Note some issues with this test code https://github.com/scipy/scipy/issues/4130
         
@@ -1319,9 +1319,9 @@ class SemanticData(Data):
                 float(c2.number_of_tests(self.clean_data_list)) - c2_times_labelled
         )
 
-        oddsratio, p_value_one_tail_less = stats.fisher_exact([
+        oddsratio, p_value_one_tail_greater = stats.fisher_exact([
             [c1_times_labelled, c1_times_not_labelled],
-            [c2_times_labelled, c2_times_not_labelled]], alternative='less'
+            [c2_times_labelled, c2_times_not_labelled]], alternative='greater'
         )
         #
 
@@ -1330,7 +1330,7 @@ class SemanticData(Data):
             c1_times_not_labelled,
             c2_times_labelled,
             c2_times_not_labelled,
-            p_value_one_tail_less
+            p_value_one_tail_greater
         ]
 
     def output_categorisation_p_values(self):
@@ -2041,6 +2041,7 @@ def process_2019_study():
     # Output user list
     userdata2019.output_clean_user_list()
 
+
     # Load all csv
     alldata_2019 = Data(userdata2019)
 
@@ -2080,15 +2081,15 @@ def process_test_study():
 
     # # output typicality csv
 
-    typ_data.output_clean_annotation_list()
+    # typ_data.output_clean_annotation_list()
+    # #
+    # typ_data.output_statistics()
+    # #
+    # typ_data.write_user_agreements()
     #
-    typ_data.output_statistics()
+    # typ_data.output_typicality_p_values()
     #
-    typ_data.write_user_agreements()
-
-    typ_data.output_typicality_p_values()
-
-    typ_data.output_statistically_different_pairs()
+    # typ_data.output_statistically_different_pairs()
 
     # # Load and process semantic annotations
     svmod_data = ModSemanticData(userdata)
