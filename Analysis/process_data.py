@@ -271,6 +271,17 @@ class Annotation:
                 self.time,
             ]
 
+    def get_configurations_appearing_in_annotation(self):
+        """Summary
+            Returns the configurations which appear in the annotation.
+
+        """
+        out = []
+        if self.figure != "none":
+            c = SimpleConfiguration(self.scene, self.figure, self.ground)
+            out.append(c)
+        return out
+
 
 class ComparativeAnnotation(Annotation):
     """Summary
@@ -511,6 +522,13 @@ class TypicalityAnnotation(Annotation):
         """
         print((self.list_format))
 
+    def get_configurations_appearing_in_annotation(self):
+        """Summary
+        Returns the configurations which appear in the annotation.
+        Overides method inherited from Annotation.
+                """
+        return [self.c1_config, self.c2_config]
+
 
 class Data:
     """Summary
@@ -556,6 +574,8 @@ class Data:
         self.native_users = self.get_native_users()
         # Scene list is used for checking sv and comp task
         self.scene_list = self.get_scenes()
+        # List of configurations which appear in annotation list.
+        self.config_list = self.get_configs()
 
     def load_annotations_from_csv(self):
         """Summary
@@ -598,6 +618,18 @@ class Data:
                 out.append(new_annotation)
 
         return out
+
+    def get_configs(self):
+        ''' Summary:
+        Get configurations which appear in clean annotation list
+        '''
+        config_list = []
+        for annotation in self.clean_data_list:
+            configs = annotation.get_configurations_appearing_in_annotation()
+            for c in configs:
+                if not any(c.configuration_match(x) for x in config_list):
+                    config_list.append(c)
+        return config_list
 
     def clean_list(self):
         """Summary
@@ -1176,6 +1208,7 @@ class SemanticData(Data):
     stats_csv_name = "semantic stats.csv"
     categorisation_stats_csv = "categorisation pvalues.csv"
     agreements_csv_name = "semantic agreements.csv"
+    significant_configs_csv_name = "sv_significantly different configurations.csv"
 
     def __init__(self, userdata):
         """Summary
@@ -1235,7 +1268,7 @@ class SemanticData(Data):
                     negative_selections += 1
         return [positive_selections, negative_selections]
 
-    def check_categorisation_difference(self, preposition, c1, c2):
+    def calculate_pvalue_c1_better_than_c2(self, preposition, c1, c2):
         """Calculates whether c2 is significantly better category member than c1.
         p_value is calculated using one-tailed fishers exact test
         This is the p_value supposing c1 and c2 are equally likely to be labelled.
@@ -1291,45 +1324,85 @@ class SemanticData(Data):
         """Summary
         """
 
-        config_list = self.study_info.config_list
         for preposition in StudyInfo.preposition_list:
-            if preposition == "on":
-                print("Comparing categorisation for:" + str(preposition))
-                with open(
-                        self.study_info.stats_folder
-                        + "/"
-                        + preposition
-                        + "/"
-                        + self.categorisation_stats_csv,
-                        "w",
-                ) as csvfile:
-                    writer = csv.writer(csvfile)
-                    writer.writerow(
-                        [
-                            "Scene1",
-                            "Figure1",
-                            "Ground1",
-                            "Scene2",
-                            "Figure2",
-                            "Ground2",
-                            "c1_times_labelled",
-                            "c1_times_not_labelled",
-                            "c2_times_labelled",
-                            "c2_times_not_labelled",
-                            "p_value_one_tail",
-                        ]
+
+            print("Comparing categorisation for:" + str(preposition))
+            with open(
+                    self.study_info.stats_folder
+                    + "/"
+                    + preposition
+                    + "/"
+                    + self.categorisation_stats_csv,
+                    "w",
+            ) as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(
+                    [
+                        "Scene1",
+                        "Figure1",
+                        "Ground1",
+                        "Scene2",
+                        "Figure2",
+                        "Ground2",
+                        "c1_times_labelled",
+                        "c1_times_not_labelled",
+                        "c2_times_labelled",
+                        "c2_times_not_labelled",
+                        "p_value_one_tail",
+                    ]
+                )
+                for c1 in self.config_list:
+
+                    for c2 in self.config_list:
+                        stat = self.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
+
+                        to_write = (
+                                [c1.scene, c1.figure, c1.ground]
+                                + [c2.scene, c2.figure, c2.ground]
+                                + stat
+                        )
+                        writer.writerow(to_write)
+
+    def get_statistically_different_configurations(self, preposition, sig_level=0.05):
+        config_pairs = []
+
+        for c1 in self.config_list:
+
+            for c2 in self.config_list:
+                stat = self.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
+                p_value = stat[4]
+                if p_value < sig_level:
+                    config_pairs.append([c1, c2, p_value])
+        return config_pairs
+
+    def output_statistically_different_pairs(self):
+        for preposition in StudyInfo.preposition_list:
+            with open(
+                    self.study_info.stats_folder
+                    + "/"
+                    + preposition
+                    + "/"
+                    + self.significant_configs_csv_name,
+                    "w",
+            ) as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(
+                    [
+                        "Scene1", "Figure1", "Ground1", "Scene2", "Figure2", "Ground2", "p_value_one_tail"
+                    ]
+                )
+                pairs = self.get_statistically_different_configurations(preposition)
+
+                for pair in pairs:
+                    c1 = pair[0]
+                    c2 = pair[1]
+                    p_value = pair[2]
+                    to_write = (
+                            [c1.scene, c1.figure, c1.ground]
+                            + [c2.scene, c2.figure, c2.ground]
+                            + [p_value]
                     )
-                    for c1 in config_list:
-
-                        for c2 in config_list:
-                            stat = self.check_categorisation_difference(preposition, c1, c2)
-
-                            to_write = (
-                                    [c1.scene, c1.figure, c1.ground]
-                                    + [c2.scene, c2.figure, c2.ground]
-                                    + stat
-                            )
-                            writer.writerow(to_write)
+                    writer.writerow(to_write)
 
     # This is a very basic list of information about the task
     # compile_instances gives a better overview
@@ -1384,8 +1457,9 @@ class ModSemanticData(SemanticData):
     task = StudyInfo.svmod_task
     clean_csv_name = StudyInfo.svmod_annotations_name
     stats_csv_name = "svmod stats.csv"
-    categorisation_stats_csv = "categorisation stats.csv"
+    categorisation_stats_csv = "categorisation pvalues.csv"
     agreements_csv_name = "svmod agreements.csv"
+    significant_configs_csv_name = "svmod_significantly different configurations.csv"
 
     def __init__(self, userdata):
         """Summary
@@ -1423,6 +1497,7 @@ class TypicalityData(Data):
     stats_csv_name = "typicality stats.csv"
     agreements_csv_name = "typicality agreements.csv"
     p_value_csv_name = "typicality pvalues.csv"
+    significant_configs_csv_name = "typ_significantly different configurations.csv"
 
     def __init__(self, userdata):
         """Summary
@@ -1482,48 +1557,88 @@ class TypicalityData(Data):
 
         return [number_comparisons, c1_selected_over_c2, c2_selected_over_c1, p_value]
 
+    def get_statistically_different_configurations(self, preposition, sig_level=0.05):
+        config_pairs = []
+
+        for c1 in self.config_list:
+
+            for c2 in self.config_list:
+                stat = self.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
+                p_value = stat[3]
+                if p_value < sig_level:
+                    config_pairs.append([c1, c2, p_value])
+        return config_pairs
+
+    def output_statistically_different_pairs(self):
+        for preposition in StudyInfo.preposition_list:
+            with open(
+                    self.study_info.stats_folder
+                    + "/"
+                    + preposition
+                    + "/"
+                    + self.significant_configs_csv_name,
+                    "w",
+            ) as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(
+                    [
+                        "Scene1", "Figure1", "Ground1", "Scene2", "Figure2", "Ground2", "p_value_one_tail"
+                    ]
+                )
+                pairs = self.get_statistically_different_configurations(preposition)
+
+                for pair in pairs:
+                    c1 = pair[0]
+                    c2 = pair[1]
+                    p_value = pair[2]
+                    to_write = (
+                            [c1.scene, c1.figure, c1.ground]
+                            + [c2.scene, c2.figure, c2.ground]
+                            + [p_value]
+                    )
+                    writer.writerow(to_write)
+
     def output_typicality_p_values(self):
         """Summary
         """
 
-        config_list = self.study_info.config_list
         for preposition in StudyInfo.preposition_list:
-            if preposition == "on":
-                print("Comparing typicality for:" + str(preposition))
-                with open(
-                        self.study_info.stats_folder
-                        + "/"
-                        + preposition
-                        + "/"
-                        + self.p_value_csv_name,
-                        "w",
-                ) as csvfile:
-                    writer = csv.writer(csvfile)
-                    writer.writerow(
-                        [
-                            "Scene1",
-                            "Figure1",
-                            "Ground1",
-                            "Scene2",
-                            "Figure2",
-                            "Ground2",
-                            "number of comparisons",
-                            "c1 selected",
-                            "c2 selected",
-                            "p_value_one_tail",
-                        ]
-                    )
-                    for c1 in config_list:
 
-                        for c2 in config_list:
-                            stat = self.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
+            print("Comparing typicality for:" + str(preposition))
+            with open(
+                    self.study_info.stats_folder
+                    + "/"
+                    + preposition
+                    + "/"
+                    + self.p_value_csv_name,
+                    "w",
+            ) as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(
+                    [
+                        "Scene1",
+                        "Figure1",
+                        "Ground1",
+                        "Scene2",
+                        "Figure2",
+                        "Ground2",
+                        "number of comparisons",
+                        "c1 selected",
+                        "c2 selected",
+                        "p_value_one_tail",
+                    ]
+                )
+                for c1 in self.config_list:
 
-                            to_write = (
-                                    [c1.scene, c1.figure, c1.ground]
-                                    + [c2.scene, c2.figure, c2.ground]
-                                    + stat
-                            )
-                            writer.writerow(to_write)
+                    for c2 in self.config_list:
+                        stat = self.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
+
+                        to_write = (
+                                [c1.scene, c1.figure, c1.ground]
+                                + [c2.scene, c2.figure, c2.ground]
+                                + stat
+                        )
+                        writer.writerow(to_write)
 
     def output_statistics(self):
         """Summary
@@ -1923,24 +2038,27 @@ def process_test_study():
     # # output typicality csv
 
     typ_data.output_clean_annotation_list()
-
+    #
     typ_data.output_statistics()
-
+    #
     typ_data.write_user_agreements()
 
     typ_data.output_typicality_p_values()
+
+    typ_data.output_statistically_different_pairs()
 
     # # Load and process semantic annotations
     svmod_data = ModSemanticData(userdata)
 
     ## Outputs
-    # svmod_data.output_categorisation_check()
+    svmod_data.output_categorisation_p_values()
+    svmod_data.output_statistically_different_pairs()
     #
-    # svmod_data.output_clean_annotation_list()
+    svmod_data.output_clean_annotation_list()
     #
-    # svmod_data.output_statistics()
+    svmod_data.output_statistics()
     #
-    # svmod_data.write_user_agreements()
+    svmod_data.write_user_agreements()
 
 
 if __name__ == "__main__":

@@ -328,7 +328,8 @@ class StudyInfo:
     def load_all_configs(self):
         """Summary
         
-        Loads a list of all configurations.
+        Loads a list of all configurations from csv containing feature values.
+        May be better to get this from annotation list to minimise size of list.
         
         Returns:
             list: list of configurations.
@@ -441,6 +442,82 @@ class SimpleConfiguration:
         else:
             return False
 
+    def number_of_selections_from_instancelist(self, preposition, instancelist):
+        """Summary
+        Checks how many instances there are of the configuration being assigned with the preposition.
+        From an instance list where annotations are separated by preposition.
+        Args:
+            preposition (TYPE): Description
+            instancelist (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+        counter = 0
+        for i in instancelist:
+            if self.configuration_match(i) and i.preposition == preposition:
+                counter += 1
+        return counter
+
+    def number_of_selections_from_annotationlist(self, preposition, annotationlist):
+        """Summary
+
+        Args:
+            preposition (TYPE): Description
+            annotationlist (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+        counter = 0
+        for an in annotationlist:
+            if self.configuration_match(an) and preposition in an.prepositions:
+                counter += 1
+        return counter
+
+    def number_of_tests(self, simple_config_list):
+        """Summary
+        Finds how many times this configuration appears in a list of configurations.
+        Args:
+            simple_config_list (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+        # Need to use annotation list here as instances are separated by preposition
+        counter = 0
+        for c in simple_config_list:
+
+            if self.configuration_match(c):
+                counter += 1
+        # print(counter)
+        return counter
+
+    def ratio_semantic_selections(self, preposition, annotationlist, instancelist):
+        """Summary
+
+        Args:
+            preposition (TYPE): Description
+            annotationlist (TYPE): Description
+            instancelist (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+        t = float(self.number_of_tests(annotationlist))
+        s = float(self.number_of_selections_from_instancelist(preposition, instancelist))
+
+        if t != 0:
+            return s / t
+        else:
+            return 0
+
+    def print_info(self):
+        """Summary
+        """
+        print(("Scene = " + self.scene))
+        print(("Figure = " + self.figure))
+        print(("Ground = " + self.ground))
 class Configuration(SimpleConfiguration):
     """class which is used to read feature values
     
@@ -547,80 +624,4 @@ class Configuration(SimpleConfiguration):
 
 
 
-    def number_of_selections_from_instancelist(self, preposition, instancelist):
-        """Summary
-        Checks how many instances there are of the configuration being assigned with the preposition.
-        From an instance list where annotations are separated by preposition.
-        Args:
-            preposition (TYPE): Description
-            instancelist (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        counter = 0
-        for i in instancelist:
-            if self.configuration_match(i) and i.preposition == preposition:
-                counter += 1
-        return counter
 
-    def number_of_selections_from_annotationlist(self, preposition, annotationlist):
-        """Summary
-        
-        Args:
-            preposition (TYPE): Description
-            annotationlist (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        counter = 0
-        for an in annotationlist:
-            if self.configuration_match(an) and preposition in an.prepositions:
-                counter += 1
-        return counter
-
-    def number_of_tests(self, simple_config_list):
-        """Summary
-        
-        Args:
-            simple_config_list (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        # Need to use annotation list here as instances are separated by preposition
-        counter = 0
-        for c in simple_config_list:
-
-            if self.configuration_match(c):
-                counter += 1
-        # print(counter)
-        return counter
-
-    def ratio_semantic_selections(self, preposition, annotationlist, instancelist):
-        """Summary
-        
-        Args:
-            preposition (TYPE): Description
-            annotationlist (TYPE): Description
-            instancelist (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        t = float(self.number_of_tests(annotationlist))
-        s = float(self.number_of_selections_from_instancelist(preposition, instancelist))
-
-        if t != 0:
-            return s / t
-        else:
-            return 0
-
-
-    def print_info(self):
-        """Summary
-        """
-        print(("Scene = " + self.scene))
-        print(("Figure = " + self.figure))
-        print(("Ground = " + self.ground))
