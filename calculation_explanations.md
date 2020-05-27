@@ -79,7 +79,7 @@ Annotator agreements are calculated by process_data.py in Analysis and saved in 
 
 In each task agreement is calculated for each pair of Native English speaking users.
 
-Cohens kappa is calculated for each pair of users and multiplied by the shared number of annotations. This is then summed for each pair and divided by the total number of shared annotations. So the average Cohens Kappa given is weighted by shared annotations.
+Cohens kappa is calculated for each pair of users and multiplied by the shared number of annotations. This is then summed for each user pair and divided by the total number of shared annotations. So the average Cohens Kappa given is weighted by shared annotations.
 
 In both tasks observed agreement is the number of agreements divided by the number of shared annotations.
 

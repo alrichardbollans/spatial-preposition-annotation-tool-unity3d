@@ -16,7 +16,6 @@ from classes import Comparison
 from data_import import StudyInfo, Configuration, SimpleConfiguration
 
 
-
 class User:
     """
     A class to store user information.
@@ -499,11 +498,11 @@ class TypicalityAnnotation(Annotation):
             c_string (TYPE): Description
         '''
 
-        scene = c_string[:c_string.find(";")] # scene is first thing before ;
-        figure = c_string[c_string.find(";")+1:c_string.rfind(";")] # figure is in between ;
-        ground = c_string[c_string.rfind(";")+1:] # ground is last thing after ;
-  
-        c = SimpleConfiguration(scene,figure,ground)
+        scene = c_string[:c_string.find(";")]  # scene is first thing before ;
+        figure = c_string[c_string.find(";") + 1:c_string.rfind(";")]  # figure is in between ;
+        ground = c_string[c_string.rfind(";") + 1:]  # ground is last thing after ;
+
+        c = SimpleConfiguration(scene, figure, ground)
 
         return c
 
@@ -930,7 +929,7 @@ class Data:
             total_shared_annotations = 0  # Sum of instances of two users being asked same question
             total_expected_agreement_sum = 0  # Total number of expected agreements
             total_observed_agreement_sum = 0  # Total number of observed agreements
-            total_cohens_kappa_sum = 0 # Sum of cohens kappa for each user, weighted by number of shared annotations
+            total_cohens_kappa_sum = 0  # Sum of cohens kappa for each user, weighted by number of shared annotations
 
             writer.writerow(
                 [
@@ -1175,7 +1174,7 @@ class SemanticData(Data):
     task = StudyInfo.sv_task
     clean_csv_name = StudyInfo.sem_annotations_name
     stats_csv_name = "semantic stats.csv"
-    categorisation_stats_csv = "categorisation stats.csv"
+    categorisation_stats_csv = "categorisation pvalues.csv"
     agreements_csv_name = "semantic agreements.csv"
 
     def __init__(self, userdata):
@@ -1294,42 +1293,43 @@ class SemanticData(Data):
 
         config_list = self.study_info.config_list
         for preposition in StudyInfo.preposition_list:
-            print("Comparing categorisation for:" + str(preposition))
-            with open(
-                    self.study_info.stats_folder
-                    + "/"
-                    + preposition
-                    + "/"
-                    + self.categorisation_stats_csv,
-                    "w",
-            ) as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(
-                    [
-                        "Scene1",
-                        "Figure1",
-                        "Ground1",
-                        "Scene2",
-                        "Figure2",
-                        "Ground2",
-                        "c1_times_labelled",
-                        "c1_times_not_labelled",
-                        "c2_times_labelled",
-                        "c2_times_not_labelled",
-                        "p_value_one_tail",
-                    ]
-                )
-                for c1 in config_list:
+            if preposition == "on":
+                print("Comparing categorisation for:" + str(preposition))
+                with open(
+                        self.study_info.stats_folder
+                        + "/"
+                        + preposition
+                        + "/"
+                        + self.categorisation_stats_csv,
+                        "w",
+                ) as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerow(
+                        [
+                            "Scene1",
+                            "Figure1",
+                            "Ground1",
+                            "Scene2",
+                            "Figure2",
+                            "Ground2",
+                            "c1_times_labelled",
+                            "c1_times_not_labelled",
+                            "c2_times_labelled",
+                            "c2_times_not_labelled",
+                            "p_value_one_tail",
+                        ]
+                    )
+                    for c1 in config_list:
 
-                    for c2 in config_list:
-                        stat = self.check_categorisation_difference(preposition, c1, c2)
+                        for c2 in config_list:
+                            stat = self.check_categorisation_difference(preposition, c1, c2)
 
-                        to_write = (
-                                [c1.scene, c1.figure, c1.ground]
-                                + [c2.scene, c2.figure, c2.ground]
-                                + stat
-                        )
-                        writer.writerow(to_write)
+                            to_write = (
+                                    [c1.scene, c1.figure, c1.ground]
+                                    + [c2.scene, c2.figure, c2.ground]
+                                    + stat
+                            )
+                            writer.writerow(to_write)
 
     # This is a very basic list of information about the task
     # compile_instances gives a better overview
@@ -1488,7 +1488,7 @@ class TypicalityData(Data):
 
         config_list = self.study_info.config_list
         for preposition in StudyInfo.preposition_list:
-            if preposition=="on":
+            if preposition == "on":
                 print("Comparing typicality for:" + str(preposition))
                 with open(
                         self.study_info.stats_folder
@@ -1857,11 +1857,7 @@ class Agreements(Data):
             )
 
         if shared_annotations != 0:
-
-
             observed_agreement = float(agreements) / float(shared_annotations)
-
-
 
         if observed_agreement != 1:
             cohens_kappa = float(observed_agreement - expected_agreement) / float(
