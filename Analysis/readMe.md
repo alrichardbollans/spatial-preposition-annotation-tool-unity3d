@@ -14,7 +14,7 @@ Input: features calculated from unity scripts.
 Outputs to feature values folder.
 
 ## compile_instances.py
-Run process_data before this.
+Run data_import before this.
 
 Runs preprocess_features.py before executing.
 
@@ -39,17 +39,19 @@ Collection of classes used in above
 
 # Folders
 
+The code may be used to process multiple studies. The 2019 study folder contains the following
+
 ## collected data
-Collection of raw and cleaned data from 2019 study
+Collection of raw and cleaned annotation lists.
 
 ## constraint data
-List of constraints generated from data. This is created using compile_instances.py and read in feature_analysis.py
+List of constraints generated from data. This is created using compile_instances.py and read in basic_model_testing.py
 
 ## feature values
 Contains information on feature values from configurations in all scenes. Standardised values are created by preprocess_features.py and read in compile_instances.py
 
 ## model info
-Collection of baseline model parameters when trained on all scenes
+Collection of basic model parameters when trained on all scenes
 
 ## polysemy
 Collection of outputs related to polysemy model, see the readme in the folder for more info
