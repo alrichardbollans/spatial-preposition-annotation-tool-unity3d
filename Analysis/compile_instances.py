@@ -21,9 +21,9 @@ import csv
 import numpy as np
 
 import preprocess_features
-from classes import Instance, CompInstance, Constraint, Comparison, Configuration, StudyInfo
+from classes import Instance, CompInstance, Constraint, Comparison
 from process_data import SemanticAnnotation, ComparativeAnnotation
-from data_import import SimpleConfiguration
+from data_import import SimpleConfiguration, Configuration, StudyInfo
 
 
 
@@ -441,19 +441,19 @@ class ComparativeCollection(InstanceCollection):
 
     def get_constraints(self):
         """Summary
-        
+        For each scene, preposition and possible ground uses the Comparison class to generate constraints for models to satisfy.
+        These are then written to a csv.
         Returns:
             TYPE: Description
         """
-        # First clear written constraints
-        Constraint.clear_csv(self.study_info.constraint_csv)
+
         ## Creates a dictionary, prepositions are keys
         ### Values are lists of constraints for the preposition
         out = dict()
 
         for preposition in StudyInfo.preposition_list:
             # print(preposition)
-            C = []
+            preposition_constraints = []
             for my_scene in self.study_info.scene_list:
 
                 grounds = my_scene.selectable_objects
@@ -463,10 +463,10 @@ class ComparativeCollection(InstanceCollection):
                     c = Comparison(my_scene.name, preposition, grd, self.study_info)
                     Cons = c.generate_constraints(self.instance_list)
                     for con in Cons:
-                        C.append(con)
-            out[preposition] = C
-            # print(C)
-            for con in C:
+                        preposition_constraints.append(con)
+            out[preposition] = preposition_constraints
+
+            for con in preposition_constraints:
                 con.write_to_csv(self.study_info.constraint_csv)
         self.constraints = out
         return out
@@ -607,20 +607,20 @@ class ConfigurationCollection(Collection):
 if __name__ == '__main__':
     study_info = StudyInfo("2019 study")
     # First preprocess features
-    preprocess_features.process_all_features()
+    # preprocess_features.process_all_features()
 
     ### Semantic Annotations
     ### Collect annotation instances and attach values to them
-    svcollection = SemanticCollection(study_info)
+    # svcollection = SemanticCollection(study_info)
 
-    svcollection.write_preposition_stats_csvs()
-    svcollection.write_config_ratios()
+    # svcollection.write_preposition_stats_csvs()
+    # svcollection.write_config_ratios()
 
     #### Comparative Annotations
 
     compcollection = ComparativeCollection(study_info)
 
-    compcollection.write_preposition_stats_csvs()
+    # compcollection.write_preposition_stats_csvs()
     compcollection.get_constraints()
 # compcollection.write_config_ratios()
 

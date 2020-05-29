@@ -1,7 +1,6 @@
 """Summary
-Reads feature value file from unity project and standardises values
-Uses "standard score"
-Outputs in given directory
+Contains Features class which, for a given study, reads file of extracted features, removes some features,
+gets average location control, standardises values and outputs
 """
 
 import pandas as pd
@@ -26,7 +25,7 @@ def process_all_features():
 
 class Features:
     """Summary
-    
+    Provides methods for standardising feature values and converting between raw values and standardised values.
     Attributes:
         dataset (TYPE): Description
         features_to_remove (TYPE): Description
@@ -55,6 +54,8 @@ class Features:
         # Get path for calculated features
         self.input_feature_csv = basic_info.input_feature_csv
         self.output_path = basic_info.feature_output_csv
+        self.means_output_path = basic_info.feature_output_folder + "/feature_means.csv"
+        self.std_output_path = basic_info.feature_output_folder + "/feature_stds.csv"
         self.human_readable_path = basic_info.human_readable_feature_output_csv
 
         self.dataset = pd.read_csv(self.input_feature_csv)
@@ -103,8 +104,8 @@ class Features:
     def write_mean_std(self):
         """Summary
         """
-        self.means.to_csv("feature values/feature_means.csv")
-        self.stds.to_csv("feature values/feature_stds.csv")
+        self.means.to_csv(self.means_output_path)
+        self.stds.to_csv(self.std_output_path)
 
     def convert_standardised_value_to_normal(self, feature, value):
         """Summary

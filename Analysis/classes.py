@@ -40,22 +40,7 @@ class Constraint:
     # LHS is values of first config
     # RHS is values of second config
 
-    titles = [
-        "scene",
-        "preposition",
-        "ground",
-        "f1",
-        "f2",
-        "weight",
-        "parity",
-        "weak",
-        "lhs",
-        "rhs",
-    ]
-
-    def __init__(
-            self, scene, preposition, ground, f1, f2, weight, parity, weak, lhs, rhs
-    ):
+    def __init__(self, scene, preposition, ground, f1, f2, weight, lhs, rhs):
         """Summary
         
         Args:
@@ -65,10 +50,8 @@ class Constraint:
             f1 (TYPE): Description
             f2 (TYPE): Description
             weight (TYPE): Description
-            parity (TYPE): Description
-            weak (TYPE): Description
-            lhs (TYPE): Description
-            rhs (TYPE): Description
+            lhs (dict): Set of features for (f1,ground) configuration
+            rhs (dict): Set of features for (f2,ground) configuration
         """
         self.scene = scene
         self.preposition = preposition
@@ -77,52 +60,70 @@ class Constraint:
         # f1 should be more typical than f2 to satisfy constraint
         self.f1 = f1
         self.f2 = f2
-        # lhs and rhs are arrays of coefficients for the problem
+        # lhs and rhs are coefficients for the problem
         # coefficients are ordered by Configuration.feature_keys/relation_keys
         # These are configuration values for the instances being compared
-        self.lhs = lhs  # np.array([lhs])
-        self.rhs = rhs  # np.array([rhs])
+        self.lhs = lhs
+        self.rhs = rhs
 
         # Weight given to constraint
         self.weight = weight
 
-        # We have two types of constraints
-        # Some arise from difference in the data and some from similarity
+        # Modify the column headings so they are unique
+        self.lhs_columns = []
+        for heading in list(self.lhs.keys()):
+            self.lhs_columns.append(heading + "_1")
 
-        self.parity = parity
-
-        # If True, this constraint is for weak instances i.e. LHS is some distance from prototype
-        # RHS is not important
-        self.weak = weak
-
+        self.rhs_columns = []
+        for heading in list(self.rhs.keys()):
+            self.rhs_columns.append(heading + "_2")
+        
+        self.csv_columns = ['scene', 'preposition', 'ground', 'f1', 'f2',
+                            'weight'] + self.lhs_columns + self.rhs_columns
         self.csv_row = [
-            self.scene,
-            self.preposition,
-            self.ground,
-            self.f1,
-            self.f2,
-            self.weight,
-            str(parity),
-            str(weak),
-            lhs.tolist(),
-            rhs.tolist(),
-        ]
+                           self.scene,
+                           self.preposition,
+                           self.ground,
+                           self.f1,
+                           self.f2,
+                           self.weight] + list(self.lhs.values()) + list(self.rhs.values())
 
-    # def row_match(self,row):
-    #   if self.scene== row[0] and self.f1 == row[1] and self.f2 == row[2]
     def write_to_csv(self, csv_file):
         """Summary
         
         Args:
             csv_file (TYPE): Description
-        
-        Deleted Parameters:
-            name (None, optional): Description
+
         """
 
-        with open(csv_file, "a") as csvfile:
-            outputwriter = csv.writer(csvfile)
-            outputwriter.writerow(self.csv_row)
+        try:
+            # First attempt to find csv.
+            original_df = pd.read_csv(csv_file, index_col=0)
+
+        except Exception as failed_to_read:
+            # If no csv exists create a new one.
+            original_df = pd.DataFrame(columns=self.csv_columns)
+
+        # Gives rows which match this constraint
+        row_check = (original_df['scene'] == self.scene) & (original_df['preposition'] == self.preposition) & (
+                original_df['ground'] == self.ground) & (original_df['f1'] == self.f1) & (original_df['f2'] == self.f2)
+        single_constraint_df = original_df.loc[row_check, :]
+
+        if single_constraint_df.empty:
+            # If this constraint isn't already in the csv, append it
+
+            new_row = pd.Series(self.csv_row, index=self.csv_columns)
+
+            new_df = original_df.append(new_row, ignore_index=True)
+
+        else:
+            # If the constraint is already there then edit the row.
+            original_df.loc[row_check, :] = self.csv_row
+
+            new_df = original_df.copy()
+
+        new_df.to_csv(csv_file)
+
 
     @staticmethod
     def read_from_csv(csv_file):
@@ -145,63 +146,11 @@ class Constraint:
             lhs = np.array(lhs_list)
             rhs = np.array(rhs_list)
 
-            c = Constraint(
-                line["scene"],
-                line["preposition"],
-                line["ground"],
-                line["f1"],
-                line["f2"],
-                line["weight"],
-                line["parity"],
-                line["weak"],
-                lhs,
-                rhs,
-            )
+            c = Constraint(line["scene"], line["preposition"], line["ground"], line["f1"], line["f2"], line["weight"],
+                           lhs, rhs)
 
             out[c.preposition].append(c)
         return out
-
-    @staticmethod
-    def clear_csv(csv_file):
-        """Summary
-        
-        Args:
-            csv_file (TYPE): Description
-        
-        Deleted Parameters:
-            name (None, optional): Description
-        """
-
-        with open(csv_file, "w") as csvfile:
-            outputwriter = csv.writer(csvfile)
-            outputwriter.writerow(Constraint.titles)
-            # csvfile.truncate()
-
-    # def get_values(self,W,P):
-    #   # Works out the Similarity of LHS and RHS to prototype,P, given feature weights W
-    #   # Works out the Euclidean distance of the instance represented by LHS and RHS to the prototype
-    #   # W is a 1D array, an assignment of weights and P, Prototype
-    #   # First take away P from lhs and rhs values
-    #   # Then do dot product
-
-    #   lhs = np.subtract(self.lhs,P)
-    #   rhs = np.subtract(self.rhs,P)
-
-    #   lhs = np.square(lhs)
-    #   rhs = np.square(rhs)
-
-    #   lhs_distance = math.sqrt(np.dot(lhs,W))
-    #   rhs_distance = math.sqrt(np.dot(rhs,W))
-
-    #   lhs_value = math.exp(-lhs_distance)
-    #   rhs_value = math.exp(-rhs_distance)
-
-    #   # print(lhs_value)
-
-    #   return [lhs_value,rhs_value]
-
-    # Returns True if X satisfies C
-    # False otherwise
 
     def is_satisfied(self, lhs_value, rhs_value):
         """Summary
@@ -213,26 +162,12 @@ class Constraint:
         Returns:
             TYPE: Description
         """
-        # Values get calculated elsewhere depending on model
-        # values = self.get_values(W,P)
-        # lhs_value = values[0]
-        # rhs_value = values[1]
-        if self.weak:
-            if lhs_value < 0.8:
-                return True
-            else:
-                return False
-        elif self.parity:
-            if abs(lhs_value - rhs_value) < 0.5:
-                return True
-            else:
-                return False
+
+        # LHS is more typical than RHS
+        if lhs_value > rhs_value:
+            return True
         else:
-            # LHS is more typical than RHS
-            if lhs_value > rhs_value:
-                return True
-            else:
-                return False
+            return False
 
     # Returns the value of RHS-LHS, with values from X
     def separation(self, X):
@@ -303,8 +238,7 @@ class Comparison:
         # Generates constraints and outputs a list
         C = []
         instances = self.get_instances(instancelist)
-        # For the moment the metric constraint are commented out
-        # Don't want to generate constraints when no tests have been done!
+
         if len(instances) > 0:
 
             figure_selection_number = self.get_choices(instancelist)
@@ -324,73 +258,23 @@ class Comparison:
                 c1 = Configuration(self.scene, f1, self.ground, self.study_info)
                 c2 = Configuration(self.scene, f2, self.ground, self.study_info)
 
-                # Only use values that are not from 'context' features
-                c1_array = np.array(c1.relations_row)
-                c2_array = np.array(c2.relations_row)
+                c1_features = c1.set_of_features
+                c2_features = c2.set_of_features
 
                 if x1 == x2:
                     pass
-                    # if any (list_of_annotations > x1 for list_of_annotations in figure_selection_number.itervalues()):
-                    #   # This case may happen because there is a better figure
-                    #   # In which case we create no constraint
-                    #   pass
-                    # elif x1 != 0:
-                    #   # In the case that x1,x2 are not zero
-                    #   # They are similar enough instances of the preposition to be confused
 
-                    #   weight = x1
-
-                    #   con = Constraint(self.scene,self.preposition,self.ground,f1,f2,weight,True,False,c1_array,c2_array)
-                    #   C.append(con)
-                    #   con.write_to_csv()
                 elif x1 < x2:
                     weight = x2 - x1
-                    con = Constraint(
-                        self.scene,
-                        self.preposition,
-                        self.ground,
-                        f2,
-                        f1,
-                        weight,
-                        False,
-                        False,
-                        c2_array,
-                        c1_array,
-                    )
+                    con = Constraint(self.scene, self.preposition, self.ground, f2, f1, weight, c2_features,
+                                     c1_features)
                     C.append(con)
 
                 else:
                     weight = x1 - x2
-                    con = Constraint(
-                        self.scene,
-                        self.preposition,
-                        self.ground,
-                        f1,
-                        f2,
-                        weight,
-                        False,
-                        False,
-                        c1_array,
-                        c2_array,
-                    )
+                    con = Constraint(self.scene, self.preposition, self.ground, f1, f2, weight, c1_features,
+                                     c2_features)
                     C.append(con)
-
-            # Deal with case that figure is not ever selected
-            # for fig in figure_selection_number:
-            #   x1 = figure_selection_number[fig]
-            #   if x1 == 0:
-            #       pass
-            #       c = Configuration(self.scene,fig,self.ground)
-
-            #       # Only use values that are not from 'context' features
-            #       c_array = np.array(c.relations_row)
-
-            #       # Add a constraint saying this is a weak configuration
-            #       weight = float(len(instances))/len(self.possible_figures)
-            #       con = Constraint(self.scene,self.preposition,self.ground,fig,fig,weight,False,True,c_array,c_array)
-
-            #       C.append(con)
-        # if len(none_instances) > 0:
 
         return C
 

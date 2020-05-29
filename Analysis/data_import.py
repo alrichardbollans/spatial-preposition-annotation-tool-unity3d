@@ -303,6 +303,8 @@ class StudyInfo:
         self.scene_info_csv_file = self.input_feature_data_folder + "/" + self.scene_info_filename
         self.scene_list, self.scene_name_list = self.get_scenes()
 
+        self.feature_keys = []
+        self.relation_keys = []
         self.config_list = self.load_all_configs()
 
         self.data_folder = self.name + "/" + self.base_collected_data_folder_name
@@ -343,8 +345,6 @@ class StudyInfo:
             reader = csv.reader(f)  # create a 'csv reader' from the file object
             geom_relations = list(reader)  # create a list from the reader
 
-            self.feature_keys = []
-            self.relation_keys = []
             for title in geom_relations[0][3:]:
                 self.feature_keys.append(title)
                 if title not in Configuration.context_features:
@@ -558,12 +558,6 @@ class Configuration(SimpleConfiguration):
 
     # Lots of this could be done with pandas. Doh :/
 
-    # input_feature_csv = StudyInfo.feature_output_csv
-    # output_path = input_feature_csv
-
-    # additional_features = ["location_control"]
-    # Location control is the average of the two more basic measures
-
     context_features = ["ground_lightsource", "ground_container", "ground_verticality"]
 
     def __init__(self, scene, figure, ground, study):
@@ -624,9 +618,10 @@ class Configuration(SimpleConfiguration):
                 ):
                     # print(geom_relations.index(relation))
                     for key in self.study.feature_keys:
-                        if relation[self.study.feature_keys.index(key) + 3] != "?":
+                        value_index = self.study.feature_keys.index(key) + 3
+                        if relation[value_index] != "?":
                             self.set_of_features[key] = float(
-                                relation[self.study.feature_keys.index(key) + 3]
+                                relation[value_index]
                             )
                         else:
                             self.set_of_features[key] = "?"
