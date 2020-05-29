@@ -22,17 +22,11 @@ class Constraint:
         f2 (TYPE): Description
         ground (TYPE): Description
         lhs (TYPE): Description
-        parity (TYPE): Description
         preposition (TYPE): Description
         rhs (TYPE): Description
         scene (TYPE): Description
-        titles (list): Description
-        weak (TYPE): Description
         weight (TYPE): Description
-    
-    Deleted Attributes:
-        folder_path (str): Description
-        output_path (TYPE): Description
+
     """
 
     # A constraint is a linear inequality
@@ -61,7 +55,7 @@ class Constraint:
         self.f1 = f1
         self.f2 = f2
         # lhs and rhs are coefficients for the problem
-        # coefficients are ordered by Configuration.feature_keys/relation_keys
+        # coefficients are ordered by Configuration.all_feature_keys/feature_keys
         # These are configuration values for the instances being compared
         self.lhs = lhs
         self.rhs = rhs
@@ -130,7 +124,7 @@ class Constraint:
     @staticmethod
     def read_from_csv(csv_file):
         """Summary
-        
+        Read csv file and creates a dictionary of constraints, indexed by prepositions.
         Returns:
             TYPE: Description
         
@@ -158,7 +152,6 @@ class Constraint:
 
             c = Constraint(line["scene"], line["preposition"], line["ground"], line["f1"], line["f2"], line["weight"],
                            lhs, rhs)
-            
 
             out[c.preposition].append(c)
         return out

@@ -10,11 +10,11 @@ Attributes:
 Deleted Attributes:
     base_polysemy_folder (str): Description
     cluster_data_folder (TYPE): Description
-    feature_keys (TYPE): Description
+    all_feature_keys (TYPE): Description
     hry_folder (TYPE): Description
     kmeans_folder (TYPE): Description
     polyseme_data_folder (TYPE): Description
-    relation_keys (TYPE): Description
+    feature_keys (TYPE): Description
     score_folder (TYPE): Description
 """
 # First run compile_instances.py
@@ -38,7 +38,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-from basic_model_testing import TestModels, PrepositionModels, Model, Features, MultipleRuns, SemanticMethods
+from basic_model_testing import TestModels, GeneratePrepositionModels, Model, Features, MultipleRuns, SemanticMethods
 from data_import import Configuration, StudyInfo
 from classes import Constraint, Configuration
 from compile_instances import SemanticCollection, ComparativeCollection
@@ -156,11 +156,11 @@ class Clustering:
 
         self.all_scenes = self.study_info.scene_name_list
         self.preposition = preposition
-        self.models = PrepositionModels(self.study_info, preposition, self.all_scenes)
+        self.models = GeneratePrepositionModels(self.study_info, preposition, self.all_scenes)
 
         # All selected instances
         self.possible_instances = self.models.affFeatures
-        self.possible_instances_relations = self.models.remove_nonrelations(self.possible_instances)
+        self.possible_instances_relations = self.models.remove_unused_features(self.possible_instances)
         # Dataset containing 'good' instances
         self.good_dataset = self.models.train_dataset[
             (self.models.train_dataset.iloc[:, self.models.ratio_index] >= 0.5)]
@@ -169,7 +169,7 @@ class Clustering:
         # All 'good' instances
         self.good_instances = self.models.remove_nonfeatures(self.good_dataset)
 
-        self.good_instance_relations = self.models.remove_nonrelations(self.good_instances)
+        self.good_instance_relations = self.models.remove_unused_features(self.good_instances)
 
         self.typical_instances = self.models.typical_features
 
@@ -301,7 +301,7 @@ class Clustering:
         for i in range(len(km.cluster_centers_)):
             out["cluster_" + str(i)] = km.cluster_centers_[i]
 
-        df = pd.DataFrame(out, self.study_info.relation_keys)
+        df = pd.DataFrame(out, self.study_info.feature_keys)
         print((self.preposition))
         print(df)
 
@@ -572,7 +572,7 @@ class Polyseme():
         self.plot_folder = self.study_info.polyseme_data_folder + 'plots/'
 
         self.share_prototype = share_prototype
-        self.preposition_models = PrepositionModels(self.study_info, self.preposition, self.train_scenes, polyseme=self)
+        self.preposition_models = GeneratePrepositionModels(self.study_info, self.preposition, self.train_scenes, polyseme=self)
 
         # Assign a rank/hierarchy to polysemes
 
@@ -626,7 +626,7 @@ class Polyseme():
         # print(self.prototype)
         # Input dictionarys of prototype and feature weights for each preposition, stored as arrays
         if self.share_prototype:
-            preposition_models = PrepositionModels(self.study_info, self.preposition, self.train_scenes)
+            preposition_models = GeneratePrepositionModels(self.study_info, self.preposition, self.train_scenes)
             preposition_models.work_out_prototype_model()
             self.prototype = preposition_models.prototype
         # print("shared")
@@ -665,11 +665,11 @@ class Polyseme():
     def output_prototype_weight(self):
         """Summary
         """
-        pf = pd.DataFrame(self.prototype, self.study_info.relation_keys)
+        pf = pd.DataFrame(self.prototype, self.study_info.feature_keys)
 
         pf.to_csv(self.prototype_csv)
 
-        wf = pd.DataFrame(self.weights, self.study_info.relation_keys)
+        wf = pd.DataFrame(self.weights, self.study_info.feature_keys)
 
         wf.to_csv(self.regression_weights_csv)
 
@@ -680,7 +680,7 @@ class Polyseme():
         out["eq_feature_dict"] = []
         out["greater_feature_dict"] = []
         out["less_feature_dict"] = []
-        for feature in self.study_info.relation_keys:
+        for feature in self.study_info.feature_keys:
 
             if self.eq_feature_dict != None:
                 if feature in self.eq_feature_dict:
@@ -709,7 +709,7 @@ class Polyseme():
             else:
                 out["less_feature_dict"].append("None")
 
-        wf = pd.DataFrame(out, self.study_info.relation_keys)  # ["equality", "greater than", "less than"])
+        wf = pd.DataFrame(out, self.study_info.feature_keys)  # ["equality", "greater than", "less than"])
 
         wf.to_csv(
             self.study_info.polyseme_data_folder + "/definitions/" + self.preposition + "-" + self.polyseme_name + ".csv")
@@ -749,7 +749,7 @@ class PolysemeModel(Model):
         Deleted Parameters:
             study_info (TYPE): Description
             constraint_dict (None, optional): Description
-            feature_to_remove (None, optional): Description
+            features_to_remove (None, optional): Description
         """
         self.study_info = study_info_
         Model.__init__(self, name, train_scenes, test_scenes, self.study_info)
@@ -1049,13 +1049,13 @@ class GeneratePolysemeModels():
         for preposition in polysemous_preposition_list:
             out[preposition] = []
             number_clusters = cluster_numbers[preposition]
-            models = PrepositionModels(self.study_info, preposition, self.train_scenes)
+            models = GeneratePrepositionModels(self.study_info, preposition, self.train_scenes)
 
             # All selected instances
             possible_instances = models.affFeatures
             # Only relation features
 
-            possible_instances_relations = models.remove_nonrelations(possible_instances)
+            possible_instances_relations = models.remove_unused_features(possible_instances)
 
             sample_weights = models.aff_dataset[models.ratio_feature_name]
 
@@ -1077,11 +1077,11 @@ class GeneratePolysemeModels():
                 cluster_number_of_instances.append(0)
 
             sem_methods = SemanticMethods()
-            for index, row in models.relation_dataframe.iterrows():
+            for index, row in models.feature_dataframe.iterrows():
                 # For each configuration add ratio to totals of closest centre
 
                 ratio_feature_name = models.ratio_feature_name
-                # Note dropping columns from dataset preserves row order i.e. row order of relation_dataframe = train_datset
+                # Note dropping columns from dataset preserves row order i.e. row order of feature_dataframe = train_datset
                 ratio_of_instance = models.train_dataset.at[index, ratio_feature_name]
 
                 v = row.values
@@ -1095,7 +1095,7 @@ class GeneratePolysemeModels():
                 for i in range(len(km.cluster_centers_)):
                     centre = km.cluster_centers_[i]
 
-                    distance = sem_methods.semantic_distance(weights, v, centre, self.study_info.relation_keys)
+                    distance = sem_methods.semantic_distance(weights, v, centre, self.study_info.feature_keys)
 
                     if sem_distance == -1:
                         sem_distance = distance

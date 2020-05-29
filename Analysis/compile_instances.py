@@ -136,13 +136,11 @@ class Collection:
         feature_data_csv (TYPE): Description
         feature_keys (TYPE): Description
         instance_list (list): Description
-        relation_keys (TYPE): Description
+
         stats_folder (TYPE): Description
         study_info (TYPE): Description
     
-    Deleted Attributes:
-        preposition_list (list): Description
-        study (TYPE): Description
+
     """
 
     def __init__(self, study):
@@ -152,8 +150,7 @@ class Collection:
             study (TYPE): Description
         """
         self.study_info = study
-        self.relation_keys = self.study_info.relation_keys
-        self.feature_keys = self.study_info.feature_keys
+        self.feature_keys = self.study_info.all_feature_keys
 
         self.feature_data_csv = self.study_info.feature_output_csv
         self.data_folder_name = self.study_info.data_folder
@@ -251,7 +248,7 @@ class InstanceCollection(Collection):
         # 	## Write file of all instances
         # 	with open('preposition data/'+self.filetag+ '-' + preposition + ' data.csv', "w") as csvfile:
         # 		outputwriter1 = csv.writer(csvfile)
-        # 		outputwriter1.writerow(['Scene','Figure','Ground']+self.feature_keys)
+        # 		outputwriter1.writerow(['Scene','Figure','Ground']+self.all_feature_keys)
 
         # 		for i in self.instance_list:
         # 			if i.preposition == preposition:

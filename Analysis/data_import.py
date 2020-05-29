@@ -172,7 +172,7 @@ class StudyInfo:
         project_path (TYPE): Description
         raw_annotation_csv (TYPE): Description
         raw_user_csv (TYPE): Description
-        relation_keys (list): Description
+        feature_keys (list): Description
         scene_info_csv_file (TYPE): Description
         scene_info_filename (str): Description
         sem_annotations_name (str): Description
@@ -304,7 +304,7 @@ class StudyInfo:
         self.scene_list, self.scene_name_list = self.get_scenes()
 
         self.feature_keys = []
-        self.relation_keys = []
+
         self.config_list = self.load_all_configs()
 
         self.data_folder = self.name + "/" + self.base_collected_data_folder_name
@@ -347,8 +347,7 @@ class StudyInfo:
 
             for title in geom_relations[0][3:]:
                 self.feature_keys.append(title)
-                if title not in Configuration.context_features:
-                    self.relation_keys.append(title)
+
 
             geom_relations.pop(0)
             config_list = []
@@ -550,8 +549,8 @@ class Configuration(SimpleConfiguration):
         output_path (TYPE): Description
         input_feature_csv (TYPE): Description
         data_path (TYPE): Description
+        all_feature_keys (list): Description
         feature_keys (list): Description
-        relation_keys (list): Description
         figure (TYPE): Description
         ground (TYPE): Description
     """
@@ -617,8 +616,8 @@ class Configuration(SimpleConfiguration):
                         and self.ground == relation[2]
                 ):
                     # print(geom_relations.index(relation))
-                    for key in self.study.feature_keys:
-                        value_index = self.study.feature_keys.index(key) + 3
+                    for key in self.study.all_feature_keys:
+                        value_index = self.study.all_feature_keys.index(key) + 3
                         if relation[value_index] != "?":
                             self.set_of_features[key] = float(
                                 relation[value_index]
@@ -630,5 +629,5 @@ class Configuration(SimpleConfiguration):
                         setattr(self, key, value)
                         self.row.append(value)
                         self.full_row.append(value)
-                        if key in self.study.relation_keys:
+                        if key in self.study.feature_keys:
                             self.relations_row.append(value)
