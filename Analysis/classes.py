@@ -89,7 +89,8 @@ class Constraint:
                            self.weight] + list(self.lhs.values()) + list(self.rhs.values())
 
     def __str__(self):
-        return self.csv_row
+        return ''.join(str(e) for e in self.csv_row)
+
     def write_to_csv(self, csv_file):
         """Summary Writes constraint to csv file. Appends to file if constraint isn't already included. Replaces row
         if constraint already included.
@@ -144,7 +145,7 @@ class Constraint:
         for index, line in dataset.iterrows():
             lhs = {}
             rhs = {}
-            for feature in line:
+            for feature in dataset.columns:
                 # Columns ending in _1 denote feature values for f1 and _2 for f2
                 if feature.endswith("_1"):
                     # Remove _1 for dictionary
@@ -157,14 +158,14 @@ class Constraint:
 
             c = Constraint(line["scene"], line["preposition"], line["ground"], line["f1"], line["f2"], line["weight"],
                            lhs, rhs)
-            print(c)
+            
 
             out[c.preposition].append(c)
         return out
 
     def is_satisfied(self, lhs_value, rhs_value):
         """Summary
-        
+        Simple method to help maintain correct order. Returns true if lhs_value > rhs_value. Else returns False.
         Args:
             lhs_value (TYPE): Description
             rhs_value (TYPE): Description
@@ -197,7 +198,6 @@ class Constraint:
     # def write_constraint(self):
 
     # def read_constraints(self):
-
 
 
 class Comparison:
