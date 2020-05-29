@@ -77,7 +77,7 @@ class Constraint:
         self.rhs_columns = []
         for heading in list(self.rhs.keys()):
             self.rhs_columns.append(heading + "_2")
-        
+
         self.csv_columns = ['scene', 'preposition', 'ground', 'f1', 'f2',
                             'weight'] + self.lhs_columns + self.rhs_columns
         self.csv_row = [
@@ -88,11 +88,13 @@ class Constraint:
                            self.f2,
                            self.weight] + list(self.lhs.values()) + list(self.rhs.values())
 
+    def __str__(self):
+        return self.csv_row
     def write_to_csv(self, csv_file):
-        """Summary
-        
-        Args:
-            csv_file (TYPE): Description
+        """Summary Writes constraint to csv file. Appends to file if constraint isn't already included. Replaces row
+        if constraint already included.
+
+        Args: csv_file (TYPE): Description
 
         """
 
@@ -124,7 +126,6 @@ class Constraint:
 
         new_df.to_csv(csv_file)
 
-
     @staticmethod
     def read_from_csv(csv_file):
         """Summary
@@ -139,15 +140,24 @@ class Constraint:
         out = dict()
         for p in StudyInfo.preposition_list:
             out[p] = []
-        dataset = pd.read_csv(csv_file)
+        dataset = pd.read_csv(csv_file, index_col=0)
         for index, line in dataset.iterrows():
-            lhs_list = ast.literal_eval(line["lhs"])
-            rhs_list = ast.literal_eval(line["rhs"])
-            lhs = np.array(lhs_list)
-            rhs = np.array(rhs_list)
+            lhs = {}
+            rhs = {}
+            for feature in line:
+                # Columns ending in _1 denote feature values for f1 and _2 for f2
+                if feature.endswith("_1"):
+                    # Remove _1 for dictionary
+                    feature_key = feature[:-2]
+                    lhs[feature_key] = line[feature]
+
+                if feature.endswith("_2"):
+                    feature_key = feature[:-2]
+                    rhs[feature_key] = line[feature]
 
             c = Constraint(line["scene"], line["preposition"], line["ground"], line["f1"], line["f2"], line["weight"],
                            lhs, rhs)
+            print(c)
 
             out[c.preposition].append(c)
         return out
@@ -187,6 +197,7 @@ class Constraint:
     # def write_constraint(self):
 
     # def read_constraints(self):
+
 
 
 class Comparison:
