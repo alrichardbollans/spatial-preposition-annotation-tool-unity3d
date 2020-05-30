@@ -51,17 +51,17 @@ def convert_index(x, number_of_columns):
         TYPE: Description
     """
     if x == 0 or x == 6 or x == 12:
-        i = 0
-        j = 0
+        x_pos = 0
+        y_pos = 0
     elif x < 6:
-        i = x / number_of_columns
-        j = x % number_of_columns
+        x_pos = x / number_of_columns
+        y_pos = x % number_of_columns
     else:
         x = x - 6
-        i = x / number_of_columns
-        j = x % number_of_columns
+        x_pos = x / number_of_columns
+        y_pos = x % number_of_columns
 
-    return [i, j]
+    return x_pos, y_pos
 
 
 class SemanticMethods:
@@ -69,7 +69,7 @@ class SemanticMethods:
     """
 
     @staticmethod
-    def semantic_distance(weight_array, x, y, feature_keys, features_to_remove=[]):
+    def semantic_distance(weight_array, x, y, feature_keys, features_to_remove=None):
         """
         Parameters:
             weight_array: 1-D Array of feature weights
@@ -85,8 +85,10 @@ class SemanticMethods:
         Deleted Parameters:
             list_of_annotations: 1-D arrays. Points to compare
         """
+        if features_to_remove is None:
+            features_to_remove = []
         if len(feature_keys) != len(weight_array):
-            print("Error: weight array and relation keys not same length")
+            print("Error: weight array and feature keys not same length")
             print(len(weight_array))
             print(len(feature_keys))
 
@@ -104,9 +106,31 @@ class SemanticMethods:
 
         return distance
 
+    @staticmethod
+    def semantic_similarity(weight_array, x, y, feature_keys, features_to_remove=None):
+        """
+        Calculates weighted semantic similarity between x and y.
 
-class GeneratePrepositionModels:
+        :param weight_array:
+        :param x:
+        :param y:
+        :param feature_keys:
+        :param features_to_remove:
+        :return: float
+        """
+
+        # Get semantic distance
+        distance = SemanticMethods.semantic_distance(weight_array, x, y, feature_keys,
+                                                     features_to_remove=features_to_remove)
+        # Get similarity
+        out = math.exp(-distance)
+        return out
+
+
+class GeneratePrepositionModelParameters:
     """Summary
+
+    Class with methods to generate model parameters for particular preposition
     
     Attributes:
         aff_dataset (TYPE): Description
@@ -175,6 +199,7 @@ class GeneratePrepositionModels:
             features_to_remove (None, optional): Description
             polyseme (None, optional): Description
         """
+
         if features_to_remove is None:
             features_to_remove = []
 
@@ -186,6 +211,7 @@ class GeneratePrepositionModels:
         self.feature_keys = []
         for f in self.all_feature_keys:
             if f not in self.features_to_remove:
+
                 self.feature_keys.append(f)
 
         self.train_scenes = train_scenes
@@ -242,9 +268,9 @@ class GeneratePrepositionModels:
 
         # Remove selection info columns to only have features
         self.affFeatures = self.remove_nonfeatures(self.aff_dataset)
-        # Remove selection info columns to only have features
-        self.affRelations = self.remove_unused_features(self.affFeatures)
-        # Only instances are the best examples -- typical instances
+        
+
+        # Typical instances are the best examples
         ratio_max = self.train_dataset[self.ratio_feature_name].max()
         self.typical_dataset = self.train_dataset[(self.train_dataset.iloc[:, self.ratio_index] == ratio_max)]
         # Remove selection info columns to only have features
@@ -280,6 +306,8 @@ class GeneratePrepositionModels:
 
         self.exemplar_csv = self.study_info.model_info_folder + "/exemplar/" + preposition + "-exemplar_means.csv"
 
+        self.work_out_models()
+
     def remove_nontrainingscenes(self, d):
         """Summary
         
@@ -294,7 +322,7 @@ class GeneratePrepositionModels:
 
     def remove_nonfeatures(self, d):
         """Summary
-        
+        Removes nonfeature columns from a dataframe
         Args:
             d (TYPE): Description
         
@@ -313,10 +341,12 @@ class GeneratePrepositionModels:
         Returns:
             TYPE: Description
         """
+        new_d = d
 
         if self.features_to_remove is not None:
+
             # Remove features to remove
-            new_d = d.drop([self.features_to_remove], axis=1)
+            new_d = new_d.drop(self.features_to_remove, axis=1)
         return new_d
 
     def plot_features_ratio(self, no_columns, axes, feature, X, y_pred, Y):
@@ -333,10 +363,13 @@ class GeneratePrepositionModels:
         # X = Selection Ratio
         # y_pred =  predicted Y values on unit interval
         # Y =  feature value
+
         index = self.feature_keys.index(feature)
+
         # Get position to  display, by index
-        l = convert_index(index, no_columns)
-        ax1 = axes[l[0], l[1]]
+        x_pos, y_pos = convert_index(index, no_columns)
+
+        ax1 = axes[x_pos, y_pos]
 
         ax1.set_xlabel("Selection Ratio")
         ylabel = feature
@@ -398,7 +431,7 @@ class GeneratePrepositionModels:
         out = []
         X = self.affFeatures
 
-        for feature in self.feature_keys:
+        for feature in self.all_feature_keys:
             pro_value = X[feature].mean()
 
             out.append(pro_value)
@@ -416,7 +449,7 @@ class GeneratePrepositionModels:
         out = []
         X = self.typical_features
 
-        for feature in self.feature_keys:
+        for feature in self.all_feature_keys:
             pro_value = X[feature].mean()
             out.append(pro_value)
 
@@ -531,9 +564,7 @@ class GeneratePrepositionModels:
         lin_model.fit(X, Y)
 
         self.linear_regression_model = lin_model
-        # print(self.preposition)
-        # print("Linear Score")
-        # print(lin_model.score(X,Y))
+
 
         return lin_model
 
@@ -554,10 +585,10 @@ class GeneratePrepositionModels:
 
         weights = []
 
-        for feature in self.feature_keys:
+        for feature in self.all_feature_keys:
             if self.features_to_remove is not None:
                 # If the feature is removed, append 0 instead
-                if feature == self.features_to_remove:
+                if feature in self.features_to_remove:
                     weights.append(0)
                 else:
                     w = abs(coeff_df.loc[feature, "coefficient"])
@@ -565,9 +596,8 @@ class GeneratePrepositionModels:
             else:
                 w = abs(coeff_df.loc[feature, "coefficient"])
                 weights.append(w)
-        weights = np.array(weights)
 
-        self.regression_weights = weights
+        self.regression_weights = np.array(weights)
 
     def work_out_prototype_model(self):
         """Summary
@@ -581,7 +611,7 @@ class GeneratePrepositionModels:
 
         prototype = []
 
-        for feature in self.feature_keys:
+        for feature in self.all_feature_keys:
             # First predict feature value given selection ratio of 1
             pro_value = self.work_out_feature_prototype(feature)
 
@@ -589,9 +619,8 @@ class GeneratePrepositionModels:
             prototype.append(pro_value)
 
         self.work_out_feature_weights()
-        prototype = np.array(prototype)
 
-        self.prototype = prototype
+        self.prototype = np.array(prototype)
 
         return self.prototype
 
@@ -685,52 +714,23 @@ class GeneratePrepositionModels:
 class Model:
     """Summary
     
-    Attributes:
-        constraint_dict (TYPE): Description
-        feature_keys (TYPE): Description
-        features_to_remove (TYPE): Description
-        name (TYPE): Description
-        prototype_dict (TYPE): Description
-        regression_dimension (TYPE): Description
-        regression_model_dict (TYPE): Description
-        relation_keys (TYPE): Description
-        scores (TYPE): Description
-        study_info (TYPE): Description
-        test_prepositions (TYPE): Description
-        test_scenes (TYPE): Description
-        totals (TYPE): Description
-        train_scenes (TYPE): Description
-        weight_dict (TYPE): Description
-        weight_totals (TYPE): Description
+
     """
 
     # Puts together preposition models and has various functions for testing
-    def __init__(self, name, train_scenes, test_scenes, study_info_, weight_dict=None,
-                 features_to_remove=None, prototype_dict=None, regression_model_dict=None, regression_dimension=None):
+    def __init__(self, name, test_scenes, study_info_):
         """Summary
         
         Args:
-            name (TYPE): Description
-            train_scenes (TYPE): Description
-            test_scenes (TYPE): Description
-            study_info_ (TYPE): Description
-            weight_dict (None, optional): Description
-            features_to_remove (None, optional): Description
-            prototype_dict (None, optional): Description
-            regression_model_dict (None, optional): Description
-            regression_dimension (None, optional): Description
+
         """
-        if features_to_remove is None:
-            features_to_remove = []
+        # if features_to_remove is None:
+        #     features_to_remove = []
 
         self.study_info = study_info_
-        # A feature to remove from models to see how results change
-        self.features_to_remove = features_to_remove
-        self.all_feature_keys = self.study_info.feature_keys
-        self.feature_keys = []
-        for f in all_feature_keys:
-            if f not in self.features_to_remove:
-                self.feature_keys.append(f)
+        self.feature_processer = Features(self.study_info.name)
+
+        self.all_feature_keys = self.study_info.all_feature_keys
 
         self.name = name
         # Prepositions to test
@@ -738,97 +738,33 @@ class Model:
         # Dictionary containing constraints to satisfy
         self.constraint_dict = Constraint.read_from_csv(self.study_info.constraint_csv)
 
-        # Input dictionarys of prototype and feature weights for each preposition, stored as arrays
-        # prototype_dict = None => exemplar model
-        self.prototype_dict = prototype_dict
-        self.weight_dict = weight_dict
         self.test_scenes = test_scenes
-        self.train_scenes = train_scenes
-        self.regression_model_dict = regression_model_dict
-        self.regression_dimension = regression_dimension
 
-    def semantic_similarity(self, weight_array, x, y):
-        """Summary
-
-        Args:
-            weight_array (TYPE): Description
-            x (TYPE): Description
-            y (TYPE): Description
-
-        Returns:
-            TYPE: Description
+    def generate_arrays(self, salient_features):
         """
-        sem_methods = SemanticMethods()
-        # Similarity of list_of_annotations to y
-        # list_of_annotations y are 1d arrays
-        # Works out the weighted Euclidean distance of list_of_annotations and y and then negative exponential
-        # Weights are given in class
+        Creates prototype and weight arrays from dictionary of salient features specifiying their (human-readable) typical values.
 
-        # Square root to get distance
-        distance = sem_methods.semantic_distance(weight_array, x, y, self.feature_keys,
-                                                 features_to_remove=self.features_to_remove)
-        # Get typicality
-        out = math.exp(-distance)
-        return out
+        :param salient_features:
+        :returns prototype_array, weight_array
+        """
+        pro_array = []
+        weight_array = []
+        for feature in self.all_feature_keys:
+            if feature not in salient_features:
+                pro_array.append(0)
+                weight_array.append(0)
+            else:
+                x = self.feature_processer.convert_normal_value_to_standardised(feature, salient_features[feature])
+                pro_array.append(x)
+                weight_array.append(1)
+
+        pro_array = np.array(pro_array)
+        weight_array = np.array(weight_array)
+
+        return pro_array, weight_array
 
     def get_typicality(self, preposition, point):
-        """Summary
-        
-        Args:
-            preposition (TYPE): Description
-            point (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        # Works out the typicality of the given point (1D array)
-        # Point taken as input is from one side of constraint inequality
-        if self.regression_model_dict is not None:
-
-            point_array = np.array(point).reshape(1, -1)
-            if self.regression_dimension is not None:
-                # Must transform the point for polynomial regression
-                polynomial_features = PolynomialFeatures(degree=self.regression_dimension)
-                point_array = polynomial_features.fit_transform(point_array)
-
-            t = self.regression_model_dict[preposition].predict(point_array)
-            return t
-        # if self.prototype_dict is not None:
-        #     prototype_array = self.prototype_dict[preposition]
-        #     weight_array = self.weight_dict[preposition]
-        #     out = self.semantic_similarity(weight_array, point, prototype_array)
-        #
-        #     return out
-        if self.prototype_dict is None and self.regression_model_dict is None:
-            # When no prototype_dict is given calculate typicality using exemplar model
-            # Load exemplars and non instancesfor preposition and remove context features
-            p = GeneratePrepositionModels(self.study_info, preposition, self.train_scenes)
-
-            exemplars = p.typical_features.drop(Configuration.context_features, axis=1)
-            none_instances = p.neg_features.drop(Configuration.context_features, axis=1)
-
-            # Find average semantic similarity to points in exemplar model
-            counter = 0
-            semantic_similarity_sum = 0
-
-            # Iterate over rows in exemplar dataframe
-            for index, row in exemplars.iterrows():
-                # Get row values
-                e = row.values
-
-                # Convert values to np array
-                e = np.array(e)
-                counter += 1
-                # Calculate similarity of current point to exemplar
-                weight_array = self.weight_dict[preposition]
-                semantic_similarity_sum += self.semantic_similarity(weight_array, point, e)
-
-            if counter == 0:
-                return 0
-            else:
-                top = float(semantic_similarity_sum) / counter
-
-            return top
+        print("This shouldn't be called")
 
     def get_score(self):
         """Summary
@@ -929,8 +865,8 @@ class Model:
         counter = 0
 
         for c in Constraints:
-            lhs = self.get_typicality(preposition, c.lhs)
-            rhs = self.get_typicality(preposition, c.rhs)
+            lhs = self.get_typicality(preposition, c.lhs_values)
+            rhs = self.get_typicality(preposition, c.rhs_values)
             if c.is_satisfied(lhs, rhs):
                 counter += c.weight
         # else:
@@ -949,33 +885,57 @@ class Model:
 
 
 class PrototypeModel(Model):
-    def __init__(self, preposition_model_dict, train_scenes, test_scenes, study_info_):
+    name = "Our Prototype"
+
+    def __init__(self, preposition_model_dict, test_scenes, study_info_):
         self.preposition_model_dict = preposition_model_dict
 
-
-        Model.__init__("Our Prototype", train_scenes, test_scenes, study_info_)
+        Model.__init__(self, PrototypeModel.name, test_scenes, study_info_)
 
     def get_typicality(self, preposition, point):
-        weight_array = self.preposition_model_dict[preposition].regression_weights
-        prototype_array = self.preposition_model_dict[preposition].prototype
-        out = self.semantic_similarity(weight_array, point, prototype_array)
+        p_model = self.preposition_model_dict[preposition]
+        weight_array = p_model.regression_weights
+        prototype_array = p_model.prototype
+
+        out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array, self.all_feature_keys,
+                                                  features_to_remove=p_model.features_to_remove)
 
         return out
 
-class ExemplarModel(Model):
-    def __init__(self, preposition_model_dict, train_scenes, test_scenes, study_info_):
+
+class CSModel(Model):
+    name = "Conceptual Space"
+
+    def __init__(self, preposition_model_dict, test_scenes, study_info_):
         self.preposition_model_dict = preposition_model_dict
 
+        Model.__init__(self, CSModel.name, test_scenes, study_info_)
 
-        Model.__init__("Exemplar", train_scenes, test_scenes, study_info_)
+    def get_typicality(self, preposition, point):
+        p_model = self.preposition_model_dict[preposition]
+        weight_array = p_model.regression_weights
+        prototype_array = p_model.barycentre_prototype
+        out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array, self.all_feature_keys,
+                                                  features_to_remove=p_model.features_to_remove)
+
+        return out
+
+
+class ExemplarModel(Model):
+    name = "Exemplar"
+
+    def __init__(self, preposition_model_dict, test_scenes, study_info_):
+        self.preposition_model_dict = preposition_model_dict
+
+        Model.__init__(self, ExemplarModel.name, test_scenes, study_info_)
 
     def get_typicality(self, preposition, point):
 
-        p = self.preposition_model_dict[preposition]
-
+        p_model = self.preposition_model_dict[preposition]
+        weight_array = p_model.regression_weights
         ## Need to fix here downwards
-        exemplars = p.typical_features.drop(Configuration.context_features, axis=1)
-        none_instances = p.neg_features.drop(Configuration.context_features, axis=1)
+        exemplars = p_model.typical_features
+        none_instances = p_model.neg_features
 
         # Find average semantic similarity to points in exemplar model
         counter = 0
@@ -984,393 +944,233 @@ class ExemplarModel(Model):
         # Iterate over rows in exemplar dataframe
         for index, row in exemplars.iterrows():
             # Get row values
-            e = row.values
+            exemplar_values = row.values
 
             # Convert values to np array
-            e = np.array(e)
+            exemplar_values = np.array(exemplar_values)
             counter += 1
             # Calculate similarity of current point to exemplar
-            weight_array = self.weight_dict[preposition]
-            semantic_similarity_sum += self.semantic_similarity(weight_array, point, e)
+
+            semantic_similarity_sum += SemanticMethods.semantic_similarity(weight_array, point, exemplar_values,
+                                                                           self.all_feature_keys,
+                                                                           features_to_remove=p_model.features_to_remove)
 
         if counter == 0:
             return 0
         else:
-            top = float(semantic_similarity_sum) / counter
+            average = float(semantic_similarity_sum) / counter
 
-        return top
+        return average
+
+
+class ProximityModel(Model):
+    name = "Proximity"
+
+    def __init__(self, test_scenes, study_info_):
+
+        Model.__init__(self, ProximityModel.name, test_scenes, study_info_)
+
+        prototype_array = []
+        weight_array = []
+
+        for feature in self.all_feature_keys:
+            if feature != "shortest_distance":
+                prototype_array.append(0)
+                weight_array.append(0)
+            else:
+                x = self.feature_processer.convert_normal_value_to_standardised(feature, 0)
+                prototype_array.append(x)
+                weight_array.append(1)
+
+        self.prototype_array = np.array(prototype_array)
+        self.weight_array = np.array(weight_array)
+
+    def get_typicality(self, preposition, point):
+
+        out = SemanticMethods.semantic_similarity(self.weight_array, point, self.prototype_array, self.all_feature_keys)
+
+        return out
+
+
+class SimpleModel(Model):
+    name = "Simple"
+
+    def __init__(self, test_scenes, study_info_):
+        Model.__init__(self, SimpleModel.name, test_scenes, study_info_)
+
+        self.prototype_dictionary = dict()
+        self.weight_dictionary = dict()
+
+        in_prototype, in_weights = self.generate_arrays({"bbox_overlap_proportion": 1})
+        self.prototype_dictionary["in"] = self.prototype_dictionary["inside"] = in_prototype
+        self.weight_dictionary["in"] = self.weight_dictionary["inside"] = in_weights
+
+        on_prototype, on_weights = self.generate_arrays({"above_proportion": 1, "contact_proportion": 1})
+        self.prototype_dictionary["on"] = self.prototype_dictionary["on top of"] = on_prototype
+        self.weight_dictionary["on"] = self.weight_dictionary["on top of"] = on_weights
+
+        above_prototype, above_weights = self.generate_arrays({"above_proportion": 1, "horizontal_distance": 0})
+        self.prototype_dictionary["above"] = self.prototype_dictionary["over"] = above_prototype
+        self.weight_dictionary["above"] = self.weight_dictionary["over"] = above_weights
+
+        below_prototype, below_weights = self.generate_arrays({"below_proportion": 1, "horizontal_distance": 0})
+        self.prototype_dictionary["below"] = self.prototype_dictionary["under"] = below_prototype
+        self.weight_dictionary["below"] = self.weight_dictionary["under"] = below_weights
+
+        against_prototype, against_weights = self.generate_arrays({"contact_proportion": 1, "horizontal_distance": 0})
+        self.prototype_dictionary["against"] = against_prototype
+        self.weight_dictionary["against"] = against_weights
+
+    def get_typicality(self, preposition, point):
+        prototype_array = self.prototype_dictionary[preposition]
+        weight_array = self.weight_dictionary[preposition]
+
+        out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array, self.all_feature_keys)
+
+        return out
+
+
+class BestGuessModel(Model):
+    name = "Best Guess"
+
+    def __init__(self, test_scenes, study_info_):
+        Model.__init__(self, BestGuessModel.name, test_scenes, study_info_)
+
+        self.prototype_dictionary = dict()
+        self.weight_dictionary = dict()
+
+        inside_prototype, inside_weights = self.generate_arrays({"bbox_overlap_proportion": 1})
+        self.prototype_dictionary["inside"] = inside_prototype
+        self.weight_dictionary["inside"] = inside_weights
+
+        in_prototype, in_weights = self.generate_arrays({"bbox_overlap_proportion": 1, "location_control": 1})
+        self.prototype_dictionary["in"] = in_prototype
+        self.weight_dictionary["in"] = in_weights
+
+        on_prototype, on_weights = self.generate_arrays({"above_proportion": 1, "contact_proportion": 1, "support": 1})
+        self.prototype_dictionary["on"] = on_prototype
+        self.weight_dictionary["on"] = on_weights
+
+        ontopof_prototype, ontopof_weights = self.generate_arrays({"above_proportion": 1, "contact_proportion": 1})
+        self.prototype_dictionary["on top of"] = ontopof_prototype
+        self.weight_dictionary["on top of"] = ontopof_weights
+
+        above_prototype, above_weights = self.generate_arrays({"above_proportion": 1, "horizontal_distance": 0})
+        self.prototype_dictionary["above"] = above_prototype
+        self.weight_dictionary["above"] = above_weights
+
+        over_prototype, over_weights = self.generate_arrays({"above_proportion": 1, "f_covers_g": 1})
+        self.prototype_dictionary["over"] = over_prototype
+        self.weight_dictionary["over"] = over_weights
+
+        below_prototype, below_weights = self.generate_arrays({"below_proportion": 1, "horizontal_distance": 0})
+        self.prototype_dictionary["below"] = below_prototype
+        self.weight_dictionary["below"] = below_weights
+
+        under_prototype, under_weights = self.generate_arrays({"below_proportion": 1, "g_covers_f": 1})
+        self.prototype_dictionary["under"] = under_prototype
+        self.weight_dictionary["under"] = under_weights
+
+        against_prototype, against_weights = self.generate_arrays(
+            {"contact_proportion": 1, "horizontal_distance": 0, "location_control": 0.5})
+        self.prototype_dictionary["against"] = against_prototype
+        self.weight_dictionary["against"] = against_weights
+
+    def get_typicality(self, preposition, point):
+        prototype_array = self.prototype_dictionary[preposition]
+        weight_array = self.weight_dictionary[preposition]
+
+        out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array, self.all_feature_keys)
+
+        return out
+
+
+class RegressionModel(Model):
+    # This needs fixing if using in future
+    name = "Regression Model"
+
+    def __init__(self, preposition_model_dict, test_scenes, study_info_):
+        self.preposition_model_dict = preposition_model_dict
+
+        Model.__init__(self, RegressionModel.name, test_scenes, study_info_)
+
+    def get_typicality(self, preposition, point):
+        p_model = self.preposition_model_dict[preposition]
+        regression_model = p_model.regression_model
+
+        point_array = np.array(point).reshape(1, -1)
+        if self.regression_dimension is not None:
+            # Must transform the point for polynomial regression
+            polynomial_features = PolynomialFeatures(degree=self.regression_dimension)
+            point_array = polynomial_features.fit_transform(point_array)
+
+        t = self.regression_model_dict[preposition].predict(point_array)
+        return t
+
 
 class GenerateBasicModels:
     """Summary
     
-    Attributes:
-        all_regression_weights (TYPE): Description
-        barycentre_prototypes (TYPE): Description
-        best_guess_model_name (str): Description
-        constraint_dict (TYPE): Description
-        cs_model_name (str): Description
-        exemplar_model_name (str): Description
-        feature_keys (TYPE): Description
-        feature_processer (TYPE): Description
-        feature_to_remove (TYPE): Description
-        lin_model_name (str): Description
-        linear_regression_model_dict (TYPE): Description
-        model_name_list (TYPE): Description
-        models (TYPE): Description
-        other_name_list (TYPE): Description
-        our_model_name (str): Description
-        poly_model_name (str): Description
-        poly_regression_model_dict (TYPE): Description
-        prototypes (TYPE): Description
-        proximity_model_name (str): Description
-        relation_keys (TYPE): Description
-        simple_model_name (str): Description
-        study_info (TYPE): Description
-        test_scenes (TYPE): Description
-        train_scenes (TYPE): Description
+
     """
 
-    lin_model_name = "Linear Regression"
-    poly_model_name = "Polynomial Regression"
-    our_model_name = "Our Prototype"
-    exemplar_model_name = "Exemplar"
-    cs_model_name = "Conceptual Space"
-    proximity_model_name = "Proximity"
-    best_guess_model_name = "Best Guess"
-    simple_model_name = "Simple"
-
     # List of all model names
-    model_name_list = [our_model_name, exemplar_model_name, cs_model_name, best_guess_model_name, simple_model_name,
-                       proximity_model_name]
+    model_name_list = [PrototypeModel.name, ExemplarModel.name, CSModel.name, BestGuessModel.name, SimpleModel.name,
+                       ProximityModel.name]
 
-    # List of model names except ours
-    other_name_list = [exemplar_model_name, cs_model_name, best_guess_model_name, simple_model_name,
-                       proximity_model_name]
+    other_name_list = [ExemplarModel.name, CSModel.name, BestGuessModel.name, SimpleModel.name,
+                       ProximityModel.name]
 
     # Generating models to test
-    def __init__(self, train_scenes, test_scenes, study_info_, feature_to_remove=None, only_test_our_model=None):
+    def __init__(self, train_scenes, test_scenes, study_info_, extra_features_to_remove=None, only_test_our_model=None):
         """Summary
         
-        Args:
-            train_scenes (TYPE): Description
-            test_scenes (TYPE): Description
-            study_info_ (TYPE): Description
-            feature_to_remove (None, optional): Description
-            only_test_our_model (None, optional): Description
+
         """
         self.study_info = study_info_
-        self.relation_keys = self.study_info.feature_keys
-        self.feature_keys = self.study_info.all_feature_keys
-        self.feature_processer = Features(self.study_info.name)
-        # Dictionary of constraints to satisfy
-        self.constraint_dict = Constraint.read_from_csv(self.study_info.constraint_csv)
 
-        # Values of prototypes and feature weights
-        self.prototypes = dict()
-        self.barycentre_prototypes = dict()
-        self.all_regression_weights = dict()
-        self.poly_regression_model_dict = dict()
-        self.linear_regression_model_dict = dict()
         # Scenes used to train models
         self.train_scenes = train_scenes
         # Scenes used to test models
         self.test_scenes = test_scenes
-        self.features_to_remove = feature_to_remove
+        # Features to remove from consideration (not used in training or testing)
+        self.features_to_remove = Configuration.ground_property_features
 
-        # Get data models
+        # Extra features may be removed to test on
+        if extra_features_to_remove is not None:
+            for f in extra_features_to_remove:
+                self.features_to_remove.append(f)
+        print(self.features_to_remove)
+        preposition_models_dict = dict()
+
+        # Get parameters for each preposition
         for p in preposition_list:
-            M = GeneratePrepositionModels(self.study_info, p, self.train_scenes)
-            M.work_out_models()
+            M = GeneratePrepositionModelParameters(self.study_info, p, self.train_scenes,
+                                                   features_to_remove=self.features_to_remove)
+            preposition_models_dict[p] = M
+        self.preposition_paramters_dict = preposition_models_dict
+        our_model = PrototypeModel(preposition_models_dict, self.test_scenes, self.study_info)
 
-            self.prototypes[p] = M.prototype
-            self.barycentre_prototypes[p] = M.barycentre_prototype
-            self.all_regression_weights[p] = M.regression_weights
-            self.linear_regression_model_dict[p] = M.linear_regression_model
-            self.poly_regression_model_dict[p] = M.poly_regression_model
+        if only_test_our_model is None:
 
-        m = Model(self.our_model_name, self.train_scenes, self.test_scenes, self.study_info,
-                  weight_dict=self.all_regression_weights, features_to_remove=self.features_to_remove,
-                  prototype_dict=self.prototypes)
-        # linear_r_model = Model(self.lin_model_name,self.all_regression_weights,self.train_scenes,self.test_scenes,self.constraint_dict,regression_model_dict = self.linear_regression_model_dict)
-        # poly_r_model = Model(self.poly_model_name,self.all_regression_weights,self.train_scenes,self.test_scenes,self.constraint_dict,regression_model_dict = self.poly_regression_model_dict, regression_dimension = 3)
-        if only_test_our_model == None:  # features_to_remove == None:
+            exemplar_model = ExemplarModel(preposition_models_dict, self.test_scenes, self.study_info)
+            cs_model = CSModel(preposition_models_dict, self.test_scenes, self.study_info)
+            proximity_model = ProximityModel(self.test_scenes, self.study_info)
+            simple_model = SimpleModel(self.test_scenes, self.study_info)
+            best_guess_model = BestGuessModel(self.test_scenes, self.study_info)
 
-            # Only include others if not testing features
-            m1 = Model(self.exemplar_model_name, self.train_scenes, self.test_scenes, self.study_info,
-                       weight_dict=self.all_regression_weights, features_to_remove=self.features_to_remove)
-            m2 = Model(self.cs_model_name, self.train_scenes, self.test_scenes, self.study_info,
-                       weight_dict=self.all_regression_weights, features_to_remove=self.features_to_remove,
-                       prototype_dict=self.barycentre_prototypes)
-            m3 = self.get_proximity_model()
-            m4 = self.get_simple_model()
-            m5 = self.get_best_guess_model()
-            models = [m, m1, m2, m3, m4, m5]  # ,linear_r_model,poly_r_model]
+            models = [our_model, exemplar_model, cs_model, proximity_model, simple_model, best_guess_model]
 
         else:
 
-            models = [m]
+            models = [our_model]
 
         self.models = models
-
-    def get_proximity_model(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        #
-        pro_dict = dict()
-        weight_dict = dict()
-
-        pro_array = []
-        weight_array = []
-        for feature in self.relation_keys:
-            if feature != "shortest_distance":
-                pro_array.append(0)
-                weight_array.append(0)
-            else:
-                x = self.feature_processer.convert_normal_value_to_standardised(feature, 0)
-                pro_array.append(x)
-                weight_array.append(1)
-
-        pro_array = np.array(pro_array)
-        weight_array = np.array(weight_array)
-        for preposition in preposition_list:
-            pro_dict[preposition] = pro_array
-            weight_dict[preposition] = weight_array
-
-        m = Model(self.proximity_model_name, self.train_scenes, self.test_scenes, self.study_info,
-                  weight_dict=weight_dict, features_to_remove=self.features_to_remove, prototype_dict=pro_dict)
-        return m
-
-    def get_best_guess_model(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        # best guess model uses intuition
-        pro_dict = dict()
-        weight_dict = dict()
-
-        for preposition in preposition_list:
-            pro_array = []
-            weight_array = []
-            if preposition == "inside":
-                for feature in self.relation_keys:
-                    if feature != "bbox_overlap_proportion":
-                        pro_array.append(0)
-                        weight_array.append(0)
-                    else:
-                        x = self.feature_processer.convert_normal_value_to_standardised(feature, 1)
-                        pro_array.append(x)
-                        weight_array.append(1)
-
-            if preposition == "in":
-                for feature in self.relation_keys:
-                    salient_features = ["bbox_overlap_proportion", "location_control"]
-                    if feature not in salient_features:
-                        pro_array.append(0)
-                        weight_array.append(0)
-                    else:
-                        x = self.feature_processer.convert_normal_value_to_standardised(feature, 1)
-                        pro_array.append(x)
-                        weight_array.append(1)
-
-            if preposition == "on":
-                salient_features = ["above_proportion", "contact_proportion", "support"]
-                for feature in self.relation_keys:
-                    if feature not in salient_features:
-                        pro_array.append(0)
-                        weight_array.append(0)
-                    else:
-                        x = self.feature_processer.convert_normal_value_to_standardised(feature, 1)
-                        pro_array.append(x)
-                        weight_array.append(1)
-            if preposition == "on top of":
-                salient_features = ["above_proportion", "contact_proportion"]
-                for feature in self.relation_keys:
-                    if feature not in salient_features:
-                        pro_array.append(0)
-                        weight_array.append(0)
-                    else:
-                        x = self.feature_processer.convert_normal_value_to_standardised(feature, 1)
-                        pro_array.append(x)
-                        weight_array.append(1)
-
-            if preposition == "above":
-                salient_features = ["above_proportion", "horizontal_distance"]
-                for feature in self.relation_keys:
-                    if feature not in salient_features:
-                        pro_array.append(0)
-                        weight_array.append(0)
-                    else:
-                        if feature == "above_proportion":
-                            v = 1
-                        else:
-                            v = 0
-                        x = self.feature_processer.convert_normal_value_to_standardised(feature, v)
-                        pro_array.append(x)
-                        weight_array.append(1)
-
-            if preposition == "over":
-                salient_features = ["above_proportion", "f_covers_g"]
-                for feature in self.relation_keys:
-                    if feature in salient_features:
-                        x = self.feature_processer.convert_normal_value_to_standardised(feature, 1)
-                        pro_array.append(x)
-                        weight_array.append(1)
-                    else:
-
-                        pro_array.append(0)
-                        weight_array.append(0)
-
-            if preposition == "below":
-                salient_features = ["below_proportion", "horizontal_distance"]
-                for feature in self.relation_keys:
-                    if feature not in salient_features:
-                        pro_array.append(0)
-                        weight_array.append(0)
-                    else:
-                        if feature == "below_proportion":
-                            v = 1
-                        else:
-                            v = 0
-                        x = self.feature_processer.convert_normal_value_to_standardised(feature, v)
-                        pro_array.append(x)
-                        weight_array.append(1)
-
-            if preposition == "under":
-                salient_features = ["below_proportion", "g_covers_f"]
-                for feature in self.relation_keys:
-                    if feature in salient_features:
-                        x = self.feature_processer.convert_normal_value_to_standardised(feature, 1)
-                        pro_array.append(x)
-                        weight_array.append(1)
-
-
-                    else:
-                        pro_array.append(0)
-                        weight_array.append(0)
-
-            if preposition == "against":
-                salient_features = ["contact_proportion", "horizontal_distance", "location_control"]
-                for feature in self.relation_keys:
-                    if feature not in salient_features:
-                        pro_array.append(0)
-                        weight_array.append(0)
-                    else:
-                        if feature == "contact_proportion":
-                            v = 1
-                        elif feature == "horizontal_distance":
-                            v = 0
-                        else:
-                            v = 0.5
-                        x = self.feature_processer.convert_normal_value_to_standardised(feature, v)
-                        pro_array.append(x)
-                        weight_array.append(1)
-
-            pro_array = np.array(pro_array)
-            weight_array = np.array(weight_array)
-            pro_dict[preposition] = pro_array
-            weight_dict[preposition] = weight_array
-        m = Model(self.best_guess_model_name, self.train_scenes, self.test_scenes, self.study_info,
-                  weight_dict=weight_dict, features_to_remove=self.features_to_remove, prototype_dict=pro_dict)
-        return m
-
-    def get_simple_model(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        # Simple model uses simple geometric features which are equally weighted
-
-        pro_dict = dict()
-        weight_dict = dict()
-
-        for preposition in preposition_list:
-            pro_array = []
-            weight_array = []
-            if preposition == "inside" or preposition == "in":
-                for feature in self.relation_keys:
-                    if feature != "bbox_overlap_proportion":
-                        pro_array.append(0)
-                        weight_array.append(0)
-                    else:
-                        x = self.feature_processer.convert_normal_value_to_standardised(feature, 1)
-                        pro_array.append(x)
-                        weight_array.append(1)
-
-            if preposition == "on top of" or preposition == "on":
-                salient_features = ["above_proportion", "contact_proportion"]
-                for feature in self.relation_keys:
-                    if feature not in salient_features:
-                        pro_array.append(0)
-                        weight_array.append(0)
-                    else:
-                        x = self.feature_processer.convert_normal_value_to_standardised(feature, 1)
-                        pro_array.append(x)
-                        weight_array.append(1)
-
-            if preposition == "above" or preposition == "over":
-                salient_features = ["above_proportion", "horizontal_distance"]
-                for feature in self.relation_keys:
-                    if feature not in salient_features:
-                        pro_array.append(0)
-                        weight_array.append(0)
-                    else:
-                        if feature == "above_proportion":
-                            v = 1
-                        else:
-                            v = 0
-                        x = self.feature_processer.convert_normal_value_to_standardised(feature, v)
-                        pro_array.append(x)
-                        weight_array.append(1)
-
-            if preposition == "below" or preposition == "under":
-                salient_features = ["below_proportion", "horizontal_distance"]
-                for feature in self.relation_keys:
-                    if feature not in salient_features:
-                        pro_array.append(0)
-                        weight_array.append(0)
-                    else:
-                        if feature == "below_proportion":
-                            v = 1
-                        else:
-                            v = 0
-                        x = self.feature_processer.convert_normal_value_to_standardised(feature, v)
-                        pro_array.append(x)
-                        weight_array.append(1)
-
-            if preposition == "against":
-                salient_features = ["contact_proportion", "horizontal_distance"]
-                for feature in self.relation_keys:
-                    if feature not in salient_features:
-                        pro_array.append(0)
-                        weight_array.append(0)
-                    else:
-                        if feature == "contact_proportion":
-                            v = 1
-                        if feature == "horizontal_distance":
-                            v = 0
-
-                        x = self.feature_processer.convert_normal_value_to_standardised(feature, v)
-                        pro_array.append(x)
-                        weight_array.append(1)
-
-            pro_array = np.array(pro_array)
-            weight_array = np.array(weight_array)
-            pro_dict[preposition] = pro_array
-            weight_dict[preposition] = weight_array
-        m = Model(self.simple_model_name, self.train_scenes, self.test_scenes, self.study_info, weight_dict=weight_dict,
-                  features_to_remove=self.features_to_remove, prototype_dict=pro_dict)
-        return m
 
 
 class TestModels:
     """Summary
-    
+    # Takes input set of models and outputs database of scores
     Attributes:
         model_name_list (list): Description
         models (TYPE): Description
@@ -1378,7 +1178,7 @@ class TestModels:
         version_name (TYPE): Description
     """
 
-    # Takes input set of models and outputs database of scores
+
 
     def __init__(self, models, version_name):
         """Summary
@@ -1487,7 +1287,7 @@ class MultipleRuns:
         self.test_prepositions = self.Generate_Models_all_scenes.models[0].test_prepositions
         self.all_csv = self.study_info.name + "/scores/tables/all-model scores.csv"
         self.all_plot = self.study_info.name + "/scores/plots/ScoresUsingAllData.pdf"
-        if self.features_to_test == None:
+        if self.features_to_test is None:
 
             self.scores_tables_folder = self.study_info.name + "/scores/tables/all features"
             self.scores_plots_folder = self.study_info.name + "/scores/plots/all features"
@@ -1550,24 +1350,22 @@ class MultipleRuns:
                     self.count_cluster_model_wins[other_model] = 0
                     self.count_other_model_beats_cluster[other_model] = 0
 
-    def generate_models(self, train_scenes, test_scenes):
+    def generate_models(self, train_scenes, test_scenes, extra_feature_to_remove=None):
         """Summary
-        
-        Args:
-            train_scenes (TYPE): Description
-            test_scenes (TYPE): Description
-        
-        Returns:
-            TYPE: Description
+        Generates a list of models to test from given train and test scenes.
+
         """
         if self.features_to_test is not None:
-            # Test model with no removed features
+            # Only test our model
             generate_models = self.model_generator(train_scenes, test_scenes, self.study_info,
+                                                   extra_features_to_remove=extra_feature_to_remove,
                                                    only_test_our_model=True)
 
         else:
-            # Test all models with no removed features
-            generate_models = self.model_generator(train_scenes, test_scenes, self.study_info)
+            # Test all models
+            generate_models = self.model_generator(train_scenes, test_scenes, self.study_info,
+                                                   extra_features_to_remove=extra_feature_to_remove)
+
         return generate_models
 
     def test_all_scenes(self):
@@ -1604,7 +1402,7 @@ class MultipleRuns:
             self.dataframe_dict["all_features"] = dataset
 
         # Get our score from dataframe
-        our_score = dataset.at["Overall", generate_models.our_model_name]
+        our_score = dataset.at["Overall", PrototypeModel.name]
 
         # Compare Models
         if self.compare is not None:
@@ -1635,8 +1433,8 @@ class MultipleRuns:
         if self.features_to_test is not None:
 
             for feature in self.features_to_test:
-                generate_models = GenerateBasicModels(train_scenes, test_scenes, self.study_info,
-                                                      feature_to_remove=[feature], only_test_our_model=True)
+                generate_models = self.generate_models(train_scenes, test_scenes, extra_feature_to_remove=feature)
+
                 t = TestModels(generate_models.models, str(self.run_count))
 
                 feature_dataset = t.score_dataframe
@@ -1928,9 +1726,9 @@ def plot_preposition_graphs(study_info):
         study_info (TYPE): Description
     """
     scene_list = study_info.scene_name_list
-
+    generated_models = GenerateBasicModels(scene_list,scene_list,study_info)
     for p in preposition_list:
-        M = GeneratePrepositionModels(study_info, p, scene_list)
+        M = generated_models.preposition_paramters_dict[p]
         M.work_out_models()
         M.output_models()
         M.plot_models()
@@ -2047,7 +1845,7 @@ def main(study_info_):
     Args:
         study_info_ (TYPE): Description
     """
-    plot_preposition_graphs(study_info)
+    # plot_preposition_graphs(study_info)
     # Edit plot settings
     mpl.rcParams['font.size'] = 40
     mpl.rcParams['legend.fontsize'] = 37
@@ -2056,8 +1854,8 @@ def main(study_info_):
     mpl.rcParams['ytick.labelsize'] = 'small'
 
     initial_test(study_info_)
-    test_models(study_info_)
-    test_features(study_info_)
+    # test_models(study_info_)
+    # test_features(study_info_)
 
 
 # plot_all_csv()
@@ -2066,6 +1864,6 @@ def main(study_info_):
 
 
 if __name__ == '__main__':
-    study_info = StudyInfo("2019 name")
+    study_info = StudyInfo("2019 study")
 
     main(study_info)

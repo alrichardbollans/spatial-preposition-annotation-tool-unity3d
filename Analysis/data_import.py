@@ -303,7 +303,7 @@ class StudyInfo:
         self.scene_info_csv_file = self.input_feature_data_folder + "/" + self.scene_info_filename
         self.scene_list, self.scene_name_list = self.get_scenes()
 
-        self.feature_keys = []
+        self.all_feature_keys = []
 
         self.config_list = self.load_all_configs()
 
@@ -346,7 +346,7 @@ class StudyInfo:
             geom_relations = list(reader)  # create a list from the reader
 
             for title in geom_relations[0][3:]:
-                self.feature_keys.append(title)
+                self.all_feature_keys.append(title)
 
 
             geom_relations.pop(0)
@@ -537,7 +537,7 @@ class Configuration(SimpleConfiguration):
     """class which is used to read feature values of configurations.
     
     Attributes:
-        context_features (list): Description
+        ground_property_features (list): Description
         full_row (TYPE): Description
         relations_row (list): Description
         row (list): Description
@@ -557,7 +557,7 @@ class Configuration(SimpleConfiguration):
 
     # Lots of this could be done with pandas. Doh :/
 
-    context_features = ["ground_lightsource", "ground_container", "ground_verticality"]
+    ground_property_features = ["ground_lightsource", "ground_container", "ground_verticality"]
 
     def __init__(self, scene, figure, ground, study):
         """Summary
@@ -577,8 +577,7 @@ class Configuration(SimpleConfiguration):
         self.row = []
         # Row beginning with names
         self.full_row = [self.scene, self.figure, self.ground]
-        # Row without context features
-        self.relations_row = []
+
         if self.figure != "none":
             self.load_from_csv()
 
@@ -629,5 +628,4 @@ class Configuration(SimpleConfiguration):
                         setattr(self, key, value)
                         self.row.append(value)
                         self.full_row.append(value)
-                        if key in self.study.feature_keys:
-                            self.relations_row.append(value)
+

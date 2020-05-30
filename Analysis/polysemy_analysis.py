@@ -38,7 +38,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-from basic_model_testing import TestModels, GeneratePrepositionModels, Model, Features, MultipleRuns, SemanticMethods
+from basic_model_testing import TestModels, GeneratePrepositionModelParameters, Model, Features, MultipleRuns, SemanticMethods
 from data_import import Configuration, StudyInfo
 from classes import Constraint, Configuration
 from compile_instances import SemanticCollection, ComparativeCollection
@@ -156,7 +156,7 @@ class Clustering:
 
         self.all_scenes = self.study_info.scene_name_list
         self.preposition = preposition
-        self.models = GeneratePrepositionModels(self.study_info, preposition, self.all_scenes)
+        self.models = GeneratePrepositionModelParameters(self.study_info, preposition, self.all_scenes)
 
         # All selected instances
         self.possible_instances = self.models.affFeatures
@@ -572,7 +572,7 @@ class Polyseme():
         self.plot_folder = self.study_info.polyseme_data_folder + 'plots/'
 
         self.share_prototype = share_prototype
-        self.preposition_models = GeneratePrepositionModels(self.study_info, self.preposition, self.train_scenes, polyseme=self)
+        self.preposition_models = GeneratePrepositionModelParameters(self.study_info, self.preposition, self.train_scenes, polyseme=self)
 
         # Assign a rank/hierarchy to polysemes
 
@@ -626,7 +626,7 @@ class Polyseme():
         # print(self.prototype)
         # Input dictionarys of prototype and feature weights for each preposition, stored as arrays
         if self.share_prototype:
-            preposition_models = GeneratePrepositionModels(self.study_info, self.preposition, self.train_scenes)
+            preposition_models = GeneratePrepositionModelParameters(self.study_info, self.preposition, self.train_scenes)
             preposition_models.work_out_prototype_model()
             self.prototype = preposition_models.prototype
         # print("shared")
@@ -1049,7 +1049,7 @@ class GeneratePolysemeModels():
         for preposition in polysemous_preposition_list:
             out[preposition] = []
             number_clusters = cluster_numbers[preposition]
-            models = GeneratePrepositionModels(self.study_info, preposition, self.train_scenes)
+            models = GeneratePrepositionModelParameters(self.study_info, preposition, self.train_scenes)
 
             # All selected instances
             possible_instances = models.affFeatures

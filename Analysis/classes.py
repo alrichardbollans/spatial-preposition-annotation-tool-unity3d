@@ -59,7 +59,8 @@ class Constraint:
         # These are configuration values for the instances being compared
         self.lhs = lhs
         self.rhs = rhs
-
+        self.lhs_values = np.array(list(self.lhs.values()))
+        self.rhs_values = np.array(list(self.rhs.values()))
         # Weight given to constraint
         self.weight = weight
 
