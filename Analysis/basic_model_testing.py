@@ -40,7 +40,7 @@ comp_filetag = ComparativeCollection.filetag  # Tag for comp task files
 preposition_list = StudyInfo.preposition_list
 
 
-def convert_index(x, number_of_columns):
+def convert_index(i, number_of_columns):
     """Converts index to place in row/columns for plots
     
     Args:
@@ -50,16 +50,16 @@ def convert_index(x, number_of_columns):
     Returns:
         TYPE: Description
     """
-    if x == 0 or x == 6 or x == 12:
+    if i == 0 or i == 6 or i == 12:
         x_pos = 0
         y_pos = 0
-    elif x < 6:
-        x_pos = x / number_of_columns
-        y_pos = x % number_of_columns
+    elif i < 6:
+        x_pos = int(i / number_of_columns)
+        y_pos = i % number_of_columns
     else:
-        x = x - 6
-        x_pos = x / number_of_columns
-        y_pos = x % number_of_columns
+        i = i - 6
+        x_pos = int(i / number_of_columns)
+        y_pos = i % number_of_columns
 
     return x_pos, y_pos
 
@@ -369,6 +369,7 @@ class GeneratePrepositionModelParameters:
         # Get position to  display, by index
         x_pos, y_pos = convert_index(index, no_columns)
 
+
         ax1 = axes[x_pos, y_pos]
 
         ax1.set_xlabel("Selection Ratio")
@@ -394,13 +395,14 @@ class GeneratePrepositionModelParameters:
         end = [1]
         end = np.array(end).reshape(-1, 1)
 
+        index_for_prototypes = self.all_feature_keys.index(feature)
         if self.barycentre_prototype is not None:
-            b = self.barycentre_prototype[index]
+            b = self.barycentre_prototype[index_for_prototypes]
             b = np.array([b]).reshape(-1, 1)
             # Plot barycentre value
             ax1.plot(end, b, markersize=10, markeredgewidth=2, marker='+')
         if self.exemplar_mean is not None:
-            ex = self.exemplar_mean[index]
+            ex = self.exemplar_mean[index_for_prototypes]
             ex = np.array([ex]).reshape(-1, 1)
 
             # Plot exemplar mean value
@@ -657,19 +659,19 @@ class GeneratePrepositionModelParameters:
         """Summary
         """
         # Only called once when training scenes are all scenes, so these are the best model parameters
-        wf = pd.DataFrame(self.regression_weights, self.feature_keys)
+        wf = pd.DataFrame(self.regression_weights, self.all_feature_keys)
 
         wf.to_csv(self.regression_weight_csv)
 
-        pf = pd.DataFrame(self.prototype, self.feature_keys)
+        pf = pd.DataFrame(self.prototype, self.all_feature_keys)
 
         pf.to_csv(self.prototype_csv)
 
-        epf = pd.DataFrame(self.barycentre_prototype, self.feature_keys)
+        epf = pd.DataFrame(self.barycentre_prototype, self.all_feature_keys)
 
         epf.to_csv(self.barycentre_csv)
 
-        exf = pd.DataFrame(self.exemplar_mean, self.feature_keys)
+        exf = pd.DataFrame(self.exemplar_mean, self.all_feature_keys)
 
         exf.to_csv(self.exemplar_csv)
 
@@ -1729,7 +1731,6 @@ def plot_preposition_graphs(study_info):
     generated_models = GenerateBasicModels(scene_list,scene_list,study_info)
     for p in preposition_list:
         M = generated_models.preposition_paramters_dict[p]
-        M.work_out_models()
         M.output_models()
         M.plot_models()
 
@@ -1845,7 +1846,7 @@ def main(study_info_):
     Args:
         study_info_ (TYPE): Description
     """
-    # plot_preposition_graphs(study_info)
+    plot_preposition_graphs(study_info)
     # Edit plot settings
     mpl.rcParams['font.size'] = 40
     mpl.rcParams['legend.fontsize'] = 37
