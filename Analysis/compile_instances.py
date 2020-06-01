@@ -604,22 +604,22 @@ class ConfigurationCollection(Collection):
 if __name__ == '__main__':
     study_info = StudyInfo("2019 study")
     # First preprocess features
-    # preprocess_features.process_all_features()
+    preprocess_features.process_all_features()
 
     ### Semantic Annotations
     ### Collect annotation instances and attach values to them
-    # svcollection = SemanticCollection(study_info)
+    svcollection = SemanticCollection(study_info)
 
-    # svcollection.write_preposition_stats_csvs()
-    # svcollection.write_config_ratios()
+    svcollection.write_preposition_stats_csvs()
+    svcollection.write_config_ratios()
 
     #### Comparative Annotations
 
     compcollection = ComparativeCollection(study_info)
 
-    # compcollection.write_preposition_stats_csvs()
+    compcollection.write_preposition_stats_csvs()
     compcollection.get_constraints()
-# compcollection.write_config_ratios()
+
 
 ## Collect all possible configurations and attach values to them
 
