@@ -272,9 +272,9 @@ class Clustering:
         number_clusters = k
 
         # nparray = nparray.reshape(-1,1)
-
+        # set random state to make randomness deterministic
         km = KMeans(
-            n_clusters=number_clusters
+            n_clusters=number_clusters, random_state=1
 
         )
         km.fit(self.km_instances_to_cluster, sample_weight=self.sample_weights)
@@ -1089,11 +1089,13 @@ class KMeansPolysemyModel(PolysemyModel):
             # All selected instances
             possible_instances = p_model_parameters.affFeatures
 
-            sample_weights = p_model_parameters.aff_dataset[p_model_parameters.ratio_feature_name]
+            ratio_feature_name = p_model_parameters.ratio_feature_name
+            sample_weights = p_model_parameters.aff_dataset[ratio_feature_name]
 
             # Issue that sometimes there's more samples than clusters
+            # Set random state to make randomness deterministic for repeatability
             km = KMeans(
-                n_clusters=number_clusters
+                n_clusters=number_clusters, random_state=1
 
             )
             km.fit(possible_instances, sample_weight=sample_weights)
@@ -1104,6 +1106,7 @@ class KMeansPolysemyModel(PolysemyModel):
 
             weights_used_features = p_model_parameters.regression_weights_used_features
 
+
             cluster_ratio_sums = []
             cluster_number_of_instances = []
             for i in range(len(km.cluster_centers_)):
@@ -1113,7 +1116,6 @@ class KMeansPolysemyModel(PolysemyModel):
             for index, row in p_model_parameters.feature_dataframe.iterrows():
                 # For each configuration add ratio to totals of closest centre
 
-                ratio_feature_name = p_model_parameters.ratio_feature_name
                 # Note dropping columns from dataset preserves row order i.e.
                 # row order of feature_dataframe = train_datset
                 ratio_of_instance = p_model_parameters.train_dataset.at[index, ratio_feature_name]
