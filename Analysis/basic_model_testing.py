@@ -888,6 +888,57 @@ class Model:
 
         return counter
 
+    def output_typicalities(self, preposition):
+        """Summary
+
+        Args:
+            preposition (TYPE): Description
+        """
+        # output_csv = base_polysemy_folder+ "config typicalities/"+self.name+"-typicality_test-"+preposition+".csv"
+        input_csv = self.study_info.base_polysemy_folder + "config typicalities/typicality-" + preposition + ".csv"
+        config_list = self.study_info.config_list
+
+        new_csv = False
+
+        try:
+            # print(self.name)
+            # print("try to read")
+            in_df = pd.read_csv(input_csv, index_col=0)
+
+        except Exception as e:
+            in_df = pd.DataFrame(columns=['scene', 'figure', 'ground', self.name])
+            # print("unsusccefully read")
+            new_csv = True
+        # else:
+        # 	pass
+        finally:
+            # pass
+
+            # print(in_df)
+
+            df_columns = in_df.columns
+            for c in config_list:
+
+                # Typicality is calculated for each configuration
+                # To check whether a configuration fits a particular polyseme we need to include
+                value_array = np.array(c.row)
+                typicality = self.get_typicality(preposition, value_array, scene=c.scene, figure=c.figure,
+                                                 ground=c.ground)
+                if new_csv:
+                    in_df = in_df.append(
+                        {'scene': c.scene, 'figure': c.figure, 'ground': c.ground, self.name: typicality},
+                        ignore_index=True)
+                else:
+                    row_index_in_df = in_df[(in_df['scene'] == c.scene) & (in_df['figure'] == c.figure) & (
+                            in_df['ground'] == c.ground)].index.tolist()
+
+                    # if self.name in df_columns:
+
+                    in_df.at[row_index_in_df[0], self.name] = typicality
+                # else:
+                # in_df[self.name] =
+            # print(preposition)
+            in_df.to_csv(input_csv)
 
 class PrototypeModel(Model):
     name = "Our Prototype"
@@ -897,7 +948,7 @@ class PrototypeModel(Model):
 
         Model.__init__(self, PrototypeModel.name, test_scenes, study_info_)
 
-    def get_typicality(self, preposition, point):
+    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
         p_model = self.preposition_model_dict[preposition]
         weight_array = p_model.regression_weights
         prototype_array = p_model.prototype
@@ -1195,11 +1246,10 @@ class TestModels:
 
         for model in self.models:
             self.model_name_list.append(model.name)
-            print("testing:")
-            print(model.name)
+
             model.get_score()
             out[model.name] = model.scores
-            print(model.scores)
+
 
         # out["Total Constraint Weights"] = models[0].weight_totals + ["",""]
 
@@ -1405,7 +1455,7 @@ class MultipleRuns:
             self.dataframe_dict["all_features"] = dataset
 
         # Get our score from dataframe
-        our_score = dataset.at["Overall", PrototypeModel.name]
+        our_score = dataset.at["Overall", generate_models.our_model_name]
 
         # Compare Models
         if self.compare is not None:

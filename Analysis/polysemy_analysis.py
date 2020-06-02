@@ -274,7 +274,7 @@ class Clustering:
         # nparray = nparray.reshape(-1,1)
         # set random state to make randomness deterministic
         km = KMeans(
-            n_clusters=number_clusters, random_state=1
+            n_clusters=number_clusters, random_state=0
 
         )
         km.fit(self.km_instances_to_cluster, sample_weight=self.sample_weights)
@@ -293,7 +293,7 @@ class Clustering:
             out["cluster_" + str(i)] = km.cluster_centers_[i]
 
         df = pd.DataFrame(out, self.study_info.all_feature_keys)
-        print((self.preposition))
+        print(self.preposition)
         print(df)
 
         df.to_csv(self.cluster_centres_csv)
@@ -398,18 +398,18 @@ class Clustering:
             centres.append(df["value"].values)
 
         i = self.calculate_inertia_from_centres(centres)
-        print((self.preposition))
+        print(self.preposition)
         print(("Number of clusters:" + str(len(centres))))
         return i
 
     def plot_elbow_polyseme_inertia(self):
         """Summary
         """
-        generated_polyseme_models = GeneratePolysemeModels(Clustering.all_scenes, Clustering.all_scenes,
+        all_scenes = self.study_info.scene_name_list
+        generated_polyseme_models = GeneratePolysemeModels(all_scenes, all_scenes,
                                                            self.study_info, preserve_empty_polysemes=True)
-        d = generated_polyseme_models.non_shared_dict
 
-        polysemes = d[self.preposition]
+        polysemes = generated_polyseme_models.non_shared.polyseme_dict[self.preposition]
         polysemes_inertia = self.calculate_polysemes_inertia(polysemes)
 
         inertias = []
@@ -726,7 +726,7 @@ class PolysemyModel(Model):
         Model.__init__(self, name, test_scenes, study_info_)
         self.test_prepositions = polysemous_preposition_list
 
-    def get_typicality(self, preposition, point, scene, figure, ground):
+    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
         print("This shouldn't be called")
 
     def weighted_score(self, preposition, Constraints):
@@ -750,56 +750,7 @@ class PolysemyModel(Model):
 
         return counter
 
-    def output_typicalities(self, preposition):
-        """Summary
-        
-        Args:
-            preposition (TYPE): Description
-        """
-        # output_csv = base_polysemy_folder+ "config typicalities/"+self.name+"-typicality_test-"+preposition+".csv"
-        input_csv = self.study_info.base_polysemy_folder + "config typicalities/typicality-" + preposition + ".csv"
-        config_list = Configuration.load_all(self.study_info)
 
-        new_csv = False
-
-        try:
-            # print(self.name)
-            # print("try to read")
-            in_df = pd.read_csv(input_csv, index_col=0)
-
-        except Exception as e:
-            in_df = pd.DataFrame(columns=['scene', 'figure', 'ground', self.name])
-            # print("unsusccefully read")
-            new_csv = True
-        # else:
-        # 	pass
-        finally:
-            # pass
-
-            # print(in_df)
-
-            df_columns = in_df.columns
-            for c in config_list:
-
-                # Typicality is calculated for each configuration
-                # To check whether a configuration fits a particular polyseme we need to include
-                value_array = np.array(c.relations_row)
-                typicality = self.get_typicality(preposition, value_array, c.scene, c.figure, c.ground)
-                if new_csv:
-                    in_df = in_df.append(
-                        {'scene': c.scene, 'figure': c.figure, 'ground': c.ground, self.name: typicality},
-                        ignore_index=True)
-                else:
-                    row_index_in_df = in_df[(in_df['scene'] == c.scene) & (in_df['figure'] == c.figure) & (
-                            in_df['ground'] == c.ground)].index.tolist()
-
-                    # if self.name in df_columns:
-
-                    in_df.at[row_index_in_df[0], self.name] = typicality
-                # else:
-                # in_df[self.name] =
-            # print(preposition)
-            in_df.to_csv(input_csv)
 
 
 class PrototypePolysemyModel(PolysemyModel):
@@ -974,7 +925,7 @@ class PrototypePolysemyModel(PolysemyModel):
                         # In the case there are no training instances (rank=0)
                         # Set the general parameters
 
-                        poly.weights = self.baseline_model.preposition_model_dict[prep].weights
+                        poly.weights = self.baseline_model.preposition_model_dict[prep].regression_weights
                         poly.prototype = self.baseline_model.preposition_model_dict[prep].prototype
 
                         ratio_feature_name = GeneratePrepositionModelParameters.ratio_feature_name
@@ -1006,7 +957,7 @@ class PrototypePolysemyModel(PolysemyModel):
                 out.append(polyseme)
         return out
 
-    def get_typicality(self, preposition, point, scene, figure, ground):
+    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
         '''
         Finds similarity to possible polysemes and multiplies by polyseme rank.
         :param preposition:
@@ -1062,6 +1013,7 @@ class PrototypePolysemyModel(PolysemyModel):
 
 class KMeansPolysemyModel(PolysemyModel):
     name = "KMeans Model"
+    cluster_numbers = {'on': 8, 'in': 4, 'under': 4, 'over': 4}
 
     def __init__(self, preposition_model_dict, test_scenes, study_info_):
         PolysemyModel.__init__(self, KMeansPolysemyModel.name, test_scenes, study_info_)
@@ -1077,12 +1029,11 @@ class KMeansPolysemyModel(PolysemyModel):
         """
         # Number of non-empty polysemes from polysemy model for all scenes
         # Actually none are empty, even for on
-        cluster_numbers = {'on': 8, 'in': 4, 'under': 4, 'over': 4}
+
         out = dict()
 
         for preposition in polysemous_preposition_list:
             out[preposition] = []
-            number_clusters = cluster_numbers[preposition]
 
             p_model_parameters = self.preposition_model_dict[preposition]
 
@@ -1095,7 +1046,7 @@ class KMeansPolysemyModel(PolysemyModel):
             # Issue that sometimes there's more samples than clusters
             # Set random state to make randomness deterministic for repeatability
             km = KMeans(
-                n_clusters=number_clusters, random_state=1
+                n_clusters=self.cluster_numbers[preposition], random_state=0
 
             )
             km.fit(possible_instances, sample_weight=sample_weights)
@@ -1105,7 +1056,6 @@ class KMeansPolysemyModel(PolysemyModel):
             # THen find the average selectionratio for each group.
 
             weights_used_features = p_model_parameters.regression_weights_used_features
-
 
             cluster_ratio_sums = []
             cluster_number_of_instances = []
@@ -1159,7 +1109,7 @@ class KMeansPolysemyModel(PolysemyModel):
 
         return out
 
-    def get_typicality(self, preposition, point):
+    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
         """Summary
         # Finds most similar cluster centre to point. Multiplies similarity to that cluster by cluster rank
         Args:
@@ -1232,7 +1182,7 @@ class GeneratePolysemeModels:
 
     other_model_name = "Shared Prototype"
     baseline_model_name = "Baseline Model"
-    cluster_model_name = "KMeans Model"
+    cluster_model_name = KMeansPolysemyModel.name
 
     # List of all model names
     model_name_list = [our_model_name, other_model_name, baseline_model_name, cluster_model_name]
@@ -1278,7 +1228,7 @@ class GeneratePolysemeModels:
         self.preposition_parameters_dict = preposition_models_dict
         self.baseline_model = PrototypeModel(preposition_models_dict, self.test_scenes, self.study_info)
         self.baseline_model.test_prepositions = polysemous_preposition_list
-        self.baseline_model.name = "Baseline Model"
+        self.baseline_model.name = self.baseline_model_name
 
         self.cluster_model = KMeansPolysemyModel(self.preposition_parameters_dict, self.test_scenes, self.study_info)
 
@@ -1480,7 +1430,7 @@ def output_typicality(study_info_):
             model.output_typicalities(preposition)
 
 
-def compare_kmeans(study_info_):
+def output_clustering_info(study_info_):
     """Summary
     :param study_info_:
     
@@ -1493,19 +1443,8 @@ def compare_kmeans(study_info_):
         c = Clustering(study_info_, preposition)
 
         c.plot_elbow_polyseme_inertia()
-
-
-def output_initial_inertias(study_info_):
-    """Summary
-    :param study_info_:
-    
-    Args:
-        study_info_ (TYPE): Description
-    """
-    print("Outputting initial inertias")
-    for preposition in preposition_list:
-        c = Clustering(study_info_, preposition)
         c.output_initial_inertia()
+        c.output_expected_kmeans_model()
 
 
 def work_out_all_dbsccan_clusters(study_info_):
@@ -1532,21 +1471,7 @@ def work_out_all_hry_clusters(study_info_):
     for preposition in polysemous_preposition_list:
         print(preposition)
         c = Clustering(study_info_, preposition)
-        km = c.work_out_hierarchy_model()
-
-
-def work_out_kmeans_clusters(study_info_):
-    """Summary
-    :param study_info_:
-    
-    Args:
-        study_info_ (TYPE): Description
-    """
-    print("Working out kmeans clusters")
-    for preposition in polysemous_preposition_list:
-        print(preposition)
-        c = Clustering(study_info_, preposition)
-        c.output_expected_kmeans_model()
+        c.work_out_hierarchy_model()
 
 
 def main(study_info_):
@@ -1561,18 +1486,17 @@ def main(study_info_):
     """
     output_all_polyseme_info(study_info_)
     # Clustering
-    work_out_kmeans_clusters(study_info_)
-    output_initial_inertias(study_info_)
+
     work_out_all_hry_clusters(study_info_)
 
     # Polysemes and performance
 
-    output_typicality(study_info_)
-    test_models(study_info_)
+    # output_typicality(study_info_)
+    # test_models(study_info_)
 
     mpl.rcParams['axes.titlesize'] = 'large'
     mpl.rcParams['axes.labelsize'] = 'large'
-    compare_kmeans(study_info_)
+    output_clustering_info(study_info_)
 
 
 if __name__ == '__main__':

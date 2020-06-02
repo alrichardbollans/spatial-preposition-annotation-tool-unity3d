@@ -1,4 +1,4 @@
-,Baseline Model,Distinct Prototype,Shared Prototype
-p_value,0.7579407931963542,0.9999991663186754,0.006016487862681736
-Cluster model wins,47.0,27.0,63.0
-Other model wins,43.0,62.0,25.0
+,Distinct Prototype,Shared Prototype,Baseline Model
+p_value,0.9940910339355469,0.2517223358154297,0.9423408508300781
+Cluster model wins,5.0,12.0,7.0
+Other model wins,13.0,6.0,12.0
