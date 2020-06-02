@@ -23,7 +23,6 @@ class User:
     Attributes:
         clean_user_id (TYPE): Human readable ID
         list_format (TYPE): Formatting of output list.
-        list_headings (TYPE): Headings for outputting
         native (TYPE): 1 if native, else 0.
         time (TYPE): Time user began.
         user_id (TYPE): ID assigned by annotation tool.
@@ -39,7 +38,7 @@ class User:
         """Summary
         
         Args:
-            clean_id (str): Description
+            clean_id (int): Description
             user_row (TYPE): Description
         
         Deleted Parameters:
@@ -90,7 +89,7 @@ class UserData:
         """Summary
         
         Args:
-            study (str): Name of
+            study (StudyInfo): Name of
         """
         self.study_info = study
         self.raw_data_list = self.load_raw_users_from_csv()
@@ -166,7 +165,6 @@ class Annotation:
         ground (TYPE): Description
         id (TYPE): Description
         list_format (TYPE): Description
-        list_headings (TYPE): Description
         preposition (TYPE): Description
         prepositions (TYPE): Description
         scene (TYPE): Description
@@ -291,7 +289,6 @@ class ComparativeAnnotation(Annotation):
     
     Attributes:
         list_format (TYPE): Description
-        list_headings (TYPE): Description
         possible_figures (TYPE): Description
     """
 
@@ -384,7 +381,6 @@ class SemanticAnnotation(Annotation):
     
     Attributes:
         list_format (TYPE): Description
-        list_headings (TYPE): Description
         preposition_list (TYPE): Description
     """
 
@@ -474,7 +470,6 @@ class TypicalityAnnotation(Annotation):
     Attributes:
         c1_config (TYPE): Description
         c2_config (TYPE): Description
-        list_headings (TYPE): Description
         selection_config (TYPE): Description
     """
 
@@ -544,14 +539,12 @@ class Data:
     
     Attributes:
         annotation_list (TYPE): Description
-        clean_csv_name (str): Description
         clean_data_list (TYPE): Description
         config_list (TYPE): Description
         data_list (TYPE): Description
         native_users (TYPE): Description
         scene_list (TYPE): Description
         study_info (TYPE): Description
-        task (str): Description
         user_list (TYPE): Description
     
     Deleted Attributes:
@@ -630,11 +623,11 @@ class Data:
         return out
 
     def get_configs(self):
-        '''Get configurations which appear in clean annotation list
-        
+        """Get configurations which appear in clean annotation list
+
         Returns:
             TYPE: Description
-        '''
+        """
         config_list = []
         for annotation in self.clean_data_list:
             configs = annotation.get_configurations_appearing_in_annotation()
@@ -1205,16 +1198,6 @@ class SemanticData(Data):
         significant_configs_csv_name (str): Description
         stats_csv_name (str): Description
         task (TYPE): Description
-    
-    Deleted Attributes:
-        raw_annotation_list (TYPE): Description
-        study_info (TYPE): Description
-        clean_data_list (TYPE): Description
-        data_list (TYPE): Description
-        native_users (TYPE): Description
-        scene_list (TYPE): Description
-        name (TYPE): Description
-        user_list (TYPE): Description
     """
     task = StudyInfo.sv_task
     clean_csv_name = StudyInfo.sem_annotations_name
@@ -1468,16 +1451,7 @@ class ModSemanticData(SemanticData):
         significant_configs_csv_name (str): Description
         stats_csv_name (str): Description
         task (TYPE): Description
-    
-    Deleted Attributes:
-        raw_annotation_list (TYPE): Description
-        study_info (TYPE): Description
-        clean_data_list (TYPE): Description
-        data_list (TYPE): Description
-        native_users (TYPE): Description
-        scene_list (TYPE): Description
-        name (TYPE): Description
-        user_list (TYPE): Description
+
     """
     task = StudyInfo.svmod_task
     clean_csv_name = StudyInfo.svmod_annotations_name
@@ -1509,15 +1483,7 @@ class TypicalityData(Data):
         significant_configs_csv_name (str): Description
         stats_csv_name (str): Description
         task (TYPE): Description
-    
-    Deleted Attributes:
-        raw_annotation_list (TYPE): Description
-        study_info (TYPE): Description
-        clean_data_list (TYPE): Description
-        data_list (TYPE): Description
-        native_users (TYPE): Description
-        study (TYPE): Description
-        user_list (TYPE): Description
+
     """
     task = StudyInfo.typ_task
     clean_csv_name = StudyInfo.typ_annotations_name
@@ -2106,5 +2072,5 @@ def process_test_study():
 
 
 if __name__ == "__main__":
-    # process_2019_study()
-    process_test_study()
+    process_2019_study()
+    # process_test_study()

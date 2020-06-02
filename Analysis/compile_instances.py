@@ -21,12 +21,9 @@ import csv
 import numpy as np
 
 import preprocess_features
-from classes import Instance, CompInstance, Constraint, Comparison
+from classes import Instance, CompInstance, Comparison
 from process_data import SemanticAnnotation, ComparativeAnnotation
 from data_import import SimpleConfiguration, Configuration, StudyInfo
-
-
-
 
 
 class Preposition:
@@ -131,7 +128,7 @@ class Collection:
     Does not require annotations/instances
     
     Attributes:
-        raw_annotation_list (list): Description
+
         data_folder_name (TYPE): Description
         feature_data_csv (TYPE): Description
         feature_keys (TYPE): Description
@@ -207,7 +204,7 @@ class InstanceCollection(Collection):
         scene_feature_name (str): Description
     """
 
-    ## Store some feature names for writing datasets
+    # Store some feature names for writing datasets
     ratio_feature_name = "selection_ratio"
     categorisation_feature_name = "selected_atleast_once"
     scene_feature_name = 'Scene'
@@ -243,20 +240,7 @@ class InstanceCollection(Collection):
         """
         config_list = self.study_info.config_list
 
-        # for preposition in self.get_used_prepositions():
-
-        # 	## Write file of all instances
-        # 	with open('preposition data/'+self.filetag+ '-' + preposition + ' data.csv', "w") as csvfile:
-        # 		outputwriter1 = csv.writer(csvfile)
-        # 		outputwriter1.writerow(['Scene','Figure','Ground']+self.all_feature_keys)
-
-        # 		for i in self.instance_list:
-        # 			if i.preposition == preposition:
-        # 				for row in config_list:
-        # 					if i.configuration_match(row):
-        # 						outputwriter1.writerow(row)
-
-        ### Write file summarizing stats
+        # Write file summarizing stats
         with open(self.study_info.stats_folder + '/' + self.filetag + ' preposition stats.csv', "w") as csvfile:
             outputwriter = csv.writer(csvfile)
             outputwriter.writerow(['', '', '', 'Average Values'])
@@ -273,12 +257,8 @@ class InstanceCollection(Collection):
             row.append(len(p.config_list))
 
             for at in self.feature_keys:
-                # print(at)
                 value = p.average_value(at)
-                # print('Property: ')
-                # print(at)
-                # print('average_value: ')
-                # print(value)
+
                 row.append(value)
 
             with open(self.study_info.stats_folder + '/' + self.filetag + ' preposition stats.csv',
@@ -343,7 +323,6 @@ class SemanticCollection(InstanceCollection):
                         self.instance_list.append(i)
 
         self.append_values()
-
 
     def write_config_ratios(self):
         """Summary
@@ -424,8 +403,6 @@ class ComparativeCollection(InstanceCollection):
         annotationlist.pop(0)  # removes first line of data list which is headings
 
         for clean_annotation in annotationlist:
-
-
             an_id, clean_user_id, task, scene, preposition, figure, ground, time, possible_figures = ComparativeAnnotation.retrieve_from_data_row(
                 clean_annotation)
 
@@ -505,7 +482,7 @@ class ConfigurationCollection(Collection):
     def write_data_csv(self):
         """Summary
         """
-        ## Writes a new csv giving all configs and data
+        # Writes a new csv giving all configs and data
         # Not sure this is necessary
 
         titles = ['Scene', 'Figure', 'Ground'] + self.feature_keys
@@ -619,7 +596,6 @@ if __name__ == '__main__':
 
     compcollection.write_preposition_stats_csvs()
     compcollection.get_constraints()
-
 
 ## Collect all possible configurations and attach values to them
 

@@ -44,8 +44,8 @@ def convert_index(i, number_of_columns):
     """Converts index to place in row/columns for plots
     
     Args:
-        x (TYPE): Description
-        number_of_columns (TYPE): Description
+        i (int): Description
+        number_of_columns (int): Description
     
     Returns:
         TYPE: Description
@@ -334,6 +334,9 @@ class GeneratePrepositionModelParameters:
         if self.features_to_remove is not None:
             # Remove features to remove
             new_d = new_d.drop(self.features_to_remove, axis=1)
+
+            if len(self.features_to_remove) == 0:
+                print("No features being removed.")
         return new_d
 
 
@@ -1896,7 +1899,7 @@ def main(study_info_):
     """Summary
     
     Args:
-        study_info_ (TYPE): Description
+        study_info_ (StudyInfo): Description
     """
     plot_preposition_graphs(study_info)
     # Edit plot settings
@@ -1906,14 +1909,9 @@ def main(study_info_):
     mpl.rcParams['axes.labelsize'] = 'medium'
     mpl.rcParams['ytick.labelsize'] = 'small'
 
-    # initial_test(study_info_)
-    # test_models(study_info_)
-    # test_features(study_info_)
-
-
-# plot_all_csv()
-# plot_kfold_csv(2)
-# plot_feature_csv(2)
+    initial_test(study_info_)
+    test_models(study_info_)
+    test_features(study_info_)
 
 
 if __name__ == '__main__':

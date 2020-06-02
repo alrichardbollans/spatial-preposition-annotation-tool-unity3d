@@ -17,12 +17,11 @@ import numpy as np
 import math
 import itertools
 
-## Ml modules
-from sklearn import metrics
-from sklearn.cluster import KMeans, DBSCAN
-from scipy.spatial.distance import cdist, minkowski
-from sklearn.feature_selection import RFE
-from scipy.cluster.hierarchy import linkage, cut_tree, fcluster, dendrogram
+# Ml modules
+
+from sklearn.cluster import KMeans
+from scipy.spatial.distance import minkowski
+from scipy.cluster.hierarchy import linkage, fcluster, dendrogram
 
 # Modules for plotting
 import matplotlib as mpl
@@ -77,6 +76,10 @@ class Cluster:
         self.means = pd.DataFrame({'values': self.mean_series.values})
         self.means = self.means.set_index(self.mean_series.index)
         self.means = self.means.transpose()
+
+        feature_processer = Features(self.study_info.name)
+        self.hr_means = feature_processer.convert_standard_df_to_normal(self.means)
+
         if alg_typ == "kmeans":
             base_folder = self.study_info.kmeans_folder
         elif alg_typ == "hry":
@@ -96,8 +99,7 @@ class Cluster:
         # self.mean_series["cardinality"] = len(self.instances.index)
         self.means.to_csv(self.mean_csv)
         self.instances.to_csv(self.instances_csv)
-        feature_processer = Features(self.study_info.name)
-        self.hr_means = feature_processer.convert_standard_df_to_normal(self.means)
+
         self.hr_means.to_csv(self.hr_means_csv)
 
 
@@ -107,21 +109,20 @@ class Clustering:
     Attributes:
         all_scenes (TYPE): Description
         cluster_centres_csv (TYPE): Description
-        cluster_numbers (dict): Description
         dendrogram_pdf (TYPE): Description
         elbow_pdf (TYPE): Description
         good_dataset (TYPE): Description
         good_instance_csv (TYPE): Description
-        good_instance_relations (TYPE): Description
-        good_instances (TYPE): Description
+        good_instance_features (TYPE): Description
+        good_instances_all_features (TYPE): Description
         hr_good_instance_csv (TYPE): Description
         hr_good_instances (TYPE): Description
         initial_inertia_csv (TYPE): Description
-        instances_to_cluster (TYPE): Description
+        good_instances_to_cluster (TYPE): Description
         km_instances_to_cluster (TYPE): Description
         models (TYPE): Description
-        possible_instances (TYPE): Description
-        possible_instances_relations (TYPE): Description
+        possible_instances_all_features (TYPE): Description
+        possible_instances_features (TYPE): Description
         preposition (TYPE): Description
         relation_weights (TYPE): Description
         sample_weights (TYPE): Description
@@ -129,13 +130,9 @@ class Clustering:
         typical_instances (TYPE): Description
     """
 
-    # Number of clusters created by inspecting dendograms?
-    cluster_numbers = {'on': 3, 'in': 2, 'against': 3, 'under': 2, 'over': 2}
+    # Number of clusters created by inspecting HAC dendograms
+    cluster_numbers = {'on': 3, 'in': 2, 'against': 3, 'under': 3, 'over': 2}
 
-    # Thresholds for dendograms
-    # color_threshold = {'on':0.75,'in':0.75,'against':0.75,'under':0.78,'over':0.75}
-    # # Thresholds for assigning clusters. I think they need to be different in order to account for metric?
-    # cluster_threshold = {'on':0.75,'in':0.75,'against':0.75,'under':0.8,'over':0.75}
     def __init__(self, study_info_, preposition):
         """Summary
         
@@ -147,20 +144,21 @@ class Clustering:
 
         self.all_scenes = self.study_info.scene_name_list
         self.preposition = preposition
-        self.models = GeneratePrepositionModelParameters(self.study_info, preposition, self.all_scenes)
+        self.models = GeneratePrepositionModelParameters(self.study_info, preposition, self.all_scenes,
+                                                         features_to_remove=Configuration.ground_property_features.copy())
 
         # All selected instances
-        self.possible_instances = self.models.affAllFeatures
-        self.possible_instances_relations = self.models.remove_unused_features(self.possible_instances)
+        self.possible_instances_all_features = self.models.affAllFeatures
+        self.possible_instances_features = self.models.remove_unused_features(self.possible_instances_all_features)
         # Dataset containing 'good' instances
         self.good_dataset = self.models.train_dataset[
             (self.models.train_dataset.iloc[:, self.models.ratio_index] >= 0.5)]
         # Reindex df for later readability
         self.good_dataset = self.good_dataset.reset_index(drop=True)
         # All 'good' instances
-        self.good_instances = self.models.remove_nonfeatures(self.good_dataset)
+        self.good_instances_all_features = self.models.remove_nonfeatures(self.good_dataset)
 
-        self.good_instance_relations = self.models.remove_unused_features(self.good_instances)
+        self.good_instance_features = self.models.remove_unused_features(self.good_instances_all_features)
 
         self.typical_instances = self.models.typical_features
 
@@ -173,19 +171,19 @@ class Clustering:
         self.elbow_pdf = self.study_info.kmeans_folder + "figures/elbow/" + preposition + ".pdf"
         self.initial_inertia_csv = self.study_info.kmeans_folder + "initial inertia/initial_inertias.csv"
         # The dataframe we use for clustering
-        self.instances_to_cluster = self.good_instance_relations.copy()
-        self.km_instances_to_cluster = self.possible_instances_relations.copy()
+        self.good_instances_to_cluster = self.good_instance_features.copy()
+        self.km_instances_to_cluster = self.possible_instances_features.copy()
         # Samples are weighted by selection ratio
         self.sample_weights = self.models.aff_dataset[
             self.models.ratio_feature_name]  # self.good_dataset[self.models.ratio_feature_name]
         # Output good instances to read
         self.good_instance_csv = self.study_info.cluster_data_folder + "good preposition instances/good instances - " + self.preposition + ".csv"
-        self.instances_to_cluster.to_csv(self.good_instance_csv)
+        self.good_instances_to_cluster.to_csv(self.good_instance_csv)
 
-        feature_processer = Features()
+        self.feature_processer = Features(self.study_info.name)
         self.hr_good_instance_csv = self.study_info.cluster_data_folder + "good preposition instances/human readable/good instances - " + self.preposition + ".csv"
 
-        self.hr_good_instances = feature_processer.convert_standard_df_to_normal(self.instances_to_cluster)
+        self.hr_good_instances = self.feature_processer.convert_standard_df_to_normal(self.good_instances_to_cluster)
 
         self.hr_good_instances.to_csv(self.hr_good_instance_csv)
 
@@ -202,24 +200,11 @@ class Clustering:
         # weighted euclidean distance. Also weight by instances somehow?
         return minkowski(u, v, p=2, w=self.relation_weights.values)
 
-    def DBScan_cluster(self):
-        """Summary
-        """
-        # To be improved by varying eps
-        # Check if any typical instances are  being labelled as noise
-        # If so, eps += 0.1 and run again
-        # Else, output
-        print((self.instances))
-        print((self.sample_weights))
-        clustering = DBSCAN(eps=3, min_samples=2, metric=self.custom_metric).fit(self.instances,
-                                                                                 sample_weight=self.sample_weights)
-        print((clustering.labels_))
-        print((clustering.components_))
-
     def work_out_hierarchy_model(self):
         """Summary
         """
-        instances = self.instances_to_cluster
+        instances = self.good_instances_to_cluster
+        print(instances)
         Z = linkage(instances, method='single', optimal_ordering=True)  # ,metric=self.custom_metric
 
         fig = plt.figure()
@@ -247,7 +232,7 @@ class Clustering:
                     if c == clusters[i]:
                         cluster_instances_index.append(i)
                 cluster_instances = instances.iloc[cluster_instances_index, :]
-                cluster = Cluster(self.preposition, cluster_instances, c, alg_typ="hry")
+                cluster = Cluster(self.study_info, self.preposition, cluster_instances, c, alg_typ="hry")
                 cluster.output()
         print(("Number of clusters: " + str(len(done_clusters))))
 
@@ -301,7 +286,7 @@ class Clustering:
         k = self.cluster_numbers[self.preposition]
         for i in range(0, k):
             instances = self.km_instances_to_cluster[km.labels_ == i]
-            cluster = Cluster(self.preposition, instances, i, alg_typ="kmeans")
+            cluster = Cluster(self.study_info, self.preposition, instances, i, alg_typ="kmeans")
             cluster.output()
 
     def output_expected_kmeans_model(self):
@@ -466,8 +451,6 @@ class Clustering:
 
         finally:
 
-            df_columns = in_df.columns
-
             row_index_in_df = in_df[in_df['preposition'] == self.preposition].index.tolist()
 
             if len(row_index_in_df) == 0:
@@ -526,7 +509,6 @@ class Polyseme:
         prototype_csv (TYPE): Description
         rank (int): Description
         regression_weights_csv (TYPE): Description
-        share_prototype (TYPE): Description
         study_info (TYPE): Description
         train_scenes (TYPE): Description
         weights (TYPE): Description
@@ -699,10 +681,6 @@ class PolysemyModel(Model):
     """Summary
     
     Attributes:
-        cluster_dict (TYPE): Description
-        constraint_dict (TYPE): Description
-        polyseme_dict (TYPE): Description
-        study_info (TYPE): Description
         test_prepositions (TYPE): Description
     """
 
@@ -749,8 +727,6 @@ class PolysemyModel(Model):
                 counter += c.weight
 
         return counter
-
-
 
 
 class PrototypePolysemyModel(PolysemyModel):
@@ -1290,7 +1266,6 @@ class MultipleRunsPolysemyModels(MultipleRuns):
         Args:
             study_info_ (TYPE): Description
             number_runs (None, optional): Description
-            test_size (None, optional): Description
             k (None, optional): Description
             compare (None, optional): Description
         
@@ -1447,19 +1422,6 @@ def output_clustering_info(study_info_):
         c.output_expected_kmeans_model()
 
 
-def work_out_all_dbsccan_clusters(study_info_):
-    """Summary
-    :param study_info_:
-    
-    Args:
-        study_info_ (TYPE): Description
-    """
-    for preposition in polysemous_preposition_list:
-        print(preposition)
-        c = Clustering(study_info_, preposition)
-        km = c.DBScan_cluster()
-
-
 def work_out_all_hry_clusters(study_info_):
     """Summary
     :param study_info_:
@@ -1484,7 +1446,7 @@ def main(study_info_):
     Deleted Parameters:
         constraint_dict (TYPE): Description
     """
-    output_all_polyseme_info(study_info_)
+    # output_all_polyseme_info(study_info_)
     # Clustering
 
     work_out_all_hry_clusters(study_info_)
