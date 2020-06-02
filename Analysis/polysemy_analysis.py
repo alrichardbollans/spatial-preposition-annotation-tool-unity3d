@@ -1,5 +1,5 @@
 """Summary
-
+First run compile_instances.py
 Attributes:
     comp_filetag (str): Description
     non_polysemous_prepositions (list): Description
@@ -7,20 +7,11 @@ Attributes:
     preposition_list (TYPE): Description
     sv_filetag (str): Description
 
-Deleted Attributes:
-    base_polysemy_folder (str): Description
-    cluster_data_folder (TYPE): Description
-    all_feature_keys (TYPE): Description
-    hry_folder (TYPE): Description
-    kmeans_folder (TYPE): Description
-    polyseme_data_folder (TYPE): Description
-    feature_keys (TYPE): Description
-    score_folder (TYPE): Description
 """
-# First run compile_instances.py
+#
 
 # Standard imports
-import csv
+import copy
 import pandas as pd
 import numpy as np
 import math
@@ -41,7 +32,6 @@ import matplotlib.ticker as ticker
 from basic_model_testing import TestModels, GeneratePrepositionModelParameters, Model, Features, MultipleRuns, \
     SemanticMethods, PrototypeModel
 from data_import import Configuration, StudyInfo
-from classes import Constraint, Configuration
 from compile_instances import SemanticCollection, ComparativeCollection
 
 # Useful global variables
@@ -491,7 +481,7 @@ class Clustering:
             in_df.to_csv(self.initial_inertia_csv)
 
 
-class Cluster_in_Model:
+class ClusterInModel:
     """Summary
     
     Attributes:
@@ -543,7 +533,7 @@ class Polyseme:
     """
 
     def __init__(self, study_info_, preposition, polyseme_name, train_scenes, eq_feature_dict=None,
-                 greater_feature_dict=None, less_feature_dict=None, share_prototype=False, features_to_remove=None):
+                 greater_feature_dict=None, less_feature_dict=None, features_to_remove=None):
         """Summary
         
         Args:
@@ -554,7 +544,7 @@ class Polyseme:
             eq_feature_dict (None, optional): Description
             greater_feature_dict (None, optional): Description
             less_feature_dict (None, optional): Description
-            share_prototype (bool, optional): Description
+
             :param study_info_:
         """
         self.study_info = study_info_
@@ -575,7 +565,6 @@ class Polyseme:
         self.regression_weights_csv = self.study_info.polyseme_data_folder + 'regression weights/' + self.preposition + "-" + self.polyseme_name + ' .csv'
         self.plot_folder = self.study_info.polyseme_data_folder + 'plots/'
 
-        self.share_prototype = share_prototype
         self.preposition_models = GeneratePrepositionModelParameters(self.study_info, self.preposition,
                                                                      self.train_scenes,
                                                                      features_to_remove=self.features_to_remove,
@@ -587,8 +576,8 @@ class Polyseme:
         # Number of configurations fitting polysemes which were labelled as preposition by any participant
         self.number_of_instances = self.get_number_of_instances()
 
-        self.preposition_models.work_out_prototype_model()
-        self.get_prototype_and_weight()
+        self.weights = self.preposition_models.regression_weights
+        self.prototype = self.preposition_models.prototype
 
     def potential_instance(self, scene, figure, ground):
         """Summary
@@ -623,22 +612,6 @@ class Polyseme:
                 if r.set_of_features[feature] > self.less_feature_dict[feature]:
                     return False
         return True
-
-    def get_prototype_and_weight(self):
-        """Summary
-        """
-        self.weights = self.preposition_models.regression_weights
-        self.prototype = self.preposition_models.prototype
-
-        # Input dictionarys of prototype and feature weights for each preposition, stored as arrays
-        if self.share_prototype:
-            preposition_models = GeneratePrepositionModelParameters(self.study_info, self.preposition,
-                                                                    self.train_scenes,
-                                                                    features_to_remove=self.features_to_remove)
-
-            self.prototype = preposition_models.prototype
-        # print("shared")
-        # print(self.prototype)
 
     def get_number_of_instances(self):
         """Summary
@@ -857,7 +830,7 @@ class PrototypePolysemyModel(PolysemyModel):
 
     def get_shared_prototype_polyseme_dict(self):
         """Summary
-
+        Gets polyseme dictionary from existing dictionary but makes each polyseme share the prototype.
         Returns:
             TYPE: Description
         """
@@ -867,11 +840,8 @@ class PrototypePolysemyModel(PolysemyModel):
         for preposition in old_dict:
             out[preposition] = []
             for polyseme in old_dict[preposition]:
-                new_pol = Polyseme(self.study_info, polyseme.preposition, polyseme.polyseme_name, self.train_scenes,
-                                   eq_feature_dict=polyseme.eq_feature_dict,
-                                   greater_feature_dict=polyseme.greater_feature_dict,
-                                   less_feature_dict=polyseme.less_feature_dict, share_prototype=True,
-                                   features_to_remove=self.features_to_remove)
+                new_pol = copy.deepcopy(polyseme)
+                new_pol.prototype = self.baseline_model.preposition_model_dict[preposition].prototype
 
                 out[preposition].append(new_pol)
 
@@ -879,7 +849,7 @@ class PrototypePolysemyModel(PolysemyModel):
 
     def generate_polysemes(self, preposition, salient_features):
         """Summary
-
+        Generates polysemes based on ideal meaning discussion. Uses salient features and their threshold values.
         Args:
             preposition (TYPE): Description
             salient_features (TYPE): Description
@@ -887,8 +857,7 @@ class PrototypePolysemyModel(PolysemyModel):
         Returns:
             TYPE: Description
         """
-        # Generates polysemes based on ideal meaning discusion
-        # Give salient features and their threshold values
+
         polysemes = []
 
         g_dict = dict()
@@ -951,24 +920,16 @@ class PrototypePolysemyModel(PolysemyModel):
         out = dict()
 
         contact03 = self.feature_processer.convert_normal_value_to_standardised("contact_proportion", 0.3)
-        above01 = self.feature_processer.convert_normal_value_to_standardised("above_proportion", 0.1)
+
         above09 = self.feature_processer.convert_normal_value_to_standardised("above_proportion", 0.9)
-        above099 = self.feature_processer.convert_normal_value_to_standardised("above_proportion", 0.99)
         above07 = self.feature_processer.convert_normal_value_to_standardised("above_proportion", 0.7)
-        sup01 = self.feature_processer.convert_normal_value_to_standardised("support", 0.1)
+
         sup09 = self.feature_processer.convert_normal_value_to_standardised("support", 0.9)
-        gv0 = self.feature_processer.convert_normal_value_to_standardised("ground_verticality", 0)
-        gv1 = self.feature_processer.convert_normal_value_to_standardised("ground_verticality", 1)
-        b0 = self.feature_processer.convert_normal_value_to_standardised("bbox_overlap_proportion", 0)
-        b09 = self.feature_processer.convert_normal_value_to_standardised("bbox_overlap_proportion", 0.9)
-        lc09 = self.feature_processer.convert_normal_value_to_standardised("location_control", 0.9)
         b07 = self.feature_processer.convert_normal_value_to_standardised("bbox_overlap_proportion", 0.7)
         lc075 = self.feature_processer.convert_normal_value_to_standardised("location_control", 0.75)
         gf09 = self.feature_processer.convert_normal_value_to_standardised("g_covers_f", 0.9)
         bl09 = self.feature_processer.convert_normal_value_to_standardised("below_proportion", 0.9)
-        bl08 = self.feature_processer.convert_normal_value_to_standardised("below_proportion", 0.8)
         fg09 = self.feature_processer.convert_normal_value_to_standardised("f_covers_g", 0.9)
-        hd01 = self.feature_processer.convert_normal_value_to_standardised("horizontal_distance", 0.1)
 
         # On
 
@@ -1046,6 +1007,15 @@ class PrototypePolysemyModel(PolysemyModel):
         return out
 
     def get_typicality(self, preposition, point, scene, figure, ground):
+        '''
+        Finds similarity to possible polysemes and multiplies by polyseme rank.
+        :param preposition:
+        :param point:
+        :param scene:
+        :param figure:
+        :param ground:
+        :return:
+        '''
         out = 0
         pps = self.get_possible_polysemes(preposition, scene, figure, ground)
         if len(pps) == 0:
@@ -1059,7 +1029,7 @@ class PrototypePolysemyModel(PolysemyModel):
 
             prototype_array = polyseme.prototype
             weight_array = polyseme.weights
-            new = SemanticMethods.semantic_similarity(weight_array, point, prototype_array, self.all_feature_keys)
+            new = SemanticMethods.semantic_similarity(weight_array, point, prototype_array)
 
             new = new * polyseme.rank
 
@@ -1160,8 +1130,7 @@ class KMeansPolysemyModel(PolysemyModel):
 
                     centre = km.cluster_centers_[i]
 
-                    distance = SemanticMethods.semantic_distance(weights_used_features, v, centre,
-                                                                 p_model_parameters.feature_keys)
+                    distance = SemanticMethods.semantic_distance(weights_used_features, v, centre)
 
                     if sem_distance == -1:
                         sem_distance = distance
@@ -1183,23 +1152,14 @@ class KMeansPolysemyModel(PolysemyModel):
                 else:
                     rank = 0
 
-                new_c = Cluster_in_Model(preposition, km.cluster_centers_[i], weights_used_features, rank)
+                new_c = ClusterInModel(preposition, km.cluster_centers_[i], weights_used_features, rank)
                 out[preposition].append(new_c)
 
         return out
 
-    def remove_unused_features_from_array(self, array):
-
-        new_array = []
-        for f in self.preposition_model_dict['in'].all_feature_keys:
-            if f in self.preposition_model_dict['in'].feature_keys:
-                new_array.append(array[self.preposition_model_dict['in'].all_feature_keys.index(f)])
-
-        return np.array(new_array)
-
     def get_typicality(self, preposition, point):
         """Summary
-
+        # Finds most similar cluster centre to point. Multiplies similarity to that cluster by cluster rank
         Args:
             preposition (TYPE): Description
             point (TYPE): Description
@@ -1207,7 +1167,6 @@ class KMeansPolysemyModel(PolysemyModel):
         Returns:
             TYPE: Description
         """
-        # Finds most similar cluster centre to point and then multiplies by that clusters rank
 
         clusters = self.cluster_dict[preposition]
         # Weight array uses weights assigned to baseline model
@@ -1215,12 +1174,12 @@ class KMeansPolysemyModel(PolysemyModel):
         weight_array = clusters[0].weights
         closest_centre_typicality = 0
         closest_cluster = 0
-        new_point = self.remove_unused_features_from_array(point)
+        # Unused features must be removed here as weight and prototype array don't account for them.
+        new_point = self.preposition_model_dict[preposition].remove_unused_features_from_array(point)
         for cluster in clusters:
             prototype_array = cluster.centre
 
-            new = SemanticMethods.semantic_similarity(weight_array, new_point, prototype_array,
-                                                      self.preposition_model_dict[preposition].feature_keys)
+            new = SemanticMethods.semantic_similarity(weight_array, new_point, prototype_array)
             if new > closest_centre_typicality:
                 closest_centre_typicality = new
                 closest_cluster = cluster
@@ -1257,23 +1216,11 @@ class GeneratePolysemeModels:
     
     Attributes:
         baseline_model (TYPE): Description
-        baseline_model_dict (TYPE): Description
-        baseline_model_name (str): Description
-        cluster_dict (TYPE): Description
         cluster_model (TYPE): Description
-        cluster_model_name (str): Description
-        constraint_dict (TYPE): Description
-        feature_processer (TYPE): Description
-        model_name_list (TYPE): Description
         models (TYPE): Description
         non_shared (TYPE): Description
-        non_shared_dict (TYPE): Description
-        other_model_name (str): Description
-        other_name_list (TYPE): Description
-        our_model_name (str): Description
         preserve_empty_polysemes (TYPE): Description
         shared (TYPE): Description
-        shared_dict (TYPE): Description
         study_info (TYPE): Description
         test_scenes (TYPE): Description
         train_scenes (TYPE): Description
@@ -1329,6 +1276,9 @@ class GeneratePolysemeModels:
         self.preposition_parameters_dict = preposition_models_dict
         self.baseline_model = PrototypeModel(preposition_models_dict, self.test_scenes, self.study_info)
         self.baseline_model.test_prepositions = polysemous_preposition_list
+        self.baseline_model.name = "Baseline Model"
+
+        self.cluster_model = KMeansPolysemyModel(self.preposition_parameters_dict, self.test_scenes, self.study_info)
 
         self.non_shared = PrototypePolysemyModel(GeneratePolysemeModels.our_model_name, self.train_scenes,
                                                  self.test_scenes, self.study_info,
@@ -1340,8 +1290,6 @@ class GeneratePolysemeModels:
                                              preserve_empty_polysemes=self.preserve_empty_polysemes,
                                              baseline_model=self.baseline_model,
                                              features_to_remove=self.features_to_remove)
-
-        self.cluster_model = KMeansPolysemyModel(preposition_models_dict, self.test_scenes, self.study_info)
 
         self.models = [self.non_shared, self.shared, self.baseline_model, self.cluster_model]
 
@@ -1384,7 +1332,7 @@ class MultipleRunsPolysemyModels(MultipleRuns):
         study_info (TYPE): Description
     """
 
-    def __init__(self, study_info_, number_runs=None, test_size=None, k=None, compare=None):
+    def __init__(self, study_info_, number_runs=None, k=None, compare=None):
         """Summary
         
         Args:
@@ -1421,7 +1369,7 @@ class MultipleRunsPolysemyModels(MultipleRuns):
             self.comparison_csv = self.scores_tables_folder + "/repeatedcomparisons " + self.file_tag + ".csv"
             self.km_comparison_csv = self.scores_tables_folder + "/km_repeatedcomparisons " + self.file_tag + ".csv"
 
-    # Overides inhertired method
+    # Overides inherited method
     def output(self):
         """Summary
         """

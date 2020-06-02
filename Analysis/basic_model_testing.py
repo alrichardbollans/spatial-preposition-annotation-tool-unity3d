@@ -69,7 +69,7 @@ class SemanticMethods:
     """
 
     @staticmethod
-    def semantic_distance(weight_array, x, y, feature_keys):
+    def semantic_distance(weight_array, x, y):
         """
         Parameters:
             weight_array: 1-D Array of feature weights
@@ -86,12 +86,6 @@ class SemanticMethods:
             list_of_annotations: 1-D arrays. Points to compare
         """
 
-        if len(feature_keys) != len(weight_array):
-            print("Error: weight array and feature keys not same length")
-            print(len(weight_array))
-            print(len(feature_keys))
-
-
         point = np.subtract(x, y)  # Subtract arrays point wise
 
         point = np.square(point)  # Square pointwise
@@ -103,19 +97,18 @@ class SemanticMethods:
         return distance
 
     @staticmethod
-    def semantic_similarity(weight_array, x, y, feature_keys):
+    def semantic_similarity(weight_array, x, y):
         """
         Calculates weighted semantic similarity between x and y.
 
         :param weight_array:
         :param x:
         :param y:
-        :param feature_keys:
         :return: float
         """
 
         # Get semantic distance
-        distance = SemanticMethods.semantic_distance(weight_array, x, y, feature_keys)
+        distance = SemanticMethods.semantic_distance(weight_array, x, y)
         # Get similarity
         out = math.exp(-distance)
         return out
@@ -218,11 +211,10 @@ class GeneratePrepositionModelParameters:
         # Row is created in dataset only if the configuration was tested
         # Set of values with selection information
         config_ratio_csv = self.study_info.config_ratio_csv(sv_filetag, preposition)
-        dataset = pd.read_csv(config_ratio_csv)
-        self.dataset = dataset
+        self.dataset = pd.read_csv(config_ratio_csv)
 
-        self.possible_instances_dataset = self.dataset.copy()
         if self.polyseme is not None:
+
             # # Remove none polyseme preposition instances from dataset
             indexes_to_drop = []
             indexes_to_drop_pid = []
@@ -237,23 +229,25 @@ class GeneratePrepositionModelParameters:
                     indexes_to_drop.append(index)
                     indexes_to_drop_pid.append(index)
 
+            self.possible_instances_dataset = self.dataset.copy()
             # Dataset to train polyseme on (configurations not yet removed for training)
             self.dataset.drop(self.dataset.index[indexes_to_drop], inplace=True)
             # Dataset of configurations that fit polyseme conditions
+
             self.possible_instances_dataset.drop(self.possible_instances_dataset.index[indexes_to_drop_pid],
                                                  inplace=True)
             # Remove non-training instances
             self.train_possible_instances_dataset = self.remove_nontrainingscenes(
                 self.possible_instances_dataset)
-            
-        # Remove rows from above where not training scene
+
+        # Remove rows from dataset where not training scene
         self.train_dataset = self.remove_nontrainingscenes(
             self.dataset)
 
         # Remove selection info columns and names to only have features
         self.allFeatures = self.remove_nonfeatures(self.train_dataset)
 
-        # Feature dataframe for training the models.
+        # Feature dataframe without unused features for training the models.
         self.feature_dataframe = self.remove_unused_features(self.allFeatures)
 
         # Remove rows from above where not a preposition instance
@@ -304,7 +298,7 @@ class GeneratePrepositionModelParameters:
 
     def remove_nontrainingscenes(self, d):
         """Summary
-        
+        Removes instances from non training scenes.
         Args:
             d (TYPE): Description
         
@@ -316,7 +310,7 @@ class GeneratePrepositionModelParameters:
 
     def remove_nonfeatures(self, d):
         """Summary
-        Removes nonfeature columns from a dataframe
+        Removes nonfeature columns from a dataframe.
         Args:
             d (TYPE): Description
         
@@ -328,23 +322,285 @@ class GeneratePrepositionModelParameters:
 
     def remove_unused_features(self, d):
         """Summary
-
+        Drops unused feature columns from dataframe.
         Args:
             d (TYPE): Description
 
         Returns:
             TYPE: Description
         """
-        new_d = d
+        new_d = d.copy()
 
         if self.features_to_remove is not None:
             # Remove features to remove
             new_d = new_d.drop(self.features_to_remove, axis=1)
         return new_d
 
-    def plot_features_ratio(self, no_columns, axes, feature, X, y_pred, Y):
+
+
+    def work_out_models(self):
+        """Summary
+        """
+        self.work_out_linear_regression_model()
+        # self.work_out_polynomial_regression_model(3)
+        self.work_out_barycentre_prototype()
+        self.work_out_exemplar_mean()
+        self.work_out_prototype_model()
+
+    def get_feature_index_in_array(self, feature):
+        '''Returns index for feature in prototype/weight arrays etc.
+        '''
+        return self.all_feature_keys.index(feature)
+
+    def remove_unused_features_from_array(self, array):
+        '''
+        Takes an array of all feature values and returns array of only used feature values.
+        :param array:
+        :return:
+        '''
+        new_array = []
+        for f in self.all_feature_keys:
+            if f in self.feature_keys:
+                new_array.append(array[self.all_feature_keys.index(f)])
+
+        return np.array(new_array)
+    def work_out_barycentre_prototype(self):
         """Summary
         
+        Returns:
+            TYPE: Description
+        """
+        out = []
+        X = self.affAllFeatures
+
+        for feature in self.all_feature_keys:
+            pro_value = X[feature].mean()
+
+            out.append(pro_value)
+
+        out = np.array(out)
+        self.barycentre_prototype = out
+        return self.barycentre_prototype
+
+    def work_out_exemplar_mean(self):
+        """Summary
+        
+        Returns:
+            TYPE: Description
+        """
+        out = []
+        X = self.typical_features
+
+        for feature in self.all_feature_keys:
+            pro_value = X[feature].mean()
+            out.append(pro_value)
+
+        out = np.array(out)
+        self.exemplar_mean = out
+        return self.exemplar_mean
+
+    def work_out_feature_prototype(self, feature):
+        """Summary
+
+        Args:
+            feature (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+        # First predict feature value given selection ratio of 1
+        # Reshape data first
+        X = self.train_dataset[self.ratio_feature_name].values.reshape(-1, 1)
+        Y = self.train_dataset[feature].values.reshape(-1, 1)
+
+        model1 = LinearRegression()
+
+        # Fit model to data
+        model1.fit(X, Y)
+        y_pred = model1.predict(X)
+        self.interval_predictions[feature] = y_pred
+
+        # Get prototype for feature
+        max_point = np.array([1]).reshape(-1, 1)
+
+        feature_prototype = model1.predict(max_point)
+
+        pro_value = feature_prototype[0][0]
+        return pro_value
+
+    def work_out_linear_regression_model(self):
+        """Summary
+
+        Returns:
+            TYPE: Description
+        """
+        # Next get gradient when feature predicts selection ratio
+        # Reshape data first
+
+        X = self.feature_dataframe
+        Y = self.train_dataset[self.ratio_feature_name].values.reshape(-1, 1)
+
+        lin_model = LinearRegression()
+
+        # Fit model to data
+        lin_model.fit(X, Y)
+
+        self.linear_regression_model = lin_model
+
+        return lin_model
+
+    def work_out_feature_weights(self):
+        """Summary
+        """
+        if self.linear_regression_model is None:
+            model2 = self.work_out_linear_regression_model()
+        else:
+            model2 = self.linear_regression_model
+
+        X = self.feature_dataframe
+
+        v = pd.DataFrame(model2.coef_, index=["coefficient"]).transpose()
+        w = pd.DataFrame(X.columns, columns=["feature"])
+        coeff_df = pd.concat([w, v], axis=1, join="inner")
+        coeff_df = coeff_df.set_index("feature")
+
+        weights_all_features = []
+        weights_used_features = []
+
+        for feature in self.all_feature_keys:
+            if self.features_to_remove is not None:
+                # If the feature is removed, append 0 instead
+                if feature in self.features_to_remove:
+                    weights_all_features.append(0)
+                else:
+                    w = abs(coeff_df.loc[feature, "coefficient"])
+                    weights_all_features.append(w)
+                    weights_used_features.append(w)
+            else:
+                w = abs(coeff_df.loc[feature, "coefficient"])
+                weights_all_features.append(w)
+                weights_used_features.append(w)
+
+        # Create two separate arrays. One where unused features are given weight 0 and
+        # one where unused features are not added. The latter is only used when finding
+        # which cluster centre a configuration si closest to in the KMeans Model
+
+        self.regression_weights = np.array(weights_all_features)
+        self.regression_weights_used_features = np.array(weights_used_features)
+
+    def work_out_prototype_model(self):
+        """Summary
+
+        Returns:
+            TYPE: Description
+        """
+        # Work out linear regression on each feature by comparing to the ratio of times selected
+
+        # This step gives prototypes for later steps, which are saved to prototypes folder
+
+        prototype = []
+
+        for feature in self.all_feature_keys:
+            # First predict feature value given selection ratio of 1
+            pro_value = self.work_out_feature_prototype(feature)
+
+            # Add to dictionary
+            prototype.append(pro_value)
+
+        self.work_out_feature_weights()
+
+        self.prototype = np.array(prototype)
+
+        return self.prototype
+
+    def work_out_polynomial_regression_model(self, n):
+        """Summary
+
+        Args:
+            n (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+        # Next get gradient when feature predicts selection ratio
+        # Reshape data first
+        X = self.feature_dataframe
+        Y = self.train_dataset[self.ratio_feature_name].values.reshape(-1, 1)
+
+        polynomial_features = PolynomialFeatures(degree=n)
+        x_poly = polynomial_features.fit_transform(X)
+
+        model2 = LinearRegression()
+
+        # Fit model to data
+        model2.fit(x_poly, Y)
+
+        self.poly_regression_model = model2
+        print((self.preposition))
+        print(("Polynomial Score" + str(n)))
+        print((model2.score(x_poly, Y)))
+
+        return model2
+
+    def output_models(self):
+        """Summary
+        """
+        # Only called once when training scenes are all scenes, so these are the best model parameters
+        wf = pd.DataFrame(self.regression_weights, self.all_feature_keys)
+
+        wf.to_csv(self.regression_weight_csv)
+
+        pf = pd.DataFrame(self.prototype, self.all_feature_keys)
+
+        pf.to_csv(self.prototype_csv)
+
+        epf = pd.DataFrame(self.barycentre_prototype, self.all_feature_keys)
+
+        epf.to_csv(self.barycentre_csv)
+
+        exf = pd.DataFrame(self.exemplar_mean, self.all_feature_keys)
+
+        exf.to_csv(self.exemplar_csv)
+
+    def read_all_feature_weights(self):
+        """Summary
+
+        Returns:
+            TYPE: Description
+        """
+        # Read regression weights for all features
+        wf = pd.read_csv(self.all_features_regression_weight_csv, index_col=0)
+
+        return wf
+
+    def read_regression_weights(self):
+        """Summary
+
+        Returns:
+            TYPE: Description
+        """
+        # Read regression weights for relations
+        wf = pd.read_csv(self.regression_weight_csv, index_col=0)
+
+        return wf
+
+    def read_calculations(self, classifier):
+        """Summary
+
+        Args:
+            classifier (TYPE): Description
+        """
+        with open("figures/csv_tables" + self.name + classifier + ":" + self.preposition + ".csv") as csvfile:
+            read = csv.reader(csvfile)  # .readlines())
+            reader = list(read)
+
+            for line in reader:
+                if line[0] in self.feature_keys:
+                    value = line[1]
+                    setattr(self, classifier + ":" + line[0], value)
+    def plot_features_ratio(self, no_columns, axes, feature, X, y_pred, Y):
+        """Summary
+
         Args:
             no_columns (TYPE): Description
             axes (TYPE): Description
@@ -353,9 +609,6 @@ class GeneratePrepositionModelParameters:
             y_pred (TYPE): Description
             Y (TYPE): Description
         """
-        # X = Selection Ratio
-        # y_pred =  predicted Y values on unit interval
-        # Y =  feature value
 
         index = self.feature_keys.index(feature)
 
@@ -399,62 +652,6 @@ class GeneratePrepositionModelParameters:
 
             # Plot exemplar mean value
             ax1.plot(end, ex, markersize=10, markeredgewidth=2, marker=(5, 2))
-
-    # if self.prototype is not None:
-    # 	p = self.prototype[index]
-    # 	p = np.array([p]).reshape(-1,1)
-
-    # 	#Plot exemplar mean value
-    # 	ax1.plot(p,end,markersize=10,markeredgewidth=2, marker=(4, 2))
-
-    def work_out_models(self):
-        """Summary
-        """
-        self.work_out_linear_regression_model()
-        # self.work_out_polynomial_regression_model(3)
-        self.work_out_barycentre_prototype()
-        self.work_out_exemplar_mean()
-        self.work_out_prototype_model()
-
-    def get_feature_index_in_array(self, feature):
-        '''Returns index for feature in prototype/weight arrays etc.
-        '''
-        return self.all_feature_keys.index(feature)
-
-    def work_out_barycentre_prototype(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        out = []
-        X = self.affAllFeatures
-
-        for feature in self.all_feature_keys:
-            pro_value = X[feature].mean()
-
-            out.append(pro_value)
-
-        out = np.array(out)
-        self.barycentre_prototype = out
-        return self.barycentre_prototype
-
-    def work_out_exemplar_mean(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        out = []
-        X = self.typical_features
-
-        for feature in self.all_feature_keys:
-            pro_value = X[feature].mean()
-            out.append(pro_value)
-
-        out = np.array(out)
-        self.exemplar_mean = out
-        return self.exemplar_mean
 
     def get_plot_filename(self, file_no):
         """Summary
@@ -516,205 +713,7 @@ class GeneratePrepositionModelParameters:
         filename = self.get_plot_filename(file_no)
         plt.savefig(filename, bbox_inches='tight')
 
-    def work_out_feature_prototype(self, feature):
-        """Summary
-        
-        Args:
-            feature (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        # First predict feature value given selection ratio of 1
-        # Reshape data first
-        X = self.train_dataset[self.ratio_feature_name].values.reshape(-1, 1)
-        Y = self.train_dataset[feature].values.reshape(-1, 1)
 
-        model1 = LinearRegression()
-
-        # Fit model to data
-        model1.fit(X, Y)
-        y_pred = model1.predict(X)
-        self.interval_predictions[feature] = y_pred
-
-        # Get prototype for feature
-        max_point = np.array([1]).reshape(-1, 1)
-
-        feature_prototype = model1.predict(max_point)
-
-        pro_value = feature_prototype[0][0]
-        return pro_value
-
-    def work_out_linear_regression_model(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        # Next get gradient when feature predicts selection ratio
-        # Reshape data first
-
-        X = self.feature_dataframe
-        Y = self.train_dataset[self.ratio_feature_name].values.reshape(-1, 1)
-
-        lin_model = LinearRegression()
-
-        # Fit model to data
-        lin_model.fit(X, Y)
-
-        self.linear_regression_model = lin_model
-
-        return lin_model
-
-    def work_out_feature_weights(self):
-        """Summary
-        """
-        if self.linear_regression_model is None:
-            model2 = self.work_out_linear_regression_model()
-        else:
-            model2 = self.linear_regression_model
-
-        X = self.feature_dataframe
-
-        v = pd.DataFrame(model2.coef_, index=["coefficient"]).transpose()
-        w = pd.DataFrame(X.columns, columns=["feature"])
-        coeff_df = pd.concat([w, v], axis=1, join="inner")
-        coeff_df = coeff_df.set_index("feature")
-
-        weights_all_features = []
-        weights_used_features = []
-
-        for feature in self.all_feature_keys:
-            if self.features_to_remove is not None:
-                # If the feature is removed, append 0 instead
-                if feature in self.features_to_remove:
-                    weights_all_features.append(0)
-                else:
-                    w = abs(coeff_df.loc[feature, "coefficient"])
-                    weights_all_features.append(w)
-                    weights_used_features.append(w)
-            else:
-                w = abs(coeff_df.loc[feature, "coefficient"])
-                weights_all_features.append(w)
-                weights_used_features.append(w)
-
-        # Create two separate arrays. One where unused features are given weight 0 and
-        # one where unused features are not added. The latter is only used when finding
-        # which cluster centre a configuration si closest to in the KMeans Model
-
-        self.regression_weights = np.array(weights_all_features)
-        self.regression_weights_used_features = np.array(weights_used_features)
-
-    def work_out_prototype_model(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        # Work out linear regression on each feature by comparing to the ratio of times selected
-
-        # This step gives prototypes for later steps, which are saved to prototypes folder
-
-        prototype = []
-
-        for feature in self.all_feature_keys:
-            # First predict feature value given selection ratio of 1
-            pro_value = self.work_out_feature_prototype(feature)
-
-            # Add to dictionary
-            prototype.append(pro_value)
-
-        self.work_out_feature_weights()
-
-        self.prototype = np.array(prototype)
-
-        return self.prototype
-
-    def work_out_polynomial_regression_model(self, n):
-        """Summary
-        
-        Args:
-            n (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        # Next get gradient when feature predicts selection ratio
-        # Reshape data first
-        X = self.feature_dataframe
-        Y = self.train_dataset[self.ratio_feature_name].values.reshape(-1, 1)
-
-        polynomial_features = PolynomialFeatures(degree=n)
-        x_poly = polynomial_features.fit_transform(X)
-
-        model2 = LinearRegression()
-
-        # Fit model to data
-        model2.fit(x_poly, Y)
-
-        self.poly_regression_model = model2
-        print((self.preposition))
-        print(("Polynomial Score" + str(n)))
-        print((model2.score(x_poly, Y)))
-
-        return model2
-
-    def output_models(self):
-        """Summary
-        """
-        # Only called once when training scenes are all scenes, so these are the best model parameters
-        wf = pd.DataFrame(self.regression_weights, self.all_feature_keys)
-
-        wf.to_csv(self.regression_weight_csv)
-
-        pf = pd.DataFrame(self.prototype, self.all_feature_keys)
-
-        pf.to_csv(self.prototype_csv)
-
-        epf = pd.DataFrame(self.barycentre_prototype, self.all_feature_keys)
-
-        epf.to_csv(self.barycentre_csv)
-
-        exf = pd.DataFrame(self.exemplar_mean, self.all_feature_keys)
-
-        exf.to_csv(self.exemplar_csv)
-
-    def read_all_feature_weights(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        # Read regression weights for all features
-        wf = pd.read_csv(self.all_features_regression_weight_csv, index_col=0)
-
-        return wf
-
-    def read_regression_weights(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        # Read regression weights for relations
-        wf = pd.read_csv(self.regression_weight_csv, index_col=0)
-
-        return wf
-
-    def read_calculations(self, classifier):
-        """Summary
-        
-        Args:
-            classifier (TYPE): Description
-        """
-        with open("figures/csv_tables" + self.name + classifier + ":" + self.preposition + ".csv") as csvfile:
-            read = csv.reader(csvfile)  # .readlines())
-            reader = list(read)
-
-            for line in reader:
-                if line[0] in self.feature_keys:
-                    value = line[1]
-                    setattr(self, classifier + ":" + line[0], value)
 
 
 class Model:
@@ -891,7 +890,7 @@ class Model:
 
 
 class PrototypeModel(Model):
-    name = "Baseline Model"
+    name = "Our Prototype"
 
     def __init__(self, preposition_model_dict, test_scenes, study_info_):
         self.preposition_model_dict = preposition_model_dict
@@ -903,7 +902,7 @@ class PrototypeModel(Model):
         weight_array = p_model.regression_weights
         prototype_array = p_model.prototype
 
-        out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array, self.all_feature_keys)
+        out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array)
 
         return out
 
@@ -920,7 +919,7 @@ class CSModel(Model):
         p_model = self.preposition_model_dict[preposition]
         weight_array = p_model.regression_weights
         prototype_array = p_model.barycentre_prototype
-        out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array, self.all_feature_keys)
+        out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array)
 
         return out
 
@@ -937,7 +936,7 @@ class ExemplarModel(Model):
 
         p_model = self.preposition_model_dict[preposition]
         weight_array = p_model.regression_weights
-        ## Need to fix here downwards
+
         exemplars = p_model.typical_features
         none_instances = p_model.neg_features
 
@@ -955,8 +954,7 @@ class ExemplarModel(Model):
             counter += 1
             # Calculate similarity of current point to exemplar
 
-            semantic_similarity_sum += SemanticMethods.semantic_similarity(weight_array, point, exemplar_values,
-                                                                           self.all_feature_keys)
+            semantic_similarity_sum += SemanticMethods.semantic_similarity(weight_array, point, exemplar_values)
 
         if counter == 0:
             return 0
@@ -990,7 +988,7 @@ class ProximityModel(Model):
 
     def get_typicality(self, preposition, point):
 
-        out = SemanticMethods.semantic_similarity(self.weight_array, point, self.prototype_array, self.all_feature_keys)
+        out = SemanticMethods.semantic_similarity(self.weight_array, point, self.prototype_array)
 
         return out
 
@@ -1028,7 +1026,7 @@ class SimpleModel(Model):
         prototype_array = self.prototype_dictionary[preposition]
         weight_array = self.weight_dictionary[preposition]
 
-        out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array, self.all_feature_keys)
+        out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array)
 
         return out
 
@@ -1083,7 +1081,7 @@ class BestGuessModel(Model):
         prototype_array = self.prototype_dictionary[preposition]
         weight_array = self.weight_dictionary[preposition]
 
-        out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array, self.all_feature_keys)
+        out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array)
 
         return out
 
@@ -1174,7 +1172,7 @@ class GenerateBasicModels:
 
 class TestModels:
     """Summary
-    # Takes input set of models and outputs database of scores
+    # Takes input set of models, gets their scores and creates a dataframe of scores.
     Attributes:
         model_name_list (list): Description
         models (TYPE): Description
