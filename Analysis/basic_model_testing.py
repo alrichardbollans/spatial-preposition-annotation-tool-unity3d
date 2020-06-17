@@ -188,6 +188,7 @@ class GeneratePrepositionModelParameters:
         """
 
         if features_to_remove is None:
+            print("No features to remove given. Are you sure?")
             features_to_remove = []
 
         self.study_info = study_info_
@@ -257,6 +258,14 @@ class GeneratePrepositionModelParameters:
         self.affAllFeatures = self.remove_nonfeatures(self.aff_dataset)
         # Feature dataframe of all possible instances
         self.affFeatures = self.remove_unused_features(self.affAllFeatures)
+
+        # Remove rows from training set where not a 'good' preposition instance
+        self.good_dataset = self.train_dataset[(self.train_dataset.iloc[:, self.ratio_index] >= 0.5)]
+
+        # Remove selection info columns to only have features
+        self.goodAllFeatures = self.remove_nonfeatures(self.good_dataset)
+        # Feature dataframe of all possible instances
+        self.goodFeatures = self.remove_unused_features(self.goodAllFeatures)
 
         # Typical instances are the best examples
         ratio_max = self.train_dataset[self.ratio_feature_name].max()
@@ -339,8 +348,6 @@ class GeneratePrepositionModelParameters:
                 print("No features being removed.")
         return new_d
 
-
-
     def work_out_models(self):
         """Summary
         """
@@ -367,6 +374,7 @@ class GeneratePrepositionModelParameters:
                 new_array.append(array[self.all_feature_keys.index(f)])
 
         return np.array(new_array)
+
     def work_out_barycentre_prototype(self):
         """Summary
         
@@ -565,6 +573,15 @@ class GeneratePrepositionModelParameters:
 
         exf.to_csv(self.exemplar_csv)
 
+    def work_out_feature_median(self, feature):
+        """
+        Returns median value of given feature across all possible instances
+        :param feature:
+        :return:
+        """
+        median = self.goodAllFeatures[feature].median()
+        return median
+
     def read_all_feature_weights(self):
         """Summary
 
@@ -601,6 +618,7 @@ class GeneratePrepositionModelParameters:
                 if line[0] in self.feature_keys:
                     value = line[1]
                     setattr(self, classifier + ":" + line[0], value)
+
     def plot_features_ratio(self, no_columns, axes, feature, X, y_pred, Y):
         """Summary
 
@@ -717,8 +735,6 @@ class GeneratePrepositionModelParameters:
         plt.savefig(filename, bbox_inches='tight')
 
 
-
-
 class Model:
     """Summary
     
@@ -747,6 +763,8 @@ class Model:
         self.test_prepositions = preposition_list
         # Dictionary containing constraints to satisfy
         self.constraint_dict = Constraint.read_from_csv(self.study_info.constraint_csv)
+        # Csv to write unsatisfied constraints when testing/training on all scenes
+        self.unsatisfied_constraints_csv = self.study_info.name + "/polysemy/unsatisfied constraints/" + self.name + ".csv"
 
     def generate_arrays(self, salient_features):
         """
@@ -771,8 +789,20 @@ class Model:
 
         return pro_array, weight_array
 
-    def get_typicality(self, preposition, point):
+    def get_typicality(self, preposition, value_array, scene=None, figure=None,
+                       ground=None):
         print("This shouldn't be called")
+
+    def get_typicality_lhs(self, constraint):
+
+        return self.get_typicality(constraint.preposition, constraint.lhs_values, constraint.scene, constraint.f1,
+                                   constraint.ground)
+
+    def get_typicality_rhs(self, constraint):
+        return self.get_typicality(constraint.preposition, constraint.rhs_values, constraint.scene, constraint.f2,
+                                   constraint.ground)
+
+
 
     def get_score(self):
         """Summary
@@ -789,6 +819,12 @@ class Model:
         average_score = 0
         weighted_average_score = 0
         total_weight_counter = 0
+
+        if len(self.test_scenes) == 67:
+            # Clear the unsatisfied constraint csv file first
+            f = open(self.unsatisfied_constraints_csv, "w+")
+            f.close()
+
         for preposition in self.test_prepositions:
 
             allConstraints = self.constraint_dict[preposition]
@@ -810,7 +846,7 @@ class Model:
             totals.append(counter)
 
             # Get score for preposition
-            score_two = self.weighted_score(preposition, Constraints)
+            score_two = self.weighted_score(Constraints)
 
             weighted_average_score += score_two
 
@@ -852,14 +888,14 @@ class Model:
         for c in Constraints:
             total += 1
 
-            lhs = self.get_typicality(preposition, c.lhs)
-            rhs = self.get_typicality(preposition, c.rhs)
+            lhs = self.get_typicality_lhs(c)
+            rhs = self.get_typicality_rhs(c)
             if c.is_satisfied(lhs, rhs):
                 counter += 1
 
         return counter
 
-    def weighted_score(self, preposition, Constraints):
+    def weighted_score(self, Constraints):
         """Summary
         
         Args:
@@ -871,14 +907,21 @@ class Model:
         """
         # Calculates how well W and P satisfy the constraints, accounting for constraint weight
         counter = 0
+        unsatisfied_constraints = []
 
         for c in Constraints:
-            lhs = self.get_typicality(preposition, c.lhs_values)
-            rhs = self.get_typicality(preposition, c.rhs_values)
+            lhs = self.get_typicality_lhs(c)
+            rhs = self.get_typicality_rhs(c)
             if c.is_satisfied(lhs, rhs):
                 counter += c.weight
-        # else:
-        # 	if len(self.test_scenes) == len(self.train_scenes):
+            else:
+                unsatisfied_constraints.append(c)
+        # Output unsatisfied constraints if training/testing on all scenes
+
+        if len(self.test_scenes) == 67:
+
+            for c in unsatisfied_constraints:
+                c.write_to_csv(self.unsatisfied_constraints_csv)
         # 		if preposition == "under" and self.name == "Our Prototype":
 
         # 			print("#")
@@ -943,6 +986,7 @@ class Model:
             # print(preposition)
             in_df.to_csv(input_csv)
 
+
 class PrototypeModel(Model):
     name = "Our Prototype"
 
@@ -969,7 +1013,7 @@ class CSModel(Model):
 
         Model.__init__(self, CSModel.name, test_scenes, study_info_)
 
-    def get_typicality(self, preposition, point):
+    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
         p_model = self.preposition_model_dict[preposition]
         weight_array = p_model.regression_weights
         prototype_array = p_model.barycentre_prototype
@@ -986,7 +1030,7 @@ class ExemplarModel(Model):
 
         Model.__init__(self, ExemplarModel.name, test_scenes, study_info_)
 
-    def get_typicality(self, preposition, point):
+    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
 
         p_model = self.preposition_model_dict[preposition]
         weight_array = p_model.regression_weights
@@ -1040,7 +1084,7 @@ class ProximityModel(Model):
         self.prototype_array = np.array(prototype_array)
         self.weight_array = np.array(weight_array)
 
-    def get_typicality(self, preposition, point):
+    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
 
         out = SemanticMethods.semantic_similarity(self.weight_array, point, self.prototype_array)
 
@@ -1076,7 +1120,7 @@ class SimpleModel(Model):
         self.prototype_dictionary["against"] = against_prototype
         self.weight_dictionary["against"] = against_weights
 
-    def get_typicality(self, preposition, point):
+    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
         prototype_array = self.prototype_dictionary[preposition]
         weight_array = self.weight_dictionary[preposition]
 
@@ -1131,7 +1175,7 @@ class BestGuessModel(Model):
         self.prototype_dictionary["against"] = against_prototype
         self.weight_dictionary["against"] = against_weights
 
-    def get_typicality(self, preposition, point):
+    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
         prototype_array = self.prototype_dictionary[preposition]
         weight_array = self.weight_dictionary[preposition]
 
@@ -1252,7 +1296,6 @@ class TestModels:
 
             model.get_score()
             out[model.name] = model.scores
-
 
         # out["Total Constraint Weights"] = models[0].weight_totals + ["",""]
 

@@ -5,6 +5,9 @@ This file provides explanantion of some folders
 
 The code may be used to process multiple studies. The 2019 study folder contains the following
 
+## Scene Data
+Contains information and features extracted from the study scenes
+
 ## collected data
 Collection of raw and cleaned annotation lists.
 
