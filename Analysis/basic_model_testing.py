@@ -573,15 +573,6 @@ class GeneratePrepositionModelParameters:
 
         exf.to_csv(self.exemplar_csv)
 
-    def work_out_feature_median(self, feature):
-        """
-        Returns median value of given feature across all possible instances
-        :param feature:
-        :return:
-        """
-        median = self.goodAllFeatures[feature].median()
-        return median
-
     def read_all_feature_weights(self):
         """Summary
 
@@ -802,8 +793,6 @@ class Model:
         return self.get_typicality(constraint.preposition, constraint.rhs_values, constraint.scene, constraint.f2,
                                    constraint.ground)
 
-
-
     def get_score(self):
         """Summary
         
@@ -820,10 +809,10 @@ class Model:
         weighted_average_score = 0
         total_weight_counter = 0
 
-        if len(self.test_scenes) == 67:
-            # Clear the unsatisfied constraint csv file first
-            f = open(self.unsatisfied_constraints_csv, "w+")
-            f.close()
+        # if len(self.test_scenes) == 67:
+        #     # Clear the unsatisfied constraint csv file first
+        #     f = open(self.unsatisfied_constraints_csv, "w+")
+        #     f.close()
 
         for preposition in self.test_prepositions:
 
@@ -869,32 +858,6 @@ class Model:
 
         return scores
 
-    # First score based on number of satisfied constraints
-    def unweighted_score(self, preposition, Constraints):
-        """Summary
-        
-        Args:
-            preposition (TYPE): Description
-            Constraints (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        # Calculates how well W and P satisfy the constraints, NOT accounting for constraint weight
-        # W and P are 1D arrays
-
-        total = 0
-        counter = 0
-        for c in Constraints:
-            total += 1
-
-            lhs = self.get_typicality_lhs(c)
-            rhs = self.get_typicality_rhs(c)
-            if c.is_satisfied(lhs, rhs):
-                counter += 1
-
-        return counter
-
     def weighted_score(self, Constraints):
         """Summary
         
@@ -918,19 +881,10 @@ class Model:
                 unsatisfied_constraints.append(c)
         # Output unsatisfied constraints if training/testing on all scenes
 
-        if len(self.test_scenes) == 67:
-
-            for c in unsatisfied_constraints:
-                c.write_to_csv(self.unsatisfied_constraints_csv)
-        # 		if preposition == "under" and self.name == "Our Prototype":
-
-        # 			print("#")
-        # 			print(c.scene)
-        # 			print("ground:" + c.ground)
-        # 			print("Correct Figure: " + c.f1)
-        # 			print("Incorrectly better figure:" + c.f2)
-        # 			cp = Comparison(c.scene,preposition,c.ground)
-        # 			print("possible_figures:" + str(cp.possible_figures))
+        # if len(self.test_scenes) == 67:
+        #
+        #     for c in unsatisfied_constraints:
+        #         c.write_to_csv(self.unsatisfied_constraints_csv)
 
         return counter
 
@@ -1212,12 +1166,10 @@ class GenerateBasicModels:
     
 
     """
+    # name of the model we want to compare with other models, and use to test particular features
     our_model_name = PrototypeModel.name
     # List of all model names
     model_name_list = [PrototypeModel.name, ExemplarModel.name, CSModel.name, BestGuessModel.name, SimpleModel.name,
-                       ProximityModel.name]
-
-    other_name_list = [ExemplarModel.name, CSModel.name, BestGuessModel.name, SimpleModel.name,
                        ProximityModel.name]
 
     # Generating models to test
@@ -1440,7 +1392,7 @@ class MultipleRuns:
         self.count_with_feature_better = dict()
 
         # Prepare dicts
-        for other_model in self.Generate_Models_all_scenes.other_name_list:
+        for other_model in self.Generate_Models_all_scenes.model_name_list:
             self.count_our_model_wins[other_model] = 0
             self.count_other_model_wins[other_model] = 0
         # To compare kmeans cluster model
@@ -1505,7 +1457,7 @@ class MultipleRuns:
 
         # Compare Models
         if self.compare is not None:
-            for other_model in generate_models.other_name_list:
+            for other_model in generate_models.model_name_list:
 
                 # Get score
                 other_score = dataset.at["Overall", other_model]
@@ -1657,7 +1609,7 @@ class MultipleRuns:
         # Output comparison of models and p-value
         if self.compare is not None:
             other_model_p_value = dict()
-            for other_model in self.Generate_Models_all_scenes.other_name_list:
+            for other_model in self.Generate_Models_all_scenes.model_name_list:
                 p_value = calculate_p_value(self.total_number_runs, self.count_our_model_wins[other_model])
                 other_model_p_value[other_model] = p_value
 

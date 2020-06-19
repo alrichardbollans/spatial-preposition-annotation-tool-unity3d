@@ -14,7 +14,6 @@ Attributes:
 import copy
 import pandas as pd
 import numpy as np
-import math
 import itertools
 
 # Ml modules
@@ -63,6 +62,28 @@ class ClusterInModel:
         self.rank = rank
 
 
+class SalientFeature:
+    """Summary
+
+    Attributes:
+        feature (TYPE): Description
+        gorl (TYPE): Description
+        value (TYPE): Description
+    """
+
+    def __init__(self, name, value, gorl):
+        """Summary
+
+        Args:
+            feature (TYPE): Description
+            value (TYPE): Description
+            gorl (TYPE): Description
+        """
+        self.name = name
+        self.value = value
+        self.gorl = gorl
+
+
 class Polyseme:
     """Summary
     Polyseme is defined by feature values: a configuration can be a polyseme instance if certain
@@ -88,7 +109,7 @@ class Polyseme:
         weights (TYPE): Description
     """
 
-    def __init__(self, study_info_, preposition, polyseme_name, train_scenes, eq_feature_dict=None,
+    def __init__(self, model_name, study_info_, preposition, polyseme_name, train_scenes, eq_feature_dict=None,
                  greater_feature_dict=None, less_feature_dict=None, features_to_remove=None):
         """Summary
         
@@ -101,8 +122,10 @@ class Polyseme:
             greater_feature_dict (None, optional): Description
             less_feature_dict (None, optional): Description
 
+            :param model_name:
             :param study_info_:
         """
+        self.model_name = model_name
         self.study_info = study_info_
         self.polyseme_name = polyseme_name
         self.preposition = preposition
@@ -114,12 +137,12 @@ class Polyseme:
         self.greater_feature_dict = greater_feature_dict
         self.less_feature_dict = less_feature_dict
 
-        self.annotation_csv = self.study_info.polyseme_data_folder + 'annotations/' + self.preposition + "-" + self.polyseme_name + ' .csv'
-        self.prototype_csv = self.study_info.polyseme_data_folder + 'prototypes/' + self.preposition + "-" + self.polyseme_name + ' .csv'
-        self.mean_csv = self.study_info.polyseme_data_folder + 'means/' + self.preposition + "-" + self.polyseme_name + ' .csv'
-
-        self.regression_weights_csv = self.study_info.polyseme_data_folder + 'regression weights/' + self.preposition + "-" + self.polyseme_name + ' .csv'
-        self.plot_folder = self.study_info.polyseme_data_folder + 'plots/'
+        self.annotation_csv = self.study_info.polyseme_data_folder + self.model_name + '/annotations/' + self.preposition + "-" + self.polyseme_name + ' .csv'
+        self.prototype_csv = self.study_info.polyseme_data_folder + self.model_name + '/prototypes/' + self.preposition + "-" + self.polyseme_name + ' .csv'
+        self.mean_csv = self.study_info.polyseme_data_folder + self.model_name + '/means/' + self.preposition + "-" + self.polyseme_name + ' .csv'
+        self.rank_csv = self.study_info.polyseme_data_folder + self.model_name + '/ranks/' + self.preposition + " -ranks.csv"
+        self.regression_weights_csv = self.study_info.polyseme_data_folder + self.model_name + '/regression weights/' + self.preposition + "-" + self.polyseme_name + ' .csv'
+        self.plot_folder = self.study_info.polyseme_data_folder + self.model_name + '/plots/'
 
         self.preposition_models = GeneratePrepositionModelParameters(self.study_info, self.preposition,
                                                                      self.train_scenes,
@@ -276,33 +299,13 @@ class PolysemyModel(Model):
     def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
         print("This shouldn't be called")
 
-    # def weighted_score(self, preposition, Constraints):
-    #     """Summary
-    # 
-    #     Args:
-    #         preposition (TYPE): Description
-    #         Constraints (TYPE): Description
-    # 
-    #     Returns:
-    #         TYPE: Description
-    #     """
-    #     # Calculates how well W and P satisfy the constraints, accounting for constraint weight
-    #     counter = 0
-    # 
-    #     for c in Constraints:
-    #         lhs = self.get_typicality(preposition, c.lhs_values)
-    #         rhs = self.get_typicality(preposition, c.rhs_values)
-    #         if c.is_satisfied(lhs, rhs):
-    #             counter += c.weight
-    # 
-    #     return counter
 
-
-class PrototypePolysemyModel(PolysemyModel):
-    # Update this so different models inherit from it and can test variety of models
+class DistinctPrototypePolysemyModel(PolysemyModel):
 
     def __init__(self, name, train_scenes, test_scenes, study_info_, preserve_empty_polysemes=False,
-                 baseline_model=None, features_to_remove=None):
+                 baseline_model=None,
+                 features_to_remove=None):
+
         PolysemyModel.__init__(self, name, test_scenes, study_info_)
         self.baseline_model = baseline_model
         self.train_scenes = train_scenes
@@ -318,13 +321,7 @@ class PrototypePolysemyModel(PolysemyModel):
         self.non_shared_dict = self.get_non_shared_prototype_polyseme_dict()
         # Shared polysemes do share the prototype
         self.shared_dict = self.get_shared_prototype_polyseme_dict()
-        if name == "Distinct Prototype":
-
-            self.polyseme_dict = self.non_shared_dict
-        elif name == "Shared Prototype":
-            self.polyseme_dict = self.shared_dict
-        else:
-            raise ValueError("Incorrectly assigned model name")
+        self.polyseme_dict = self.non_shared_dict
 
     def get_shared_prototype_polyseme_dict(self):
         """Summary
@@ -345,112 +342,27 @@ class PrototypePolysemyModel(PolysemyModel):
 
         return out
 
-    def find_good_median_feature_value(self, preposition, feature):
-        """
-        Find value of feature such that half of preposition instances are greater and half are less than value
-        :param preposition:
-        :param feature:
-        :return: float
-        """
-
-        median = self.baseline_model.preposition_model_dict[preposition].work_out_feature_median(feature)
-
-        return median
-
     def refine_ideal_meaning(self, preposition, original_salient_features):
         """
-        Refines the ideal meaning by testing a validation test.
-        Outputs new set of polysemes for the model
+        Refines the ideal meaning and outputs a list of polysemes.
         :param preposition:
         :param original_salient_features:
         :return:
         """
-
-        # Each of the salient features are proportions so we use these values
-        train_scenes, validation_scenes = train_test_split(self.train_scenes, test_size=0.5)
-        g_values_to_try = [0.5, 0.6, 0.7, 0.8, 0.9]
-        l_values_to_try = [0.1, 0.2, 0.2, 0.4, 0.5]
-        new_salient_features = []
-        for f in original_salient_features:
-            if f.feature == "horizontal_distance":
-                raise ValueError("Salient feature not a proportion")
-            if f.gorl == "l":
-                values_to_try = l_values_to_try.copy()
-            else:
-                values_to_try = g_values_to_try.copy()
-
-            # Convert to standardised values
-            best_value = 0
-            best_score = 0
-            for v in values_to_try:
-                v = self.feature_processer.convert_normal_value_to_standardised(f.feature, v)
-
-                score1 = self.test_ideal_feature_value(train_scenes, validation_scenes, preposition,
-                                                       original_salient_features, f.feature, v)
-                score2 = self.test_ideal_feature_value(validation_scenes, train_scenes, preposition,
-                                                       original_salient_features, f.feature, v)
-
-                total = score1 + score2
-                if total > best_score:
-                    best_score = total
-                    best_value = v
-
-            if best_value == 0:
-                raise ValueError("best_value unassigned")
-            f.value = best_value
-            new_salient_features.append(f)
-        self.generate_polysemes(preposition, new_salient_features)
-        return new_salient_features
-
-    def test_ideal_feature_value(self, train_scenes, validation_scenes, preposition, original_salient_features, feature,
-                                 value):
-        """
-        Generates new polysemes for the model from the given feature and value, then tests on given test scenes.
-        :param train_scenes:
-        :param test_scenes:
-        :param preposition:
-        :param original_salient_features:
-        :param feature:
-        :param value:
-        :return:
-        """
-
-        # First update the salient features
-        new_salient_features = []
-        for f in original_salient_features:
-            new_f = copy.deepcopy(f)
-            if new_f.feature == feature:
-                new_f.value = value
-            new_salient_features.append(new_f)
-
-        # Create new polysemes
-        new_polysemes = self.generate_polysemes(preposition, new_salient_features, train_scenes=train_scenes)
-        self.polyseme_dict[preposition] = new_polysemes
-
-        allConstraints = self.constraint_dict[preposition]
-        # Constraints to test on
-        testConstraints = []
-
-        for c in allConstraints:
-            if c.scene in validation_scenes:
-                testConstraints.append(c)
-
-        # Get score for preposition
-        score_two = self.weighted_score(allConstraints)
-
-        return score_two
+        new_polysemes = self.generate_polysemes(preposition, original_salient_features)
+        return new_polysemes
 
     def generate_polysemes(self, preposition, salient_features, train_scenes=None):
-        """Summary
-        Generates polysemes based on ideal meaning discussion. Uses salient features and their threshold values.
-        Args:
-            preposition (TYPE): Description
-            salient_features (TYPE): Description
-
-        Returns:
-            TYPE: Description
-
         """
+        Generates polysemes based on ideal meaning discussion.
+        Uses salient features and their threshold values.
+
+        :param preposition:
+        :param salient_features:
+        :param train_scenes:
+        :return:
+        """
+
         if train_scenes is None:
             train_scenes = self.train_scenes
 
@@ -464,13 +376,13 @@ class PrototypePolysemyModel(PolysemyModel):
             for f in salient_features:
 
                 if f.gorl == "l":
-                    l_dict[f.feature] = f.value
+                    l_dict[f.name] = f.value
                 else:
-                    g_dict[f.feature] = f.value
+                    g_dict[f.name] = f.value
 
             # Canon
 
-            p1 = Polyseme(self.study_info, preposition, "canon", train_scenes, greater_feature_dict=g_dict,
+            p1 = Polyseme(self.name, self.study_info, preposition, "canon", train_scenes, greater_feature_dict=g_dict,
                           less_feature_dict=l_dict, features_to_remove=self.features_to_remove)
             polysemes.append(p1)
 
@@ -489,22 +401,22 @@ class PrototypePolysemyModel(PolysemyModel):
                         if f not in pair:
 
                             if f.gorl == "l":
-                                g_feature_dict[f.feature] = f.value
+                                g_feature_dict[f.name] = f.value
                             else:
-                                l_feature_dict[f.feature] = f.value
+                                l_feature_dict[f.name] = f.value
                         if f in pair:
 
                             if f.gorl == "l":
-                                l_feature_dict[f.feature] = f.value
+                                l_feature_dict[f.name] = f.value
                             else:
-                                g_feature_dict[f.feature] = f.value
+                                g_feature_dict[f.name] = f.value
                     if x == 0:
                         p_name = "far" + str(name_count)
                     elif x == len(salient_features) - 1:
                         p_name = "near" + str(name_count)
                     else:
                         p_name = "not far" + str(name_count)
-                    ply = Polyseme(self.study_info, preposition, p_name, train_scenes,
+                    ply = Polyseme(self.name, self.study_info, preposition, p_name, train_scenes,
                                    greater_feature_dict=g_feature_dict, less_feature_dict=l_feature_dict,
                                    features_to_remove=self.features_to_remove)
                     polysemes.append(ply)
@@ -595,21 +507,21 @@ class PrototypePolysemyModel(PolysemyModel):
         f1 = SalientFeature("above_proportion", above09, "g")
         f3 = SalientFeature("contact_proportion", contact03, "g")
         ontopof_salient_features = [f1, f3]
-        out["on top of"] = self.generate_polysemes("on top of", ontopof_salient_features)
+        out["on top of"] = self.refine_ideal_meaning("on top of", ontopof_salient_features)
 
         # inside
         f1 = SalientFeature("bbox_overlap_proportion", b07, "g")
 
         inside_salient_features = [f1]
 
-        out["inside"] = self.generate_polysemes("inside", inside_salient_features)
+        out["inside"] = self.refine_ideal_meaning("inside", inside_salient_features)
         # below
         f1 = SalientFeature("horizontal_distance", hd01, "l")
         f2 = SalientFeature("below_proportion", bl09, "g")
 
         below_salient_features = [f1, f2]
 
-        out["below"] = self.generate_polysemes("below", below_salient_features)
+        out["below"] = self.refine_ideal_meaning("below", below_salient_features)
 
         # above
         f1 = SalientFeature("horizontal_distance", hd01, "l")
@@ -617,7 +529,7 @@ class PrototypePolysemyModel(PolysemyModel):
 
         above_salient_features = [f1, f2]
 
-        out["above"] = self.generate_polysemes("above", above_salient_features)
+        out["above"] = self.refine_ideal_meaning("above", above_salient_features)
 
         # against
 
@@ -627,13 +539,13 @@ class PrototypePolysemyModel(PolysemyModel):
 
         against_salient_features = [f1, f2, f3]
 
-        out["against"] = self.generate_polysemes("against", against_salient_features)
+        out["against"] = self.refine_ideal_meaning("against", against_salient_features)
 
         return out
 
     def get_possible_polysemes(self, preposition, scene, figure, ground):
         """Summary
-
+        Returns a list of possible polysemes for the given configuration.
         Args:
             preposition (TYPE): Description
             scene (TYPE): Description
@@ -663,11 +575,11 @@ class PrototypePolysemyModel(PolysemyModel):
         out = 0
         pps = self.get_possible_polysemes(preposition, scene, figure, ground)
         if len(pps) == 0:
-            print("Error: No polyseme given for:")
             print(preposition)
             print(scene)
             print(figure)
             print(ground)
+            raise ValueError("Error: No polyseme given for:")
 
         for polyseme in pps:
 
@@ -681,6 +593,162 @@ class PrototypePolysemyModel(PolysemyModel):
                 out = new
 
         return out
+
+    def output_polyseme_info(self):
+        """Summary
+        Outputs polyseme info from model.
+        """
+        d = self.polyseme_dict
+
+        for preposition in d:
+            out = dict()
+            print(("Outputting:" + preposition))
+            for polyseme in d[preposition]:
+                polyseme.output_prototype_weight()
+                polyseme.output_definition()
+                polyseme.plot()
+
+                polyseme.preposition_models.aff_dataset.to_csv(polyseme.annotation_csv)
+                polyseme.preposition_models.affFeatures.mean().to_csv(polyseme.mean_csv, header=False)
+
+                out[preposition + "-" + polyseme.polyseme_name] = [polyseme.get_number_of_instances(), polyseme.rank]
+
+            number_df = pd.DataFrame(out, ["Number", "Rank"])
+            number_df.to_csv(polyseme.rank_csv)
+
+
+class DistinctPrototypeMedianPolysemyModel(DistinctPrototypePolysemyModel):
+
+    def __init__(self, name, train_scenes, test_scenes, study_info_, preserve_empty_polysemes=False,
+                 baseline_model=None,
+                 features_to_remove=None):
+        DistinctPrototypePolysemyModel.__init__(self, name, train_scenes, test_scenes, study_info_,
+                                                preserve_empty_polysemes=preserve_empty_polysemes,
+                                                baseline_model=baseline_model, features_to_remove=features_to_remove)
+
+    def refine_ideal_meaning(self, preposition, original_salient_features):
+        """
+        Refines the ideal meaning by finding median feature values of good instances.
+        Outputs new list of polysemes for the model
+        :param preposition:
+        :param original_salient_features:
+        :return:
+        """
+        # Find value of feature such that half of preposition instances are greater and half are less than value
+
+        new_salient_features = []
+        for f in original_salient_features:
+            new_f = copy.deepcopy(f)
+
+            median = self.baseline_model.preposition_model_dict[preposition].goodAllFeatures[new_f.name].median()
+            new_f.value = median
+
+            new_salient_features.append(new_f)
+
+        new_polysemes = self.generate_polysemes(preposition, new_salient_features)
+        return new_polysemes
+
+
+class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
+
+    def __init__(self, name, train_scenes, test_scenes, study_info_, preserve_empty_polysemes=False,
+                 baseline_model=None,
+                 features_to_remove=None):
+        DistinctPrototypePolysemyModel.__init__(self, name, train_scenes, test_scenes, study_info_,
+                                                preserve_empty_polysemes=preserve_empty_polysemes,
+                                                baseline_model=baseline_model, features_to_remove=features_to_remove)
+
+    def refine_ideal_meaning(self, preposition, original_salient_features):
+        """
+        Refines the ideal meaning by testing a validation test.
+        Outputs new list of polysemes for the model
+        :param preposition:
+        :param original_salient_features:
+        :return:
+        """
+        new_salient_features = []
+        if preposition in polysemous_preposition_list:
+            # Each of the salient features are proportions so we use these values
+            train_scenes, validation_scenes = train_test_split(self.train_scenes, test_size=0.5)
+            g_values_to_try = [0.5, 0.6, 0.7, 0.8, 0.9]
+            l_values_to_try = [0.1, 0.2, 0.2, 0.4, 0.5]
+
+            for f in original_salient_features:
+                if f.name == "horizontal_distance":
+                    raise ValueError("Salient feature not a proportion")
+                if f.name == "contact_proportion":
+                    g_values_to_try = [0.1, 0.2, 0.3, 0.4, 0.5]
+                    l_values_to_try = [0.1, 0.2, 0.3, 0.4, 0.5]
+                if f.gorl == "l":
+                    values_to_try = l_values_to_try.copy()
+                else:
+                    values_to_try = g_values_to_try.copy()
+
+                best_value = 0
+                best_score = 0
+                for v in values_to_try:
+                    # Convert to standardised values
+                    v = self.feature_processer.convert_normal_value_to_standardised(f.name, v)
+
+                    score1 = self.test_ideal_feature_value(train_scenes, validation_scenes, preposition,
+                                                           original_salient_features, f.name, v)
+                    score2 = self.test_ideal_feature_value(validation_scenes, train_scenes, preposition,
+                                                           original_salient_features, f.name, v)
+
+                    total = score1 + score2
+                    if total > best_score:
+                        best_score = total
+                        best_value = v
+
+                if best_value == 0:
+                    raise ValueError("best_value unassigned")
+
+                # The original feature is updated, which is better for training the next feature
+                f.value = best_value
+                new_salient_features.append(f)
+        new_polysemes = self.generate_polysemes(preposition, new_salient_features)
+        return new_polysemes
+
+    def test_ideal_feature_value(self, train_scenes, validation_scenes, preposition, original_salient_features, feature,
+                                 value):
+        """
+        Generates new polysemes for the model from the given feature and value,
+        then tests on given test scenes.
+        :param train_scenes:
+        :param test_scenes:
+        :param preposition:
+        :param original_salient_features:
+        :param feature:
+        :param value:
+        :return:
+        """
+
+        # First update the salient features
+        new_salient_features = []
+        for f in original_salient_features:
+            new_f = copy.deepcopy(f)
+            if new_f.name == feature:
+                new_f.value = value
+            new_salient_features.append(new_f)
+
+        # Create new polysemes
+        new_polysemes = self.generate_polysemes(preposition, new_salient_features, train_scenes=train_scenes)
+        # The polyseme dict is updated here so that the model score can be calculated
+        #
+        self.polyseme_dict[preposition] = new_polysemes
+
+        allConstraints = self.constraint_dict[preposition]
+        # Constraints to test on
+        testConstraints = []
+
+        for c in allConstraints:
+            if c.scene in validation_scenes:
+                testConstraints.append(c)
+
+        # Get score for preposition
+        score_two = self.weighted_score(allConstraints)
+
+        return score_two
 
 
 class KMeansPolysemyModel(PolysemyModel):
@@ -814,28 +882,6 @@ class KMeansPolysemyModel(PolysemyModel):
         return out
 
 
-class SalientFeature:
-    """Summary
-    
-    Attributes:
-        feature (TYPE): Description
-        gorl (TYPE): Description
-        value (TYPE): Description
-    """
-
-    def __init__(self, feature, value, gorl):
-        """Summary
-        
-        Args:
-            feature (TYPE): Description
-            value (TYPE): Description
-            gorl (TYPE): Description
-        """
-        self.feature = feature
-        self.value = value
-        self.gorl = gorl
-
-
 class GeneratePolysemeModels:
     """Summary
     
@@ -850,18 +896,26 @@ class GeneratePolysemeModels:
         test_scenes (TYPE): Description
         train_scenes (TYPE): Description
     """
+    # main model we are testing
+    # name of the model we want to compare with other models, and use to test particular features
+    our_model_name = "Refined Distinct Model"
 
-    our_model_name = "Distinct Prototype"
+    distinct_model_name = "Distinct Prototype"
+    shared_model_name = "Shared Prototype"
 
-    other_model_name = "Shared Prototype"
+    distinct_refined_model_name = "Refined Distinct Model"
+    shared_refined_model_name = "Refined Shared Model"
+
+    distinct_median_model_name = "Median Distinct Model"
+    shared_median_model_name = "Median Shared Model"
+
     baseline_model_name = "Baseline Model"
     cluster_model_name = KMeansPolysemyModel.name
 
     # List of all model names
-    model_name_list = [our_model_name, other_model_name, baseline_model_name, cluster_model_name]
-
-    # List of model names except ours
-    other_name_list = [other_model_name, baseline_model_name, cluster_model_name]
+    model_name_list = [distinct_model_name, shared_model_name, baseline_model_name, cluster_model_name,
+                       distinct_refined_model_name, shared_refined_model_name, distinct_median_model_name,
+                       shared_median_model_name]
 
     def __init__(self, train_scenes, test_scenes, study_info_, preserve_empty_polysemes=False):
         """Summary
@@ -907,43 +961,39 @@ class GeneratePolysemeModels:
 
         self.cluster_model = KMeansPolysemyModel(self.preposition_parameters_dict, self.test_scenes, self.study_info)
 
-        self.non_shared = PrototypePolysemyModel(GeneratePolysemeModels.our_model_name, self.train_scenes,
-                                                 self.test_scenes, self.study_info,
-                                                 preserve_empty_polysemes=self.preserve_empty_polysemes,
-                                                 baseline_model=self.baseline_model,
-                                                 features_to_remove=self.features_to_remove)
-        # To avoid repeating computations make a copy of non-shared and edit attributes.
+        self.non_shared = DistinctPrototypePolysemyModel(GeneratePolysemeModels.distinct_model_name, self.train_scenes,
+                                                         self.test_scenes, self.study_info,
+                                                         preserve_empty_polysemes=self.preserve_empty_polysemes,
+                                                         baseline_model=self.baseline_model,
+                                                         features_to_remove=self.features_to_remove)
+        # # To avoid repeating computations make a copy of non-shared and edit attributes.
         self.shared = copy.deepcopy(self.non_shared)
-        self.shared.name = GeneratePolysemeModels.other_model_name
+        self.shared.name = GeneratePolysemeModels.shared_model_name
         self.shared.polyseme_dict = self.shared.shared_dict
-        # self.shared = PrototypePolysemyModel(GeneratePolysemeModels.other_model_name, self.train_scenes,
-        #                                      self.test_scenes, self.study_info,
-        #                                      preserve_empty_polysemes=self.preserve_empty_polysemes,
-        #                                      baseline_model=self.baseline_model,
-        #                                      features_to_remove=self.features_to_remove)
 
-        self.models = [self.non_shared, self.shared, self.baseline_model, self.cluster_model]
+        self.refined = DistinctPrototypeRefinedPolysemyModel(GeneratePolysemeModels.distinct_refined_model_name,
+                                                             self.train_scenes,
+                                                             self.test_scenes, self.study_info,
+                                                             preserve_empty_polysemes=self.preserve_empty_polysemes,
+                                                             baseline_model=self.baseline_model,
+                                                             features_to_remove=self.features_to_remove)
+        self.shared_refined = copy.deepcopy(self.refined)
+        self.shared_refined.name = GeneratePolysemeModels.shared_refined_model_name
+        self.shared_refined.polyseme_dict = self.shared_refined.shared_dict
 
-    def output_polyseme_info(self):
-        """Summary
-        """
-        d = self.non_shared.polyseme_dict
+        self.median = DistinctPrototypeMedianPolysemyModel(GeneratePolysemeModels.distinct_median_model_name,
+                                                           self.train_scenes,
+                                                           self.test_scenes, self.study_info,
+                                                           preserve_empty_polysemes=self.preserve_empty_polysemes,
+                                                           baseline_model=self.baseline_model,
+                                                           features_to_remove=self.features_to_remove)
 
-        for preposition in d:
-            out = dict()
-            print(("Outputting:" + preposition))
-            for polyseme in d[preposition]:
-                polyseme.output_prototype_weight()
-                polyseme.output_definition()
-                polyseme.plot()
+        self.shared_median = copy.deepcopy(self.median)
+        self.shared_median.name = GeneratePolysemeModels.shared_median_model_name
+        self.shared_median.polyseme_dict = self.shared_median.shared_dict
 
-                polyseme.preposition_models.aff_dataset.to_csv(polyseme.annotation_csv)
-                polyseme.preposition_models.affFeatures.mean().to_csv(polyseme.mean_csv, header=False)
-
-                out[preposition + "-" + polyseme.polyseme_name] = [polyseme.get_number_of_instances(), polyseme.rank]
-
-            number_df = pd.DataFrame(out, ["Number", "Rank"])
-            number_df.to_csv(self.study_info.polyseme_data_folder + "/ranks/" + preposition + " -ranks.csv")
+        self.models = [self.non_shared, self.shared, self.baseline_model, self.cluster_model, self.refined,
+                       self.shared_refined, self.median, self.shared_median]
 
 
 class MultipleRunsPolysemyModels(MultipleRuns):
@@ -1031,7 +1081,8 @@ def output_all_polyseme_info(study_info_):
     all_scenes = study_info_.scene_name_list
     generated_polyseme_models = GeneratePolysemeModels(all_scenes, all_scenes, study_info_,
                                                        preserve_empty_polysemes=True)
-    generated_polyseme_models.output_polyseme_info()
+    generated_polyseme_models.non_shared.output_polyseme_info()
+    generated_polyseme_models.refined.output_polyseme_info()
 
 
 def test_on_all_scenes(study_info_):
@@ -1050,8 +1101,6 @@ def test_on_all_scenes(study_info_):
 
     t = TestModels(p_models, "all")
     all_dataframe = t.score_dataframe.copy()
-
-    # all_dataframe =all_dataframe.drop(non_polysemous_prepositions)
 
     all_dataframe.to_csv(study_info_.polysemy_score_folder + "all_test.csv")
     print(all_dataframe)
@@ -1086,7 +1135,7 @@ def test_models(study_info_):
     mpl.rcParams['ytick.labelsize'] = 'small'
 
     test_on_all_scenes(study_info_)
-    # test_model(2, 10, study_info_)
+    test_model(2, 10, study_info_)
     # test_model(10, 10, study_info_)
 
 
