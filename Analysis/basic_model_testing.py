@@ -40,6 +40,17 @@ comp_filetag = ComparativeCollection.filetag  # Tag for comp task files
 preposition_list = StudyInfo.preposition_list
 
 
+def rename_feature(feature):
+    # Rename some features
+    new_name = feature
+    if new_name == "contact_proportion":
+        new_name = "contact"
+    if new_name == "bbox_overlap_proportion":
+        new_name = "containment"
+
+    return new_name
+
+
 def convert_index(i, number_of_columns):
     """Converts index to place in row/columns for plots
     
@@ -211,6 +222,7 @@ class GeneratePrepositionModelParameters:
         # Created in compile_instances write_config_ratios()
         # Row is created in dataset only if the configuration was tested
         # Set of values with selection information
+        # Only includes configurations that were tested at least once
         config_ratio_csv = self.study_info.config_ratio_csv(sv_filetag, preposition)
         self.dataset = pd.read_csv(config_ratio_csv)
 
@@ -630,12 +642,7 @@ class GeneratePrepositionModelParameters:
         ax1 = axes[x_pos, y_pos]
 
         ax1.set_xlabel("Selection Ratio")
-        ylabel = feature
-        # Rename some features
-        if ylabel == "contact_proportion":
-            ylabel = "contact"
-        if ylabel == "bbox_overlap_proportion":
-            ylabel = "containment"
+        ylabel = rename_feature(feature)
 
         ax1.set_ylabel(ylabel)
         # ax1.set_xbound(0,1)
@@ -724,6 +731,67 @@ class GeneratePrepositionModelParameters:
         # Save remaining plots
         filename = self.get_plot_filename(file_no)
         plt.savefig(filename, bbox_inches='tight')
+
+    def plot_feature_space(self, feature1, feature2):
+        feature_processer = Features(self.study_info.name)
+
+        X = self.train_dataset[feature1].values.copy()
+        Y = self.train_dataset[feature2].values.copy()
+
+        # Convert values back to human readable
+        for i in range(len(X)):
+            x = X[i]
+            new_x = feature_processer.convert_standardised_value_to_normal(feature1, x)
+            X[i] = new_x
+        for i in range(len(Y)):
+            y = Y[i]
+            new_y = feature_processer.convert_standardised_value_to_normal(feature2, y)
+            Y[i] = new_y
+
+        X = X.reshape(-1, 1)
+        Y = Y.reshape(-1, 1)
+
+        sr = self.train_dataset[self.ratio_feature_name].values.reshape(-1, 1)
+
+        plt.scatter(X, Y, c=sr)
+        plt.xlabel(rename_feature(feature1))
+        plt.ylabel(rename_feature(feature2))
+        plt.colorbar()
+
+        # Get prototype, barycentre and exemplar values for each feature
+        index_for_prototypes1 = self.all_feature_keys.index(feature1)
+        b1 = feature_processer.convert_standardised_value_to_normal(feature1,
+                                                                    self.barycentre_prototype[index_for_prototypes1])
+        p1 = feature_processer.convert_standardised_value_to_normal(feature1, self.prototype[index_for_prototypes1])
+        ex1 = feature_processer.convert_standardised_value_to_normal(feature1,
+                                                                     self.exemplar_mean[index_for_prototypes1])
+
+        index_for_prototypes2 = self.all_feature_keys.index(feature2)
+        b2 = feature_processer.convert_standardised_value_to_normal(feature2,
+                                                                    self.barycentre_prototype[index_for_prototypes2])
+        p2 = feature_processer.convert_standardised_value_to_normal(feature2, self.prototype[index_for_prototypes2])
+        ex2 = feature_processer.convert_standardised_value_to_normal(feature2,
+                                                                     self.exemplar_mean[index_for_prototypes2])
+
+        b1 = np.array([b1]).reshape(-1, 1)
+        b2 = np.array([b2]).reshape(-1, 1)
+        # Plot barycentre value
+        plt.scatter(b1, b2, marker='+', c='red')
+
+        p1 = np.array([p1]).reshape(-1, 1)
+        p2 = np.array([p2]).reshape(-1, 1)
+        # Plot prototype value
+        plt.scatter(p1, p2, marker='X', c='red')
+
+        ex1 = np.array([ex1]).reshape(-1, 1)
+        ex2 = np.array([ex2]).reshape(-1, 1)
+        # Plot exemplar value
+        plt.scatter(ex1, ex2, marker='*', c='red')
+
+        plt.title("Feature Space for '" + self.preposition + "'")
+        filename = self.study_info.model_info_folder + "/plots/feature spaces/" + self.preposition + feature1 + feature2 + ".pdf"
+        plt.savefig(filename, bbox_inches='tight')
+        plt.clf()
 
 
 class Model:
@@ -818,16 +886,16 @@ class Model:
 
             allConstraints = self.constraint_dict[preposition]
             # Constraints to test on
-            Constraints = []
+            testConstraints = []
 
             for c in allConstraints:
                 if c.scene in self.test_scenes:
-                    Constraints.append(c)
+                    testConstraints.append(c)
 
             # Constraint info
             weight_counter = 0
             counter = 0
-            for c in Constraints:
+            for c in testConstraints:
                 weight_counter += c.weight
                 counter += 1
             total_weight_counter += weight_counter
@@ -835,7 +903,7 @@ class Model:
             totals.append(counter)
 
             # Get score for preposition
-            score_two = self.weighted_score(Constraints)
+            score_two = self.weighted_score(testConstraints)
 
             weighted_average_score += score_two
 
@@ -1248,6 +1316,9 @@ class TestModels:
 
             model.get_score()
             out[model.name] = model.scores
+
+            print(model.name)
+            print(model.scores)
 
         # out["Total Constraint Weights"] = models[0].weight_totals + ["",""]
 
@@ -1785,6 +1856,17 @@ def plot_preposition_graphs(study_info):
         M.plot_models()
 
 
+def plot_feature_spaces(study_info):
+    scene_list = study_info.scene_name_list
+    generated_models = GenerateBasicModels(scene_list, scene_list, study_info)
+
+    Min = generated_models.preposition_parameters_dict["in"]
+    Min.plot_feature_space("bbox_overlap_proportion", "location_control")
+
+    Mon = generated_models.preposition_parameters_dict["on"]
+    Mon.plot_feature_space("support","contact_proportion")
+    Mon.plot_feature_space("support", "above_proportion")
+
 def calculate_p_value(N, x):
     """Summary
     
@@ -1896,17 +1978,19 @@ def main(study_info_):
     Args:
         study_info_ (StudyInfo): Description
     """
-    plot_preposition_graphs(study_info)
-    # Edit plot settings
-    mpl.rcParams['font.size'] = 40
-    mpl.rcParams['legend.fontsize'] = 37
-    mpl.rcParams['axes.titlesize'] = 'medium'
-    mpl.rcParams['axes.labelsize'] = 'medium'
-    mpl.rcParams['ytick.labelsize'] = 'small'
+    plot_feature_spaces(study_info_)
 
-    initial_test(study_info_)
-    test_models(study_info_)
-    test_features(study_info_)
+    # plot_preposition_graphs(study_info)
+    # # Edit plot settings
+    # mpl.rcParams['font.size'] = 40
+    # mpl.rcParams['legend.fontsize'] = 37
+    # mpl.rcParams['axes.titlesize'] = 'medium'
+    # mpl.rcParams['axes.labelsize'] = 'medium'
+    # mpl.rcParams['ytick.labelsize'] = 'small'
+    # 
+    # initial_test(study_info_)
+    # test_models(study_info_)
+    # test_features(study_info_)
 
 
 if __name__ == '__main__':

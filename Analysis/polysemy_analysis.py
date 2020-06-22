@@ -140,7 +140,6 @@ class Polyseme:
         self.annotation_csv = self.study_info.polyseme_data_folder + self.model_name + '/annotations/' + self.preposition + "-" + self.polyseme_name + ' .csv'
         self.prototype_csv = self.study_info.polyseme_data_folder + self.model_name + '/prototypes/' + self.preposition + "-" + self.polyseme_name + ' .csv'
         self.mean_csv = self.study_info.polyseme_data_folder + self.model_name + '/means/' + self.preposition + "-" + self.polyseme_name + ' .csv'
-        self.rank_csv = self.study_info.polyseme_data_folder + self.model_name + '/ranks/' + self.preposition + " -ranks.csv"
         self.regression_weights_csv = self.study_info.polyseme_data_folder + self.model_name + '/regression weights/' + self.preposition + "-" + self.polyseme_name + ' .csv'
         self.plot_folder = self.study_info.polyseme_data_folder + self.model_name + '/plots/'
 
@@ -174,19 +173,19 @@ class Polyseme:
         r = Configuration(scene, figure, ground, self.study_info)
 
         r.load_from_csv()
-        if self.eq_feature_dict != None:
+        if self.eq_feature_dict is not None:
             for feature in self.eq_feature_dict:
                 value = round(r.set_of_features[feature], 6)
                 condition = round(self.eq_feature_dict[feature], 6)
                 if value != condition:
                     return False
 
-        if self.greater_feature_dict != None:
+        if self.greater_feature_dict is not None:
             for feature in self.greater_feature_dict:
 
                 if r.set_of_features[feature] < self.greater_feature_dict[feature]:
                     return False
-        if self.less_feature_dict != None:
+        if self.less_feature_dict is not None:
             for feature in self.less_feature_dict:
                 if r.set_of_features[feature] > self.less_feature_dict[feature]:
                     return False
@@ -292,7 +291,8 @@ class PolysemyModel(Model):
         
 
         """
-
+        print("generating model:" + name)
+        print("Number of test scenes:" + str(len(test_scenes)))
         Model.__init__(self, name, test_scenes, study_info_)
         self.test_prepositions = polysemous_preposition_list
 
@@ -316,21 +316,17 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
 
         self.preserve_empty_polysemes = preserve_empty_polysemes
         # Dictionary of polysemes for each preposition
-        # Non-shared polysemes don't share the prototype
+        # Non-shared polysemes don't share the prototype and this is the default
         self.polyseme_dict = dict()
-        self.non_shared_dict = self.get_non_shared_prototype_polyseme_dict()
-        # Shared polysemes do share the prototype
-        self.shared_dict = self.get_shared_prototype_polyseme_dict()
-        self.polyseme_dict = self.non_shared_dict
+        self.polyseme_dict = self.get_non_shared_prototype_polyseme_dict()
 
-    def get_shared_prototype_polyseme_dict(self):
+    def get_shared_prototype_polyseme_dict(self, old_dict):
         """Summary
         Gets polyseme dictionary from existing dictionary but makes each polyseme share the prototype.
         Returns:
             TYPE: Description
         """
         out = dict()
-        old_dict = self.non_shared_dict
 
         for preposition in old_dict:
             out[preposition] = []
@@ -367,7 +363,6 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
             train_scenes = self.train_scenes
 
         if preposition in polysemous_preposition_list:
-            print(preposition)
             polysemes = []
 
             g_dict = dict()
@@ -442,9 +437,16 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
 
                         if np.isnan(poly.rank):
                             poly.rank = 0
-            return polysemes
+
+            polyseme_list = self.modify_polysemes(polysemes)
+            return polyseme_list
         else:
             return []
+
+    def modify_polysemes(self, polyseme_list):
+        """ This method is overidden by shared model which modifies the polysemes to share the prototype"""
+        return polyseme_list
+
 
     def get_non_shared_prototype_polyseme_dict(self):
         """Summary
@@ -594,6 +596,15 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
 
         return out
 
+    def get_rank_csv(self, preposition):
+        """
+        Gets string for rank csv file
+        :param preposition:
+        :return:
+        """
+
+        return self.study_info.polyseme_data_folder + self.name + '/ranks/' + preposition + " -ranks.csv"
+
     def output_polyseme_info(self):
         """Summary
         Outputs polyseme info from model.
@@ -614,7 +625,7 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
                 out[preposition + "-" + polyseme.polyseme_name] = [polyseme.get_number_of_instances(), polyseme.rank]
 
             number_df = pd.DataFrame(out, ["Number", "Rank"])
-            number_df.to_csv(polyseme.rank_csv)
+            number_df.to_csv(self.get_rank_csv(preposition))
 
 
 class DistinctPrototypeMedianPolysemyModel(DistinctPrototypePolysemyModel):
@@ -656,7 +667,7 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
                  features_to_remove=None):
         DistinctPrototypePolysemyModel.__init__(self, name, train_scenes, test_scenes, study_info_,
                                                 preserve_empty_polysemes=preserve_empty_polysemes,
-                                                baseline_model=baseline_model, features_to_remove=features_to_remove)
+                                               baseline_model=baseline_model, features_to_remove=features_to_remove)
 
     def refine_ideal_meaning(self, preposition, original_salient_features):
         """
@@ -669,6 +680,7 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
         new_salient_features = []
         if preposition in polysemous_preposition_list:
             # Each of the salient features are proportions so we use these values
+            # This makes generation non-deterministic for these models
             train_scenes, validation_scenes = train_test_split(self.train_scenes, test_size=0.5)
             g_values_to_try = [0.5, 0.6, 0.7, 0.8, 0.9]
             l_values_to_try = [0.1, 0.2, 0.2, 0.4, 0.5]
@@ -734,7 +746,7 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
         # Create new polysemes
         new_polysemes = self.generate_polysemes(preposition, new_salient_features, train_scenes=train_scenes)
         # The polyseme dict is updated here so that the model score can be calculated
-        #
+
         self.polyseme_dict[preposition] = new_polysemes
 
         allConstraints = self.constraint_dict[preposition]
@@ -746,9 +758,28 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
                 testConstraints.append(c)
 
         # Get score for preposition
-        score_two = self.weighted_score(allConstraints)
+        score_two = self.weighted_score(testConstraints)
 
         return score_two
+
+
+class SharedPrototypeRefinedPolysemyModel(DistinctPrototypeRefinedPolysemyModel):
+
+    def __init__(self, name, train_scenes, test_scenes, study_info_, preserve_empty_polysemes=False,
+                 baseline_model=None,
+                 features_to_remove=None):
+        DistinctPrototypeRefinedPolysemyModel.__init__(self, name, train_scenes, test_scenes, study_info_,
+                                                       preserve_empty_polysemes=preserve_empty_polysemes,
+                                                       baseline_model=baseline_model,
+                                                       features_to_remove=features_to_remove)
+
+    def modify_polysemes(self, polyseme_list):
+        for poly in polyseme_list:
+            poly.prototype = self.baseline_model.preposition_model_dict[poly.preposition].prototype
+        return polyseme_list
+
+
+
 
 
 class KMeansPolysemyModel(PolysemyModel):
@@ -969,7 +1000,7 @@ class GeneratePolysemeModels:
         # # To avoid repeating computations make a copy of non-shared and edit attributes.
         self.shared = copy.deepcopy(self.non_shared)
         self.shared.name = GeneratePolysemeModels.shared_model_name
-        self.shared.polyseme_dict = self.shared.shared_dict
+        self.shared.polyseme_dict = self.shared.get_shared_prototype_polyseme_dict(self.shared.polyseme_dict)
 
         self.refined = DistinctPrototypeRefinedPolysemyModel(GeneratePolysemeModels.distinct_refined_model_name,
                                                              self.train_scenes,
@@ -977,9 +1008,13 @@ class GeneratePolysemeModels:
                                                              preserve_empty_polysemes=self.preserve_empty_polysemes,
                                                              baseline_model=self.baseline_model,
                                                              features_to_remove=self.features_to_remove)
-        self.shared_refined = copy.deepcopy(self.refined)
-        self.shared_refined.name = GeneratePolysemeModels.shared_refined_model_name
-        self.shared_refined.polyseme_dict = self.shared_refined.shared_dict
+
+        self.shared_refined = SharedPrototypeRefinedPolysemyModel(GeneratePolysemeModels.shared_refined_model_name,
+                                                                  self.train_scenes,
+                                                                  self.test_scenes, self.study_info,
+                                                                  preserve_empty_polysemes=self.preserve_empty_polysemes,
+                                                                  baseline_model=self.baseline_model,
+                                                                  features_to_remove=self.features_to_remove)
 
         self.median = DistinctPrototypeMedianPolysemyModel(GeneratePolysemeModels.distinct_median_model_name,
                                                            self.train_scenes,
@@ -990,7 +1025,8 @@ class GeneratePolysemeModels:
 
         self.shared_median = copy.deepcopy(self.median)
         self.shared_median.name = GeneratePolysemeModels.shared_median_model_name
-        self.shared_median.polyseme_dict = self.shared_median.shared_dict
+        self.shared_median.polyseme_dict = self.shared_median.get_shared_prototype_polyseme_dict(
+            self.shared_median.polyseme_dict)
 
         self.models = [self.non_shared, self.shared, self.baseline_model, self.cluster_model, self.refined,
                        self.shared_refined, self.median, self.shared_median]
@@ -1177,6 +1213,7 @@ def main(study_info_):
 
 
 if __name__ == '__main__':
+
     study_info = StudyInfo("2019 study")
 
     main(study_info)
