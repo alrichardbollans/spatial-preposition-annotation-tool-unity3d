@@ -753,10 +753,12 @@ class GeneratePrepositionModelParameters:
 
         sr = self.train_dataset[self.ratio_feature_name].values.reshape(-1, 1)
 
-        plt.scatter(X, Y, c=sr)
+        instances = plt.scatter(X, Y, c=sr)
         plt.xlabel(rename_feature(feature1))
         plt.ylabel(rename_feature(feature2))
-        plt.colorbar()
+        cbar = plt.colorbar()
+        cbar.set_label('Selection ratio', rotation=270)
+        cbar.set_ticks([0,1])
 
         # Get prototype, barycentre and exemplar values for each feature
         index_for_prototypes1 = self.all_feature_keys.index(feature1)
@@ -776,19 +778,27 @@ class GeneratePrepositionModelParameters:
         b1 = np.array([b1]).reshape(-1, 1)
         b2 = np.array([b2]).reshape(-1, 1)
         # Plot barycentre value
-        plt.scatter(b1, b2, marker='+', c='red')
+        barycentre = plt.scatter(b1, b2, marker='+', c='red')
 
         p1 = np.array([p1]).reshape(-1, 1)
         p2 = np.array([p2]).reshape(-1, 1)
         # Plot prototype value
-        plt.scatter(p1, p2, marker='X', c='red')
+        prototype = plt.scatter(p1, p2, marker='X', c='red')
 
         ex1 = np.array([ex1]).reshape(-1, 1)
         ex2 = np.array([ex2]).reshape(-1, 1)
         # Plot exemplar value
-        plt.scatter(ex1, ex2, marker='*', c='red')
+        exemplar = plt.scatter(ex1, ex2, marker='*', c='red')
 
-        plt.title("Feature Space for '" + self.preposition + "'")
+        plt.legend((instances, barycentre, exemplar, prototype),
+                   ('Instances', 'Barycentre', 'Exemplar Mean', 'Generated Prototype'),
+                   scatterpoints=1,
+                   loc='upper center', bbox_to_anchor=(0.5, -0.13),
+
+                   ncol=2,
+                   fontsize=8)
+
+        plt.title("Instances of '" + self.preposition + "'")
         filename = self.study_info.model_info_folder + "/plots/feature spaces/" + self.preposition + feature1 + feature2 + ".pdf"
         plt.savefig(filename, bbox_inches='tight')
         plt.clf()
