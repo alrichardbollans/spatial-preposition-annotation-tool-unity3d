@@ -55,7 +55,7 @@ class Constraint:
         self.f1 = f1
         self.f2 = f2
         # lhs and rhs are coefficients for the problem
-        # coefficients are ordered by Configuration.all_feature_keys/feature_keys
+        # coefficients are ordered by study.all_feature_keys
         # These are configuration values for the instances being compared
         self.lhs = lhs
         self.rhs = rhs

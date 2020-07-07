@@ -296,7 +296,11 @@ class GeneratePrepositionModelParameters:
 
         # regression weights calculated by linear regression. stored as array and dataframe
         self.poly_regression_model = None
+        self.polynomial_degree = 3
+        self.poly_model_fit_score = None
+
         self.linear_regression_model = None
+        self.linear_model_fit_score = None
 
         self.regression_weights = []
         self.regression_weight_csv = self.study_info.model_info_folder + "/regression weights/" + preposition + ".csv"
@@ -360,11 +364,19 @@ class GeneratePrepositionModelParameters:
                 print("No features being removed.")
         return new_d
 
+    def remove_unused_features_from_point_array(self, point):
+        new_point = []
+        for f in self.all_feature_keys:
+            if f not in self.features_to_remove:
+                new_point.append(point[self.all_feature_keys.index(f)])
+
+        return new_point
+
     def work_out_models(self):
         """Summary
         """
         self.work_out_linear_regression_model()
-        # self.work_out_polynomial_regression_model(3)
+        self.work_out_polynomial_regression_model()
         self.work_out_barycentre_prototype()
         self.work_out_exemplar_mean()
         self.work_out_prototype_model()
@@ -433,6 +445,7 @@ class GeneratePrepositionModelParameters:
         """
         # First predict feature value given selection ratio of 1
         # Reshape data first
+        # This should be capped but hasn't been
         X = self.train_dataset[self.ratio_feature_name].values.reshape(-1, 1)
         Y = self.train_dataset[feature].values.reshape(-1, 1)
 
@@ -469,6 +482,8 @@ class GeneratePrepositionModelParameters:
         lin_model.fit(X, Y)
 
         self.linear_regression_model = lin_model
+
+        self.linear_model_fit_score = lin_model.score(X, Y)
 
         return lin_model
 
@@ -536,7 +551,7 @@ class GeneratePrepositionModelParameters:
 
         return self.prototype
 
-    def work_out_polynomial_regression_model(self, n):
+    def work_out_polynomial_regression_model(self):
         """Summary
 
         Args:
@@ -550,7 +565,7 @@ class GeneratePrepositionModelParameters:
         X = self.feature_dataframe
         Y = self.train_dataset[self.ratio_feature_name].values.reshape(-1, 1)
 
-        polynomial_features = PolynomialFeatures(degree=n)
+        polynomial_features = PolynomialFeatures(degree=self.polynomial_degree)
         x_poly = polynomial_features.fit_transform(X)
 
         model2 = LinearRegression()
@@ -559,15 +574,14 @@ class GeneratePrepositionModelParameters:
         model2.fit(x_poly, Y)
 
         self.poly_regression_model = model2
-        print((self.preposition))
-        print(("Polynomial Score" + str(n)))
-        print((model2.score(x_poly, Y)))
+        self.poly_model_fit_score = model2.score(x_poly, Y)
 
         return model2
 
     def output_models(self):
         """Summary
         """
+
         # Only called once when training scenes are all scenes, so these are the best model parameters
         wf = pd.DataFrame(self.regression_weights, self.all_feature_keys)
 
@@ -584,6 +598,8 @@ class GeneratePrepositionModelParameters:
         exf = pd.DataFrame(self.exemplar_mean, self.all_feature_keys)
 
         exf.to_csv(self.exemplar_csv)
+
+
 
     def read_all_feature_weights(self):
         """Summary
@@ -622,7 +638,51 @@ class GeneratePrepositionModelParameters:
                     value = line[1]
                     setattr(self, classifier + ":" + line[0], value)
 
-    def plot_features_ratio(self, no_columns, axes, feature, X, y_pred, Y):
+    def plot_features_ratio_to_axis(self, feature, axis):
+        # Reshape data first
+        Y = self.train_dataset[feature].values.reshape(-1, 1)
+        X = self.train_dataset[self.ratio_feature_name].values.reshape(-1, 1)
+        # Get prediction of all points on interval
+        y_pred = self.interval_predictions[feature]
+
+        axis.set_xlabel("Selection Ratio")
+        ylabel = rename_feature(feature)
+
+        axis.set_ylabel(ylabel)
+
+        axis.grid(True)
+
+        # Plot data point scatter
+        axis.plot(X, Y, 'k.')
+        # Plot regression line
+        axis.plot(X, y_pred, color='red', linewidth=2)
+        # Plot barycentre and exemplar values
+        end = [1]
+        end = np.array(end).reshape(-1, 1)
+
+        index_for_prototypes = self.all_feature_keys.index(feature)
+        if self.barycentre_prototype is not None:
+            b = self.barycentre_prototype[index_for_prototypes]
+            b = np.array([b]).reshape(-1, 1)
+            # Plot barycentre value
+            axis.plot(end, b, markersize=10, markeredgewidth=2, marker='+')
+        if self.exemplar_mean is not None:
+            ex = self.exemplar_mean[index_for_prototypes]
+            ex = np.array([ex]).reshape(-1, 1)
+
+            # Plot exemplar mean value
+            axis.plot(end, ex, markersize=10, markeredgewidth=2, marker=(5, 2))
+
+        # # COnvert y labels to human readable values
+        # feature_processer = Features(self.study_info.name)
+        #
+        # vals = axis.get_yticks()
+        # print(vals)
+        # new_vals = [feature_processer.convert_standardised_value_to_normal(feature, x) for x in vals]
+        # print(new_vals)
+        # axis.set_yticklabels(new_vals)
+
+    def plot_features_ratio(self, no_columns, axes, feature):
         """Summary
 
         Args:
@@ -641,36 +701,7 @@ class GeneratePrepositionModelParameters:
 
         ax1 = axes[x_pos, y_pos]
 
-        ax1.set_xlabel("Selection Ratio")
-        ylabel = rename_feature(feature)
-
-        ax1.set_ylabel(ylabel)
-        # ax1.set_xbound(0,1)
-        # ax1.set_ybound(0,1)
-        # ax1.set_xlim(-0.1,1.1)
-        # ax1.set_ylim(-0.1,1.1)
-        ax1.grid(True)
-
-        # Plot data point scatter
-        ax1.plot(X, Y, 'k.')
-        # Plot regression line
-        ax1.plot(X, y_pred, color='red', linewidth=2)
-        # Plot barycentre and exemplar values
-        end = [1]
-        end = np.array(end).reshape(-1, 1)
-
-        index_for_prototypes = self.all_feature_keys.index(feature)
-        if self.barycentre_prototype is not None:
-            b = self.barycentre_prototype[index_for_prototypes]
-            b = np.array([b]).reshape(-1, 1)
-            # Plot barycentre value
-            ax1.plot(end, b, markersize=10, markeredgewidth=2, marker='+')
-        if self.exemplar_mean is not None:
-            ex = self.exemplar_mean[index_for_prototypes]
-            ex = np.array([ex]).reshape(-1, 1)
-
-            # Plot exemplar mean value
-            ax1.plot(end, ex, markersize=10, markeredgewidth=2, marker=(5, 2))
+        self.plot_features_ratio_to_axis(feature, ax1)
 
     def get_plot_filename(self, file_no):
         """Summary
@@ -709,13 +740,7 @@ class GeneratePrepositionModelParameters:
 
             r = plot_count % (no_columns * no_rows)
 
-            # Reshape data first
-            Y = self.train_dataset[feature].values.reshape(-1, 1)
-            X = self.train_dataset[self.ratio_feature_name].values.reshape(-1, 1)
-            # Get prediction of all points on interval
-            y_pred = self.interval_predictions[feature]
-
-            self.plot_features_ratio(no_columns, axes, feature, X, y_pred, Y)
+            self.plot_features_ratio(no_columns, axes, feature)
 
             filename = self.get_plot_filename(file_no)
 
@@ -730,6 +755,14 @@ class GeneratePrepositionModelParameters:
                 fig.canvas.set_window_title('Ratio vs. Feature')
         # Save remaining plots
         filename = self.get_plot_filename(file_no)
+        plt.savefig(filename, bbox_inches='tight')
+
+    def plot_single_feature_regression(self, feature):
+        fig, axes = plt.subplots(nrows=1, ncols=1)
+        fig.tight_layout()
+        fig.canvas.set_window_title('Ratio vs. Feature')
+        self.plot_features_ratio_to_axis(feature, axes)
+        filename = self.study_info.model_info_folder + "/plots/individual features/" + self.preposition + feature + ".pdf"
         plt.savefig(filename, bbox_inches='tight')
 
     def plot_feature_space(self, feature1, feature2):
@@ -758,7 +791,7 @@ class GeneratePrepositionModelParameters:
         plt.ylabel(rename_feature(feature2))
         cbar = plt.colorbar()
         cbar.set_label('Selection ratio', rotation=270)
-        cbar.set_ticks([0,1])
+        cbar.set_ticks([0, 1])
 
         # Get prototype, barycentre and exemplar values for each feature
         index_for_prototypes1 = self.all_feature_keys.index(feature1)
@@ -774,31 +807,31 @@ class GeneratePrepositionModelParameters:
         p2 = feature_processer.convert_standardised_value_to_normal(feature2, self.prototype[index_for_prototypes2])
         ex2 = feature_processer.convert_standardised_value_to_normal(feature2,
                                                                      self.exemplar_mean[index_for_prototypes2])
-
+        marker_size = mpl.rcParams['lines.markersize'] ** 2.5
         b1 = np.array([b1]).reshape(-1, 1)
         b2 = np.array([b2]).reshape(-1, 1)
         # Plot barycentre value
-        barycentre = plt.scatter(b1, b2, marker='+', c='red')
+        barycentre = plt.scatter(b1, b2, marker='+', c='red', s=marker_size)
 
         p1 = np.array([p1]).reshape(-1, 1)
         p2 = np.array([p2]).reshape(-1, 1)
         # Plot prototype value
-        prototype = plt.scatter(p1, p2, marker='X', c='red')
+        prototype = plt.scatter(p1, p2, marker='X', c='red', s=marker_size)
 
         ex1 = np.array([ex1]).reshape(-1, 1)
         ex2 = np.array([ex2]).reshape(-1, 1)
         # Plot exemplar value
-        exemplar = plt.scatter(ex1, ex2, marker='*', c='red')
+        exemplar = plt.scatter(ex1, ex2, marker='*', c='red', s=marker_size)
 
         plt.legend((instances, barycentre, exemplar, prototype),
-                   ('Instances', 'Barycentre', 'Exemplar Mean', 'Generated Prototype'),
+                   ('Instances', 'CS Prototype', 'Exemplar Mean', 'Generated Prototype'),
                    scatterpoints=1,
                    loc='upper center', bbox_to_anchor=(0.5, -0.13),
 
                    ncol=2,
-                   fontsize=8)
+                   fontsize=15)
 
-        plt.title("Instances of '" + self.preposition + "'")
+        # plt.title("Instances of '" + self.preposition + "'")
         filename = self.study_info.model_info_folder + "/plots/feature spaces/" + self.preposition + feature1 + feature2 + ".pdf"
         plt.savefig(filename, bbox_inches='tight')
         plt.clf()
@@ -1216,26 +1249,51 @@ class BestGuessModel(Model):
         return out
 
 
-class RegressionModel(Model):
-    # This needs fixing if using in future
-    name = "Regression Model"
+class LinearRegressionModel(Model):
+    name = "Linear Regression Model"
 
     def __init__(self, preposition_model_dict, test_scenes, study_info_):
         self.preposition_model_dict = preposition_model_dict
 
-        Model.__init__(self, RegressionModel.name, test_scenes, study_info_)
+        Model.__init__(self, LinearRegressionModel.name, test_scenes, study_info_)
 
-    def get_typicality(self, preposition, point):
+    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
         p_model = self.preposition_model_dict[preposition]
-        regression_model = p_model.regression_model
+        # Need to remove unused features from point array
 
-        point_array = np.array(point).reshape(1, -1)
-        if self.regression_dimension is not None:
-            # Must transform the point for polynomial regression
-            polynomial_features = PolynomialFeatures(degree=self.regression_dimension)
-            point_array = polynomial_features.fit_transform(point_array)
+        new_point = p_model.remove_unused_features_from_point_array(point)
 
-        t = self.regression_model_dict[preposition].predict(point_array)
+        regression_model = p_model.linear_regression_model
+
+        point_array = np.array(new_point).reshape(1, -1)
+
+        t = regression_model.predict(point_array)
+
+        return t
+
+
+class PolynRegressionModel(Model):
+    name = "Polynomial Regression Model"
+
+    def __init__(self, preposition_model_dict, test_scenes, study_info_):
+        self.preposition_model_dict = preposition_model_dict
+
+        Model.__init__(self, PolynRegressionModel.name, test_scenes, study_info_)
+
+    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
+        p_model = self.preposition_model_dict[preposition]
+        regression_model = p_model.poly_regression_model
+        new_point = p_model.remove_unused_features_from_point_array(point)
+
+        point_array = np.array(new_point).reshape(1, -1)
+
+        regression_degree = p_model.polynomial_degree
+
+        # Must transform the point for polynomial regression
+        polynomial_features = PolynomialFeatures(degree=regression_degree)
+        point_array = polynomial_features.fit_transform(point_array)
+
+        t = regression_model.predict(point_array)
         return t
 
 
@@ -1289,7 +1347,11 @@ class GenerateBasicModels:
             simple_model = SimpleModel(self.test_scenes, self.study_info)
             best_guess_model = BestGuessModel(self.test_scenes, self.study_info)
 
-            models = [our_model, exemplar_model, cs_model, proximity_model, simple_model, best_guess_model]
+            lin_reg_model = LinearRegressionModel(preposition_models_dict, self.test_scenes, self.study_info)
+            poly_reg_model = PolynRegressionModel(preposition_models_dict, self.test_scenes, self.study_info)
+
+            models = [our_model, exemplar_model, cs_model, proximity_model, simple_model, best_guess_model,
+                      lin_reg_model, poly_reg_model]
 
         else:
 
@@ -1860,10 +1922,30 @@ def plot_preposition_graphs(study_info):
     """
     scene_list = study_info.scene_name_list
     generated_models = GenerateBasicModels(scene_list, scene_list, study_info)
+    linear_fit_scores = []
+    poly_fit_scores = []
     for p in preposition_list:
         M = generated_models.preposition_parameters_dict[p]
         M.output_models()
         M.plot_models()
+
+        linear_fit_scores.append(M.poly_model_fit_score)
+        poly_fit_scores.append(M.linear_model_fit_score)
+    reg_model_fit_score_csv_folder = study_info.model_info_folder + "/regression model scores/"
+
+    ls = pd.DataFrame(linear_fit_scores, preposition_list)
+    ls.to_csv(reg_model_fit_score_csv_folder + "linear.csv")
+
+    ps = pd.DataFrame(poly_fit_scores, preposition_list)
+    ps.to_csv(reg_model_fit_score_csv_folder + "poly.csv")
+
+
+def plot_feature_regression(study_info):
+    scene_list = study_info.scene_name_list
+    generated_models = GenerateBasicModels(scene_list, scene_list, study_info)
+
+    Minside = generated_models.preposition_parameters_dict["inside"]
+    Minside.plot_single_feature_regression("bbox_overlap_proportion")
 
 
 def plot_feature_spaces(study_info):
@@ -1874,8 +1956,12 @@ def plot_feature_spaces(study_info):
     Min.plot_feature_space("bbox_overlap_proportion", "location_control")
 
     Mon = generated_models.preposition_parameters_dict["on"]
-    Mon.plot_feature_space("support","contact_proportion")
+    Mon.plot_feature_space("support", "contact_proportion")
     Mon.plot_feature_space("support", "above_proportion")
+
+    Minside = generated_models.preposition_parameters_dict["inside"]
+    Minside.plot_feature_space("bbox_overlap_proportion", "location_control")
+
 
 def calculate_p_value(N, x):
     """Summary
@@ -1925,15 +2011,15 @@ def test_models(study_info_):
     Args:
         study_info_ (TYPE): Description
     """
-    m = MultipleRuns(GenerateBasicModels, study_info_, number_runs=100, k=2, compare="y")
+    m = MultipleRuns(GenerateBasicModels, study_info_, number_runs=5, k=2, compare="y")
     print("Test Model k = 2")
     m.validation()
     m.output()
 
-    m = MultipleRuns(GenerateBasicModels, study_info_, number_runs=100, k=3, compare="y")
-    print("Test Model k = 3")
-    m.validation()
-    m.output()
+    # m = MultipleRuns(GenerateBasicModels, study_info_, number_runs=100, k=3, compare="y")
+    # print("Test Model k = 3")
+    # m.validation()
+    # m.output()
 
 
 def plot_all_csv(study_info_):
@@ -1988,9 +2074,14 @@ def main(study_info_):
     Args:
         study_info_ (StudyInfo): Description
     """
-    plot_feature_spaces(study_info_)
+    # mpl.rcParams['font.size'] = 25
 
-    # plot_preposition_graphs(study_info)
+    mpl.rcParams['axes.titlesize'] = 'xx-large'
+    mpl.rcParams['axes.labelsize'] = 'xx-large'
+    # plot_feature_regression(study_info_)
+    # plot_feature_spaces(study_info_)
+
+    plot_preposition_graphs(study_info)
     # # Edit plot settings
     # mpl.rcParams['font.size'] = 40
     # mpl.rcParams['legend.fontsize'] = 37
@@ -1998,8 +2089,8 @@ def main(study_info_):
     # mpl.rcParams['axes.labelsize'] = 'medium'
     # mpl.rcParams['ytick.labelsize'] = 'small'
     # 
-    # initial_test(study_info_)
-    # test_models(study_info_)
+    initial_test(study_info_)
+    test_models(study_info_)
     # test_features(study_info_)
 
 
