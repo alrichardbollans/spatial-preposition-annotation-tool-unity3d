@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 # Modules for testing and model making
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import PolynomialFeatures
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
 from scipy.special import comb
 
 # Local module imports
@@ -187,6 +187,9 @@ class GeneratePrepositionModelParameters:
 
     interval = np.array([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]).reshape(-1, 1)
 
+    # degree to use in polynomial regression
+    polynomial_degree = 3
+
     def __init__(self, study_info_, preposition, train_scenes, features_to_remove=None, polyseme=None):
         """Summary
         
@@ -296,11 +299,10 @@ class GeneratePrepositionModelParameters:
 
         # regression weights calculated by linear regression. stored as array and dataframe
         self.poly_regression_model = None
-        self.polynomial_degree = 3
-        self.poly_model_fit_score = None
 
         self.linear_regression_model = None
-        self.linear_model_fit_score = None
+
+        self.ridge_regression_model = None
 
         self.regression_weights = []
         self.regression_weight_csv = self.study_info.model_info_folder + "/regression weights/" + preposition + ".csv"
@@ -377,6 +379,7 @@ class GeneratePrepositionModelParameters:
         """
         self.work_out_linear_regression_model()
         self.work_out_polynomial_regression_model()
+        self.work_out_ridge_regression()
         self.work_out_barycentre_prototype()
         self.work_out_exemplar_mean()
         self.work_out_prototype_model()
@@ -464,13 +467,26 @@ class GeneratePrepositionModelParameters:
         pro_value = feature_prototype[0][0]
         return pro_value
 
+    def work_out_ridge_regression(self):
+        X = self.feature_dataframe
+        Y = self.train_dataset[self.ratio_feature_name].values.reshape(-1, 1)
+
+        ridge_model = Ridge()
+
+        # Fit model to data
+        ridge_model.fit(X, Y)
+
+        self.ridge_regression_model = ridge_model
+
+        return ridge_model
+
     def work_out_linear_regression_model(self):
         """Summary
 
         Returns:
             TYPE: Description
         """
-        # Next get gradient when feature predicts selection ratio
+
         # Reshape data first
 
         X = self.feature_dataframe
@@ -482,8 +498,6 @@ class GeneratePrepositionModelParameters:
         lin_model.fit(X, Y)
 
         self.linear_regression_model = lin_model
-
-        self.linear_model_fit_score = lin_model.score(X, Y)
 
         return lin_model
 
@@ -574,7 +588,6 @@ class GeneratePrepositionModelParameters:
         model2.fit(x_poly, Y)
 
         self.poly_regression_model = model2
-        self.poly_model_fit_score = model2.score(x_poly, Y)
 
         return model2
 
@@ -598,8 +611,6 @@ class GeneratePrepositionModelParameters:
         exf = pd.DataFrame(self.exemplar_mean, self.all_feature_keys)
 
         exf.to_csv(self.exemplar_csv)
-
-
 
     def read_all_feature_weights(self):
         """Summary
@@ -1249,52 +1260,85 @@ class BestGuessModel(Model):
         return out
 
 
-class LinearRegressionModel(Model):
+class RegressionModel(Model):
+    def __init__(self, name, preposition_model_dict, test_scenes, study_info_):
+        self.preposition_model_dict = preposition_model_dict
+
+        Model.__init__(self, name, test_scenes, study_info_)
+        self.regression_model_dict = dict()
+        self.reg_model_fit_score_csv_folder = study_info.model_info_folder + "/regression model scores/"
+        self.reg_model_fit_csv = self.reg_model_fit_score_csv_folder + self.name + ".csv"
+
+    def transform_array(self, x):
+        '''
+        Arrays need transforming for polynomial regressions
+        :param x:
+        :return:
+        '''
+        return x
+
+    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
+        p_model = self.preposition_model_dict[preposition]
+        regression_model = self.regression_model_dict[preposition]
+        new_point = p_model.remove_unused_features_from_point_array(point)
+
+        point_array = np.array(new_point).reshape(1, -1)
+
+        point_array = self.transform_array(point_array)
+
+        t = regression_model.predict(point_array)
+        return t
+
+    def output_regression_scores(self):
+        scores = []
+        for p in preposition_list:
+            X = self.transform_array(self.preposition_model_dict[p].feature_dataframe)
+            Y = self.preposition_model_dict[p].train_dataset[
+                self.preposition_model_dict[p].ratio_feature_name].values.reshape(-1, 1)
+
+            reg_model = self.regression_model_dict[p]
+
+            fit_score = reg_model.score(X, Y)
+            scores.append(fit_score)
+
+        fs = pd.DataFrame(scores, preposition_list)
+        fs.to_csv(self.reg_model_fit_csv)
+
+
+class LinearRegressionModel(RegressionModel):
     name = "Linear Regression Model"
 
     def __init__(self, preposition_model_dict, test_scenes, study_info_):
-        self.preposition_model_dict = preposition_model_dict
+        RegressionModel.__init__(self, LinearRegressionModel.name, preposition_model_dict, test_scenes, study_info_)
 
-        Model.__init__(self, LinearRegressionModel.name, test_scenes, study_info_)
-
-    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
-        p_model = self.preposition_model_dict[preposition]
-        # Need to remove unused features from point array
-
-        new_point = p_model.remove_unused_features_from_point_array(point)
-
-        regression_model = p_model.linear_regression_model
-
-        point_array = np.array(new_point).reshape(1, -1)
-
-        t = regression_model.predict(point_array)
-
-        return t
+        for p in preposition_list:
+            self.regression_model_dict[p] = self.preposition_model_dict[p].linear_regression_model
 
 
-class PolynRegressionModel(Model):
+class RidgeRegressionModel(RegressionModel):
+    name = "Ridge Regression Model"
+
+    def __init__(self, preposition_model_dict, test_scenes, study_info_):
+        RegressionModel.__init__(self, self.name, preposition_model_dict, test_scenes, study_info_)
+
+        for p in preposition_list:
+            self.regression_model_dict[p] = self.preposition_model_dict[p].ridge_regression_model
+
+
+class PolynRegressionModel(RegressionModel):
     name = "Polynomial Regression Model"
 
     def __init__(self, preposition_model_dict, test_scenes, study_info_):
-        self.preposition_model_dict = preposition_model_dict
+        RegressionModel.__init__(self, PolynRegressionModel.name, preposition_model_dict, test_scenes, study_info_)
+        self.regression_degree = GeneratePrepositionModelParameters.polynomial_degree
+        for p in preposition_list:
+            self.regression_model_dict[p] = self.preposition_model_dict[p].poly_regression_model
 
-        Model.__init__(self, PolynRegressionModel.name, test_scenes, study_info_)
-
-    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
-        p_model = self.preposition_model_dict[preposition]
-        regression_model = p_model.poly_regression_model
-        new_point = p_model.remove_unused_features_from_point_array(point)
-
-        point_array = np.array(new_point).reshape(1, -1)
-
-        regression_degree = p_model.polynomial_degree
-
+    def transform_array(self, x):
         # Must transform the point for polynomial regression
-        polynomial_features = PolynomialFeatures(degree=regression_degree)
-        point_array = polynomial_features.fit_transform(point_array)
-
-        t = regression_model.predict(point_array)
-        return t
+        polynomial_features = PolynomialFeatures(degree=self.regression_degree)
+        X = polynomial_features.fit_transform(x)
+        return X
 
 
 class GenerateBasicModels:
@@ -1349,9 +1393,10 @@ class GenerateBasicModels:
 
             lin_reg_model = LinearRegressionModel(preposition_models_dict, self.test_scenes, self.study_info)
             poly_reg_model = PolynRegressionModel(preposition_models_dict, self.test_scenes, self.study_info)
+            rid_reg_model = RidgeRegressionModel(preposition_models_dict, self.test_scenes, self.study_info)
 
             models = [our_model, exemplar_model, cs_model, proximity_model, simple_model, best_guess_model,
-                      lin_reg_model, poly_reg_model]
+                      lin_reg_model, poly_reg_model, rid_reg_model]
 
         else:
 
@@ -1914,6 +1959,15 @@ class MultipleRuns:
         self.plot_dataframe_bar_chart(dataset, file_to_save, x_label, y_label, plot_title)
 
 
+def output_regression_scores(study_info):
+    scene_list = study_info.scene_name_list
+    generated_models = GenerateBasicModels(scene_list, scene_list, study_info)
+
+    for model in generated_models.models:
+        if hasattr(model, "output_regression_scores"):
+            model.output_regression_scores()
+
+
 def plot_preposition_graphs(study_info):
     """Summary
     
@@ -1922,22 +1976,11 @@ def plot_preposition_graphs(study_info):
     """
     scene_list = study_info.scene_name_list
     generated_models = GenerateBasicModels(scene_list, scene_list, study_info)
-    linear_fit_scores = []
-    poly_fit_scores = []
+
     for p in preposition_list:
         M = generated_models.preposition_parameters_dict[p]
         M.output_models()
         M.plot_models()
-
-        linear_fit_scores.append(M.poly_model_fit_score)
-        poly_fit_scores.append(M.linear_model_fit_score)
-    reg_model_fit_score_csv_folder = study_info.model_info_folder + "/regression model scores/"
-
-    ls = pd.DataFrame(linear_fit_scores, preposition_list)
-    ls.to_csv(reg_model_fit_score_csv_folder + "linear.csv")
-
-    ps = pd.DataFrame(poly_fit_scores, preposition_list)
-    ps.to_csv(reg_model_fit_score_csv_folder + "poly.csv")
 
 
 def plot_feature_regression(study_info):
@@ -2011,7 +2054,7 @@ def test_models(study_info_):
     Args:
         study_info_ (TYPE): Description
     """
-    m = MultipleRuns(GenerateBasicModels, study_info_, number_runs=5, k=2, compare="y")
+    m = MultipleRuns(GenerateBasicModels, study_info_, number_runs=20, k=2, compare="y")
     print("Test Model k = 2")
     m.validation()
     m.output()
@@ -2080,8 +2123,8 @@ def main(study_info_):
     mpl.rcParams['axes.labelsize'] = 'xx-large'
     # plot_feature_regression(study_info_)
     # plot_feature_spaces(study_info_)
-
-    plot_preposition_graphs(study_info)
+    # output_regression_scores(study_info_)
+    # plot_preposition_graphs(study_info_)
     # # Edit plot settings
     # mpl.rcParams['font.size'] = 40
     # mpl.rcParams['legend.fontsize'] = 37
@@ -2089,7 +2132,7 @@ def main(study_info_):
     # mpl.rcParams['axes.labelsize'] = 'medium'
     # mpl.rcParams['ytick.labelsize'] = 'small'
     # 
-    initial_test(study_info_)
+    # initial_test(study_info_)
     test_models(study_info_)
     # test_features(study_info_)
 

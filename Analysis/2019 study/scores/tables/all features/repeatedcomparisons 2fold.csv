@@ -1,4 +1,4 @@
-,Exemplar,Conceptual Space,Best Guess,Simple,Proximity
-p_value,9.732502803672105e-09,7.466951501555741e-10,0.008294501687487355,0.01923865414210013,9.094947017729282e-13
-Our model wins,37.0,38.0,28.0,27.0,40.0
-Other model wins,2.0,2.0,11.0,11.0,0.0
+,Our Prototype,Exemplar,Conceptual Space,Best Guess,Simple,Proximity
+p_value,1.0,0.0107421875,0.0009765625,0.0107421875,0.0546875,0.0009765625
+Our model wins,0.0,9.0,10.0,9.0,8.0,10.0
+Other model wins,0.0,1.0,0.0,1.0,2.0,0.0
