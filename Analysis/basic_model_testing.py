@@ -378,8 +378,8 @@ class GeneratePrepositionModelParameters:
         """Summary
         """
         self.work_out_linear_regression_model()
-        self.work_out_polynomial_regression_model()
-        self.work_out_ridge_regression()
+        # self.work_out_polynomial_regression_model()
+        # self.work_out_ridge_regression()
         self.work_out_barycentre_prototype()
         self.work_out_exemplar_mean()
         self.work_out_prototype_model()
@@ -758,6 +758,7 @@ class GeneratePrepositionModelParameters:
             # When the figure is full of plots, save figure
             if r == 0:
                 plt.savefig(filename, bbox_inches='tight')
+                plt.close(fig)
                 file_no += 1
 
                 # Clear plots for new figure
@@ -767,6 +768,7 @@ class GeneratePrepositionModelParameters:
         # Save remaining plots
         filename = self.get_plot_filename(file_no)
         plt.savefig(filename, bbox_inches='tight')
+        plt.close(fig)
 
     def plot_single_feature_regression(self, feature):
         fig, axes = plt.subplots(nrows=1, ncols=1)
@@ -775,6 +777,7 @@ class GeneratePrepositionModelParameters:
         self.plot_features_ratio_to_axis(feature, axes)
         filename = self.study_info.model_info_folder + "/plots/individual features/" + self.preposition + feature + ".pdf"
         plt.savefig(filename, bbox_inches='tight')
+        plt.close(fig)
 
     def plot_feature_space(self, feature1, feature2):
         feature_processer = Features(self.study_info.name)
@@ -855,7 +858,7 @@ class Model:
     """
 
     # Puts together preposition models and has various functions for testing
-    def __init__(self, name, test_scenes, study_info_):
+    def __init__(self, name, test_scenes, study_info_,):
         """Summary
         
         Args:
@@ -915,6 +918,16 @@ class Model:
         return self.get_typicality(constraint.preposition, constraint.rhs_values, constraint.scene, constraint.f2,
                                    constraint.ground)
 
+    def get_test_constraints(self, preposition):
+        allConstraints = self.constraint_dict[preposition]
+        # Constraints to test on
+        testConstraints = []
+
+        for c in allConstraints:
+            if c.scene in self.test_scenes:
+                testConstraints.append(c)
+        return testConstraints
+
     def get_score(self):
         """Summary
         
@@ -938,13 +951,7 @@ class Model:
 
         for preposition in self.test_prepositions:
 
-            allConstraints = self.constraint_dict[preposition]
-            # Constraints to test on
-            testConstraints = []
-
-            for c in allConstraints:
-                if c.scene in self.test_scenes:
-                    testConstraints.append(c)
+            testConstraints = self.get_test_constraints(preposition)
 
             # Constraint info
             weight_counter = 0
@@ -1066,11 +1073,12 @@ class Model:
 class PrototypeModel(Model):
     name = "Our Prototype"
 
-    def __init__(self, preposition_model_dict, test_scenes, study_info_):
+    def __init__(self, preposition_model_dict, test_scenes, study_info_,constraint_dict=None):
         self.preposition_model_dict = preposition_model_dict
 
         Model.__init__(self, PrototypeModel.name, test_scenes, study_info_)
-
+        if constraint_dict is not None:
+            self.constraint_dict = constraint_dict
     def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
         p_model = self.preposition_model_dict[preposition]
         weight_array = p_model.regression_weights
@@ -1079,6 +1087,8 @@ class PrototypeModel(Model):
         out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array)
 
         return out
+
+
 
 
 class CSModel(Model):
@@ -1348,9 +1358,6 @@ class GenerateBasicModels:
     """
     # name of the model we want to compare with other models, and use to test particular features
     our_model_name = PrototypeModel.name
-    # List of all model names
-    model_name_list = [PrototypeModel.name, ExemplarModel.name, CSModel.name, BestGuessModel.name, SimpleModel.name,
-                       ProximityModel.name]
 
     # Generating models to test
     def __init__(self, train_scenes, test_scenes, study_info_, extra_features_to_remove=None, only_test_our_model=None):
@@ -1403,6 +1410,9 @@ class GenerateBasicModels:
             models = [our_model]
 
         self.models = models
+        self.model_name_list = []
+        for m in self.models:
+            self.model_name_list.append(m.name)
 
 
 class TestModels:
@@ -2054,7 +2064,7 @@ def test_models(study_info_):
     Args:
         study_info_ (TYPE): Description
     """
-    m = MultipleRuns(GenerateBasicModels, study_info_, number_runs=20, k=2, compare="y")
+    m = MultipleRuns(GenerateBasicModels, study_info_, number_runs=100, k=2, compare="y")
     print("Test Model k = 2")
     m.validation()
     m.output()

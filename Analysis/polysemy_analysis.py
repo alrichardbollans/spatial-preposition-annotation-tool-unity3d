@@ -33,7 +33,7 @@ from compile_instances import SemanticCollection, ComparativeCollection
 sv_filetag = SemanticCollection.filetag  # Tag for sv task files
 comp_filetag = ComparativeCollection.filetag  # Tag for comp task files
 preposition_list = StudyInfo.preposition_list
-polysemous_preposition_list = ['in', 'on', 'under', 'over']  # list of prepositions which exist in the data
+polysemous_preposition_list = preposition_list  # ['in', 'on', 'under', 'over']  # list of prepositions which exist in the data
 non_polysemous_prepositions = ["inside", "above", "below", "on top of", 'against']
 
 
@@ -270,7 +270,7 @@ class Polyseme:
         wf = pd.DataFrame(out, self.study_info.all_feature_keys)  # ["equality", "greater than", "less than"])
 
         wf.to_csv(
-            self.study_info.polyseme_data_folder + "/definitions/" + self.preposition + "-" + self.polyseme_name + ".csv")
+            self.study_info.polyseme_data_folder + self.model_name + '/definitions/' + self.preposition + "-" + self.polyseme_name + ".csv")
 
 
 class PolysemyModel(Model):
@@ -447,7 +447,6 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
         """ This method is overidden by shared model which modifies the polysemes to share the prototype"""
         return polyseme_list
 
-
     def get_non_shared_prototype_polyseme_dict(self):
         """Summary
 
@@ -596,14 +595,14 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
 
         return out
 
-    def get_rank_csv(self, preposition):
+    def get_datafolder_csv(self, preposition, data_folder):
         """
-        Gets string for rank csv file
+        Gets string for csv file when outputting info
         :param preposition:
         :return:
         """
 
-        return self.study_info.polyseme_data_folder + self.name + '/ranks/' + preposition + " -ranks.csv"
+        return self.study_info.polyseme_data_folder + self.name + '/' + data_folder + '/' + preposition + " -" + data_folder + ".csv"
 
     def output_polyseme_info(self):
         """Summary
@@ -612,20 +611,35 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
         d = self.polyseme_dict
 
         for preposition in d:
-            out = dict()
+            rank_out = dict()
+            prototype_out = dict()
+            weight_out = dict()
+            mean_out = dict()
             print(("Outputting:" + preposition))
             for polyseme in d[preposition]:
-                polyseme.output_prototype_weight()
+                # polyseme.output_prototype_weight()
                 polyseme.output_definition()
                 polyseme.plot()
 
                 polyseme.preposition_models.aff_dataset.to_csv(polyseme.annotation_csv)
-                polyseme.preposition_models.affFeatures.mean().to_csv(polyseme.mean_csv, header=False)
+                # polyseme.preposition_models.affFeatures.mean().to_csv(polyseme.mean_csv, header=False)
 
-                out[preposition + "-" + polyseme.polyseme_name] = [polyseme.get_number_of_instances(), polyseme.rank]
+                rank_out[preposition + "-" + polyseme.polyseme_name] = [polyseme.get_number_of_instances(),
+                                                                        polyseme.rank]
 
-            number_df = pd.DataFrame(out, ["Number", "Rank"])
-            number_df.to_csv(self.get_rank_csv(preposition))
+                prototype_out[preposition + "-" + polyseme.polyseme_name] = polyseme.prototype
+                weight_out[preposition + "-" + polyseme.polyseme_name] = polyseme.weights
+                mean_out[preposition + "-" + polyseme.polyseme_name] = polyseme.preposition_models.affFeatures.mean()
+
+            number_df = pd.DataFrame(rank_out, ["Number", "Rank"])
+            number_df.to_csv(self.get_datafolder_csv(preposition, "ranks"))
+
+            prototype_df = pd.DataFrame(prototype_out, self.study_info.all_feature_keys)
+            prototype_df.to_csv(self.get_datafolder_csv(preposition, "prototypes"))
+            weight_df = pd.DataFrame(weight_out, self.study_info.all_feature_keys)
+            weight_df.to_csv(self.get_datafolder_csv(preposition, "regression weights"))
+            mean_df = pd.DataFrame(mean_out, self.study_info.all_feature_keys)
+            mean_df.to_csv(self.get_datafolder_csv(preposition, "means"))
 
 
 class DistinctPrototypeMedianPolysemyModel(DistinctPrototypePolysemyModel):
@@ -667,7 +681,7 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
                  features_to_remove=None):
         DistinctPrototypePolysemyModel.__init__(self, name, train_scenes, test_scenes, study_info_,
                                                 preserve_empty_polysemes=preserve_empty_polysemes,
-                                               baseline_model=baseline_model, features_to_remove=features_to_remove)
+                                                baseline_model=baseline_model, features_to_remove=features_to_remove)
 
     def refine_ideal_meaning(self, preposition, original_salient_features):
         """
@@ -687,7 +701,8 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
 
             for f in original_salient_features:
                 if f.name == "horizontal_distance":
-                    raise ValueError("Salient feature not a proportion")
+                    g_values_to_try = [0.05, 0.1, 0.15, 0.2]
+                    l_values_to_try = g_values_to_try
                 if f.name == "contact_proportion":
                     g_values_to_try = [0.1, 0.2, 0.3, 0.4, 0.5]
                     l_values_to_try = [0.1, 0.2, 0.3, 0.4, 0.5]
@@ -777,9 +792,6 @@ class SharedPrototypeRefinedPolysemyModel(DistinctPrototypeRefinedPolysemyModel)
         for poly in polyseme_list:
             poly.prototype = self.baseline_model.preposition_model_dict[poly.preposition].prototype
         return polyseme_list
-
-
-
 
 
 class KMeansPolysemyModel(PolysemyModel):
@@ -943,11 +955,6 @@ class GeneratePolysemeModels:
     baseline_model_name = "Baseline Model"
     cluster_model_name = KMeansPolysemyModel.name
 
-    # List of all model names
-    model_name_list = [distinct_model_name, shared_model_name, baseline_model_name, cluster_model_name,
-                       distinct_refined_model_name, shared_refined_model_name, distinct_median_model_name,
-                       shared_median_model_name]
-
     def __init__(self, train_scenes, test_scenes, study_info_, preserve_empty_polysemes=False):
         """Summary
         
@@ -998,38 +1005,45 @@ class GeneratePolysemeModels:
                                                          baseline_model=self.baseline_model,
                                                          features_to_remove=self.features_to_remove)
         # # To avoid repeating computations make a copy of non-shared and edit attributes.
-        self.shared = copy.deepcopy(self.non_shared)
-        self.shared.name = GeneratePolysemeModels.shared_model_name
-        self.shared.polyseme_dict = self.shared.get_shared_prototype_polyseme_dict(self.shared.polyseme_dict)
+        # self.shared = copy.deepcopy(self.non_shared)
+        # self.shared.name = GeneratePolysemeModels.shared_model_name
+        # self.shared.polyseme_dict = self.shared.get_shared_prototype_polyseme_dict(self.shared.polyseme_dict)
 
-        self.refined = DistinctPrototypeRefinedPolysemyModel(GeneratePolysemeModels.distinct_refined_model_name,
-                                                             self.train_scenes,
-                                                             self.test_scenes, self.study_info,
-                                                             preserve_empty_polysemes=self.preserve_empty_polysemes,
-                                                             baseline_model=self.baseline_model,
-                                                             features_to_remove=self.features_to_remove)
+        # self.refined = DistinctPrototypeRefinedPolysemyModel(GeneratePolysemeModels.distinct_refined_model_name,
+        #                                                      self.train_scenes,
+        #                                                      self.test_scenes, self.study_info,
+        #                                                      preserve_empty_polysemes=self.preserve_empty_polysemes,
+        #                                                      baseline_model=self.baseline_model,
+        #                                                      features_to_remove=self.features_to_remove)
 
-        self.shared_refined = SharedPrototypeRefinedPolysemyModel(GeneratePolysemeModels.shared_refined_model_name,
-                                                                  self.train_scenes,
-                                                                  self.test_scenes, self.study_info,
-                                                                  preserve_empty_polysemes=self.preserve_empty_polysemes,
-                                                                  baseline_model=self.baseline_model,
-                                                                  features_to_remove=self.features_to_remove)
+        # self.shared_refined = SharedPrototypeRefinedPolysemyModel(GeneratePolysemeModels.shared_refined_model_name,
+        #                                                           self.train_scenes,
+        #                                                           self.test_scenes, self.study_info,
+        #                                                           preserve_empty_polysemes=self.preserve_empty_polysemes,
+        #                                                           baseline_model=self.baseline_model,
+        #                                                           features_to_remove=self.features_to_remove)
 
-        self.median = DistinctPrototypeMedianPolysemyModel(GeneratePolysemeModels.distinct_median_model_name,
-                                                           self.train_scenes,
-                                                           self.test_scenes, self.study_info,
-                                                           preserve_empty_polysemes=self.preserve_empty_polysemes,
-                                                           baseline_model=self.baseline_model,
-                                                           features_to_remove=self.features_to_remove)
+        # self.median = DistinctPrototypeMedianPolysemyModel(GeneratePolysemeModels.distinct_median_model_name,
+        #                                                    self.train_scenes,
+        #                                                    self.test_scenes, self.study_info,
+        #                                                    preserve_empty_polysemes=self.preserve_empty_polysemes,
+        #                                                    baseline_model=self.baseline_model,
+        #                                                    features_to_remove=self.features_to_remove)
 
-        self.shared_median = copy.deepcopy(self.median)
-        self.shared_median.name = GeneratePolysemeModels.shared_median_model_name
-        self.shared_median.polyseme_dict = self.shared_median.get_shared_prototype_polyseme_dict(
-            self.shared_median.polyseme_dict)
+        # self.shared_median = copy.deepcopy(self.median)
+        # self.shared_median.name = GeneratePolysemeModels.shared_median_model_name
+        # self.shared_median.polyseme_dict = self.shared_median.get_shared_prototype_polyseme_dict(
+        #     self.shared_median.polyseme_dict)
 
-        self.models = [self.non_shared, self.shared, self.baseline_model, self.cluster_model, self.refined,
-                       self.shared_refined, self.median, self.shared_median]
+        self.models = [self.non_shared, self.baseline_model, self.cluster_model]  # , self.refined,
+        # self.median]
+
+        # self.models = [self.non_shared, self.shared, self.baseline_model, self.cluster_model, self.refined,
+        #                self.shared_refined, self.median, self.shared_median]
+
+        self.model_name_list = []
+        for m in self.models:
+            self.model_name_list.append(m.name)
 
 
 class MultipleRunsPolysemyModels(MultipleRuns):
@@ -1118,7 +1132,7 @@ def output_all_polyseme_info(study_info_):
     generated_polyseme_models = GeneratePolysemeModels(all_scenes, all_scenes, study_info_,
                                                        preserve_empty_polysemes=True)
     generated_polyseme_models.non_shared.output_polyseme_info()
-    generated_polyseme_models.refined.output_polyseme_info()
+    # generated_polyseme_models.refined.output_polyseme_info()
 
 
 def test_on_all_scenes(study_info_):
@@ -1203,7 +1217,7 @@ def main(study_info_):
     Deleted Parameters:
         constraint_dict (TYPE): Description
     """
-    # output_all_polyseme_info(study_info_)
+    output_all_polyseme_info(study_info_)
     # Clustering
 
     # Polysemes and performance
@@ -1213,7 +1227,6 @@ def main(study_info_):
 
 
 if __name__ == '__main__':
-
     study_info = StudyInfo("2019 study")
 
     main(study_info)
