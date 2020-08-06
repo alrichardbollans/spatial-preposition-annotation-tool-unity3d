@@ -301,11 +301,7 @@ class StudyInfo:
         )
 
         self.scene_info_csv_file = self.input_feature_data_folder + "/" + self.scene_info_filename
-        self.scene_list, self.scene_name_list = self.get_scenes()
 
-        self.all_feature_keys = []
-
-        self.config_list = self.load_all_configs()
 
         self.data_folder = self.name + "/" + self.base_collected_data_folder_name
         self.raw_user_csv = self.data_folder + "/" + "userlist.csv"
@@ -327,6 +323,13 @@ class StudyInfo:
         self.hry_folder = self.cluster_data_folder + 'hry/'
         self.polysemy_score_folder = self.base_polysemy_folder + 'scores/'
 
+        # Useful lists
+        self.scene_list, self.scene_name_list = self.get_scenes()
+
+        self.all_feature_keys = []
+
+        self.config_list = self.load_all_configs()
+
     def load_all_configs(self):
         """Summary
         
@@ -340,23 +343,29 @@ class StudyInfo:
             path (None, optional): Description
             feature_path (str): path to feature values
         """
+        try:
+            with open(self.feature_output_csv, "r") as f:
+                reader = csv.reader(f)  # create a 'csv reader' from the file object
+                geom_relations = list(reader)  # create a list from the reader
 
-        with open(self.feature_output_csv, "r") as f:
-            reader = csv.reader(f)  # create a 'csv reader' from the file object
-            geom_relations = list(reader)  # create a list from the reader
-
-            for title in geom_relations[0][3:]:
-                self.all_feature_keys.append(title)
+                for title in geom_relations[0][3:]:
+                    self.all_feature_keys.append(title)
 
 
-            geom_relations.pop(0)
-            config_list = []
+                geom_relations.pop(0)
+                config_list = []
 
-            for row in geom_relations:
-                c1 = Configuration(row[0], row[1], row[2], self)
-                config_list.append(c1)
+                for row in geom_relations:
+                    c1 = Configuration(row[0], row[1], row[2], self)
+                    config_list.append(c1)
 
-        return config_list
+            return config_list
+        # If features haven't yet been preprocessed the feature_output csv won't exist
+        except Exception as e:
+
+            print(e)
+
+
 
     def config_ratio_csv(self, filetag, preposition):
         """Summary
@@ -531,6 +540,9 @@ class SimpleConfiguration:
         print(("Scene = " + self.scene))
         print(("Figure = " + self.figure))
         print(("Ground = " + self.ground))
+
+    def string_for_cattyp_table(self):
+        return "[" +self.figure + "," + self.ground +"]"
 
 
 class Configuration(SimpleConfiguration):

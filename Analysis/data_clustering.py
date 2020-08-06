@@ -111,7 +111,7 @@ class Clustering:
     # Number of clusters created by inspecting HAC dendograms
     cluster_numbers = {'on': 3, 'in': 2, 'against': 3, 'under': 3, 'over': 2}
 
-    def __init__(self, study_info_, preposition):
+    def __init__(self, study_info_, preposition, generated_polysemy_models=None):
         """Summary
 
         Args:
@@ -122,26 +122,27 @@ class Clustering:
 
         self.all_scenes = self.study_info.scene_name_list
         self.preposition = preposition
-        self.models = GeneratePrepositionModelParameters(self.study_info, preposition, self.all_scenes,
-                                                         features_to_remove=Configuration.ground_property_features.copy())
+        self.generated_polysemy_models = generated_polysemy_models
+
+        self.p_models_params = self.generated_polysemy_models.preposition_parameters_dict[preposition]
 
         # All selected instances
-        self.possible_instances_all_features = self.models.affAllFeatures
-        self.possible_instances_features = self.models.affFeatures
+        self.possible_instances_all_features = self.p_models_params.affAllFeatures
+        self.possible_instances_features = self.p_models_params.affFeatures
         # Dataset containing 'good' instances
-        self.good_dataset = self.models.good_dataset.copy()
+        self.good_dataset = self.p_models_params.good_dataset.copy()
         # Reindex df for later readability
         self.good_dataset = self.good_dataset.reset_index(drop=True)
         # All 'good' instances
-        self.good_instances_all_features = self.models.goodAllFeatures.copy()
+        self.good_instances_all_features = self.p_models_params.goodAllFeatures.copy()
 
-        self.good_instance_features = self.models.goodFeatures.copy()
+        self.good_instance_features = self.p_models_params.goodFeatures.copy()
 
-        self.typical_instances = self.models.typical_features
+        self.typical_instances = self.p_models_params.typical_features
 
-        # self.models.all_feature_weights()
-        # self.feature_weights= self.models.read_all_feature_weights()
-        self.relation_weights = self.models.read_regression_weights()
+        # self.p_models_params.all_feature_weights()
+        # self.feature_weights= self.p_models_params.read_all_feature_weights()
+        self.relation_weights = self.p_models_params.read_regression_weights()
 
         self.cluster_centres_csv = self.study_info.kmeans_folder + "cluster centres/clusters-" + preposition + ".csv"
         self.dendrogram_pdf = self.study_info.hry_folder + "figures/dendrogram/dendrogram-" + preposition + ".pdf"
@@ -151,8 +152,8 @@ class Clustering:
         self.good_instances_to_cluster = self.good_instance_features.copy()
         self.km_instances_to_cluster = self.possible_instances_features.copy()
         # Samples are weighted by selection ratio
-        self.sample_weights = self.models.aff_dataset[
-            self.models.ratio_feature_name]  # self.good_dataset[self.models.ratio_feature_name]
+        self.sample_weights = self.p_models_params.aff_dataset[
+            self.p_models_params.ratio_feature_name]  # self.good_dataset[self.p_models_params.ratio_feature_name]
         # Output good instances to read
         self.good_instance_csv = self.study_info.cluster_data_folder + "good preposition instances/good instances - " + self.preposition + ".csv"
         self.good_instances_to_cluster.to_csv(self.good_instance_csv)
@@ -253,7 +254,7 @@ class Clustering:
         for i in range(len(km.cluster_centers_)):
             out["cluster_" + str(i)] = km.cluster_centers_[i]
 
-        df = pd.DataFrame(out, self.models.feature_keys)
+        df = pd.DataFrame(out, self.p_models_params.feature_keys)
         print(self.preposition)
         print(df)
 
@@ -355,10 +356,11 @@ class Clustering:
         init = []
         centres = []
         for polyseme in polysemes:
-            df = pd.read_csv(polyseme.mean_csv, index_col=0, names=["feature", "value"])
-            print(df)
-            centres.append(df["value"].values)
-            print(centres)
+            # df = pd.read_csv(polyseme.mean_csv, index_col=0, names=["feature", "value"])
+            # print(df)
+            # centres.append(df["value"].values)
+            # print(centres)
+            centres.append(polyseme.preposition_models.affFeatures.mean())
 
         i = self.calculate_inertia_from_centres(centres)
         print(self.preposition)
@@ -368,12 +370,12 @@ class Clustering:
     def plot_elbow_polyseme_inertia(self):
         """Summary
         """
-        all_scenes = self.study_info.scene_name_list
-        generated_polyseme_models = GeneratePolysemeModels(all_scenes, all_scenes,
-                                                           self.study_info, preserve_empty_polysemes=True)
 
-        polysemes = generated_polyseme_models.non_shared.polyseme_dict[self.preposition]
+        polysemes = self.generated_polysemy_models.non_shared.polyseme_dict[self.preposition]
         polysemes_inertia = self.calculate_polysemes_inertia(polysemes)
+
+        refined_polysemes = self.generated_polysemy_models.refined.polyseme_dict[self.preposition]
+        refined_polysemes_inertia = self.calculate_polysemes_inertia(refined_polysemes)
 
         inertias = []
         K = list(range(1, 10))
@@ -384,8 +386,14 @@ class Clustering:
 
         fig, axes = plt.subplots()
 
+        # Plot inertia from model
         axes.plot([len(polysemes)], [polysemes_inertia], markersize=15, markeredgewidth=3, linestyle='None',
                   marker=(5, 2), label="Polysemes")
+
+        # Plot inertia from refined model
+        axes.plot([len(refined_polysemes)], [refined_polysemes_inertia], markersize=15, markeredgewidth=3,
+                  linestyle='None',
+                  marker='+', label="Refined Polysemes")
 
         # Plot the elbow
         axes.plot(K, inertias, 'bx-', label="K-Means")
@@ -449,14 +457,17 @@ def output_clustering_info(study_info_):
     Args:
         study_info_ (TYPE): Description
     """
+    all_scenes = study_info_.scene_name_list
+    generated_polysemy_models = GeneratePolysemeModels(all_scenes, all_scenes,
+                                                       study_info_, preserve_empty_polysemes=True)
     mpl.rcParams['font.size'] = 15
     mpl.rcParams['legend.fontsize'] = 12
     for preposition in polysemous_preposition_list:
-        c = Clustering(study_info_, preposition)
+        c = Clustering(study_info_, preposition, generated_polysemy_models=generated_polysemy_models)
 
         c.plot_elbow_polyseme_inertia()
-        c.output_initial_inertia()
-        c.output_expected_kmeans_model()
+        # c.output_initial_inertia()
+        # c.output_expected_kmeans_model()
 
 
 def work_out_all_hry_clusters(study_info_):
@@ -484,7 +495,7 @@ def main(study_info_):
         constraint_dict (TYPE): Description
     """
 
-    work_out_all_hry_clusters(study_info_)
+    # work_out_all_hry_clusters(study_info_)
 
     mpl.rcParams['axes.titlesize'] = 'large'
     mpl.rcParams['axes.labelsize'] = 'large'

@@ -1,4 +1,4 @@
-,Distinct Prototype,Shared Prototype,Baseline Model,Refined Distinct Model,Refined Shared Model,Median Distinct Model,Median Shared Model
-p_value,0.9940910339355469,0.5880985260009766,0.7482776641845703,0.9423408508300781,0.9423408508300781,0.7482776641845703,0.8684120178222656
-Cluster model wins,5.0,10.0,9.0,7.0,7.0,9.0,8.0
-Other model wins,10.0,6.0,6.0,10.0,9.0,6.0,10.0
+,Distinct Prototype,Baseline Model,Refined Distinct Model,Median Distinct Model
+p_value,0.2517223358154297,0.5880985260009766,0.9987115859985352,0.13158798217773438
+Cluster model wins,12.0,10.0,4.0,13.0
+Other model wins,8.0,10.0,12.0,5.0

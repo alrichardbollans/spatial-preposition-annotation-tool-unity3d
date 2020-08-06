@@ -138,9 +138,9 @@ class Polyseme:
         self.less_feature_dict = less_feature_dict
 
         self.annotation_csv = self.study_info.polyseme_data_folder + self.model_name + '/annotations/' + self.preposition + "-" + self.polyseme_name + ' .csv'
-        self.prototype_csv = self.study_info.polyseme_data_folder + self.model_name + '/prototypes/' + self.preposition + "-" + self.polyseme_name + ' .csv'
-        self.mean_csv = self.study_info.polyseme_data_folder + self.model_name + '/means/' + self.preposition + "-" + self.polyseme_name + ' .csv'
-        self.regression_weights_csv = self.study_info.polyseme_data_folder + self.model_name + '/regression weights/' + self.preposition + "-" + self.polyseme_name + ' .csv'
+        # self.prototype_csv = self.study_info.polyseme_data_folder + self.model_name + '/prototypes/' + self.preposition + "-" + self.polyseme_name + ' .csv'
+        # self.mean_csv = self.study_info.polyseme_data_folder + self.model_name + '/means/' + self.preposition + "-" + self.polyseme_name + ' .csv'
+        # self.regression_weights_csv = self.study_info.polyseme_data_folder + self.model_name + '/regression weights/' + self.preposition + "-" + self.polyseme_name + ' .csv'
         self.plot_folder = self.study_info.polyseme_data_folder + self.model_name + '/plots/'
 
         self.preposition_models = GeneratePrepositionModelParameters(self.study_info, self.preposition,
@@ -157,7 +157,7 @@ class Polyseme:
         self.weights = self.preposition_models.regression_weights
         self.prototype = self.preposition_models.prototype
 
-    def potential_instance(self, scene, figure, ground):
+    def potential_instance(self, scene, figure, ground, study=None):
         """Summary
         Checks if configuration could be a possible polyseme instance.
         Args:
@@ -170,8 +170,13 @@ class Polyseme:
         """
         # boolean checks whether the configuration could be an instance
 
-        r = Configuration(scene, figure, ground, self.study_info)
+        # Allow for configurations to be from other studies.
+        if study is None:
+            study = self.study_info
 
+        r = Configuration(scene, figure, ground, study)
+
+        # This is unneccesary
         r.load_from_csv()
         if self.eq_feature_dict is not None:
             for feature in self.eq_feature_dict:
@@ -220,16 +225,16 @@ class Polyseme:
         """
         self.preposition_models.plot_models()
 
-    def output_prototype_weight(self):
-        """Summary
-        """
-        pf = pd.DataFrame(self.prototype, self.study_info.all_feature_keys)
-
-        pf.to_csv(self.prototype_csv)
-
-        wf = pd.DataFrame(self.weights, self.study_info.all_feature_keys)
-
-        wf.to_csv(self.regression_weights_csv)
+    # def output_prototype_weight(self):
+    #     """Summary
+    #     """
+    #     pf = pd.DataFrame(self.prototype, self.study_info.all_feature_keys)
+    #
+    #     pf.to_csv(self.prototype_csv)
+    #
+    #     wf = pd.DataFrame(self.weights, self.study_info.all_feature_keys)
+    #
+    #     wf.to_csv(self.regression_weights_csv)
 
     def output_definition(self):
         """Summary
@@ -296,7 +301,7 @@ class PolysemyModel(Model):
         Model.__init__(self, name, test_scenes, study_info_)
         self.test_prepositions = polysemous_preposition_list
 
-    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
+    def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
         print("This shouldn't be called")
 
 
@@ -544,7 +549,7 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
 
         return out
 
-    def get_possible_polysemes(self, preposition, scene, figure, ground):
+    def get_possible_polysemes(self, preposition, scene, figure, ground, study=None):
         """Summary
         Returns a list of possible polysemes for the given configuration.
         Args:
@@ -559,22 +564,25 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
         out = []
 
         for polyseme in self.polyseme_dict[preposition]:
-            if polyseme.potential_instance(scene, figure, ground):
+            if polyseme.potential_instance(scene, figure, ground, study):
                 out.append(polyseme)
         return out
 
-    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
+    def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
         '''
         Finds similarity to possible polysemes and multiplies by polyseme rank.
+        May be better to pass configuration as parameter rather than scene, figure, ground names
+
+
+        :param study:
         :param preposition:
-        :param point:
         :param scene:
         :param figure:
         :param ground:
         :return:
         '''
         out = 0
-        pps = self.get_possible_polysemes(preposition, scene, figure, ground)
+        pps = self.get_possible_polysemes(preposition, scene, figure, ground, study)
         if len(pps) == 0:
             print(preposition)
             print(scene)
@@ -586,7 +594,7 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
 
             prototype_array = polyseme.prototype
             weight_array = polyseme.weights
-            new = SemanticMethods.semantic_similarity(weight_array, point, prototype_array)
+            new = SemanticMethods.semantic_similarity(weight_array, value_array, prototype_array)
 
             new = new * polyseme.rank
 
@@ -893,7 +901,7 @@ class KMeansPolysemyModel(PolysemyModel):
 
         return out
 
-    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
+    def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
         """Summary
         # Finds most similar cluster centre to point. Multiplies similarity to that cluster by cluster rank
         Args:
@@ -902,6 +910,8 @@ class KMeansPolysemyModel(PolysemyModel):
 
         Returns:
             TYPE: Description
+            :param study:
+            :param study:
         """
 
         clusters = self.cluster_dict[preposition]
@@ -1035,7 +1045,7 @@ class GeneratePolysemeModels:
         # self.shared_median.polyseme_dict = self.shared_median.get_shared_prototype_polyseme_dict(
         #     self.shared_median.polyseme_dict)
 
-        self.models = [self.non_shared, self.baseline_model, self.cluster_model]  # , self.refined,
+        self.models = [self.non_shared, self.baseline_model, self.cluster_model]  # , self.refined]
         # self.median]
 
         # self.models = [self.non_shared, self.shared, self.baseline_model, self.cluster_model, self.refined,
@@ -1223,7 +1233,7 @@ def main(study_info_):
     # Polysemes and performance
 
     # output_typicality(study_info_)
-    test_models(study_info_)
+    # test_models(study_info_)
 
 
 if __name__ == '__main__':

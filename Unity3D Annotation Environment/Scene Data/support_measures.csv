@@ -1,14 +1,14 @@
 Support Calculations
 Scene, Figure,Ground, Movement,Normalized Movement,Support
-sv_modtypu1,lamp,lamp,0,0,0
-sv_modtypu1,notepad,lamp,0.00011307,0.00147459,0.00147459
-sv_modtypu1,table,lamp,7.6294E-05,9.34326E-05,9.34326E-05
-sv_modtypu1,notepad,notepad,0,0,0
-sv_modtypu1,lamp,notepad,-0.0678047,-0.197145,0
-sv_modtypu1,table,notepad,7.6294E-05,0.00317717,0.00317717
-sv_modtypu1,notepad,table,0.819067,1,1
-sv_modtypu1,lamp,table,0.799147,1.07646,1
-sv_modtypu1,table,table,0,0,0
+sv_modtypu4,sink,sink,0,0,0
+sv_modtypu4,cabinet,sink,-0.000800192,-0.00560897,0
+sv_modtypu4,tap,sink,0.0821225,0.575639,0.575639
+sv_modtypu4,sink,cabinet,1.00854,0.973071,0.973071
+sv_modtypu4,cabinet,cabinet,0,0,0
+sv_modtypu4,tap,cabinet,0.97413,0.995297,0.995297
+sv_modtypu4,sink,tap,0.013639,0.0492094,0.0492094
+sv_modtypu4,cabinet,tap,-0.000559688,-0.00140258,0
+sv_modtypu4,tap,tap,0,0,0
 sv_modtypa1,box,box,0,0,0
 sv_modtypa1,table,box,7.9155E-05,0.000128951,0.000128951
 sv_modtypa1,box,table,0.00188198,0.00229769,0.00229769
@@ -50,14 +50,14 @@ sv_modtypi2,bowl,ball (3),-0.00417888,-0.0854743,0
 sv_modtypi2,ball (2),ball (3),0.0177677,0.672128,0.672128
 sv_modtypi2,ball,ball (3),0.00328594,0.0630361,0.0630361
 sv_modtypi2,pear,ball (3),0.0231745,0.228156,0.228156
-sv_modtypi2,ball (4),table,0.818524,0.999334,0.999334
-sv_modtypi2,ball (1),table,0.824252,1.00633,1
-sv_modtypi2,ball (3),table,0.813037,0.992634,0.992634
+sv_modtypi2,ball (4),table,0.819067,0.999996,0.999996
+sv_modtypi2,ball (1),table,0.82475,1.00694,1
+sv_modtypi2,ball (3),table,0.813608,0.993332,0.993332
 sv_modtypi2,table,table,0,0,0
-sv_modtypi2,bowl,table,0.814896,0.995402,0.995402
-sv_modtypi2,ball (2),table,0.831596,1.01529,1
-sv_modtypi2,ball,table,0.811396,0.990631,0.990631
-sv_modtypi2,pear,table,0.875653,1.06908,1
+sv_modtypi2,bowl,table,0.814859,0.995357,0.995357
+sv_modtypi2,ball (2),table,0.831877,1.01564,1
+sv_modtypi2,ball,table,0.811784,0.991104,0.991104
+sv_modtypi2,pear,table,0.875406,1.06878,1
 sv_modtypi2,ball (4),bowl,0.880712,28.8862,1
 sv_modtypi2,ball (1),bowl,0.902877,16.8895,1
 sv_modtypi2,ball (3),bowl,0.843982,72.751,1
@@ -118,8 +118,8 @@ sv_modtypo2,table,pencil,7.02143E-05,0.00172366,0.00172366
 sv_modtypo2,pencil,mug,-7.57575E-05,-0.00422167,0
 sv_modtypo2,mug,mug,0,0,0
 sv_modtypo2,table,mug,7.02143E-05,0.000304471,0.000304471
-sv_modtypo2,pencil,table,0.819204,1.00839,1
-sv_modtypo2,mug,table,0.821377,1.00806,1
+sv_modtypo2,pencil,table,0.818139,1.00708,1
+sv_modtypo2,mug,table,0.821023,1.00763,1
 sv_modtypo2,table,table,0,0,0
 sv_modtypo3,pear,pear,0,0,0
 sv_modtypo3,bowl,pear,-0.00342304,-0.171392,0
@@ -136,8 +136,8 @@ sv_modtypo4,table,clock,6.00815E-05,0.000375291,0.000375291
 sv_modtypo4,clock,board,0.813601,0.975957,0.975957
 sv_modtypo4,board,board,0,0,0
 sv_modtypo4,table,board,6.02007E-05,6.04098E-05,6.04098E-05
-sv_modtypo4,clock,table,0.805685,0.983622,0.983622
-sv_modtypo4,board,table,0.81991,1.00108,1
+sv_modtypo4,clock,table,0.805785,0.983745,0.983745
+sv_modtypo4,board,table,0.819909,1.00108,1
 sv_modtypo4,table,table,0,0,0
 sv_modtypov1,bin,bin,0,0,0
 sv_modtypov1,picture,bin,0.278648,0.662325,0.662325
@@ -154,8 +154,8 @@ sv_modtypov2,table,pan,7.22408E-05,0.000755455,0.000755455
 sv_modtypov2,pan,lid,-2.93255E-05,-0.00036273,0
 sv_modtypov2,lid,lid,0,0,0
 sv_modtypov2,table,lid,7.23004E-05,0.00152919,0.00152919
-sv_modtypov2,pan,table,0.819035,0.999948,0.999948
-sv_modtypov2,lid,table,0.817745,0.998387,0.998387
+sv_modtypov2,pan,table,0.819034,0.999948,0.999948
+sv_modtypov2,lid,table,0.817781,0.998431,0.998431
 sv_modtypov2,table,table,0,0,0
 sv_modtypov3,pencil,pencil,0,0,0
 sv_modtypov3,shelf,pencil,-1.8239E-05,-0.000441795,0
@@ -166,21 +166,48 @@ sv_modtypov3,table,shelf,7.64132E-05,9.60207E-05,9.60207E-05
 sv_modtypov3,pencil,table,0.819066,1.00847,1
 sv_modtypov3,shelf,table,0.81905,0.999981,0.999981
 sv_modtypov3,table,table,0,0,0
-sv_modtypov4,cabinet,cabinet,0,0,0
-sv_modtypov4,sink,cabinet,1.00854,1.03162,1
-sv_modtypov4,tap,cabinet,0.974131,0.999618,0.999618
-sv_modtypov4,cabinet,sink,-0.000635624,-0.00445542,0
 sv_modtypov4,sink,sink,0,0,0
-sv_modtypov4,tap,sink,1.21253,8.49924,1
-sv_modtypov4,cabinet,tap,-0.000559747,-0.00140287,0
+sv_modtypov4,cabinet,sink,-0.000619173,-0.00434011,0
+sv_modtypov4,tap,sink,0.145607,1.02064,1
+sv_modtypov4,sink,cabinet,1.00854,1.03162,1
+sv_modtypov4,cabinet,cabinet,0,0,0
+sv_modtypov4,tap,cabinet,0.97413,0.999618,0.999618
 sv_modtypov4,sink,tap,0.013639,0.119717,0.119717
+sv_modtypov4,cabinet,tap,-0.000559688,-0.00140272,0
 sv_modtypov4,tap,tap,0,0,0
 sv_modtypu1,lamp,lamp,0,0,0
-sv_modtypu1,notepad,lamp,0.00011307,0.00147459,0.00147459
+sv_modtypu1,notepad,lamp,0.000113428,0.00147925,0.00147925
 sv_modtypu1,table,lamp,7.6294E-05,9.34326E-05,9.34326E-05
+sv_modtypu1,lamp,notepad,-0.0678047,-0.197145,0
 sv_modtypu1,notepad,notepad,0,0,0
 sv_modtypu1,table,notepad,7.6294E-05,0.00317717,0.00317717
-sv_modtypu1,lamp,notepad,-0.0677974,-0.197124,0
+sv_modtypu1,lamp,table,0.799147,1.07646,1
 sv_modtypu1,notepad,table,0.819067,1,1
 sv_modtypu1,table,table,0,0,0
-sv_modtypu1,lamp,table,0.799147,1.07646,1
+sv_modtypu2,bin,bin,0,0,0
+sv_modtypu2,picture,bin,0.278648,0.662325,0.662325
+sv_modtypu2,table,bin,5.43594E-05,8.86177E-05,8.86177E-05
+sv_modtypu2,bin,picture,0.00353548,0.0950733,0.0950733
+sv_modtypu2,picture,picture,0,0,0
+sv_modtypu2,table,picture,5.45383E-05,0.000283017,0.000283017
+sv_modtypu2,bin,table,0.00363055,0.0180552,0.0180552
+sv_modtypu2,picture,table,1.95503E-05,4.64715E-05,4.64715E-05
+sv_modtypu2,table,table,0,0,0
+sv_modtypu3,pencil,pencil,0,0,0
+sv_modtypu3,shelf,pencil,-1.8239E-05,-0.000441795,0
+sv_modtypu3,table,pencil,7.64132E-05,0.00185092,0.00185092
+sv_modtypu3,pencil,shelf,-4.17233E-07,-3.03202E-05,0
+sv_modtypu3,shelf,shelf,0,0,0
+sv_modtypu3,table,shelf,7.64132E-05,9.60207E-05,9.60207E-05
+sv_modtypu3,pencil,table,0.819066,1.00847,1
+sv_modtypu3,shelf,table,0.81905,0.999981,0.999981
+sv_modtypu3,table,table,0,0,0
+sv_modtypu4,sink,sink,0,0,0
+sv_modtypu4,cabinet,sink,-0.000801206,-0.00561607,0
+sv_modtypu4,tap,sink,0.0823343,0.577124,0.577124
+sv_modtypu4,sink,cabinet,1.00854,1.03162,1
+sv_modtypu4,cabinet,cabinet,0,0,0
+sv_modtypu4,tap,cabinet,0.97413,0.999618,0.999618
+sv_modtypu4,sink,tap,0.013639,0.119717,0.119717
+sv_modtypu4,cabinet,tap,-0.000559688,-0.00140272,0
+sv_modtypu4,tap,tap,0,0,0

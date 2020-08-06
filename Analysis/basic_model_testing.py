@@ -651,10 +651,24 @@ class GeneratePrepositionModelParameters:
 
     def plot_features_ratio_to_axis(self, feature, axis):
         # Reshape data first
-        Y = self.train_dataset[feature].values.reshape(-1, 1)
-        X = self.train_dataset[self.ratio_feature_name].values.reshape(-1, 1)
+        Y = self.train_dataset[feature].values.copy()
+        Y =Y.reshape(-1, 1)
+        X = self.train_dataset[self.ratio_feature_name].values.copy()
+        X = X.reshape(-1, 1)
         # Get prediction of all points on interval
         y_pred = self.interval_predictions[feature]
+
+        feature_processer = Features(self.study_info.name)
+        # Convert values back to human readable
+        for i in range(len(Y)):
+            y = Y[i]
+            new_y = feature_processer.convert_standardised_value_to_normal(feature, y)
+            Y[i] = new_y
+            
+        for i in range(len(y_pred)):
+            y = y_pred[i]
+            new_y = feature_processer.convert_standardised_value_to_normal(feature, y)
+            y_pred[i] = new_y
 
         axis.set_xlabel("Selection Ratio")
         ylabel = rename_feature(feature)
@@ -674,11 +688,13 @@ class GeneratePrepositionModelParameters:
         index_for_prototypes = self.all_feature_keys.index(feature)
         if self.barycentre_prototype is not None:
             b = self.barycentre_prototype[index_for_prototypes]
+            b = feature_processer.convert_standardised_value_to_normal(feature, b)
             b = np.array([b]).reshape(-1, 1)
             # Plot barycentre value
             axis.plot(end, b, markersize=10, markeredgewidth=2, marker='+')
         if self.exemplar_mean is not None:
             ex = self.exemplar_mean[index_for_prototypes]
+            ex = feature_processer.convert_standardised_value_to_normal(feature, ex)
             ex = np.array([ex]).reshape(-1, 1)
 
             # Plot exemplar mean value
@@ -906,7 +922,9 @@ class Model:
         return pro_array, weight_array
 
     def get_typicality(self, preposition, value_array, scene=None, figure=None,
-                       ground=None):
+                       ground=None, study=None):
+        """Gets typicality of configuration for model. scene, figure, ground parameters are given for models which
+        need these. Study parameter given to allow checking of configruations from different studies"""
         print("This shouldn't be called")
 
     def get_typicality_lhs(self, constraint):
@@ -1079,7 +1097,7 @@ class PrototypeModel(Model):
         Model.__init__(self, PrototypeModel.name, test_scenes, study_info_)
         if constraint_dict is not None:
             self.constraint_dict = constraint_dict
-    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
+    def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
         p_model = self.preposition_model_dict[preposition]
         weight_array = p_model.regression_weights
         prototype_array = p_model.prototype
@@ -1099,7 +1117,7 @@ class CSModel(Model):
 
         Model.__init__(self, CSModel.name, test_scenes, study_info_)
 
-    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
+    def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
         p_model = self.preposition_model_dict[preposition]
         weight_array = p_model.regression_weights
         prototype_array = p_model.barycentre_prototype
@@ -1116,7 +1134,7 @@ class ExemplarModel(Model):
 
         Model.__init__(self, ExemplarModel.name, test_scenes, study_info_)
 
-    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
+    def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
 
         p_model = self.preposition_model_dict[preposition]
         weight_array = p_model.regression_weights
@@ -1170,7 +1188,7 @@ class ProximityModel(Model):
         self.prototype_array = np.array(prototype_array)
         self.weight_array = np.array(weight_array)
 
-    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
+    def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
 
         out = SemanticMethods.semantic_similarity(self.weight_array, point, self.prototype_array)
 
@@ -1206,7 +1224,7 @@ class SimpleModel(Model):
         self.prototype_dictionary["against"] = against_prototype
         self.weight_dictionary["against"] = against_weights
 
-    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
+    def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
         prototype_array = self.prototype_dictionary[preposition]
         weight_array = self.weight_dictionary[preposition]
 
@@ -1261,7 +1279,7 @@ class BestGuessModel(Model):
         self.prototype_dictionary["against"] = against_prototype
         self.weight_dictionary["against"] = against_weights
 
-    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
+    def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
         prototype_array = self.prototype_dictionary[preposition]
         weight_array = self.weight_dictionary[preposition]
 
@@ -1287,7 +1305,7 @@ class RegressionModel(Model):
         '''
         return x
 
-    def get_typicality(self, preposition, point, scene=None, figure=None, ground=None):
+    def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
         p_model = self.preposition_model_dict[preposition]
         regression_model = self.regression_model_dict[preposition]
         new_point = p_model.remove_unused_features_from_point_array(point)
@@ -1994,6 +2012,9 @@ def plot_preposition_graphs(study_info):
 
 
 def plot_feature_regression(study_info):
+    mpl.rcParams['axes.titlesize'] = 'xx-large'
+    mpl.rcParams['axes.labelsize'] = 'xx-large'
+
     scene_list = study_info.scene_name_list
     generated_models = GenerateBasicModels(scene_list, scene_list, study_info)
 
@@ -2129,12 +2150,11 @@ def main(study_info_):
     """
     # mpl.rcParams['font.size'] = 25
 
-    mpl.rcParams['axes.titlesize'] = 'xx-large'
-    mpl.rcParams['axes.labelsize'] = 'xx-large'
+    #
     # plot_feature_regression(study_info_)
     # plot_feature_spaces(study_info_)
     # output_regression_scores(study_info_)
-    # plot_preposition_graphs(study_info_)
+    plot_preposition_graphs(study_info_)
     # # Edit plot settings
     # mpl.rcParams['font.size'] = 40
     # mpl.rcParams['legend.fontsize'] = 37
@@ -2143,7 +2163,7 @@ def main(study_info_):
     # mpl.rcParams['ytick.labelsize'] = 'small'
     # 
     # initial_test(study_info_)
-    test_models(study_info_)
+    # test_models(study_info_)
     # test_features(study_info_)
 
 

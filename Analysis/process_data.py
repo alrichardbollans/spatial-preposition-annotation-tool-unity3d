@@ -4,6 +4,7 @@ Script to run for newly collected data files which:
     Input: annotation and user info csv from data collection
     Output: Clean annotation lists. Basic stats. User agreement calculations
     Feature values are included later
+
 """
 
 import csv
@@ -555,6 +556,10 @@ class Data:
     task = "all"
     clean_csv_name = "all_clean_annotations.csv"
 
+    # Tags to identify scenes for specific prepositions in 2020 study
+    preposition_scene_tags = {"against": "typa", "on": "typo", "on top of": "typo", "over": "typov", "above": "typov",
+                              "under": "typu", "below": "typu", "in": "typi", "inside": "typi"}
+
     def __init__(self, userdata):
         """Summary
         
@@ -1074,6 +1079,22 @@ class Data:
             ]
             writer.writerow(row)
 
+    def is_test_config(self, c1, preposition):
+        """Summary
+        Checks if configuration is used to test preposition in 2020 study
+        """
+        # Need to treat on and on top of differently as "typo" is in "typov"
+        if preposition != "on" and preposition != "on top of":
+            if self.preposition_scene_tags[preposition] in c1.scene:
+                return True
+            else:
+                return False
+        else:
+            if self.preposition_scene_tags[preposition] in c1.scene and "ov" not in c1.scene:
+                return True
+            else:
+                return False
+
 
 class ComparativeData(Data):
     """Summary
@@ -1350,14 +1371,17 @@ class SemanticData(Data):
                 for c1 in self.config_list:
 
                     for c2 in self.config_list:
-                        stat = self.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
+                        if not (c1.configuration_match(c2)):
+                            # Only want to output categorisation info on related scenes
+                            if self.is_test_config(c1, preposition) and self.is_test_config(c2, preposition):
+                                stat = self.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
 
-                        to_write = (
-                                [c1.scene, c1.figure, c1.ground]
-                                + [c2.scene, c2.figure, c2.ground]
-                                + stat
-                        )
-                        writer.writerow(to_write)
+                                to_write = (
+                                        [c1.scene, c1.figure, c1.ground]
+                                        + [c2.scene, c2.figure, c2.ground]
+                                        + stat
+                                )
+                                writer.writerow(to_write)
 
     def get_statistically_different_configurations(self, preposition, sig_level=0.05):
         """Summary
@@ -1374,10 +1398,13 @@ class SemanticData(Data):
         for c1 in self.config_list:
 
             for c2 in self.config_list:
-                stat = self.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
-                p_value = stat[4]
-                if p_value < sig_level:
-                    config_pairs.append([c1, c2, p_value])
+                if not (c1.configuration_match(c2)):
+                    # Only want to output categorisation info on related scenes
+                    if self.is_test_config(c1, preposition) and self.is_test_config(c2, preposition):
+                        stat = self.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
+                        p_value = stat[4]
+                        if p_value < sig_level:
+                            config_pairs.append([c1, c2, p_value])
         return config_pairs
 
     def output_statistically_different_pairs(self):
@@ -1403,6 +1430,7 @@ class SemanticData(Data):
                 for pair in pairs:
                     c1 = pair[0]
                     c2 = pair[1]
+
                     p_value = pair[2]
                     to_write = (
                             [c1.scene, c1.figure, c1.ground]
@@ -1570,10 +1598,13 @@ class TypicalityData(Data):
         for c1 in self.config_list:
 
             for c2 in self.config_list:
-                stat = self.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
-                p_value = stat[3]
-                if p_value < sig_level:
-                    config_pairs.append([c1, c2, p_value])
+                if not (c1.configuration_match(c2)):
+                    # Only want to output categorisation info on related scenes
+                    if self.is_test_config(c1, preposition) and self.is_test_config(c2, preposition):
+                        stat = self.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
+                        p_value = stat[3]
+                        if p_value < sig_level:
+                            config_pairs.append([c1, c2, p_value])
         return config_pairs
 
     def output_statistically_different_pairs(self):
@@ -1640,14 +1671,17 @@ class TypicalityData(Data):
                 for c1 in self.config_list:
 
                     for c2 in self.config_list:
-                        stat = self.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
+                        if not (c1.configuration_match(c2)):
+                            # Only want to output categorisation info on related scenes
+                            if self.is_test_config(c1, preposition) and self.is_test_config(c2, preposition):
+                                stat = self.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
 
-                        to_write = (
-                                [c1.scene, c1.figure, c1.ground]
-                                + [c2.scene, c2.figure, c2.ground]
-                                + stat
-                        )
-                        writer.writerow(to_write)
+                                to_write = (
+                                        [c1.scene, c1.figure, c1.ground]
+                                        + [c2.scene, c2.figure, c2.ground]
+                                        + stat
+                                )
+                                writer.writerow(to_write)
 
     def output_statistics(self):
         """Summary
@@ -2007,7 +2041,6 @@ def process_2019_study():
     # Output user list
     userdata2019.output_clean_user_list()
 
-
     # Load all csv
     alldata_2019 = Data(userdata2019)
 
@@ -2071,6 +2104,43 @@ def process_test_study():
     svmod_data.write_user_agreements()
 
 
+def process_2020_study():
+    """Summary
+    """
+    study_info = StudyInfo("2020 study")
+    # Begin by loading users
+    userdata = UserData(study_info)
+
+    ## typicality data
+    typ_data = TypicalityData(userdata)
+
+    # # output typicality csv
+
+    typ_data.output_clean_annotation_list()
+    #
+    typ_data.output_statistics()
+    #
+    typ_data.write_user_agreements()
+
+    typ_data.output_typicality_p_values()
+
+    typ_data.output_statistically_different_pairs()
+
+    # # Load and process semantic annotations
+    svmod_data = ModSemanticData(userdata)
+
+    ## Outputs
+    svmod_data.output_categorisation_p_values()
+    svmod_data.output_statistically_different_pairs()
+    #
+    svmod_data.output_clean_annotation_list()
+    #
+    svmod_data.output_statistics()
+    #
+    svmod_data.write_user_agreements()
+
+
 if __name__ == "__main__":
-    process_2019_study()
+    # process_2019_study()
     # process_test_study()
+    process_2020_study()
