@@ -921,7 +921,7 @@ class KMeansPolysemyModel(PolysemyModel):
         closest_centre_typicality = 0
         closest_cluster = 0
         # Unused features must be removed here as weight and prototype array don't account for them.
-        new_point = self.preposition_model_dict[preposition].remove_unused_features_from_array(point)
+        new_point = self.preposition_model_dict[preposition].remove_unused_features_from_array(value_array)
         for cluster in clusters:
             prototype_array = cluster.centre
 
@@ -951,8 +951,8 @@ class GeneratePolysemeModels:
     """
     # main model we are testing
     # name of the model we want to compare with other models, and use to test particular features
-    our_model_name = "Refined Distinct Model"
 
+    refined_distinct_model_name = "Refined Distinct Model"
     distinct_model_name = "Distinct Prototype"
     shared_model_name = "Shared Prototype"
 
@@ -964,6 +964,8 @@ class GeneratePolysemeModels:
 
     baseline_model_name = "Baseline Model"
     cluster_model_name = KMeansPolysemyModel.name
+
+    our_model_name = distinct_model_name
 
     def __init__(self, train_scenes, test_scenes, study_info_, preserve_empty_polysemes=False):
         """Summary
@@ -1109,6 +1111,37 @@ class MultipleRunsPolysemyModels(MultipleRuns):
             self.comparison_csv = self.scores_tables_folder + "/repeatedcomparisons " + self.file_tag + ".csv"
             self.km_comparison_csv = self.scores_tables_folder + "/km_repeatedcomparisons " + self.file_tag + ".csv"
 
+    def folds_check(self, folds):
+        """Summary
+
+        Args:
+            folds (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+
+        for f in folds:
+            # Check all folds have some constraints to test
+            for preposition in self.test_prepositions:
+
+                allConstraints = self.constraint_dict[preposition]
+
+                Constraints = []
+
+                for c in allConstraints:
+                    if c.scene in f:
+                        Constraints.append(c)
+                if len(Constraints) == 0:
+                    return False
+            # And also check that there are enough training samples for the K-Means model (samples must be greater than number of clusters..)
+            for preposition in self.test_prepositions:
+                prep_model = GeneratePrepositionModelParameters(self.study_info, preposition, f)
+                if prep_model.affFeatures < KMeansPolysemyModel.cluster_numbers[preposition]:
+                    return False
+
+        return True
+
     # Overides inherited method
     def output(self):
         """Summary
@@ -1195,7 +1228,7 @@ def test_models(study_info_):
     mpl.rcParams['ytick.labelsize'] = 'small'
 
     test_on_all_scenes(study_info_)
-    test_model(2, 10, study_info_)
+    test_model(1, 2, study_info_)
     # test_model(10, 10, study_info_)
 
 
@@ -1227,13 +1260,13 @@ def main(study_info_):
     Deleted Parameters:
         constraint_dict (TYPE): Description
     """
-    output_all_polyseme_info(study_info_)
+    # output_all_polyseme_info(study_info_)
     # Clustering
 
     # Polysemes and performance
 
     # output_typicality(study_info_)
-    # test_models(study_info_)
+    test_models(study_info_)
 
 
 if __name__ == '__main__':
