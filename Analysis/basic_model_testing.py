@@ -1102,7 +1102,7 @@ class PrototypeModel(Model):
         weight_array = p_model.regression_weights
         prototype_array = p_model.prototype
 
-        out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array)
+        out = SemanticMethods.semantic_similarity(weight_array, value_array, prototype_array)
 
         return out
 
@@ -1121,7 +1121,7 @@ class CSModel(Model):
         p_model = self.preposition_model_dict[preposition]
         weight_array = p_model.regression_weights
         prototype_array = p_model.barycentre_prototype
-        out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array)
+        out = SemanticMethods.semantic_similarity(weight_array, value_array, prototype_array)
 
         return out
 
@@ -1156,7 +1156,7 @@ class ExemplarModel(Model):
             counter += 1
             # Calculate similarity of current point to exemplar
 
-            semantic_similarity_sum += SemanticMethods.semantic_similarity(weight_array, point, exemplar_values)
+            semantic_similarity_sum += SemanticMethods.semantic_similarity(weight_array, value_array, exemplar_values)
 
         if counter == 0:
             return 0
@@ -1190,7 +1190,7 @@ class ProximityModel(Model):
 
     def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
 
-        out = SemanticMethods.semantic_similarity(self.weight_array, point, self.prototype_array)
+        out = SemanticMethods.semantic_similarity(self.weight_array, value_array, self.prototype_array)
 
         return out
 
@@ -1228,7 +1228,7 @@ class SimpleModel(Model):
         prototype_array = self.prototype_dictionary[preposition]
         weight_array = self.weight_dictionary[preposition]
 
-        out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array)
+        out = SemanticMethods.semantic_similarity(weight_array, value_array, prototype_array)
 
         return out
 
@@ -1283,7 +1283,7 @@ class BestGuessModel(Model):
         prototype_array = self.prototype_dictionary[preposition]
         weight_array = self.weight_dictionary[preposition]
 
-        out = SemanticMethods.semantic_similarity(weight_array, point, prototype_array)
+        out = SemanticMethods.semantic_similarity(weight_array, value_array, prototype_array)
 
         return out
 
@@ -1294,7 +1294,7 @@ class RegressionModel(Model):
 
         Model.__init__(self, name, test_scenes, study_info_)
         self.regression_model_dict = dict()
-        self.reg_model_fit_score_csv_folder = study_info.model_info_folder + "/regression model scores/"
+        self.reg_model_fit_score_csv_folder = self.study_info.model_info_folder + "/regression model scores/"
         self.reg_model_fit_csv = self.reg_model_fit_score_csv_folder + self.name + ".csv"
 
     def transform_array(self, x):
@@ -1308,7 +1308,7 @@ class RegressionModel(Model):
     def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
         p_model = self.preposition_model_dict[preposition]
         regression_model = self.regression_model_dict[preposition]
-        new_point = p_model.remove_unused_features_from_point_array(point)
+        new_point = p_model.remove_unused_features_from_point_array(value_array)
 
         point_array = np.array(new_point).reshape(1, -1)
 
@@ -1421,7 +1421,7 @@ class GenerateBasicModels:
             rid_reg_model = RidgeRegressionModel(preposition_models_dict, self.test_scenes, self.study_info)
 
             models = [our_model, exemplar_model, cs_model, proximity_model, simple_model, best_guess_model,
-                      lin_reg_model, poly_reg_model, rid_reg_model]
+                      lin_reg_model]#, poly_reg_model, rid_reg_model]
 
         else:
 
