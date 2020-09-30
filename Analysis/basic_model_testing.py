@@ -175,6 +175,7 @@ class GeneratePrepositionModelParameters:
     """
 
     # Given training scenes, works out models for individual preposition
+    # Must call work_out_models() to generate the parameters
     ratio_feature_name = InstanceCollection.ratio_feature_name
     categorisation_feature_name = InstanceCollection.categorisation_feature_name
     scene_feature_name = InstanceCollection.scene_feature_name
@@ -321,7 +322,6 @@ class GeneratePrepositionModelParameters:
 
         self.exemplar_csv = self.study_info.model_info_folder + "/exemplar/" + preposition + "-exemplar_means.csv"
 
-        self.work_out_models()
 
     def remove_nontrainingscenes(self, d):
         """Summary
@@ -1403,6 +1403,7 @@ class GenerateBasicModels:
         for p in preposition_list:
             M = GeneratePrepositionModelParameters(self.study_info, p, self.train_scenes,
                                                    features_to_remove=self.features_to_remove)
+            M.work_out_models()
             preposition_models_dict[p] = M
 
         self.preposition_parameters_dict = preposition_models_dict
@@ -1420,8 +1421,8 @@ class GenerateBasicModels:
             poly_reg_model = PolynRegressionModel(preposition_models_dict, self.test_scenes, self.study_info)
             rid_reg_model = RidgeRegressionModel(preposition_models_dict, self.test_scenes, self.study_info)
 
-            models = [our_model, exemplar_model, cs_model, proximity_model, simple_model, best_guess_model,
-                      lin_reg_model]#, poly_reg_model, rid_reg_model]
+            models = [our_model, exemplar_model, cs_model, proximity_model, simple_model, best_guess_model]
+                #,lin_reg_model, poly_reg_model, rid_reg_model]
 
         else:
 
