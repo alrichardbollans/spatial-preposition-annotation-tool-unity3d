@@ -1,5 +1,12 @@
 # Info
-This file provides explanantion of some folders
+
+Scripts given here are used to process and analyse the data.
+
+Versions used:
+Python 3
+Pandas 1.0.3
+
+Explanantion of some folders:
 
 # Folders
 
