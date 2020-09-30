@@ -30,12 +30,18 @@ from data_import import Configuration, StudyInfo
 from compile_instances import SemanticCollection, ComparativeCollection
 
 # Useful global variables
+from preprocess_features import Features
+
 sv_filetag = SemanticCollection.filetag  # Tag for sv task files
 comp_filetag = ComparativeCollection.filetag  # Tag for comp task files
 preposition_list = StudyInfo.preposition_list
-polysemous_preposition_list = preposition_list  # ['in', 'on', 'under', 'over']  # list of prepositions which exist in the data
+polysemous_preposition_list = preposition_list# ['in', 'on', 'under', 'over']  # list of prepositions which exist in the data
 non_polysemous_prepositions = ["inside", "above", "below", "on top of", 'against']
 
+# Note: Variables which are changed depending on what is being tested
+# - polysemous_preposition_list
+# - GeneratePolysemeModels.our_model_name
+# - GeneratePolysemeModels.models
 
 class ClusterInModel:
     """Summary
@@ -147,6 +153,7 @@ class Polyseme:
                                                                      self.train_scenes,
                                                                      features_to_remove=self.features_to_remove,
                                                                      polyseme=self)
+        self.preposition_models.work_out_prototype_model()
 
         # Assign a rank/hierarchy to polysemes
 
@@ -630,7 +637,6 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
                 polyseme.plot()
 
                 polyseme.preposition_models.aff_dataset.to_csv(polyseme.annotation_csv)
-                # polyseme.preposition_models.affFeatures.mean().to_csv(polyseme.mean_csv, header=False)
 
                 rank_out[preposition + "-" + polyseme.polyseme_name] = [polyseme.get_number_of_instances(),
                                                                         polyseme.rank]
@@ -1000,6 +1006,7 @@ class GeneratePolysemeModels:
         for p in preposition_list:
             M = GeneratePrepositionModelParameters(self.study_info, p, self.train_scenes,
                                                    features_to_remove=self.features_to_remove)
+            M.work_out_prototype_model()
             preposition_models_dict[p] = M
 
         self.preposition_parameters_dict = preposition_models_dict
@@ -1134,10 +1141,12 @@ class MultipleRunsPolysemyModels(MultipleRuns):
                         Constraints.append(c)
                 if len(Constraints) == 0:
                     return False
-            # And also check that there are enough training samples for the K-Means model (samples must be greater than number of clusters..)
+            # And also check that there are enough training samples for the K-Means model
+            # (samples must be greater than number of clusters..)
             for preposition in self.test_prepositions:
-                prep_model = GeneratePrepositionModelParameters(self.study_info, preposition, f)
-                if prep_model.affFeatures < KMeansPolysemyModel.cluster_numbers[preposition]:
+                # Add some features to remove to ignore print out
+                prep_model = GeneratePrepositionModelParameters(self.study_info, preposition, f, features_to_remove=Configuration.ground_property_features)
+                if len(prep_model.affFeatures.index) < KMeansPolysemyModel.cluster_numbers[preposition]:
                     return False
 
         return True
@@ -1260,14 +1269,13 @@ def main(study_info_):
     Deleted Parameters:
         constraint_dict (TYPE): Description
     """
-    # output_all_polyseme_info(study_info_)
+    output_all_polyseme_info(study_info_)
     # Clustering
 
     # Polysemes and performance
 
-    # output_typicality(study_info_)
-    test_models(study_info_)
-
+    output_typicality(study_info_)
+    # test_models(study_info_)
 
 if __name__ == '__main__':
     study_info = StudyInfo("2019 study")
