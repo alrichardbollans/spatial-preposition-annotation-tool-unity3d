@@ -1567,7 +1567,7 @@ class MultipleRuns:
             self.file_tag = "rss" + str(self.test_size)
             self.average_plot_title = "Scores Using RRSS Validation"
         if self.k is not None:
-            self.file_tag = str(self.k) + "fold"
+            self.file_tag = self.file_tag = str(self.k) + "fold:" + str(self.number_runs) + "runs"
             self.average_plot_title = "Scores Using Repeated K-Fold Validation. K = " + str(self.k) + " N = " + str(
                 self.number_runs)
 
