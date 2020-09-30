@@ -35,8 +35,9 @@ from preprocess_features import Features
 sv_filetag = SemanticCollection.filetag  # Tag for sv task files
 comp_filetag = ComparativeCollection.filetag  # Tag for comp task files
 preposition_list = StudyInfo.preposition_list
-polysemous_preposition_list = preposition_list# ['in', 'on', 'under', 'over']  # list of prepositions which exist in the data
+polysemous_preposition_list = preposition_list  # ['in', 'on', 'under', 'over']  # list of prepositions which exist in the data
 non_polysemous_prepositions = ["inside", "above", "below", "on top of", 'against']
+
 
 # Note: Variables which are changed depending on what is being tested
 # - polysemous_preposition_list
@@ -1109,7 +1110,7 @@ class MultipleRunsPolysemyModels(MultipleRuns):
         self.all_plot = self.study_info.polysemy_score_folder + "ScoresUsingAllData.pdf"
 
         if self.k is not None:
-            self.file_tag = str(self.k) + "fold"
+            self.file_tag = str(self.k) + "fold:" + str(self.number_runs) + "runs"
             self.average_plot_title = "Scores Using Repeated K-Fold Validation. K = " + str(self.k) + " N = " + str(
                 self.number_runs)
 
@@ -1145,7 +1146,8 @@ class MultipleRunsPolysemyModels(MultipleRuns):
             # (samples must be greater than number of clusters..)
             for preposition in self.test_prepositions:
                 # Add some features to remove to ignore print out
-                prep_model = GeneratePrepositionModelParameters(self.study_info, preposition, f, features_to_remove=Configuration.ground_property_features)
+                prep_model = GeneratePrepositionModelParameters(self.study_info, preposition, f,
+                                                                features_to_remove=Configuration.ground_property_features)
                 if len(prep_model.affFeatures.index) < KMeansPolysemyModel.cluster_numbers[preposition]:
                     return False
 
@@ -1276,6 +1278,7 @@ def main(study_info_):
 
     output_typicality(study_info_)
     # test_models(study_info_)
+
 
 if __name__ == '__main__':
     study_info = StudyInfo("2019 study")
