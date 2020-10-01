@@ -959,15 +959,15 @@ class GeneratePolysemeModels:
     # main model we are testing
     # name of the model we want to compare with other models, and use to test particular features
 
-    refined_distinct_model_name = "Refined Distinct Model"
+    # refined_distinct_model_name = "Refined Distinct Model"
     distinct_model_name = "Distinct Prototype"
     shared_model_name = "Shared Prototype"
 
-    distinct_refined_model_name = "Refined Distinct Model"
-    shared_refined_model_name = "Refined Shared Model"
+    # distinct_refined_model_name = "Refined Distinct Model"
+    # shared_refined_model_name = "Refined Shared Model"
 
-    distinct_median_model_name = "Median Distinct Model"
-    shared_median_model_name = "Median Shared Model"
+    # distinct_median_model_name = "Median Distinct Model"
+    # shared_median_model_name = "Median Shared Model"
 
     baseline_model_name = "Baseline Model"
     cluster_model_name = KMeansPolysemyModel.name
@@ -1106,18 +1106,7 @@ class MultipleRunsPolysemyModels(MultipleRuns):
         self.scores_tables_folder = self.study_info.polysemy_score_folder + "tables"
         self.scores_plots_folder = self.study_info.polysemy_score_folder + "plots"
 
-        self.all_csv = self.study_info.polysemy_score_folder + "all_test.csv"
-        self.all_plot = self.study_info.polysemy_score_folder + "ScoresUsingAllData.pdf"
-
-        if self.k is not None:
-            self.file_tag = str(self.k) + "fold:" + str(self.number_runs) + "runs"
-            self.average_plot_title = "Scores Using Repeated K-Fold Validation. K = " + str(self.k) + " N = " + str(
-                self.number_runs)
-
-            self.average_plot_pdf = self.scores_plots_folder + "/average" + self.file_tag + ".pdf"
-            self.average_csv = self.scores_tables_folder + "/averagemodel scores " + self.file_tag + ".csv"
-            self.comparison_csv = self.scores_tables_folder + "/repeatedcomparisons " + self.file_tag + ".csv"
-            self.km_comparison_csv = self.scores_tables_folder + "/km_repeatedcomparisons " + self.file_tag + ".csv"
+        self.get_file_strings()
 
     def folds_check(self, folds):
         """Summary
@@ -1143,19 +1132,21 @@ class MultipleRunsPolysemyModels(MultipleRuns):
                         Constraints.append(c)
                 if len(Constraints) == 0:
                     return False
-            # And also check that there are enough training samples for the K-Means model
-            # in scenes not in fold
-            # (samples must be greater than number of clusters..)
-            scenes_not_in_fold = []
-            for sc in self.study_info.scene_name_list:
-                if sc not in f:
-                    scenes_not_in_fold.append(sc)
-            for preposition in self.test_prepositions:
-                # Add some features to remove to ignore print out
-                prep_model = GeneratePrepositionModelParameters(self.study_info, preposition, scenes_not_in_fold,
-                                                                features_to_remove=Configuration.ground_property_features)
-                if len(prep_model.affFeatures.index) < KMeansPolysemyModel.cluster_numbers[preposition]:
-                    return False
+
+            if KMeansPolysemyModel.name in self.model_generator.model_name_list:
+                # And also check that there are enough training samples for the K-Means model
+                # in scenes not in fold
+                # (samples must be greater than number of clusters..)
+                scenes_not_in_fold = []
+                for sc in self.study_info.scene_name_list:
+                    if sc not in f:
+                        scenes_not_in_fold.append(sc)
+                for preposition in self.test_prepositions:
+                    # Add some features to remove to ignore print out
+                    prep_model = GeneratePrepositionModelParameters(self.study_info, preposition, scenes_not_in_fold,
+                                                                    features_to_remove=Configuration.ground_property_features)
+                    if len(prep_model.affFeatures.index) < KMeansPolysemyModel.cluster_numbers[preposition]:
+                        return False
 
         return True
 
