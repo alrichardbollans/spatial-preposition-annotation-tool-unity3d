@@ -1543,6 +1543,8 @@ class MultipleRuns:
         self.number_runs = number_runs
         self.test_size = test_size
         self.k = k
+        if self.k ==1:
+            raise Exception("k must be greater than 1")
         self.compare = compare
         self.features_to_test = features_to_test
 
@@ -1554,8 +1556,7 @@ class MultipleRuns:
         self.scene_list = self.study_info.scene_name_list
         self.Generate_Models_all_scenes = self.generate_models(self.scene_list, self.scene_list)
         self.test_prepositions = self.Generate_Models_all_scenes.models[0].test_prepositions
-        self.all_csv = self.study_info.name + "/scores/tables/all-model scores.csv"
-        self.all_plot = self.study_info.name + "/scores/plots/ScoresUsingAllData.pdf"
+
         if self.features_to_test is None:
 
             self.scores_tables_folder = self.study_info.name + "/scores/tables/all features"
@@ -1563,17 +1564,12 @@ class MultipleRuns:
         else:
             self.scores_tables_folder = self.study_info.name + "/scores/tables/removed features"
             self.scores_plots_folder = self.study_info.name + "/scores/plots/removed features"
+        
+        self.get_file_strings()
+
         if self.test_size is not None:
             self.file_tag = "rss" + str(self.test_size)
             self.average_plot_title = "Scores Using RRSS Validation"
-        if self.k is not None:
-            self.file_tag = self.file_tag = str(self.k) + "fold:" + str(self.number_runs) + "runs"
-            self.average_plot_title = "Scores Using Repeated K-Fold Validation. K = " + str(self.k) + " N = " + str(
-                self.number_runs)
-
-            self.average_plot_pdf = self.scores_plots_folder + "/average" + self.file_tag + ".pdf"
-            self.average_csv = self.scores_tables_folder + "/averagemodel scores " + self.file_tag + ".csv"
-            self.comparison_csv = self.scores_tables_folder + "/repeatedcomparisons " + self.file_tag + ".csv"
 
         if self.features_to_test is not None:
             self.feature_removed_average_csv = dict()
@@ -1593,6 +1589,25 @@ class MultipleRuns:
         # following lists help confirm all scenes get used for both training and testing
         self.scenes_used_for_testing = []
         self.scenes_used_for_training = []
+
+    def get_file_strings(self):
+        if not os.path.isdir(self.scores_tables_folder):
+            raise Exception("Not a valid path! 1")
+        if not os.path.isdir(self.scores_plots_folder):
+            raise Exception("Not a valid path! 2")
+        
+        self.all_csv = self.scores_tables_folder + "/all_test.csv"
+        self.all_plot = self.scores_plots_folder + "/ScoresUsingAllData.pdf"
+
+        if self.k is not None:
+            self.file_tag = str(self.k) + "fold:" + str(self.number_runs) + "runs"
+            self.average_plot_title = "Scores Using Repeated K-Fold Validation. K = " + str(self.k) + " N = " + str(
+                self.number_runs)
+
+            self.average_plot_pdf = self.scores_plots_folder + "/average" + self.file_tag + ".pdf"
+            self.average_csv = self.scores_tables_folder + "/averagemodel scores " + self.file_tag + ".csv"
+            self.comparison_csv = self.scores_tables_folder + "/repeatedcomparisons " + self.file_tag + ".csv"
+            self.km_comparison_csv = self.scores_tables_folder + "/km_repeatedcomparisons " + self.file_tag + ".csv"
 
     def prepare_comparison_dicts(self):
         """Summary
@@ -1757,6 +1772,9 @@ class MultipleRuns:
                 divisor = divisor - 1
                 if divisor == 1:
                     folds.append(train_scenes)
+
+            if len(folds) == 0:
+                raise Exception("No folds generated")
 
             return folds
 
