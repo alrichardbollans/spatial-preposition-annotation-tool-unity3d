@@ -1130,6 +1130,7 @@ class MultipleRunsPolysemyModels(MultipleRuns):
         """
 
         for f in folds:
+
             # Check all folds have some constraints to test
             for preposition in self.test_prepositions:
 
@@ -1143,10 +1144,15 @@ class MultipleRunsPolysemyModels(MultipleRuns):
                 if len(Constraints) == 0:
                     return False
             # And also check that there are enough training samples for the K-Means model
+            # in scenes not in fold
             # (samples must be greater than number of clusters..)
+            scenes_not_in_fold = []
+            for sc in self.study_info.scene_name_list:
+                if sc not in f:
+                    scenes_not_in_fold.append(sc)
             for preposition in self.test_prepositions:
                 # Add some features to remove to ignore print out
-                prep_model = GeneratePrepositionModelParameters(self.study_info, preposition, f,
+                prep_model = GeneratePrepositionModelParameters(self.study_info, preposition, scenes_not_in_fold,
                                                                 features_to_remove=Configuration.ground_property_features)
                 if len(prep_model.affFeatures.index) < KMeansPolysemyModel.cluster_numbers[preposition]:
                     return False
