@@ -1,29 +1,22 @@
-# Compare each pair of configurations checking which better fits the category
-# and which is more typical. test the significance of the differences.
+# In general this script compares each pair of configurations checking which better fits the category
+# and which is more typical and test the significance of the differences.
 
-# Compare how models perform on new typicality data, when trained on relational
-# features only and with object-specific features.
-
-# Check typicality agreement(think this is already done).
 import csv
 from itertools import combinations
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
-# first in  2019 study
 from basic_model_testing import GeneratePrepositionModelParameters, PrototypeModel, preposition_list
-from compile_instances import SemanticCollection, InstanceCollection
+from compile_instances import SemanticCollection
 from data_import import Configuration, StudyInfo
 from polysemy_analysis import DistinctPrototypePolysemyModel, GeneratePolysemeModels
 
-from process_data import ModSemanticData, TypicalityData, UserData, SemanticData
-from extra_thesis_bits import DistinctPrototypeRefinedPolysemyModel, GenerateAdditionalModels
+from process_data import ModSemanticData, TypicalityData, UserData
 
 sv_filetag = SemanticCollection.filetag  # Tag for sv task files
 
 
 def output_2020_study_results():
+    # 2019 study data allows us to generate a model of typicality
     model_study_info = StudyInfo("2019 study")
     study_info = StudyInfo("2020 study")
     # Begin by loading users
@@ -46,12 +39,14 @@ def output_2020_study_results():
         M.work_out_models()
         preposition_models_dict[p] = M
 
-    baseline_model = PrototypeModel(preposition_models_dict, scene_list, model_study_info,test_prepositions=preposition_list)
+    baseline_model = PrototypeModel(preposition_models_dict, scene_list, model_study_info,
+                                    test_prepositions=preposition_list)
     typ_model = DistinctPrototypePolysemyModel(GeneratePolysemeModels.distinct_model_name, scene_list, scene_list,
-                                               model_study_info,test_prepositions=preposition_list, baseline_model=baseline_model,
+                                               model_study_info, test_prepositions=preposition_list,
+                                               baseline_model=baseline_model,
                                                features_to_remove=features_to_remove)
 
-    # Object-specific functions
+    # Object-specific features
     scene_object_functions = {"sv_modtypa1": "", "sv_modtypa2": "Fixed ground. Mobile Figure",
                               "sv_modtypi1": "",
                               "sv_modtypi2": "Ground is container",
@@ -232,10 +227,5 @@ def output_2020_study_results():
         writer.writerow(["Number of significant pairs", str(count_number_sign_pairs)])
 
 
-
 if __name__ == '__main__':
-    # study_info_ = StudyInfo("2019 study")
-    #
-    # initial_test(study_info_)
-    # plot_sr_typicality()
     output_2020_study_results()
