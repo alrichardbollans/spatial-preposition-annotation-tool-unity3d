@@ -1,19 +1,15 @@
 """Summary
+This file provides classes for generating models of typicality and running tests on them.
+First run compile_instances.py
 
 Attributes:
     comp_filetag (TYPE): Description
     preposition_list (TYPE): Description
     sv_filetag (TYPE): Description
 """
-# First run compile_instances.py
-
-# Input: Configuration selection info from compile_instances. Constraints from Comp task
-# Looks at how features relate to categorisation and likelihood of selection
-# Outputs prototypes and plots
-# Can be run after compile_instances
 
 # Standard imports
-import csv
+import csv, os
 import pandas as pd
 import numpy as np
 import math
@@ -321,7 +317,6 @@ class GeneratePrepositionModelParameters:
         self.exemplar_mean = None
 
         self.exemplar_csv = self.study_info.model_info_folder + "/exemplar/" + preposition + "-exemplar_means.csv"
-
 
     def remove_nontrainingscenes(self, d):
         """Summary
@@ -652,7 +647,7 @@ class GeneratePrepositionModelParameters:
     def plot_features_ratio_to_axis(self, feature, axis):
         # Reshape data first
         Y = self.train_dataset[feature].values.copy()
-        Y =Y.reshape(-1, 1)
+        Y = Y.reshape(-1, 1)
         X = self.train_dataset[self.ratio_feature_name].values.copy()
         X = X.reshape(-1, 1)
         # Get prediction of all points on interval
@@ -664,7 +659,7 @@ class GeneratePrepositionModelParameters:
             y = Y[i]
             new_y = feature_processer.convert_standardised_value_to_normal(feature, y)
             Y[i] = new_y
-            
+
         for i in range(len(y_pred)):
             y = y_pred[i]
             new_y = feature_processer.convert_standardised_value_to_normal(feature, y)
@@ -874,10 +869,11 @@ class Model:
     """
 
     # Puts together preposition models and has various functions for testing
-    def __init__(self, name, test_scenes, study_info_,):
+    def __init__(self, name, test_scenes, study_info_, test_prepositions=preposition_list):
         """Summary
         
         Args:
+        :param test_prepositions:
 
         """
         # if features_to_remove is None:
@@ -892,7 +888,7 @@ class Model:
         self.all_feature_keys = self.study_info.all_feature_keys
 
         # Prepositions to test
-        self.test_prepositions = preposition_list
+        self.test_prepositions = test_prepositions
         # Dictionary containing constraints to satisfy
         self.constraint_dict = Constraint.read_from_csv(self.study_info.constraint_csv)
         # Csv to write unsatisfied constraints when testing/training on all scenes
@@ -924,7 +920,7 @@ class Model:
     def get_typicality(self, preposition, value_array, scene=None, figure=None,
                        ground=None, study=None):
         """Gets typicality of configuration for model. scene, figure, ground parameters are given for models which
-        need these. Study parameter given to allow checking of configruations from different studies"""
+        need these. Study parameter given to allow checking of configurations from different studies"""
         print("This shouldn't be called")
 
     def get_typicality_lhs(self, constraint):
@@ -1035,15 +1031,20 @@ class Model:
 
         return counter
 
-    def output_typicalities(self, preposition):
+    def output_typicalities(self, preposition, input_csv=None, study_info=None):
         """Summary
 
         Args:
             preposition (TYPE): Description
+            :param study_info: Study to output typicalities for
         """
         # output_csv = base_polysemy_folder+ "config typicalities/"+self.name+"-typicality_test-"+preposition+".csv"
-        input_csv = self.study_info.base_polysemy_folder + "config typicalities/typicality-" + preposition + ".csv"
-        config_list = self.study_info.config_list
+        if input_csv is None:
+            input_csv = self.study_info.base_polysemy_folder + "config typicalities/typicality-" + preposition + ".csv"
+        if study_info is None:
+            study_info = self.study_info
+
+        config_list = study_info.config_list
 
         new_csv = False
 
@@ -1070,7 +1071,7 @@ class Model:
                 # To check whether a configuration fits a particular polyseme we need to include
                 value_array = np.array(c.row)
                 typicality = self.get_typicality(preposition, value_array, scene=c.scene, figure=c.figure,
-                                                 ground=c.ground)
+                                                 ground=c.ground, study=study_info)
                 if new_csv:
                     in_df = in_df.append(
                         {'scene': c.scene, 'figure': c.figure, 'ground': c.ground, self.name: typicality},
@@ -1091,12 +1092,14 @@ class Model:
 class PrototypeModel(Model):
     name = "Our Prototype"
 
-    def __init__(self, preposition_model_dict, test_scenes, study_info_,constraint_dict=None):
+    def __init__(self, preposition_model_dict, test_scenes, study_info_, test_prepositions=preposition_list,
+                 constraint_dict=None):
         self.preposition_model_dict = preposition_model_dict
 
-        Model.__init__(self, PrototypeModel.name, test_scenes, study_info_)
+        Model.__init__(self, PrototypeModel.name, test_scenes, study_info_, test_prepositions=test_prepositions)
         if constraint_dict is not None:
             self.constraint_dict = constraint_dict
+
     def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
         p_model = self.preposition_model_dict[preposition]
         weight_array = p_model.regression_weights
@@ -1105,8 +1108,6 @@ class PrototypeModel(Model):
         out = SemanticMethods.semantic_similarity(weight_array, value_array, prototype_array)
 
         return out
-
-
 
 
 class CSModel(Model):
@@ -1422,7 +1423,7 @@ class GenerateBasicModels:
             rid_reg_model = RidgeRegressionModel(preposition_models_dict, self.test_scenes, self.study_info)
 
             models = [our_model, exemplar_model, cs_model, proximity_model, simple_model, best_guess_model]
-                #,lin_reg_model, poly_reg_model, rid_reg_model]
+            # ,lin_reg_model, poly_reg_model, rid_reg_model]
 
         else:
 
@@ -1523,9 +1524,8 @@ class MultipleRuns:
     # This class carries out multiple runs of model tests and outputs the results
     # Number of runs must be specified as well as either test_size for standard repeated sampling
     # or k for repeated k-fold sampling
-    def __init__(self, model_generator, study_info_, number_runs=None, test_size=None, k=None,
-                 compare=None,
-                 features_to_test=None):
+    def __init__(self, model_generator, study_info_, test_prepositions=preposition_list, number_runs=None,
+                 test_size=None, k=None, compare=None, features_to_test=None):
         """Summary
         
         Args:
@@ -1536,14 +1536,17 @@ class MultipleRuns:
             k (None, optional): Description
             compare (None, optional): Description
             features_to_test (None, optional): Description
+            :param test_prepositions:
         """
+
         self.study_info = study_info_
+        self.test_prepositions = test_prepositions
         self.model_generator = model_generator
         self.constraint_dict = Constraint.read_from_csv(self.study_info.constraint_csv)
         self.number_runs = number_runs
         self.test_size = test_size
         self.k = k
-        if self.k ==1:
+        if self.k == 1:
             raise Exception("k must be greater than 1")
         self.compare = compare
         self.features_to_test = features_to_test
@@ -1555,7 +1558,6 @@ class MultipleRuns:
 
         self.scene_list = self.study_info.scene_name_list
         self.Generate_Models_all_scenes = self.generate_models(self.scene_list, self.scene_list)
-        self.test_prepositions = self.Generate_Models_all_scenes.models[0].test_prepositions
 
         if self.features_to_test is None:
 
@@ -1564,7 +1566,7 @@ class MultipleRuns:
         else:
             self.scores_tables_folder = self.study_info.name + "/scores/tables/removed features"
             self.scores_plots_folder = self.study_info.name + "/scores/plots/removed features"
-        
+
         self.get_file_strings()
 
         if self.test_size is not None:
@@ -1595,7 +1597,7 @@ class MultipleRuns:
             raise Exception("Not a valid path! 1")
         if not os.path.isdir(self.scores_plots_folder):
             raise Exception("Not a valid path! 2")
-        
+
         self.all_csv = self.scores_tables_folder + "/all_test.csv"
         self.all_plot = self.scores_plots_folder + "/ScoresUsingAllData.pdf"
 
@@ -1642,12 +1644,14 @@ class MultipleRuns:
         if self.features_to_test is not None:
             # Only test our model
             generate_models = self.model_generator(train_scenes, test_scenes, self.study_info,
+                                                   test_prepositions=self.test_prepositions,
                                                    extra_features_to_remove=extra_features_to_remove,
                                                    only_test_our_model=True)
 
         else:
             # Test all models
-            generate_models = self.model_generator(train_scenes, test_scenes, self.study_info)
+            generate_models = self.model_generator(train_scenes, test_scenes, self.study_info,
+                                                   test_prepositions=self.test_prepositions)
 
         return generate_models
 

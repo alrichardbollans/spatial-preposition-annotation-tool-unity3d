@@ -1,7 +1,5 @@
 """Summary
-
-Deleted Attributes:
-    preposition_list (list): Description
+Provides various classes for processing data.
 """
 import itertools
 import ast

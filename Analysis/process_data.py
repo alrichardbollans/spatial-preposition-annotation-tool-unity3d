@@ -1383,7 +1383,7 @@ class SemanticData(Data):
                                 )
                                 writer.writerow(to_write)
 
-    def get_statistically_different_configurations(self, preposition, sig_level=0.05):
+    def get_statistically_different_configurations(self, preposition, sig_level=0.1):
         """Summary
         
         Args:
@@ -1583,7 +1583,7 @@ class TypicalityData(Data):
 
         return [number_comparisons, c1_selected_over_c2, c2_selected_over_c1, p_value]
 
-    def get_statistically_different_configurations(self, preposition, sig_level=0.05):
+    def get_statistically_different_configurations(self, preposition, sig_level=0.1):
         """Summary
         
         Args:
@@ -2105,8 +2105,6 @@ def process_test_study():
 
 
 def process_2020_study():
-    """Summary
-    """
     study_info = StudyInfo("2020 study")
     # Begin by loading users
     userdata = UserData(study_info)

@@ -8,9 +8,6 @@ import pandas as pd
 from classes import StudyInfo
 
 
-
-
-
 class Features:
     """Summary
     Provides methods for standardising feature values and converting between raw values and standardised values.
@@ -63,6 +60,9 @@ class Features:
         self.dataset.to_csv(self.human_readable_path, index=False)
         # Calculate means and standard deviations
         # Can be used to convert standardised values back to real values
+        # Note that different pandas versions will give slightly different float values, which has knock on effects
+        # E.g. some configurations are then classed as possible polyseme instances which weren't previously
+        # Here we use pandas version 1.0.3
         self.means = self.dataset.iloc[:, self.number_of_non_value_columns:].mean()
         self.stds = self.dataset.iloc[:, self.number_of_non_value_columns:].std()
 
@@ -185,5 +185,5 @@ def process_all_features(study):
 
 
 if __name__ == '__main__':
-    process_all_features("2019 study")
+    # process_all_features("2019 study")
     process_all_features("2020 study")

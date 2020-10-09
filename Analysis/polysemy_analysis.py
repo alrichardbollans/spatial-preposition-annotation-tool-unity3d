@@ -1,4 +1,5 @@
 """Summary
+This file provides classes for generating models of typicality and running tests on them.
 First run compile_instances.py
 Attributes:
     comp_filetag (str): Description
@@ -19,7 +20,6 @@ import itertools
 # Ml modules
 
 from sklearn.cluster import KMeans
-from sklearn.model_selection import train_test_split
 
 # Modules for plotting
 import matplotlib as mpl
@@ -30,19 +30,12 @@ from data_import import Configuration, StudyInfo
 from compile_instances import SemanticCollection, ComparativeCollection
 
 # Useful global variables
-from preprocess_features import Features
-
 sv_filetag = SemanticCollection.filetag  # Tag for sv task files
 comp_filetag = ComparativeCollection.filetag  # Tag for comp task files
 preposition_list = StudyInfo.preposition_list
 polysemous_preposition_list = ['in', 'on', 'under', 'over']  # list of prepositions which exist in the data
 non_polysemous_prepositions = ["inside", "above", "below", "on top of", 'against']
 
-
-# Note: Variables which are changed depending on what is being tested
-# - polysemous_preposition_list
-# - GeneratePolysemeModels.our_model_name
-# - GeneratePolysemeModels.models
 
 class ClusterInModel:
     """Summary
@@ -374,7 +367,7 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
         if train_scenes is None:
             train_scenes = self.train_scenes
 
-        if preposition in polysemous_preposition_list:
+        if preposition in self.test_prepositions:
             polysemes = []
 
             g_dict = dict()
@@ -679,7 +672,7 @@ class KMeansPolysemyModel(PolysemyModel):
 
         out = dict()
 
-        for preposition in polysemous_preposition_list:
+        for preposition in self.test_prepositions:
             out[preposition] = []
 
             p_model_parameters = self.preposition_model_dict[preposition]
@@ -862,15 +855,18 @@ class GeneratePolysemeModels:
             preposition_models_dict[p] = M
 
         self.preposition_parameters_dict = preposition_models_dict
-        self.baseline_model = PrototypeModel(preposition_models_dict, self.test_scenes, self.study_info)
+        self.baseline_model = PrototypeModel(preposition_models_dict, self.test_scenes, self.study_info,
+                                             test_prepositions=self.test_prepositions)
         # Update some attributes
         self.baseline_model.name = self.baseline_model_name
         self.baseline_model.unsatisfied_constraints_csv = self.baseline_model.study_info.name + "/polysemy/unsatisfied constraints/" + self.baseline_model.name + ".csv"
 
-        self.cluster_model = KMeansPolysemyModel(self.preposition_parameters_dict, self.test_scenes, self.study_info)
+        self.cluster_model = KMeansPolysemyModel(self.preposition_parameters_dict, self.test_scenes, self.study_info,
+                                                 test_prepositions=self.test_prepositions)
 
         self.non_shared = DistinctPrototypePolysemyModel(GeneratePolysemeModels.distinct_model_name, self.train_scenes,
                                                          self.test_scenes, self.study_info,
+                                                         test_prepositions=self.test_prepositions,
                                                          preserve_empty_polysemes=self.preserve_empty_polysemes,
                                                          baseline_model=self.baseline_model,
                                                          features_to_remove=self.features_to_remove)
@@ -879,42 +875,10 @@ class GeneratePolysemeModels:
         # self.shared.name = GeneratePolysemeModels.shared_model_name
         # self.shared.polyseme_dict = self.shared.get_shared_prototype_polyseme_dict(self.shared.polyseme_dict)
 
-        # self.refined = DistinctPrototypeRefinedPolysemyModel(GeneratePolysemeModels.distinct_refined_model_name,
-        #                                                      self.train_scenes,
-        #                                                      self.test_scenes, self.study_info,
-        #                                                      preserve_empty_polysemes=self.preserve_empty_polysemes,
-        #                                                      baseline_model=self.baseline_model,
-        #                                                      features_to_remove=self.features_to_remove)
-
-        # self.shared_refined = SharedPrototypeRefinedPolysemyModel(GeneratePolysemeModels.shared_refined_model_name,
-        #                                                           self.train_scenes,
-        #                                                           self.test_scenes, self.study_info,
-        #                                                           preserve_empty_polysemes=self.preserve_empty_polysemes,
-        #                                                           baseline_model=self.baseline_model,
-        #                                                           features_to_remove=self.features_to_remove)
-
-        # self.median = DistinctPrototypeMedianPolysemyModel(GeneratePolysemeModels.distinct_median_model_name,
-        #                                                    self.train_scenes,
-        #                                                    self.test_scenes, self.study_info,
-        #                                                    preserve_empty_polysemes=self.preserve_empty_polysemes,
-        #                                                    baseline_model=self.baseline_model,
-        #                                                    features_to_remove=self.features_to_remove)
-
-        # self.shared_median = copy.deepcopy(self.median)
-        # self.shared_median.name = GeneratePolysemeModels.shared_median_model_name
-        # self.shared_median.polyseme_dict = self.shared_median.get_shared_prototype_polyseme_dict(
-        #     self.shared_median.polyseme_dict)
-
-        self.models = [self.non_shared, self.baseline_model, self.cluster_model]  # , self.refined]
-        # self.median]
-
-        # self.models = [self.non_shared, self.shared, self.baseline_model, self.cluster_model, self.refined,
-        #                self.shared_refined, self.median, self.shared_median]
-
+        self.models = [self.non_shared, self.baseline_model, self.cluster_model]
         self.model_name_list = []
         for m in self.models:
             self.model_name_list.append(m.name)
-            m.test_prepositions = self.test_prepositions
 
 
 class MultipleRunsPolysemyModels(MultipleRuns):
@@ -934,7 +898,8 @@ class MultipleRunsPolysemyModels(MultipleRuns):
         study_info (TYPE): Description
     """
 
-    def __init__(self, study_info_, number_runs=None, k=None, compare=None):
+    def __init__(self, study_info_, test_prepositions=polysemous_preposition_list, number_runs=None, k=None,
+                 compare=None):
         """Summary
         
         Args:
@@ -951,7 +916,7 @@ class MultipleRunsPolysemyModels(MultipleRuns):
         self.study_info = study_info_
 
         MultipleRuns.__init__(self, GeneratePolysemeModels, self.study_info,
-                              test_prepositions=polysemous_preposition_list, number_runs=number_runs, test_size=None,
+                              test_prepositions=test_prepositions, number_runs=number_runs, test_size=None,
                               k=k, compare=compare, features_to_test=None)
 
         self.scores_tables_folder = self.study_info.polysemy_score_folder + "tables"

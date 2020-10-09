@@ -2,6 +2,7 @@ Number of Native English users: 32
 Positive Selections,negative_selections
 1215,4500
 Scene,Number of Users Annotating,Given Prepositions
+compsvo17,3,"['under', 'below', '', 'on', 'on top of', 'above']"
 compsvi46,7,"['none', '', 'over', 'on top of', 'on', 'against', 'above']"
 compsvul,6,"['against', 'on', 'on top of', '', 'under', 'below']"
 compsva13,4,"['against', 'on', 'over', 'on top of', 'above', '', 'none']"
@@ -13,7 +14,6 @@ compsvi15,6,"['none', '', 'in', 'inside', 'against', 'over', 'on top of', 'above
 compsva24,3,"['on', 'on top of', '', 'over', 'above']"
 compsvu67a,5,"['none', '', 'below']"
 compsvu34,3,"['under', 'below', '']"
-compsvo17,3,"['under', 'below', '', 'on', 'on top of', 'above']"
 compsvi26,6,"['against', 'on', '', 'none', 'over', 'on top of']"
 compsvo14,5,"['on', 'on top of', '', 'over', 'above']"
 compsvi3,4,"['against', 'on', '', 'none']"

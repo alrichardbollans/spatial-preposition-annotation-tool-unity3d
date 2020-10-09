@@ -1,5 +1,10 @@
-# In general this script compares each pair of configurations checking which better fits the category
-# and which is more typical and test the significance of the differences.
+"""Summary
+In general this script compares each pair of configurations checking which better fits the category
+ and which is more typical and test the significance of the differences.
+
+ Run process_data.py before this.
+
+"""
 
 import csv
 from itertools import combinations

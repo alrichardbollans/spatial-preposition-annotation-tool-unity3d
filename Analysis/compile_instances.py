@@ -8,13 +8,6 @@
 
 ## Also has functions to generate constraints from comparative data
 
-Deleted Attributes:
-    comp_annotations_name (TYPE): Description
-    data_folder_name (TYPE): Description
-    feature_data_folder_name (TYPE): Description
-    project_folder_name (TYPE): Description
-    sem_annotations_name (TYPE): Description
-     (TYPE): Description
 """
 
 import csv
@@ -581,7 +574,7 @@ class ConfigurationCollection(Collection):
 if __name__ == '__main__':
     study_info = StudyInfo("2019 study")
     # First preprocess features
-    preprocess_features.process_all_features()
+    preprocess_features.process_all_features("2019 study")
 
     ### Semantic Annotations
     ### Collect annotation instances and attach values to them
