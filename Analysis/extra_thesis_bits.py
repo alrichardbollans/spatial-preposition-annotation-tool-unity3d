@@ -100,6 +100,73 @@ def initial_test(study_info_):
 
     print(m.scores)
 
+def plot_sr_typicality():
+    model_study_info = StudyInfo("2019 study")
+
+    all_scenes = model_study_info.scene_name_list
+    g_models = GenerateAdditionalModels(all_scenes, all_scenes, model_study_info)
+
+    ref_model = g_models.refined
+    poly_model = g_models.non_shared
+
+    plot_folder = 'extra thesis results/sr_typ_plots/'
+
+    for preposition in preposition_list:
+        config_ratio_csv = model_study_info.config_ratio_csv(sv_filetag, preposition)
+        dataset = pd.read_csv(config_ratio_csv)
+
+        ratio_feature_name = InstanceCollection.ratio_feature_name
+
+        Y = dataset[ratio_feature_name].values.copy()
+
+        Y = Y.reshape(-1, 1)
+
+
+        # Lets do both poly model and refined polymodel
+
+        Xref = []
+        Xpoly = []
+        for index, row in dataset.iterrows():
+            scene = row[GeneratePrepositionModelParameters.scene_feature_name]
+            fig = row[GeneratePrepositionModelParameters.fig_feature_name]
+            gr = row[GeneratePrepositionModelParameters.ground_feature_name]
+            c = Configuration(scene, fig, gr, model_study_info)
+            # Typicality is calculated for each configuration
+            # To check whether a configuration fits a particular polyseme we need to include
+            value_array = np.array(c.row)
+            typicalityref = ref_model.get_typicality(preposition, value_array, scene=c.scene, figure=c.figure,
+                                                     ground=c.ground, study=model_study_info)
+            Xref.append(typicalityref)
+
+            typicalitypoly = poly_model.get_typicality(preposition, value_array, scene=c.scene, figure=c.figure,
+                                                       ground=c.ground, study=model_study_info)
+            Xpoly.append(typicalitypoly)
+
+
+
+        fig, ax = plt.subplots()
+
+        ax.set_xlabel("Typicality")
+
+        ax.set_ylabel("Selection Ratio")
+
+        # Plot data point scatter
+        ax.plot(Xref, Y, 'k.')
+
+        plt.savefig(plot_folder + preposition + "_xref_scatter.pdf", bbox_inches='tight')
+
+        fig, ax = plt.subplots()
+
+        ax.set_xlabel("Typicality")
+
+        ax.set_ylabel("Selection Ratio")
+
+        # Plot data point scatter
+        ax.plot(Xpoly, Y, 'k.')
+
+        plt.savefig(plot_folder + preposition + "_xnon_shared_scatter.pdf", bbox_inches='tight')
+
+
 class DataPartitionPolysemyModel(DistinctPrototypePolysemyModel):
     # THis model helps to check if arbitrailiy partitioning the data improves the baseline prototpe model
     name = "Partition Model"
