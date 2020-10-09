@@ -1,6 +1,8 @@
 # spatial-preposition-annotation-tool-unity3d
 Spatial Preposition Annotation Tool for Virtual Environments
 
+Also add test locally
+
 Basic example: https://alrichardbollans.github.io/spatial-preposition-annotation-tool-unity3d/
 
 ## Data
