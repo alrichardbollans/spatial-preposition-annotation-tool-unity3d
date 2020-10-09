@@ -1,0 +1,13 @@
+Scene1,Figure1,Ground1,Scene2,Figure2,Ground2,c1_times_labelled,c1_times_not_labelled,c2_times_labelled,c2_times_not_labelled,p_value_one_tail
+sv_modtypi4,pencil,mug,sv_modtypi3,box,table,12.0,0.0,5.0,4.0,0.021052631578947382
+sv_modtypi4,pencil,mug,sv_modtypi1,cube,shelf,12.0,0.0,1.0,4.0,0.002100840336134455
+sv_modtypi4,pencil,mug,sv_modtypi2,pear,bowl,12.0,0.0,7.0,3.0,0.07792207792207793
+sv_modtypi3,box,table,sv_modtypi4,pencil,mug,5.0,4.0,12.0,0.0,1.0
+sv_modtypi3,box,table,sv_modtypi1,cube,shelf,5.0,4.0,1.0,4.0,0.23776223776223826
+sv_modtypi3,box,table,sv_modtypi2,pear,bowl,5.0,4.0,7.0,3.0,0.87008811621815
+sv_modtypi1,cube,shelf,sv_modtypi4,pencil,mug,1.0,4.0,12.0,0.0,1.0
+sv_modtypi1,cube,shelf,sv_modtypi3,box,table,1.0,4.0,5.0,4.0,0.9720279720279741
+sv_modtypi1,cube,shelf,sv_modtypi2,pear,bowl,1.0,4.0,7.0,3.0,0.9930069930069927
+sv_modtypi2,pear,bowl,sv_modtypi4,pencil,mug,7.0,3.0,12.0,0.0,1.0
+sv_modtypi2,pear,bowl,sv_modtypi3,box,table,7.0,3.0,5.0,4.0,0.42998332936413586
+sv_modtypi2,pear,bowl,sv_modtypi1,cube,shelf,7.0,3.0,1.0,4.0,0.10023310023310023

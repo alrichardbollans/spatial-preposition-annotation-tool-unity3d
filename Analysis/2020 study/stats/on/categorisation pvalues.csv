@@ -1,0 +1,13 @@
+Scene1,Figure1,Ground1,Scene2,Figure2,Ground2,c1_times_labelled,c1_times_not_labelled,c2_times_labelled,c2_times_not_labelled,p_value_one_tail
+sv_modtypo3,pear,bowl,sv_modtypo1,spoon,plate,3.0,11.0,9.0,0.0,1.0
+sv_modtypo3,pear,bowl,sv_modtypo4,clock,board,3.0,11.0,9.0,2.0,0.999804818952755
+sv_modtypo3,pear,bowl,sv_modtypo2,mug,pencil,3.0,11.0,9.0,1.0,0.9999663480952986
+sv_modtypo1,spoon,plate,sv_modtypo3,pear,bowl,9.0,0.0,3.0,11.0,0.000269215237582447
+sv_modtypo1,spoon,plate,sv_modtypo4,clock,board,9.0,0.0,9.0,2.0,0.2894736842105257
+sv_modtypo1,spoon,plate,sv_modtypo2,mug,pencil,9.0,0.0,9.0,1.0,0.5263157894736837
+sv_modtypo4,clock,board,sv_modtypo3,pear,bowl,9.0,2.0,3.0,11.0,0.004044958944676274
+sv_modtypo4,clock,board,sv_modtypo1,spoon,plate,9.0,2.0,9.0,0.0,1.0
+sv_modtypo4,clock,board,sv_modtypo2,mug,pencil,9.0,2.0,9.0,1.0,0.8759398496240609
+sv_modtypo2,mug,pencil,sv_modtypo3,pear,bowl,9.0,1.0,3.0,11.0,0.0013797280926100372
+sv_modtypo2,mug,pencil,sv_modtypo1,spoon,plate,9.0,1.0,9.0,0.0,1.0
+sv_modtypo2,mug,pencil,sv_modtypo4,clock,board,9.0,1.0,9.0,2.0,0.5375939849624068
