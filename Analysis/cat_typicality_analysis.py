@@ -9,106 +9,18 @@ import csv
 from itertools import combinations
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 # first in  2019 study
 from basic_model_testing import Model, GeneratePrepositionModelParameters, PrototypeModel, preposition_list
-from compile_instances import SemanticCollection
+from compile_instances import SemanticCollection, InstanceCollection
 from data_import import Configuration, StudyInfo
 from polysemy_analysis import DistinctPrototypePolysemyModel, GeneratePolysemeModels
 
-from process_data import ModSemanticData, TypicalityData, UserData
+from process_data import ModSemanticData, TypicalityData, UserData, SemanticData
+from extra_thesis_bits import DistinctPrototypeRefinedPolysemyModel, GenerateAdditionalModels
 
-
-class SelectionRatioModel(Model):
-    name = "Selection Ratio Model"
-
-    def __init__(self, test_scenes, study_info):
-
-        Model.__init__(self, self.name, test_scenes, study_info)
-
-    def check_sr_exists(self, scene, figure, ground):
-
-        # SR csv
-        sv_filetag = SemanticCollection.filetag
-        config_ratio_csv = self.study_info.config_ratio_csv(sv_filetag, 'in')
-        sr_dataset = pd.read_csv(config_ratio_csv)
-
-        counter = 0
-        for index, row in sr_dataset.iterrows():
-            if row[GeneratePrepositionModelParameters.scene_feature_name] == scene and row[
-                GeneratePrepositionModelParameters.fig_feature_name] == figure and \
-                    row[GeneratePrepositionModelParameters.ground_feature_name] == ground:
-                counter += 1
-                break
-        if counter > 1:
-            raise ValueError('Too many configurations found')
-        elif counter == 0:
-            return False
-        elif counter == 1:
-            return True
-
-    def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
-
-        sv_filetag = SemanticCollection.filetag
-        config_ratio_csv = self.study_info.config_ratio_csv(sv_filetag, preposition)
-        sr_dataset = pd.read_csv(config_ratio_csv)
-
-        for index, row in sr_dataset.iterrows():
-            if row[GeneratePrepositionModelParameters.scene_feature_name] == scene and row[
-                GeneratePrepositionModelParameters.fig_feature_name] == figure and \
-                    row[GeneratePrepositionModelParameters.ground_feature_name] == ground:
-                sr = row[GeneratePrepositionModelParameters.ratio_feature_name]
-                break
-        return sr
-
-    def get_test_constraints(self, preposition):
-        allConstraints = self.constraint_dict[preposition]
-        # Constraints to test on
-        testConstraints = []
-
-        for c in allConstraints:
-            if c.scene in self.test_scenes:
-                if self.check_sr_exists(c.scene, c.f1, c.ground):
-                    if self.check_sr_exists(c.scene, c.f2, c.ground):
-                        testConstraints.append(c)
-
-        print('number of constraints:')
-        print(preposition)
-        print(len(testConstraints))
-        return testConstraints
-
-
-def initial_test(study_info_):
-    """Summary
-
-    Args:
-        study_info_ (TYPE): Description
-    """
-    scene_list = study_info_.scene_name_list
-    m = SelectionRatioModel(scene_list, study_info_)
-
-    m.get_score()
-
-    revised_constraint_dict = dict()
-    for p in preposition_list:
-        revised_constraint_dict[p] = m.get_test_constraints(p)
-
-    features_to_remove = Configuration.ground_property_features.copy()
-
-    preposition_models_dict = dict()
-
-    # Get parameters for each preposition
-    for p in preposition_list:
-        M = GeneratePrepositionModelParameters(study_info_, p, scene_list,
-                                               features_to_remove=features_to_remove)
-        preposition_models_dict[p] = M
-
-    p = PrototypeModel(preposition_models_dict, scene_list, study_info_, constraint_dict=revised_constraint_dict)
-    p.get_score()
-
-    print(p.scores)
-
-    print(m.scores)
+sv_filetag = SemanticCollection.filetag  # Tag for sv task files
 
 
 def output_2020_study_results():
@@ -131,12 +43,12 @@ def output_2020_study_results():
     for p in preposition_list:
         M = GeneratePrepositionModelParameters(model_study_info, p, scene_list,
                                                features_to_remove=features_to_remove)
+        M.work_out_models()
         preposition_models_dict[p] = M
 
-
-    baseline_model = PrototypeModel(preposition_models_dict, scene_list, model_study_info)
-    typ_model = DistinctPrototypePolysemyModel(GeneratePolysemeModels.distinct_model_name, scene_list,
-                                               scene_list, model_study_info, baseline_model=baseline_model,
+    baseline_model = PrototypeModel(preposition_models_dict, scene_list, model_study_info,test_prepositions=preposition_list)
+    typ_model = DistinctPrototypePolysemyModel(GeneratePolysemeModels.distinct_model_name, scene_list, scene_list,
+                                               model_study_info,test_prepositions=preposition_list, baseline_model=baseline_model,
                                                features_to_remove=features_to_remove)
 
     # Object-specific functions
@@ -162,6 +74,7 @@ def output_2020_study_results():
     # significance level to use
     sig_level = 0.1
     simple_config_list = typ_data.config_list
+    count_number_sign_pairs = 0  # NUmber of pairs where one of the configs is significantly better than the other
 
     # Get config list of tested configurations
     config_list = []
@@ -174,16 +87,35 @@ def output_2020_study_results():
             study_info.stats_folder + "/"
             + "results.csv",
             "w",
-    ) as csvfile:
+    ) as csvfile, open(
+        study_info.stats_folder + "/"
+        + "disagreements.csv",
+        "w",
+    ) as disagcsvfile, open(
+        study_info.stats_folder + "/"
+        + "monotonicity-preserving-examples.csv",
+        "w",
+    ) as monocsvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(
+        disag_writer = csv.writer(disagcsvfile)  # Collect disagreements
+        mono_writer = csv.writer(monocsvfile)  # Monotone examples
+        heading = [
+            "Preposition",
+            "Configuration 1",
+            "Configuration 2",
+            "Typicality Scores",
+            "Object-Specific Features",
+            "Better Category Member",
+            "More Typical Configuration"
+        ]
+        writer.writerow(heading)
+        disag_writer.writerow(heading)
+        mono_writer.writerow(
             [
                 "Preposition",
                 "Configuration 1",
                 "Configuration 2",
-                "Typicality Scores",
-                "Object-Specific Features",
-                "Better Category Member",
+                "Configurations Labelled",
                 "More Typical Configuration"
             ]
         )
@@ -226,6 +158,19 @@ def output_2020_study_results():
                         else:
                             c2_sr = 0
 
+                        # Work out if monotone example
+                        same_categorisation = False
+                        configs_labelled = ""
+                        if c1_sr == c2_sr:
+                            if c1_sr == 1:
+                                configs_labelled = "Always"
+                                same_categorisation = True
+                            if c1_sr == 0:
+                                configs_labelled = "Never"
+                                same_categorisation = True
+
+                        # Calculate better config and p value
+                        more_typical_config = False
                         p_value = 1
                         if c1_sr == c2_sr:
                             better_config = "None"
@@ -237,8 +182,6 @@ def output_2020_study_results():
                             sv_stat = svmod_data.calculate_pvalue_c1_better_than_c2(preposition, c2, c1)
                             p_value = sv_stat[4]
                             better_config = c2.string_for_cattyp_table()
-                        if p_value <= sig_level:
-                            better_config += "*"
 
                         typ_stat = typ_data.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
                         c1_selected_over_c2 = typ_stat[1]
@@ -254,99 +197,110 @@ def output_2020_study_results():
                             typ_config = c2.string_for_cattyp_table()
                             typ_stat = typ_data.calculate_pvalue_c1_better_than_c2(preposition, c2, c1)
                             typ_p_value = typ_stat[3]
+
+                        disagreement = False
+
+                        if better_config != "None" and typ_config != "None" and better_config != typ_config:
+                            disagreement = True
+
+                        if p_value <= sig_level:
+                            better_config += "*"
                         if typ_p_value <= sig_level:
                             typ_config += "*"
+                            more_typical_config = True
+
+                        if p_value <= sig_level or typ_p_value <= sig_level:
+                            count_number_sign_pairs += 1
 
                         to_write = (
                             [preposition, c1.string_for_cattyp_table(), c2.string_for_cattyp_table(), typ_string,
                              role_string, better_config, typ_config]
                         )
+
                         writer.writerow(to_write)
-
-    with open(
-            study_info.stats_folder + "/"
-            + "monotonicity-preserving-examples.csv",
-            "w",
-    ) as monocsvfile:
-        new_writer = csv.writer(monocsvfile)
-        new_writer.writerow(
-            [
-                "Preposition",
-                "Configuration 1",
-                "Configuration 2",
-                "Configurations Labelled",
-                "More Typical Configuration"
-            ]
-        )
-
-        for preposition in StudyInfo.preposition_list:
-
-            print("Outputting results for:" + str(preposition))
-
-            for pair in config_pairs:
-                c1 = pair[0]
-                c2 = pair[1]
-
-                if not (c1.configuration_match(c2)):
-                    # Only want to output categorisation info on related scenes
-                    if typ_data.is_test_config(c1, preposition) and typ_data.is_test_config(c2, preposition):
-
-                        sv_stat = svmod_data.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
-                        number_of_tests1 = sv_stat[0] + sv_stat[1]
-                        if number_of_tests1 != 0:
-
-                            c1_sr = sv_stat[0] / number_of_tests1
-                        else:
-                            c1_sr = 0
-
-                        number_of_tests2 = sv_stat[2] + sv_stat[3]
-
-                        if number_of_tests2 != 0:
-                            c2_sr = sv_stat[2] / number_of_tests2
-                        else:
-                            c2_sr = 0
-
-                        same_categorisation = False
-                        configs_labelled = ""
-                        if c1_sr == c2_sr:
-                            if c1_sr == 1:
-                                configs_labelled = "Always"
-                                same_categorisation = True
-                            if c1_sr == 0:
-                                configs_labelled = "Never"
-                                same_categorisation = True
-
-                        more_typical_config = False
-                        typ_stat = typ_data.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
-                        c1_selected_over_c2 = typ_stat[1]
-                        c2_selected_over_c1 = typ_stat[2]
-
-                        typ_p_value = 1
-                        if c1_selected_over_c2 == c2_selected_over_c1:
-                            typ_config = "None"
-                        elif c1_selected_over_c2 > c2_selected_over_c1:
-                            typ_config = c1.string_for_cattyp_table()
-                            typ_p_value = typ_stat[3]
-                        else:
-                            typ_config = c2.string_for_cattyp_table()
-                            typ_stat = typ_data.calculate_pvalue_c1_better_than_c2(preposition, c2, c1)
-                            typ_p_value = typ_stat[3]
-                        if typ_p_value <= sig_level:
-                            typ_config += "*"
-                            more_typical_config = True
+                        if disagreement:
+                            disag_writer.writerow(to_write)
 
                         if same_categorisation and more_typical_config:
-                            to_write = (
+                            mono_write = (
                                 [preposition, c1.string_for_cattyp_table(), c2.string_for_cattyp_table(),
                                  configs_labelled,
                                  typ_config]
                             )
-                            new_writer.writerow(to_write)
+                            mono_writer.writerow(mono_write)
 
+        writer.writerow(["Number of significant pairs", str(count_number_sign_pairs)])
+
+
+def plot_sr_typicality():
+    model_study_info = StudyInfo("2019 study")
+
+    all_scenes = model_study_info.scene_name_list
+    g_models = GenerateAdditionalModels(all_scenes, all_scenes, model_study_info)
+
+    ref_model = g_models.refined
+    poly_model = g_models.non_shared
+
+    plot_folder = 'extra thesis results/sr_typ_plots/'
+
+    for preposition in preposition_list:
+        config_ratio_csv = model_study_info.config_ratio_csv(sv_filetag, preposition)
+        dataset = pd.read_csv(config_ratio_csv)
+
+        ratio_feature_name = InstanceCollection.ratio_feature_name
+
+        Y = dataset[ratio_feature_name].values.copy()
+
+        Y = Y.reshape(-1, 1)
+
+
+        # Lets do both poly model and refined polymodel
+
+        Xref = []
+        Xpoly = []
+        for index, row in dataset.iterrows():
+            scene = row[GeneratePrepositionModelParameters.scene_feature_name]
+            fig = row[GeneratePrepositionModelParameters.fig_feature_name]
+            gr = row[GeneratePrepositionModelParameters.ground_feature_name]
+            c = Configuration(scene, fig, gr, model_study_info)
+            # Typicality is calculated for each configuration
+            # To check whether a configuration fits a particular polyseme we need to include
+            value_array = np.array(c.row)
+            typicalityref = ref_model.get_typicality(preposition, value_array, scene=c.scene, figure=c.figure,
+                                                     ground=c.ground, study=model_study_info)
+            Xref.append(typicalityref)
+
+            typicalitypoly = poly_model.get_typicality(preposition, value_array, scene=c.scene, figure=c.figure,
+                                                       ground=c.ground, study=model_study_info)
+            Xpoly.append(typicalitypoly)
+
+
+
+        fig, ax = plt.subplots()
+
+        ax.set_xlabel("Typicality")
+
+        ax.set_ylabel("Selection Ratio")
+
+        # Plot data point scatter
+        ax.plot(Xref, Y, 'k.')
+
+        plt.savefig(plot_folder + preposition + "_xref_scatter.pdf", bbox_inches='tight')
+
+        fig, ax = plt.subplots()
+
+        ax.set_xlabel("Typicality")
+
+        ax.set_ylabel("Selection Ratio")
+
+        # Plot data point scatter
+        ax.plot(Xpoly, Y, 'k.')
+
+        plt.savefig(plot_folder + preposition + "_xnon_shared_scatter.pdf", bbox_inches='tight')
 
 if __name__ == '__main__':
     # study_info_ = StudyInfo("2019 study")
     #
     # initial_test(study_info_)
-
+    # plot_sr_typicality()
     output_2020_study_results()
