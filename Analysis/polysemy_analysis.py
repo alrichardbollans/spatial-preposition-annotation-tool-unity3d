@@ -318,6 +318,8 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
         # When empty polysemes are preserved their values are generated as normal
         # e.g. rank,numebr of instances  = 0. THis is useful for outputting data on the polysemes
         # When empty polysemes are not preserved, empty polysemes are assigned values from the baseline model.
+        # I.e. Assign True when generating polysemes to explore data
+        #Assign False when testing model.
 
         self.preserve_empty_polysemes = preserve_empty_polysemes
         # Dictionary of polysemes for each preposition

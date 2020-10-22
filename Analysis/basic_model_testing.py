@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 # Modules for testing and model making
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import PolynomialFeatures
-from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
+from sklearn.linear_model import LinearRegression, Ridge
 from scipy.special import comb
 
 # Local module imports
@@ -373,8 +373,6 @@ class GeneratePrepositionModelParameters:
         """Summary
         """
         self.work_out_linear_regression_model()
-        # self.work_out_polynomial_regression_model()
-        # self.work_out_ridge_regression()
         self.work_out_barycentre_prototype()
         self.work_out_exemplar_mean()
         self.work_out_prototype_model()
@@ -889,10 +887,11 @@ class Model:
 
         # Prepositions to test
         self.test_prepositions = test_prepositions
+
         # Dictionary containing constraints to satisfy
         self.constraint_dict = Constraint.read_from_csv(self.study_info.constraint_csv)
         # Csv to write unsatisfied constraints when testing/training on all scenes
-        self.unsatisfied_constraints_csv = self.study_info.name + "/polysemy/unsatisfied constraints/" + self.name + ".csv"
+        self.unsatisfied_constraints_csv = "extra thesis results/unsatisfied constraints/" + self.name + ".csv"
 
     def generate_arrays(self, salient_features):
         """
@@ -958,11 +957,6 @@ class Model:
         weighted_average_score = 0
         total_weight_counter = 0
 
-        # if len(self.test_scenes) == 67:
-        #     # Clear the unsatisfied constraint csv file first
-        #     f = open(self.unsatisfied_constraints_csv, "w+")
-        #     f.close()
-
         for preposition in self.test_prepositions:
 
             testConstraints = self.get_test_constraints(preposition)
@@ -1013,21 +1007,12 @@ class Model:
         """
         # Calculates how well W and P satisfy the constraints, accounting for constraint weight
         counter = 0
-        unsatisfied_constraints = []
 
         for c in Constraints:
             lhs = self.get_typicality_lhs(c)
             rhs = self.get_typicality_rhs(c)
             if c.is_satisfied(lhs, rhs):
                 counter += c.weight
-            else:
-                unsatisfied_constraints.append(c)
-        # Output unsatisfied constraints if training/testing on all scenes
-
-        # if len(self.test_scenes) == 67:
-        #
-        #     for c in unsatisfied_constraints:
-        #         c.write_to_csv(self.unsatisfied_constraints_csv)
 
         return counter
 
@@ -1088,17 +1073,40 @@ class Model:
             # print(preposition)
             in_df.to_csv(input_csv)
 
+    def output_unsatisfied_constraints(self):
+        if len(self.test_scenes) == 67:
+            # Clear the unsatisfied constraint csv file first
+            f = open(self.unsatisfied_constraints_csv, "w+")
+            f.close()
+            unsatisfied_constraints = []
+
+            for preposition in self.test_prepositions:
+
+                testConstraints = self.get_test_constraints(preposition)
+
+                for c in testConstraints:
+                    lhs = self.get_typicality_lhs(c)
+                    rhs = self.get_typicality_rhs(c)
+                    if c.is_satisfied(lhs, rhs):
+                        pass
+                    else:
+                        unsatisfied_constraints.append(c)
+            # Output unsatisfied constraints if training/testing on all scenes
+            # This may not output all unsatisfied constraints if constraint dict has been modified
+
+            for c in unsatisfied_constraints:
+                c.write_to_csv(self.unsatisfied_constraints_csv)
+        else:
+            raise ValueError('Not testing on all scenes')
+
 
 class PrototypeModel(Model):
     name = "Our Prototype"
 
-    def __init__(self, preposition_model_dict, test_scenes, study_info_, test_prepositions=preposition_list,
-                 constraint_dict=None):
+    def __init__(self, preposition_model_dict, test_scenes, study_info_, test_prepositions=preposition_list):
         self.preposition_model_dict = preposition_model_dict
 
         Model.__init__(self, PrototypeModel.name, test_scenes, study_info_, test_prepositions=test_prepositions)
-        if constraint_dict is not None:
-            self.constraint_dict = constraint_dict
 
     def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
         p_model = self.preposition_model_dict[preposition]
@@ -1289,87 +1297,6 @@ class BestGuessModel(Model):
         return out
 
 
-class RegressionModel(Model):
-    def __init__(self, name, preposition_model_dict, test_scenes, study_info_):
-        self.preposition_model_dict = preposition_model_dict
-
-        Model.__init__(self, name, test_scenes, study_info_)
-        self.regression_model_dict = dict()
-        self.reg_model_fit_score_csv_folder = self.study_info.model_info_folder + "/regression model scores/"
-        self.reg_model_fit_csv = self.reg_model_fit_score_csv_folder + self.name + ".csv"
-
-    def transform_array(self, x):
-        '''
-        Arrays need transforming for polynomial regressions
-        :param x:
-        :return:
-        '''
-        return x
-
-    def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
-        p_model = self.preposition_model_dict[preposition]
-        regression_model = self.regression_model_dict[preposition]
-        new_point = p_model.remove_unused_features_from_point_array(value_array)
-
-        point_array = np.array(new_point).reshape(1, -1)
-
-        point_array = self.transform_array(point_array)
-
-        t = regression_model.predict(point_array)
-        return t
-
-    def output_regression_scores(self):
-        scores = []
-        for p in preposition_list:
-            X = self.transform_array(self.preposition_model_dict[p].feature_dataframe)
-            Y = self.preposition_model_dict[p].train_dataset[
-                self.preposition_model_dict[p].ratio_feature_name].values.reshape(-1, 1)
-
-            reg_model = self.regression_model_dict[p]
-
-            fit_score = reg_model.score(X, Y)
-            scores.append(fit_score)
-
-        fs = pd.DataFrame(scores, preposition_list)
-        fs.to_csv(self.reg_model_fit_csv)
-
-
-class LinearRegressionModel(RegressionModel):
-    name = "Linear Regression Model"
-
-    def __init__(self, preposition_model_dict, test_scenes, study_info_):
-        RegressionModel.__init__(self, LinearRegressionModel.name, preposition_model_dict, test_scenes, study_info_)
-
-        for p in preposition_list:
-            self.regression_model_dict[p] = self.preposition_model_dict[p].linear_regression_model
-
-
-class RidgeRegressionModel(RegressionModel):
-    name = "Ridge Regression Model"
-
-    def __init__(self, preposition_model_dict, test_scenes, study_info_):
-        RegressionModel.__init__(self, self.name, preposition_model_dict, test_scenes, study_info_)
-
-        for p in preposition_list:
-            self.regression_model_dict[p] = self.preposition_model_dict[p].ridge_regression_model
-
-
-class PolynRegressionModel(RegressionModel):
-    name = "Polynomial Regression Model"
-
-    def __init__(self, preposition_model_dict, test_scenes, study_info_):
-        RegressionModel.__init__(self, PolynRegressionModel.name, preposition_model_dict, test_scenes, study_info_)
-        self.regression_degree = GeneratePrepositionModelParameters.polynomial_degree
-        for p in preposition_list:
-            self.regression_model_dict[p] = self.preposition_model_dict[p].poly_regression_model
-
-    def transform_array(self, x):
-        # Must transform the point for polynomial regression
-        polynomial_features = PolynomialFeatures(degree=self.regression_degree)
-        X = polynomial_features.fit_transform(x)
-        return X
-
-
 class GenerateBasicModels:
     """Summary
     
@@ -1418,12 +1345,9 @@ class GenerateBasicModels:
             simple_model = SimpleModel(self.test_scenes, self.study_info)
             best_guess_model = BestGuessModel(self.test_scenes, self.study_info)
 
-            lin_reg_model = LinearRegressionModel(preposition_models_dict, self.test_scenes, self.study_info)
-            poly_reg_model = PolynRegressionModel(preposition_models_dict, self.test_scenes, self.study_info)
-            rid_reg_model = RidgeRegressionModel(preposition_models_dict, self.test_scenes, self.study_info)
+
 
             models = [our_model, exemplar_model, cs_model, proximity_model, simple_model, best_guess_model]
-            # ,lin_reg_model, poly_reg_model, rid_reg_model]
 
         else:
 
@@ -1542,7 +1466,7 @@ class MultipleRuns:
         self.study_info = study_info_
         self.test_prepositions = test_prepositions
         self.model_generator = model_generator
-        self.constraint_dict = Constraint.read_from_csv(self.study_info.constraint_csv)
+
         self.number_runs = number_runs
         self.test_size = test_size
         self.k = k
@@ -1558,6 +1482,8 @@ class MultipleRuns:
 
         self.scene_list = self.study_info.scene_name_list
         self.Generate_Models_all_scenes = self.generate_models(self.scene_list, self.scene_list)
+
+        self.constraint_dict = self.Generate_Models_all_scenes.models[0].constraint_dict
 
         if self.features_to_test is None:
 
@@ -2010,13 +1936,7 @@ class MultipleRuns:
         self.plot_dataframe_bar_chart(dataset, file_to_save, x_label, y_label, plot_title)
 
 
-def output_regression_scores(study_info):
-    scene_list = study_info.scene_name_list
-    generated_models = GenerateBasicModels(scene_list, scene_list, study_info)
 
-    for model in generated_models.models:
-        if hasattr(model, "output_regression_scores"):
-            model.output_regression_scores()
 
 
 def plot_preposition_graphs(study_info):
