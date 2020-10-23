@@ -1095,6 +1095,33 @@ class Data:
             else:
                 return False
 
+    def calculate_pvalue_c1_better_than_c2(self, preposition, c1, c2):
+        """Summary
+        Calculates the one-tailed p_value when c1 is better than c2.
+
+        Args:
+            preposition (TYPE): Description
+            c1 (TYPE): Description
+            c2 (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+        number_comparisons, c1_selected_over_c2, c2_selected_over_c1 = self.get_number_times_c1_c2_compared_selected(
+            preposition, c1, c2)
+        p_value = 0
+        i = c1_selected_over_c2
+        while i <= number_comparisons:
+            summand = comb(number_comparisons, i) * math.pow(0.5, number_comparisons)
+            p_value += summand
+            i += 1
+
+        return [number_comparisons, c1_selected_over_c2, c2_selected_over_c1, p_value]
+
+    def get_number_times_c1_c2_compared_selected(self, preposition, c1, c2):
+        print("Base method to be overidden")
+        return 0, 0, 0
+
 
 class ComparativeData(Data):
     """Summary
@@ -1183,6 +1210,38 @@ class ComparativeData(Data):
                 out.append(row)
 
         return out
+
+    def get_number_times_c1_c2_compared_selected(self, preposition, c1, c2):
+        """Summary
+        Finds number of times c1, c2 are compared using the given preposition.
+        Also finds frequency of selections.
+
+        Args:
+            preposition (TYPE): Description
+            c1 (TYPE): Description
+            c2 (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+        number_comparisons = 0
+        c1_fig_selected = 0
+        c2_fig_selected = 0
+
+        if c1.ground != c2.ground or c1.scene != c2.scene:
+            pass
+        else:
+            for comp_annot in self.clean_data_list:
+                if comp_annot.preposition == preposition:
+                    if comp_annot.ground == c1.ground and comp_annot.scene == c1.scene:
+                        number_comparisons += 1
+
+                        if comp_annot.figure == c1.figure:
+                            c1_fig_selected += 1
+                        if comp_annot.figure == c2.figure:
+                            c2_fig_selected += 1
+
+        return number_comparisons, c1_fig_selected, c2_fig_selected
 
     # This is a very basic list of information about the task
     # compile_instances gives a better overview
@@ -1559,29 +1618,6 @@ class TypicalityData(Data):
                         c2_selected += 1
 
         return number_comparisons, c1_selected, c2_selected
-
-    def calculate_pvalue_c1_better_than_c2(self, preposition, c1, c2):
-        """Summary
-        Calculates the one-tailed p_value when c1 is better than c2.
-        
-        Args:
-            preposition (TYPE): Description
-            c1 (TYPE): Description
-            c2 (TYPE): Description
-        
-        Returns:
-            TYPE: Description
-        """
-        number_comparisons, c1_selected_over_c2, c2_selected_over_c1 = self.get_number_times_c1_c2_compared_selected(
-            preposition, c1, c2)
-        p_value = 0
-        i = c1_selected_over_c2
-        while i <= number_comparisons:
-            summand = comb(number_comparisons, i) * math.pow(0.5, number_comparisons)
-            p_value += summand
-            i += 1
-
-        return [number_comparisons, c1_selected_over_c2, c2_selected_over_c1, p_value]
 
     def get_statistically_different_configurations(self, preposition, sig_level=0.1):
         """Summary
