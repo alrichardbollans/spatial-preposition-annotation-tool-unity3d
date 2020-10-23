@@ -407,13 +407,16 @@ class SemanticAnnotation(Annotation):
             annotation (TYPE): Description
         """
         Annotation.__init__(self, userdata, annotation)
+        prepositions_to_write = ""
+        for p in self.prepositions:
+            prepositions_to_write = prepositions_to_write + p + ";"
 
         self.list_format = [
             self.id,
             self.clean_user_id,
             self.task,
             self.scene,
-            self.prepositions,
+            prepositions_to_write,
             self.figure,
             self.ground,
             self.time,
@@ -433,7 +436,7 @@ class SemanticAnnotation(Annotation):
         clean_user_id = row[1]
         task = row[2]
         scene = row[3]
-        prepositions = row[4]
+        prepositions = row[4].split(';')
         figure = row[5]
         ground = row[6]
         time = row[7]
@@ -1301,7 +1304,7 @@ class SemanticData(Data):
         out = []
         for annotation in self.clean_data_list:
             if annotation.scene == scene:
-                for p in annotation.preposition_list:
+                for p in annotation.prepositions:
                     if p not in out:
                         out.append(p)
 
@@ -2166,6 +2169,6 @@ def process_2020_study():
 
 
 if __name__ == "__main__":
-    # process_2019_study()
+    process_2019_study()
     # process_test_study()
     process_2020_study()

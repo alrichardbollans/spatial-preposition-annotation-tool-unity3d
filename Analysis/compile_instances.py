@@ -225,6 +225,7 @@ class InstanceCollection(Collection):
                 StudyInfo.preposition_list.append(i.preposition)
             if i.preposition not in out:
                 out.append(i.preposition)
+
         return out
 
     #### Write General Stats for each preposition
@@ -307,9 +308,7 @@ class SemanticCollection(InstanceCollection):
                 simple_config = SimpleConfiguration(scene, figure, ground)
                 self.config_test_list.append(simple_config)
 
-                given_prepositions = prepositions.split(";")
-
-                for p in given_prepositions:
+                for p in prepositions:
                     if p != "":
                         i = Instance(an_id, clean_user_id, task, scene, p, figure, ground, self.study_info)
 
