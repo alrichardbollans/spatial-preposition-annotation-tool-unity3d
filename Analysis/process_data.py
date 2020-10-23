@@ -253,7 +253,7 @@ class Annotation:
 
             self.scene = annotation[StudyInfo.a_index["scene"]]
 
-            self.prepositions = annotation[StudyInfo.a_index["prepositions"]]
+            self.prepositions = annotation[StudyInfo.a_index["prepositions"]].split(";")
 
             self.cam_rot = annotation[StudyInfo.a_index["cam_rot"]]
             self.cam_loc = annotation[StudyInfo.a_index["cam_loc"]]
@@ -407,7 +407,7 @@ class SemanticAnnotation(Annotation):
             annotation (TYPE): Description
         """
         Annotation.__init__(self, userdata, annotation)
-        self.preposition_list = self.make_preposition_list()
+
         self.list_format = [
             self.id,
             self.clean_user_id,
@@ -454,15 +454,6 @@ class SemanticAnnotation(Annotation):
                 self.time,
             ]
         )
-
-    def make_preposition_list(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        x = self.prepositions.split(";")
-        return x
 
 
 class TypicalityAnnotation(Annotation):
