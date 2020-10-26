@@ -10,7 +10,8 @@ import csv
 from itertools import combinations
 import numpy as np
 
-from basic_model_testing import GeneratePrepositionModelParameters, PrototypeModel, preposition_list
+from basic_model_testing import GeneratePrepositionModelParameters, PrototypeModel, preposition_list, \
+    get_standard_preposition_parameters
 from compile_instances import SemanticCollection
 from data_import import Configuration, StudyInfo
 from polysemy_analysis import DistinctPrototypePolysemyModel, GeneratePolysemeModels
@@ -34,15 +35,8 @@ def output_2020_study_results():
     # Typicality model
     scene_list = model_study_info.scene_name_list
     # First generate baseline model
-    preposition_models_dict = dict()
-
     features_to_remove = Configuration.ground_property_features.copy()
-    # Get parameters for each preposition
-    for p in preposition_list:
-        M = GeneratePrepositionModelParameters(model_study_info, p, scene_list,
-                                               features_to_remove=features_to_remove)
-        M.work_out_models()
-        preposition_models_dict[p] = M
+    preposition_models_dict = get_standard_preposition_parameters()
 
     baseline_model = PrototypeModel(preposition_models_dict, scene_list, model_study_info,
                                     test_prepositions=preposition_list)
@@ -73,10 +67,12 @@ def output_2020_study_results():
                               }
     # significance level to use
     sig_level = 0.1
-    simple_config_list = typ_data.config_list
-    count_number_sign_pairs = 0  # NUmber of pairs where one of the configs is significantly better than the other
 
-    # Get config list of tested configurations
+    count_number_significant_pairs = 0  # NUmber of pairs where one of the configs is significantly better than the other
+
+    # Get simple config list of tested configurations
+    simple_config_list = typ_data.config_list
+    # Create config list
     config_list = []
     for simple_config in simple_config_list:
         c = Configuration(simple_config.scene, simple_config.figure, simple_config.ground, study_info)
@@ -87,7 +83,7 @@ def output_2020_study_results():
             study_info.stats_folder + "/"
             + "results.csv",
             "w",
-    ) as csvfile, open(
+    ) as results_csvfile, open(
         study_info.stats_folder + "/"
         + "disagreements.csv",
         "w",
@@ -96,9 +92,10 @@ def output_2020_study_results():
         + "monotonicity-preserving-examples.csv",
         "w",
     ) as monocsvfile:
-        writer = csv.writer(csvfile)
+        results_writer = csv.writer(results_csvfile)
         disag_writer = csv.writer(disagcsvfile)  # Collect disagreements
         mono_writer = csv.writer(monocsvfile)  # Monotone examples
+        # Write headings for csvs
         heading = [
             "Preposition",
             "Configuration 1",
@@ -108,7 +105,7 @@ def output_2020_study_results():
             "Better Category Member",
             "More Typical Configuration"
         ]
-        writer.writerow(heading)
+        results_writer.writerow(heading)
         disag_writer.writerow(heading)
         mono_writer.writerow(
             [
@@ -131,6 +128,7 @@ def output_2020_study_results():
                 if not (c1.configuration_match(c2)):
                     # Only want to output categorisation info on related scenes
                     if typ_data.is_test_config(c1, preposition) and typ_data.is_test_config(c2, preposition):
+                        # Get typicality measures
                         value1_array = np.array(c1.row)
                         c1_typ = typ_model.get_typicality(preposition, value1_array, c1.scene, c1.figure, c1.ground,
                                                           study_info)
@@ -144,17 +142,21 @@ def output_2020_study_results():
                             c2.scene] + "]"
 
                         sv_stat = svmod_data.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
-                        number_of_tests1 = sv_stat[0] + sv_stat[1]
+                        c1_times_labelled = sv_stat[0]
+                        c1_times_not_labelled = sv_stat[1]
+                        number_of_tests1 = c1_times_labelled + c1_times_not_labelled
                         if number_of_tests1 != 0:
 
-                            c1_sr = sv_stat[0] / number_of_tests1
+                            c1_sr = c1_times_labelled / number_of_tests1
                         else:
                             c1_sr = 0
+                        c2_times_labelled = sv_stat[2]
+                        c2_times_not_labelled = sv_stat[3]
 
-                        number_of_tests2 = sv_stat[2] + sv_stat[3]
+                        number_of_tests2 = c2_times_labelled + c2_times_not_labelled
 
                         if number_of_tests2 != 0:
-                            c2_sr = sv_stat[2] / number_of_tests2
+                            c2_sr = c2_times_labelled / number_of_tests2
                         else:
                             c2_sr = 0
 
@@ -170,7 +172,7 @@ def output_2020_study_results():
                                 same_categorisation = True
 
                         # Calculate better config and p value
-                        more_typical_config = False
+
                         p_value = 1
                         if c1_sr == c2_sr:
                             better_config = "None"
@@ -205,23 +207,25 @@ def output_2020_study_results():
 
                         if p_value <= sig_level:
                             better_config += "*"
+
+                        significantly_more_typical_config = False
                         if typ_p_value <= sig_level:
                             typ_config += "*"
-                            more_typical_config = True
+                            significantly_more_typical_config = True
 
                         if p_value <= sig_level or typ_p_value <= sig_level:
-                            count_number_sign_pairs += 1
+                            count_number_significant_pairs += 1
 
                         to_write = (
                             [preposition, c1.string_for_cattyp_table(), c2.string_for_cattyp_table(), typ_string,
                              role_string, better_config, typ_config]
                         )
 
-                        writer.writerow(to_write)
+                        results_writer.writerow(to_write)
                         if disagreement:
                             disag_writer.writerow(to_write)
 
-                        if same_categorisation and more_typical_config:
+                        if same_categorisation and significantly_more_typical_config:
                             mono_write = (
                                 [preposition, c1.string_for_cattyp_table(), c2.string_for_cattyp_table(),
                                  configs_labelled,
@@ -229,7 +233,7 @@ def output_2020_study_results():
                             )
                             mono_writer.writerow(mono_write)
 
-        writer.writerow(["Number of significant pairs", str(count_number_sign_pairs)])
+        results_writer.writerow(["Number of significant pairs", str(count_number_significant_pairs)])
 
 
 if __name__ == '__main__':
