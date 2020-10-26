@@ -385,7 +385,6 @@ class SemanticAnnotation(Annotation):
     
     Attributes:
         list_format (TYPE): Description
-        preposition_list (TYPE): Description
     """
 
     list_headings = [
@@ -499,14 +498,14 @@ class TypicalityAnnotation(Annotation):
 
     @staticmethod
     def convert_string_to_config(c_string):
-        '''Creates Configuration object from given string
-        
+        """Creates Configuration object from given string
+
         Args:
             c_string (TYPE): Description
-        
+
         Returns:
             TYPE: Description
-        '''
+        """
 
         scene = c_string[:c_string.find(";")]  # scene is first thing before ;
         figure = c_string[c_string.find(";") + 1:c_string.rfind(";")]  # figure is in between ;
@@ -519,7 +518,7 @@ class TypicalityAnnotation(Annotation):
     def print_list(self):
         """Summary
         """
-        print((self.list_format))
+        print(self.list_format)
 
     def get_configurations_appearing_in_annotation(self):
         """Summary
@@ -620,7 +619,10 @@ class Data:
                 if self.task in StudyInfo.comparative_abbreviations:
                     new_annotation = ComparativeAnnotation(userdata, annotation)
 
-                out.append(new_annotation)
+                if new_annotation is None:
+                    raise ValueError('annotation unassigned to task')
+                else:
+                    out.append(new_annotation)
 
         return out
 
@@ -651,12 +653,13 @@ class Data:
 
         return out
 
-    def remove_non_natives(self, list_of_annotations):
+    @staticmethod
+    def remove_non_natives(list_of_annotations):
         """Summary
-        
+
         Args:
             list_of_annotations (TYPE): Description
-        
+
         Returns:
             TYPE: Description
         """
@@ -1125,21 +1128,8 @@ class ComparativeData(Data):
     Stores and handles data from 'comp' task.
     
     Attributes:
-        agreements_csv_name (str): Description
-        clean_csv_name (TYPE): Description
         preposition_list (TYPE): Description
-        stats_csv_name (str): Description
-        task (TYPE): Description
-    
-    Deleted Attributes:
-        raw_annotation_list (TYPE): Description
-        study_info (TYPE): Description
-        clean_data_list (TYPE): Description
-        data_list (TYPE): Description
-        native_users (TYPE): Description
-        scene_list (TYPE): Description
-        name (TYPE): Description
-        user_list (TYPE): Description
+
     """
     task = StudyInfo.comp_task
     clean_csv_name = StudyInfo.comp_annotations_name
@@ -1267,14 +1257,7 @@ class SemanticData(Data):
     """Summary
     
     Collection of category annotations.
-    
-    Attributes:
-        agreements_csv_name (str): Description
-        categorisation_stats_csv (str): Description
-        clean_csv_name (TYPE): Description
-        significant_configs_csv_name (str): Description
-        stats_csv_name (str): Description
-        task (TYPE): Description
+
     """
     task = StudyInfo.sv_task
     clean_csv_name = StudyInfo.sem_annotations_name
@@ -1464,8 +1447,7 @@ class SemanticData(Data):
         return config_pairs
 
     def output_statistically_different_pairs(self):
-        """Summary
-        """
+
         for preposition in StudyInfo.preposition_list:
             with open(
                     self.study_info.stats_folder
@@ -1527,14 +1509,8 @@ class SemanticData(Data):
 
 class ModSemanticData(SemanticData):
     """Summary
-    
-    Attributes:
-        agreements_csv_name (str): Description
-        categorisation_stats_csv (str): Description
-        clean_csv_name (TYPE): Description
-        significant_configs_csv_name (str): Description
-        stats_csv_name (str): Description
-        task (TYPE): Description
+
+    Collection of data from the 2020 categorisation task
 
     """
     task = StudyInfo.svmod_task
@@ -1780,7 +1756,7 @@ class Agreements(Data):
         # All user annotations for particular task
         # Note that if a user does the same question multiple times each instance will be included.
         self.user1_annotations = self.get_user_task_annotations(user1, task)
-        if user2 != None:
+        if user2 is not None:
             self.user2_annotations = self.get_user_task_annotations(user2, task)
         else:
             # We can test agent models instead of users
@@ -1917,7 +1893,8 @@ class Agreements(Data):
             agreements,
         )
 
-    def calculate_sem_expected_agreement(self, shared_annotations, y1, y2, n1, n2):
+    @staticmethod
+    def calculate_sem_expected_agreement(shared_annotations, y1, y2, n1, n2):
         """Calculate expected agreement for semantic task between two users.
         
         Parameters:
