@@ -270,6 +270,9 @@ class Annotation:
                 self.time,
             ]
 
+            if not isinstance(self.prepositions, list):
+                raise TypeError("annotation prepositions must be a list")
+
     def get_configurations_appearing_in_annotation(self):
         """Summary
         Returns the configurations which appear in the annotation.
