@@ -1495,7 +1495,6 @@ class MultipleRuns:
 
         self.get_file_strings()
 
-
         if self.features_to_test is not None:
             self.feature_removed_average_csv = dict()
             for feature in self.features_to_test:
@@ -1504,7 +1503,7 @@ class MultipleRuns:
 
         self.prepare_comparison_dicts()
 
-        self.folds_dict, self.our_model_feature_folds_dict = self.prepare_folds_dict()
+        self.folds_dict, self.our_model_feature_folds_dict, self.our_model_without_feature_folds_dict = self.prepare_folds_dict()
 
         # following lists help confirm all scenes get used for both training and testing
         self.scenes_used_for_testing = []
@@ -1668,7 +1667,8 @@ class MultipleRuns:
         if self.features_to_test is not None:
 
             for feature in self.features_to_test:
-                generate_models_without_feature = self.generate_models(train_scenes, test_scenes, extra_features_to_remove=[feature])
+                generate_models_without_feature = self.generate_models(train_scenes, test_scenes,
+                                                                       extra_features_to_remove=[feature])
 
                 t = TestModels(generate_models_without_feature.models, str(self.run_count))
 
@@ -1756,7 +1756,6 @@ class MultipleRuns:
 
             print(("Run Number:" + str(i + 1)))
 
-
             if self.k is not None:
                 # This handles the case where test_scenes do not produce any constraints
                 while True:
@@ -1789,13 +1788,15 @@ class MultipleRuns:
 
             other_model_p_value = dict()
 
-
-
             for other_model in self.model_name_list:
-                T, p_value = wilcoxon(self.folds_dict[self.model_generator.our_model_name], self.folds_dict[other_model], alternative='greater')
+                our_model_folds = self.folds_dict[self.model_generator.our_model_name]
+                other_model_folds = self.folds_dict[other_model]
+                if our_model_folds != other_model_folds:
+                    T, p_value = wilcoxon(our_model_folds, other_model_folds, alternative='greater')
+                else:
+                    p_value = 0
 
                 other_model_p_value[other_model] = p_value
-
 
             # Create dataframes to output
             p_value_df = pd.DataFrame(other_model_p_value, ["p_value"])
@@ -1809,10 +1810,13 @@ class MultipleRuns:
             if hasattr(self.Generate_Models_all_scenes, "cluster_model_name"):
 
                 for other_model in self.model_name_list:
+                    cluster_model_folds = self.folds_dict[self.Generate_Models_all_scenes.cluster_model_name]
+                    other_model_folds = self.folds_dict[other_model]
                     if other_model != self.Generate_Models_all_scenes.cluster_model_name:
-                        T, p_value = wilcoxon(self.folds_dict[self.Generate_Models_all_scenes.cluster_model_name],
-                                              self.folds_dict[other_model], alternative='greater')
-
+                        if cluster_model_folds != other_model_folds:
+                            T, p_value = wilcoxon(cluster_model_folds, other_model_folds, alternative='greater')
+                        else:
+                            p_value = 0
                         kmeans_other_model_p_value[other_model] = p_value
             # Create dataframes to output
             km_p_value_df = pd.DataFrame(kmeans_other_model_p_value, ["p_value"])
@@ -1828,9 +1832,14 @@ class MultipleRuns:
             without_feature_better = dict()
             for feature in self.features_to_test:
                 for p in self.test_prepositions + ["Average", "Overall"]:
-                    T, p_value = wilcoxon(self.our_model_feature_folds_dict[feature][p],
-                                          self.our_model_without_feature_folds_dict[feature][p], alternative='greater')
+                    with_feature_folds = self.our_model_feature_folds_dict[feature][p]
+                    without_feature_folds = self.our_model_without_feature_folds_dict[feature][p]
 
+                    if with_feature_folds != without_feature_folds:
+
+                        T, p_value = wilcoxon(with_feature_folds, without_feature_folds, alternative='greater')
+                    else:
+                        p_value = 0
                     feature_p_value[feature + ":" + p] = p_value
                     with_feature_better[feature + ":" + p] = self.count_with_feature_better[feature][p]
                     without_feature_better[feature + ":" + p] = self.count_without_feature_better[feature][p]
@@ -1868,6 +1877,7 @@ class MultipleRuns:
         if self.compare is not None:
             # Output to csv
             self.comparison_df.to_csv(self.comparison_csv)
+            self.km_comparison_df.to_csv(self.km_comparison_csv)
 
         if self.features_to_test is not None:
 
@@ -2127,7 +2137,7 @@ def main(study_info_):
     # plot_feature_regression(study_info_)
     # plot_feature_spaces(study_info_)
     # output_regression_scores(study_info_)
-    plot_preposition_graphs(study_info_)
+    # plot_preposition_graphs(study_info_)
     # # Edit plot settings
     # mpl.rcParams['font.size'] = 40
     # mpl.rcParams['legend.fontsize'] = 37
@@ -2136,8 +2146,8 @@ def main(study_info_):
     # mpl.rcParams['ytick.labelsize'] = 'small'
     # 
     # initial_test(study_info_)
-    # test_models(study_info_)
-    # test_features(study_info_)
+    test_models(study_info_)
+    test_features(study_info_)
 
 
 if __name__ == '__main__':
