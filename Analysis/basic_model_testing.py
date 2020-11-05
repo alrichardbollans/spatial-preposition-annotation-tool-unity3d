@@ -19,6 +19,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 # Modules for testing and model making
+from scipy.stats import wilcoxon
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression, Ridge
@@ -48,7 +49,7 @@ def rename_feature(feature):
 
 
 def convert_index(i, number_of_columns):
-    """Converts index to place in row/columns for plots
+    """Converts index to place in row/columns for plotting subplots
     
     Args:
         i (int): Description
@@ -1306,7 +1307,8 @@ class GenerateBasicModels:
     our_model_name = PrototypeModel.name
 
     # Generating models to test
-    def __init__(self, train_scenes, test_scenes, study_info_, extra_features_to_remove=None, only_test_our_model=None):
+    def __init__(self, train_scenes, test_scenes, study_info_, extra_features_to_remove=None, only_test_our_model=None,
+                 test_prepositions=preposition_list):
         """Summary
         
 
@@ -1328,7 +1330,7 @@ class GenerateBasicModels:
         preposition_models_dict = dict()
 
         # Get parameters for each preposition
-        for p in preposition_list:
+        for p in test_prepositions:
             M = GeneratePrepositionModelParameters(self.study_info, p, self.train_scenes,
                                                    features_to_remove=self.features_to_remove)
             M.work_out_models()
@@ -1344,8 +1346,6 @@ class GenerateBasicModels:
             proximity_model = ProximityModel(self.test_scenes, self.study_info)
             simple_model = SimpleModel(self.test_scenes, self.study_info)
             best_guess_model = BestGuessModel(self.test_scenes, self.study_info)
-
-
 
             models = [our_model, exemplar_model, cs_model, proximity_model, simple_model, best_guess_model]
 
@@ -1446,17 +1446,16 @@ class MultipleRuns:
     """
 
     # This class carries out multiple runs of model tests and outputs the results
-    # Number of runs must be specified as well as either test_size for standard repeated sampling
-    # or k for repeated k-fold sampling
+    # Number of runs must be specified as well as k for repeated k-fold sampling
     def __init__(self, model_generator, study_info_, test_prepositions=preposition_list, number_runs=None,
-                 test_size=None, k=None, compare=None, features_to_test=None):
+                 k=None, compare=None, features_to_test=None):
         """Summary
         
         Args:
             model_generator (TYPE): Description
             study_info_ (TYPE): Description
             number_runs (None, optional): Description
-            test_size (None, optional): Description
+
             k (None, optional): Description
             compare (None, optional): Description
             features_to_test (None, optional): Description
@@ -1468,7 +1467,6 @@ class MultipleRuns:
         self.model_generator = model_generator
 
         self.number_runs = number_runs
-        self.test_size = test_size
         self.k = k
         if self.k == 1:
             raise Exception("k must be greater than 1")
@@ -1477,12 +1475,14 @@ class MultipleRuns:
 
         self.run_count = 0
         # Dictionary of dataframes giving scores. Indexed by removed features.
-        # When no features being removed for tesing purposes, index is "all_features"
+        # When no features being removed for testing purposes, index is "all_features"
         self.dataframe_dict = dict()
 
         self.scene_list = self.study_info.scene_name_list
-        self.Generate_Models_all_scenes = self.generate_models(self.scene_list, self.scene_list)
 
+        self.Generate_Models_all_scenes = self.generate_models(self.scene_list, self.scene_list)
+        ## Model names being tested. Gets from GenerateModels instance as models being tested depends on instance.
+        self.model_name_list = self.Generate_Models_all_scenes.model_name_list
         self.constraint_dict = self.Generate_Models_all_scenes.models[0].constraint_dict
 
         if self.features_to_test is None:
@@ -1495,9 +1495,6 @@ class MultipleRuns:
 
         self.get_file_strings()
 
-        if self.test_size is not None:
-            self.file_tag = "rss" + str(self.test_size)
-            self.average_plot_title = "Scores Using RRSS Validation"
 
         if self.features_to_test is not None:
             self.feature_removed_average_csv = dict()
@@ -1507,13 +1504,8 @@ class MultipleRuns:
 
         self.prepare_comparison_dicts()
 
-        if self.features_to_test is not None:
-            for feature in self.features_to_test:
-                self.count_without_feature_better[feature] = dict()
-                self.count_with_feature_better[feature] = dict()
-                for p in self.test_prepositions + ["Average", "Overall"]:
-                    self.count_without_feature_better[feature][p] = 0
-                    self.count_with_feature_better[feature][p] = 0
+        self.folds_dict, self.our_model_feature_folds_dict = self.prepare_folds_dict()
+
         # following lists help confirm all scenes get used for both training and testing
         self.scenes_used_for_testing = []
         self.scenes_used_for_training = []
@@ -1537,6 +1529,9 @@ class MultipleRuns:
             self.comparison_csv = self.scores_tables_folder + "/repeatedcomparisons " + self.file_tag + ".csv"
             self.km_comparison_csv = self.scores_tables_folder + "/km_repeatedcomparisons " + self.file_tag + ".csv"
 
+            # Df of results from each fold
+            self.folds_csv = self.scores_tables_folder + "/folds " + self.file_tag + ".csv"
+
     def prepare_comparison_dicts(self):
         """Summary
         """
@@ -1552,15 +1547,39 @@ class MultipleRuns:
         self.count_with_feature_better = dict()
 
         # Prepare dicts
-        for other_model in self.Generate_Models_all_scenes.model_name_list:
+        for other_model in self.model_name_list:
             self.count_our_model_wins[other_model] = 0
             self.count_other_model_wins[other_model] = 0
         # To compare kmeans cluster model
         if hasattr(self.Generate_Models_all_scenes, "cluster_model_name"):
-            for other_model in self.Generate_Models_all_scenes.model_name_list:
+            for other_model in self.model_name_list:
                 if other_model != self.Generate_Models_all_scenes.cluster_model_name:
                     self.count_cluster_model_wins[other_model] = 0
                     self.count_other_model_beats_cluster[other_model] = 0
+
+        if self.features_to_test is not None:
+            for feature in self.features_to_test:
+                self.count_without_feature_better[feature] = dict()
+                self.count_with_feature_better[feature] = dict()
+                for p in self.test_prepositions + ["Average", "Overall"]:
+                    self.count_without_feature_better[feature][p] = 0
+                    self.count_with_feature_better[feature][p] = 0
+
+    def prepare_folds_dict(self):
+        """Generate dictionary to store scores for each fold"""
+        folds_dict = dict()
+        for model_name in self.model_name_list:
+            folds_dict[model_name] = []
+        our_model_feature_folds_dict = dict()
+        our_model_without_feature_folds_dict = dict()
+        if self.features_to_test is not None:
+            for feature in self.features_to_test:
+                our_model_feature_folds_dict[feature] = dict()
+                our_model_without_feature_folds_dict[feature] = dict()
+                for p in self.test_prepositions + ["Average", "Overall"]:
+                    our_model_feature_folds_dict[feature][p] = []
+                    our_model_without_feature_folds_dict[feature][p] = []
+        return folds_dict, our_model_feature_folds_dict, our_model_without_feature_folds_dict
 
     def generate_models(self, train_scenes, test_scenes, extra_features_to_remove=None):
         """Summary
@@ -1615,14 +1634,17 @@ class MultipleRuns:
             self.dataframe_dict["all_features"] = dataset
 
         # Get our score from dataframe
-        our_score = dataset.at["Overall", generate_models.our_model_name]
+        our_score = dataset.at["Overall", self.model_generator.our_model_name]
 
         # Compare Models
         if self.compare is not None:
-            for other_model in generate_models.model_name_list:
+            for other_model in self.model_name_list:
 
                 # Get score
                 other_score = dataset.at["Overall", other_model]
+
+                self.folds_dict[other_model].append(other_score)
+
                 # Update counts
                 if our_score > other_score:
                     self.count_our_model_wins[other_model] += 1
@@ -1631,7 +1653,7 @@ class MultipleRuns:
                     self.count_other_model_wins[other_model] += 1
             if hasattr(generate_models, "cluster_model_name"):
                 k_means_score = dataset.at["Overall", generate_models.cluster_model_name]
-                for other_model in generate_models.model_name_list:
+                for other_model in self.model_name_list:
                     if other_model != self.Generate_Models_all_scenes.cluster_model_name:
                         # Get score
                         other_score = dataset.at["Overall", other_model]
@@ -1646,21 +1668,24 @@ class MultipleRuns:
         if self.features_to_test is not None:
 
             for feature in self.features_to_test:
-                generate_models = self.generate_models(train_scenes, test_scenes, extra_features_to_remove=[feature])
+                generate_models_without_feature = self.generate_models(train_scenes, test_scenes, extra_features_to_remove=[feature])
 
-                t = TestModels(generate_models.models, str(self.run_count))
+                t = TestModels(generate_models_without_feature.models, str(self.run_count))
 
                 feature_dataset = t.score_dataframe
                 # feature_dataset = feature_dataset.drop(["Total Constraint Weights"],axis=1)
 
                 for p in self.test_prepositions + ["Average", "Overall"]:
-                    without_feature_score = feature_dataset.at[p, generate_models.our_model_name]
-                    with_feature_score = dataset.at[p, generate_models.our_model_name]
+                    without_feature_score = feature_dataset.at[p, self.model_generator.our_model_name]
+                    with_feature_score = dataset.at[p, self.model_generator.our_model_name]
 
                     if without_feature_score > with_feature_score:
                         self.count_without_feature_better[feature][p] += 1
                     if with_feature_score > without_feature_score:
                         self.count_with_feature_better[feature][p] += 1
+
+                    self.our_model_feature_folds_dict[feature][p].append(with_feature_score)
+                    self.our_model_without_feature_folds_dict[feature][p].append(without_feature_score)
 
                 # Add to totals
                 if feature in self.dataframe_dict:
@@ -1676,18 +1701,7 @@ class MultipleRuns:
             TYPE: Description
         """
         # Get train-test scenes
-        if self.test_size is not None:
-            train_scenes, test_scenes = train_test_split(self.scene_list, test_size=self.test_size)
 
-            # Update scene lists
-            for sc in train_scenes:
-                if sc not in self.scenes_used_for_training:
-                    self.scenes_used_for_training.append(sc)
-
-            for sc in test_scenes:
-                if sc not in self.scenes_used_for_testing:
-                    self.scenes_used_for_testing.append(sc)
-            return [train_scenes, test_scenes]
         if self.k is not None:
             # Create random folds for testing
             folds = []
@@ -1742,11 +1756,7 @@ class MultipleRuns:
 
             print(("Run Number:" + str(i + 1)))
 
-            if self.test_size is not None:
-                split = self.get_validation_scene_split()
-                train_scenes = split[0]
-                test_scenes = split[1]
-                self.single_validation_test(train_scenes, test_scenes)
+
             if self.k is not None:
                 # This handles the case where test_scenes do not produce any constraints
                 while True:
@@ -1773,10 +1783,19 @@ class MultipleRuns:
             self.total_number_runs = self.number_runs
         # Output comparison of models and p-value
         if self.compare is not None:
+            # Output folds
+            folds_df = pd.DataFrame(self.folds_dict)
+            folds_df.to_csv(self.folds_csv)
+
             other_model_p_value = dict()
-            for other_model in self.Generate_Models_all_scenes.model_name_list:
-                p_value = calculate_p_value(self.total_number_runs, self.count_our_model_wins[other_model])
+
+
+
+            for other_model in self.model_name_list:
+                T, p_value = wilcoxon(self.folds_dict[self.model_generator.our_model_name], self.folds_dict[other_model], alternative='greater')
+
                 other_model_p_value[other_model] = p_value
+
 
             # Create dataframes to output
             p_value_df = pd.DataFrame(other_model_p_value, ["p_value"])
@@ -1789,9 +1808,11 @@ class MultipleRuns:
             kmeans_other_model_p_value = dict()
             if hasattr(self.Generate_Models_all_scenes, "cluster_model_name"):
 
-                for other_model in self.Generate_Models_all_scenes.model_name_list:
+                for other_model in self.model_name_list:
                     if other_model != self.Generate_Models_all_scenes.cluster_model_name:
-                        p_value = calculate_p_value(self.total_number_runs, self.count_cluster_model_wins[other_model])
+                        T, p_value = wilcoxon(self.folds_dict[self.Generate_Models_all_scenes.cluster_model_name],
+                                              self.folds_dict[other_model], alternative='greater')
+
                         kmeans_other_model_p_value[other_model] = p_value
             # Create dataframes to output
             km_p_value_df = pd.DataFrame(kmeans_other_model_p_value, ["p_value"])
@@ -1807,7 +1828,9 @@ class MultipleRuns:
             without_feature_better = dict()
             for feature in self.features_to_test:
                 for p in self.test_prepositions + ["Average", "Overall"]:
-                    p_value = calculate_p_value(self.total_number_runs, self.count_with_feature_better[feature][p])
+                    T, p_value = wilcoxon(self.our_model_feature_folds_dict[feature][p],
+                                          self.our_model_without_feature_folds_dict[feature][p], alternative='greater')
+
                     feature_p_value[feature + ":" + p] = p_value
                     with_feature_better[feature + ":" + p] = self.count_with_feature_better[feature][p]
                     without_feature_better[feature + ":" + p] = self.count_without_feature_better[feature][p]
@@ -1823,12 +1846,6 @@ class MultipleRuns:
         # Print some info
         print(("Total Runs:" + str(self.total_number_runs)))
 
-        if self.test_size is not None:
-            print("# Scenes used for testing")
-            print((len(self.scenes_used_for_testing)))
-            print("# Scenes used for training")
-            print((len(self.scenes_used_for_training)))
-
         # Finalise by averaging scores in dataframe
         for key in self.dataframe_dict:
             self.dataframe_dict[key] = self.dataframe_dict[key].div(self.total_number_runs)
@@ -1840,7 +1857,7 @@ class MultipleRuns:
         self.average_dataframe = self.dataframe_dict["all_features"]
         # Reorder columns for output
         if self.features_to_test == None:
-            new_column_order = self.Generate_Models_all_scenes.model_name_list
+            new_column_order = self.model_name_list
             reordered_df = self.average_dataframe[new_column_order]
             reordered_df.to_csv(self.average_csv)
         else:
@@ -1865,8 +1882,8 @@ class MultipleRuns:
 
             for feature in self.features_to_test:
                 print((self.dataframe_dict[feature]))
-                out[feature] = self.dataframe_dict[feature][self.Generate_Models_all_scenes.our_model_name]
-            out["None removed"] = self.average_dataframe[self.Generate_Models_all_scenes.our_model_name]
+                out[feature] = self.dataframe_dict[feature][self.model_generator.our_model_name]
+            out["None removed"] = self.average_dataframe[self.model_generator.our_model_name]
             df = pd.DataFrame(out, self.test_prepositions + ["Average", "Overall"])
             self.functional_feature_analysis_df = df
             df.to_csv(self.scores_tables_folder + "/functional_feature_analysis.csv")
@@ -1899,7 +1916,7 @@ class MultipleRuns:
             plot_title (TYPE): Description
         """
         if self.features_to_test == None:
-            new_column_order = self.Generate_Models_all_scenes.model_name_list
+            new_column_order = self.model_name_list
             reordered_df = dataset[new_column_order]
         else:
             reordered_df = dataset
@@ -1936,7 +1953,20 @@ class MultipleRuns:
         self.plot_dataframe_bar_chart(dataset, file_to_save, x_label, y_label, plot_title)
 
 
+def get_standard_preposition_parameters():
+    model_study_info = StudyInfo("2019 study")
+    scene_list = model_study_info.scene_name_list
+    preposition_models_dict = dict()
 
+    features_to_remove = Configuration.ground_property_features.copy()
+    # Get parameters for each preposition
+    for p in preposition_list:
+        M = GeneratePrepositionModelParameters(model_study_info, p, scene_list,
+                                               features_to_remove=features_to_remove)
+        M.work_out_models()
+        preposition_models_dict[p] = M
+
+    return preposition_models_dict
 
 
 def plot_preposition_graphs(study_info):
