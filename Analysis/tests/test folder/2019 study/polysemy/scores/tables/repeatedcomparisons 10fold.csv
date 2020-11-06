@@ -1,0 +1,4 @@
+,Shared Prototype,Baseline Model,KMeans Model
+p_value,2.346206306321115e-06,0.003318560257963062,0.24205920680364568
+Our model wins,73.0,64.0,54.0
+Other model wins,14.0,26.0,33.0

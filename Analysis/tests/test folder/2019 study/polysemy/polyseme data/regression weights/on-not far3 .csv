@@ -1,0 +1,14 @@
+,0
+ground_lightsource,0.0
+ground_container,0.0
+support,0.05610672727160202
+ground_verticality,0.0
+shortest_distance,0.00045709187009029557
+contact_proportion,0.058770552498469256
+above_proportion,0.02817167382866329
+below_proportion,0.0250949674496704
+bbox_overlap_proportion,0.00589776947852548
+horizontal_distance,0.00023794557372328138
+f_covers_g,0.002186371334297808
+g_covers_f,0.0011474764487203954
+location_control,0.03900970570231291

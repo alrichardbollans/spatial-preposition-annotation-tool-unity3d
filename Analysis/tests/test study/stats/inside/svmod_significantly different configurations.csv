@@ -1,0 +1,606 @@
+Scene1,Figure1,Ground1,Scene2,Figure2,Ground2,p_value_one_tail
+compsvi13,pencil (1),mug,compsvo12,book (1),table,0.047619047619047575
+compsvi13,pencil (1),mug,compsvo12,book,table,0.047619047619047575
+compsvi13,pencil (1),mug,compsvo29,box,table,0.007575757575757565
+compsvi13,pencil (1),mug,compsvo29,book,table,0.007575757575757565
+compsvi13,pencil (1),mug,compsvo23v,jar,board,0.007575757575757565
+compsvi13,pencil (1),mug,compsvo23v,clock,board,0.007575757575757565
+compsvi13,pencil (1),mug,compsvo14a,box,table,0.023809523809523798
+compsvi13,pencil (1),mug,compsvo14a,book,table,0.023809523809523798
+compsvi13,pencil (1),mug,compsvu15,book,balloon,0.012987012987012983
+compsvi13,pencil (1),mug,compsvu15,table,balloon,0.012987012987012983
+compsvi13,pencil (1),mug,compsvo16a,book,table,0.012987012987012983
+compsvi13,pencil (1),mug,compsvo16a,balloon,table,0.012987012987012983
+compsvi13,pencil (1),mug,compsvo13v,jar,board,0.0046620046620046585
+compsvi13,pencil (1),mug,compsvo13v,book,board,0.0046620046620046585
+compsvi13,pencil (1),mug,compsvu67a,box,balloon,0.012987012987012983
+compsvi13,pencil (1),mug,compsvu67a,table,balloon,0.012987012987012983
+compsvi13,pencil (1),mug,compsvi46,ball,bowl,0.0046620046620046585
+compsvi13,pencil (1),mug,compsvi46,pencil,bowl,0.0046620046620046585
+compsvi13,pencil (1),mug,compsvi26a,pencil,lamp,0.0009696186166774389
+compsvi13,pencil (1),mug,compsvi26a,bowl,lamp,0.0009696186166774389
+compsvi13,pencil (1),mug,compsvul,pencil,lamp,0.007575757575757565
+compsvi13,pencil (1),mug,compsvul,bowl,lamp,0.007575757575757565
+compsvi13,pencil (1),mug,compsvi24,cube,cup,0.047619047619047575
+compsvi13,pencil (1),mug,compsvi24,pencil,cup,0.047619047619047575
+compsvi13,pencil (1),mug,compsvo16,book,table,0.047619047619047575
+compsvi13,pencil (1),mug,compsvo16,balloon,table,0.047619047619047575
+compsvi13,pencil (1),mug,compsva34,balloon,bin,0.012987012987012983
+compsvi13,pencil (1),mug,compsva34,table,bin,0.007575757575757565
+compsvi13,pencil (1),mug,compsvo79,box,table,0.0046620046620046585
+compsvi13,pencil (1),mug,compsvo79,box (1),table,0.0046620046620046585
+compsvi13,pencil (1),mug,compsvo19,box,table,0.023809523809523798
+compsvi13,pencil (1),mug,compsvo19,book,table,0.023809523809523798
+compsvi13,pencil (1),mug,compsvu56,box,balloon,0.012987012987012983
+compsvi13,pencil (1),mug,compsvu56,table,balloon,0.012987012987012983
+compsvi13,pencil (1),mug,compsvi14,pencil,bowl,0.0029970029970029957
+compsvi13,pencil (1),mug,compsvi15,pencil,box,0.007575757575757565
+compsvi13,pencil (1),mug,compsvu53,box,book,0.0046620046620046585
+compsvi13,pencil (1),mug,compsvu53,table,book,0.0046620046620046585
+compsvi13,pencil (1),mug,compsvu23,box,book,0.047619047619047575
+compsvi13,pencil (1),mug,compsvu23,pear,book,0.047619047619047575
+compsvi13,pencil (1),mug,compsvo67,box,table,0.023809523809523798
+compsvi13,pencil (1),mug,compsvo67,balloon,table,0.023809523809523798
+compsvi13,pencil (1),mug,compsva25,picture,bin,0.047619047619047575
+compsvi13,pencil (1),mug,compsvu34,picture,book (1),0.047619047619047575
+compsvi13,pencil (1),mug,compsva23,box,book,0.047619047619047575
+compsvi13,pencil (1),mug,compsvo24v,jar,board,0.023809523809523798
+compsvi13,pencil (1),mug,compsvo24v,clock,board,0.023809523809523798
+compsvi13,pencil (1),mug,compsvu25,book (1),book,0.047619047619047575
+compsvi13,pencil (1),mug,compsva25,table,bin,0.047619047619047575
+compsvi13,pencil (1),mug,compsvu25,cube,book,0.047619047619047575
+compsvi13,pencil (1),mug,compsvu25,table,book,0.047619047619047575
+compsvi13,pencil (1),mug,compsva12,box,book,0.007575757575757565
+compsvi13,pencil (1),mug,compsva12,pear,book,0.007575757575757565
+compsvi13,pencil (1),mug,compsvi16,pear,bowl,0.047619047619047575
+compsvi13,pencil (1),mug,compsvu16,book,balloon,0.047619047619047575
+compsvi13,pencil (1),mug,compsvu34,table,book (1),0.047619047619047575
+compsvi13,pencil (1),mug,compsvu16,table,balloon,0.047619047619047575
+compsvi13,pencil (1),mug,compsva24,picture,bin,0.047619047619047575
+compsvi13,pencil (1),mug,compsva24,table,bin,0.047619047619047575
+compsvi13,pencil (1),mug,compsvo17,box,table,0.047619047619047575
+compsvi13,pencil (1),mug,compsvi36,pencil,mug,0.047619047619047575
+compsvi13,pencil (1),mug,compsvo17,book,table,0.047619047619047575
+compsvi13,pencil (1),mug,compsvo24,pear,table,0.012987012987012983
+compsvi13,pencil (1),mug,compsvi36,pear,mug,0.047619047619047575
+compsvi13,pencil (1),mug,compsvo24,book,table,0.012987012987012983
+compsvi13,pencil (1),mug,compsva15,balloon,book,0.0019980019980019984
+compsvi13,pencil (1),mug,compsva15,pear,book,0.0019980019980019984
+compsvi13,pencil (1),mug,compsvi25,pencil,box,0.047619047619047575
+compsvi13,pencil (1),mug,compsvi25,pencil (1),box,0.047619047619047575
+compsvi13,pencil (1),mug,compsvo69a,box,table,0.047619047619047575
+compsvi13,pencil (1),mug,compsvo69a,balloon,table,0.047619047619047575
+compsvi13,pencil (1),mug,compsvi12,pencil,table,0.012987012987012983
+compsvi13,pencil (1),mug,compsvu63,box,book,0.012987012987012983
+compsvi13,pencil (1),mug,compsvi12,cube,table,0.012987012987012983
+compsvi13,pencil (1),mug,compsvu63,table,book,0.012987012987012983
+compsvi13,pencil (1),mug,compsvi12,cup,table,0.023809523809523798
+compsvi13,pencil (1),mug,compsvi26,cube,cup,0.007575757575757565
+compsvi13,pencil (1),mug,compsvi26,pencil,cup,0.007575757575757565
+compsvi13,pencil (1),mug,compsvi12,cube,cup,0.012987012987012983
+compsvi13,pencil (1),mug,compsvo14v,jar,board,0.023809523809523798
+compsvi13,pencil (1),mug,compsvo18,box,table,0.007575757575757565
+compsvi13,pencil (1),mug,compsvo18,book,table,0.007575757575757565
+compsvi13,pencil (1),mug,compsvo78,box,table,0.012987012987012983
+compsvi13,pencil (1),mug,compsvo14v,book,board,0.023809523809523798
+compsvi13,pencil (1),mug,compsvi3,pencil,mug,0.023809523809523798
+compsvi13,pencil (1),mug,compsvi3,pear,mug,0.023809523809523798
+compsvi13,pencil (1),mug,compsvu67,box,balloon,0.023809523809523798
+compsvi13,pencil (1),mug,compsvu67,table,balloon,0.023809523809523798
+compsvi13,pencil (1),mug,compsvu25a,box,balloon,0.007575757575757565
+compsvi13,pencil (1),mug,compsvu25a,table,balloon,0.007575757575757565
+compsvi13,pencil (1),mug,compsvi24a,cube,cup,0.047619047619047575
+compsvi13,pencil (1),mug,compsvo12v,book,board,0.023809523809523798
+compsvi13,pencil (1),mug,compsvo12v,clock,board,0.023809523809523798
+compsvi13,pencil (1),mug,compsvi34,pencil (1),mug,0.047619047619047575
+compsvi13,pencil (1),mug,compsvi34,pencil,mug,0.047619047619047575
+compsvi13,pencil (1),mug,compsva14,book,box,0.047619047619047575
+compsvi13,pencil (1),mug,compsva14,table,box,0.047619047619047575
+compsvi13,pencil (1),mug,compsvi45,cup,mug,0.047619047619047575
+compsvi13,pencil (1),mug,compsvu17,box,table,0.023809523809523798
+compsvi13,pencil (1),mug,compsvu17,box (1),table,0.023809523809523798
+compsvi13,pencil (1),mug,compsvula,pencil,lamp,0.023809523809523798
+compsvi13,pencil (1),mug,compsvula,bowl,lamp,0.023809523809523798
+compsvi13,pencil (1),mug,compsvo89,box,table,0.047619047619047575
+compsvi13,pencil (1),mug,compsvo89,box (1),table,0.047619047619047575
+compsvi13,pencil (1),mug,compsva13,pear,book,0.023809523809523798
+compsvi13,pencil (1),mug,compsva13,balloon,book,0.023809523809523798
+compsvi13,pencil (1),mug,compsvo68,box,table,0.012987012987012983
+compsvi13,pencil (1),mug,compsvo68,balloon,table,0.012987012987012983
+compsvi13,pencil (1),mug,compsvo34v,jar,board,0.023809523809523798
+compsvi13,pencil (1),mug,compsvo34v,book,board,0.023809523809523798
+compsvi13,pencil (1),mug,compsvo28,box,table,0.023809523809523798
+compsvi13,pencil (1),mug,compsvo28,book,table,0.023809523809523798
+compsvi13,pencil (1),mug,compsvo26,balloon,table,0.012987012987012983
+compsvi13,pencil (1),mug,compsvo26,book,table,0.012987012987012983
+compsvi13,pencil (1),mug,compsvo27,box,table,0.012987012987012983
+compsvi13,pencil (1),mug,compsvo27,book,table,0.012987012987012983
+compsvi13,pencil (1),mug,compsvo14,book (1),table,0.012987012987012983
+compsvi13,pencil (1),mug,compsvo14,book,table,0.012987012987012983
+compsvi13,pencil (1),mug,compsvi23,box (1),table,0.047619047619047575
+compsvi13,pencil (1),mug,compsvinew2,box,shelf,0.012987012987012983
+compsvi13,pencil (1),mug,compsvo68a,box,table,0.047619047619047575
+compsvi13,pencil (1),mug,compsvo68a,balloon,table,0.047619047619047575
+compsvi13,pencil (1),mug,compsvinew1,cube,plate,0.047619047619047575
+compsvi13,pencil (1),mug,compsvinew1,pencil,plate,0.047619047619047575
+compsvi14,ball,bowl,compsvo29,box,table,0.027972027972027972
+compsvi14,ball,bowl,compsvo29,book,table,0.027972027972027972
+compsvi14,ball,bowl,compsvo23v,jar,board,0.027972027972027972
+compsvi14,ball,bowl,compsvo23v,clock,board,0.027972027972027972
+compsvi14,ball,bowl,compsvu15,book,balloon,0.04351204351204352
+compsvi14,ball,bowl,compsvu15,table,balloon,0.04351204351204352
+compsvi14,ball,bowl,compsvo16a,book,table,0.04351204351204352
+compsvi14,ball,bowl,compsvo16a,balloon,table,0.04351204351204352
+compsvi14,ball,bowl,compsvo13v,jar,board,0.018648018648018662
+compsvi14,ball,bowl,compsvo13v,book,board,0.018648018648018662
+compsvi14,ball,bowl,compsvu67a,box,balloon,0.04351204351204352
+compsvi14,ball,bowl,compsvu67a,table,balloon,0.04351204351204352
+compsvi14,ball,bowl,compsvi46,ball,bowl,0.018648018648018662
+compsvi14,ball,bowl,compsvi46,pencil,bowl,0.018648018648018662
+compsvi14,ball,bowl,compsvi26a,pencil,lamp,0.004815961472308216
+compsvi14,ball,bowl,compsvi26a,bowl,lamp,0.004815961472308216
+compsvi14,ball,bowl,compsvul,pencil,lamp,0.027972027972027972
+compsvi14,ball,bowl,compsvul,bowl,lamp,0.027972027972027972
+compsvi14,ball,bowl,compsva34,balloon,bin,0.04351204351204352
+compsvi14,ball,bowl,compsva34,table,bin,0.027972027972027972
+compsvi14,ball,bowl,compsvo79,box,table,0.018648018648018662
+compsvi14,ball,bowl,compsvo79,box (1),table,0.018648018648018662
+compsvi14,ball,bowl,compsvu56,box,balloon,0.04351204351204352
+compsvi14,ball,bowl,compsvu56,table,balloon,0.04351204351204352
+compsvi14,ball,bowl,compsvi14,pencil,bowl,0.012820512820512822
+compsvi14,ball,bowl,compsvi15,pencil,box,0.027972027972027972
+compsvi14,ball,bowl,compsvu53,box,book,0.018648018648018662
+compsvi14,ball,bowl,compsvu53,table,book,0.018648018648018662
+compsvi14,ball,bowl,compsva12,box,book,0.027972027972027972
+compsvi14,ball,bowl,compsva12,pear,book,0.027972027972027972
+compsvi14,ball,bowl,compsvo24,pear,table,0.04351204351204352
+compsvi14,ball,bowl,compsvo24,book,table,0.04351204351204352
+compsvi14,ball,bowl,compsva15,balloon,book,0.00904977375565612
+compsvi14,ball,bowl,compsva15,pear,book,0.00904977375565612
+compsvi14,ball,bowl,compsvi12,pencil,table,0.04351204351204352
+compsvi14,ball,bowl,compsvu63,box,book,0.04351204351204352
+compsvi14,ball,bowl,compsvi12,cube,table,0.04351204351204352
+compsvi14,ball,bowl,compsvu63,table,book,0.04351204351204352
+compsvi14,ball,bowl,compsvi26,cube,cup,0.027972027972027972
+compsvi14,ball,bowl,compsvi26,pencil,cup,0.027972027972027972
+compsvi14,ball,bowl,compsvi12,cube,cup,0.04351204351204352
+compsvi14,ball,bowl,compsvo18,box,table,0.027972027972027972
+compsvi14,ball,bowl,compsvo18,book,table,0.027972027972027972
+compsvi14,ball,bowl,compsvo78,box,table,0.04351204351204352
+compsvi14,ball,bowl,compsvu25a,box,balloon,0.027972027972027972
+compsvi14,ball,bowl,compsvu25a,table,balloon,0.027972027972027972
+compsvi14,ball,bowl,compsvo68,box,table,0.04351204351204352
+compsvi14,ball,bowl,compsvo68,balloon,table,0.04351204351204352
+compsvi14,ball,bowl,compsvo26,balloon,table,0.04351204351204352
+compsvi14,ball,bowl,compsvo26,book,table,0.04351204351204352
+compsvi14,ball,bowl,compsvo27,box,table,0.04351204351204352
+compsvi14,ball,bowl,compsvo27,book,table,0.04351204351204352
+compsvi14,ball,bowl,compsvo14,book (1),table,0.04351204351204352
+compsvi14,ball,bowl,compsvo14,book,table,0.04351204351204352
+compsvi14,ball,bowl,compsvinew2,box,shelf,0.04351204351204352
+compsvi15,pear,box,compsvo12,book (1),table,0.011904761904761908
+compsvi15,pear,box,compsvo12,book,table,0.011904761904761908
+compsvi15,pear,box,compsvo29,box,table,0.0010822510822510825
+compsvi15,pear,box,compsvo29,book,table,0.0010822510822510825
+compsvi15,pear,box,compsvo23v,jar,board,0.0010822510822510825
+compsvi15,pear,box,compsvo23v,clock,board,0.0010822510822510825
+compsvi15,pear,box,compsvi13,pencil,mug,0.015151515151515157
+compsvi15,pear,box,compsvo14a,box,table,0.004761904761904763
+compsvi15,pear,box,compsvo14a,book,table,0.004761904761904763
+compsvi15,pear,box,compsvu15,book,balloon,0.002164502164502165
+compsvi15,pear,box,compsvu15,table,balloon,0.002164502164502165
+compsvi15,pear,box,compsvo16a,book,table,0.002164502164502165
+compsvi15,pear,box,compsvo16a,balloon,table,0.002164502164502165
+compsvi15,pear,box,compsvo13v,jar,board,0.0005827505827505832
+compsvi15,pear,box,compsvo13v,book,board,0.0005827505827505832
+compsvi15,pear,box,compsvu67a,box,balloon,0.002164502164502165
+compsvi15,pear,box,compsvu67a,table,balloon,0.002164502164502165
+compsvi15,pear,box,compsvi46,ball,bowl,0.0005827505827505832
+compsvi15,pear,box,compsvi46,pencil,bowl,0.0005827505827505832
+compsvi15,pear,box,compsvi26a,pencil,lamp,8.080155138978675e-05
+compsvi15,pear,box,compsvi26a,bowl,lamp,8.080155138978675e-05
+compsvi15,pear,box,compsvul,pencil,lamp,0.0010822510822510825
+compsvi15,pear,box,compsvul,bowl,lamp,0.0010822510822510825
+compsvi15,pear,box,compsvi24,cube,cup,0.011904761904761908
+compsvi15,pear,box,compsvi24,pencil,cup,0.011904761904761908
+compsvi15,pear,box,compsvo16,book,table,0.011904761904761908
+compsvi15,pear,box,compsvo16,balloon,table,0.011904761904761908
+compsvi15,pear,box,compsva34,balloon,bin,0.002164502164502165
+compsvi15,pear,box,compsva34,table,bin,0.0010822510822510825
+compsvi15,pear,box,compsvo79,box,table,0.0005827505827505832
+compsvi15,pear,box,compsvo79,box (1),table,0.0005827505827505832
+compsvi15,pear,box,compsvo19,box,table,0.004761904761904763
+compsvi15,pear,box,compsvo19,book,table,0.004761904761904763
+compsvi15,pear,box,compsvu56,box,balloon,0.002164502164502165
+compsvi15,pear,box,compsvu56,table,balloon,0.002164502164502165
+compsvi15,pear,box,compsvi14,pencil,bowl,0.00033300033300033327
+compsvi15,pear,box,compsvi15,pencil,box,0.0010822510822510825
+compsvi15,pear,box,compsvu53,box,book,0.0005827505827505832
+compsvi15,pear,box,compsvu53,table,book,0.0005827505827505832
+compsvi15,pear,box,compsvu23,box,book,0.011904761904761908
+compsvi15,pear,box,compsvu23,pear,book,0.011904761904761908
+compsvi15,pear,box,compsvo67,box,table,0.004761904761904763
+compsvi15,pear,box,compsvo67,balloon,table,0.004761904761904763
+compsvi15,pear,box,compsva25,picture,bin,0.011904761904761908
+compsvi15,pear,box,compsvu34,picture,book (1),0.011904761904761908
+compsvi15,pear,box,compsva23,box,book,0.011904761904761908
+compsvi15,pear,box,compsvo24v,jar,board,0.004761904761904763
+compsvi15,pear,box,compsvo24v,clock,board,0.004761904761904763
+compsvi15,pear,box,compsvu25,book (1),book,0.011904761904761908
+compsvi15,pear,box,compsva25,table,bin,0.011904761904761908
+compsvi15,pear,box,compsvu25,cube,book,0.011904761904761908
+compsvi15,pear,box,compsvu25,table,book,0.011904761904761908
+compsvi15,pear,box,compsva12,box,book,0.0010822510822510825
+compsvi15,pear,box,compsva12,pear,book,0.0010822510822510825
+compsvi15,pear,box,compsvi16,pear,bowl,0.011904761904761908
+compsvi15,pear,box,compsvu16,book,balloon,0.011904761904761908
+compsvi15,pear,box,compsvu34,table,book (1),0.011904761904761908
+compsvi15,pear,box,compsvu16,table,balloon,0.011904761904761908
+compsvi15,pear,box,compsva24,picture,bin,0.011904761904761908
+compsvi15,pear,box,compsva24,table,bin,0.011904761904761908
+compsvi15,pear,box,compsvo17,box,table,0.011904761904761908
+compsvi15,pear,box,compsvi36,pencil,mug,0.011904761904761908
+compsvi15,pear,box,compsvo17,book,table,0.011904761904761908
+compsvi15,pear,box,compsvo24,pear,table,0.002164502164502165
+compsvi15,pear,box,compsvi36,pear,mug,0.011904761904761908
+compsvi15,pear,box,compsvo24,book,table,0.002164502164502165
+compsvi15,pear,box,compsva15,balloon,book,0.0001998001998002
+compsvi15,pear,box,compsva15,pear,book,0.0001998001998002
+compsvi15,pear,box,compsvi25,pencil,box,0.011904761904761908
+compsvi15,pear,box,compsvi25,pencil (1),box,0.011904761904761908
+compsvi15,pear,box,compsvo69a,box,table,0.011904761904761908
+compsvi15,pear,box,compsvo69a,balloon,table,0.011904761904761908
+compsvi15,pear,box,compsvi12,pencil,table,0.002164502164502165
+compsvi15,pear,box,compsvu63,box,book,0.002164502164502165
+compsvi15,pear,box,compsvi12,cube,table,0.002164502164502165
+compsvi15,pear,box,compsvu63,table,book,0.002164502164502165
+compsvi15,pear,box,compsvi12,cup,table,0.004761904761904763
+compsvi15,pear,box,compsvi26,cube,cup,0.0010822510822510825
+compsvi15,pear,box,compsvi26,pencil,cup,0.0010822510822510825
+compsvi15,pear,box,compsvi12,cube,cup,0.002164502164502165
+compsvi15,pear,box,compsvo14v,jar,board,0.004761904761904763
+compsvi15,pear,box,compsvo18,box,table,0.0010822510822510825
+compsvi15,pear,box,compsvo18,book,table,0.0010822510822510825
+compsvi15,pear,box,compsvo78,box,table,0.002164502164502165
+compsvi15,pear,box,compsvo78,box (1),table,0.015151515151515157
+compsvi15,pear,box,compsvo14v,book,board,0.004761904761904763
+compsvi15,pear,box,compsvi3,pencil,mug,0.004761904761904763
+compsvi15,pear,box,compsvi3,pear,mug,0.004761904761904763
+compsvi15,pear,box,compsvu67,box,balloon,0.004761904761904763
+compsvi15,pear,box,compsvu67,table,balloon,0.004761904761904763
+compsvi15,pear,box,compsvu25a,box,balloon,0.0010822510822510825
+compsvi15,pear,box,compsvu25a,table,balloon,0.0010822510822510825
+compsvi15,pear,box,compsvi24a,cube,cup,0.011904761904761908
+compsvi15,pear,box,compsvo12v,book,board,0.004761904761904763
+compsvi15,pear,box,compsvo12v,clock,board,0.004761904761904763
+compsvi15,pear,box,compsvi34,pencil (1),mug,0.011904761904761908
+compsvi15,pear,box,compsvi34,pencil,mug,0.011904761904761908
+compsvi15,pear,box,compsva14,book,box,0.011904761904761908
+compsvi15,pear,box,compsva14,table,box,0.011904761904761908
+compsvi15,pear,box,compsva23,balloon,book,0.03571428571428572
+compsvi15,pear,box,compsvi45,cup,mug,0.011904761904761908
+compsvi15,pear,box,compsvu17,box,table,0.004761904761904763
+compsvi15,pear,box,compsvu17,box (1),table,0.004761904761904763
+compsvi15,pear,box,compsvula,pencil,lamp,0.004761904761904763
+compsvi15,pear,box,compsvula,bowl,lamp,0.004761904761904763
+compsvi15,pear,box,compsvo89,box,table,0.011904761904761908
+compsvi15,pear,box,compsvo89,box (1),table,0.011904761904761908
+compsvi15,pear,box,compsva13,pear,book,0.004761904761904763
+compsvi15,pear,box,compsva13,balloon,book,0.004761904761904763
+compsvi15,pear,box,compsvo68,box,table,0.002164502164502165
+compsvi15,pear,box,compsvo68,balloon,table,0.002164502164502165
+compsvi15,pear,box,compsvo34v,jar,board,0.004761904761904763
+compsvi15,pear,box,compsvo34v,book,board,0.004761904761904763
+compsvi15,pear,box,compsvo28,box,table,0.004761904761904763
+compsvi15,pear,box,compsvo28,book,table,0.004761904761904763
+compsvi15,pear,box,compsvi14a,pear,bowl,0.04895104895104897
+compsvi15,pear,box,compsvo26,balloon,table,0.002164502164502165
+compsvi15,pear,box,compsvo26,book,table,0.002164502164502165
+compsvi15,pear,box,compsvo27,box,table,0.002164502164502165
+compsvi15,pear,box,compsvo27,book,table,0.002164502164502165
+compsvi15,pear,box,compsvo14,book (1),table,0.002164502164502165
+compsvi15,pear,box,compsvo14,book,table,0.002164502164502165
+compsvi15,pear,box,compsvi23,box (1),table,0.011904761904761908
+compsvi15,pear,box,compsvinew2,mug,shelf,0.015151515151515157
+compsvi15,pear,box,compsvinew2,box,shelf,0.002164502164502165
+compsvi15,pear,box,compsvo68a,box,table,0.011904761904761908
+compsvi15,pear,box,compsvo68a,balloon,table,0.011904761904761908
+compsvi15,pear,box,compsvinew1,cube,plate,0.011904761904761908
+compsvi15,pear,box,compsvinew1,pencil,plate,0.011904761904761908
+compsvi16,pencil,bowl,compsvi26a,pencil,lamp,0.03296703296703294
+compsvi16,pencil,bowl,compsvi26a,bowl,lamp,0.03296703296703294
+compsvi16,pencil,bowl,compsva15,balloon,book,0.04545454545454546
+compsvi16,pencil,bowl,compsva15,pear,book,0.04545454545454546
+compsvi12,pencil,cup,compsvo29,box,table,0.015151515151515157
+compsvi12,pencil,cup,compsvo29,book,table,0.015151515151515157
+compsvi12,pencil,cup,compsvo23v,jar,board,0.015151515151515157
+compsvi12,pencil,cup,compsvo23v,clock,board,0.015151515151515157
+compsvi12,pencil,cup,compsvo14a,box,table,0.03968253968253974
+compsvi12,pencil,cup,compsvo14a,book,table,0.03968253968253974
+compsvi12,pencil,cup,compsvu15,book,balloon,0.02380952380952382
+compsvi12,pencil,cup,compsvu15,table,balloon,0.02380952380952382
+compsvi12,pencil,cup,compsvo16a,book,table,0.02380952380952382
+compsvi12,pencil,cup,compsvo16a,balloon,table,0.02380952380952382
+compsvi12,pencil,cup,compsvo13v,jar,board,0.01010101010101011
+compsvi12,pencil,cup,compsvo13v,book,board,0.01010101010101011
+compsvi12,pencil,cup,compsvu67a,box,balloon,0.02380952380952382
+compsvi12,pencil,cup,compsvu67a,table,balloon,0.02380952380952382
+compsvi12,pencil,cup,compsvi46,ball,bowl,0.01010101010101011
+compsvi12,pencil,cup,compsvi46,pencil,bowl,0.01010101010101011
+compsvi12,pencil,cup,compsvi26a,pencil,lamp,0.0027472527472527453
+compsvi12,pencil,cup,compsvi26a,bowl,lamp,0.0027472527472527453
+compsvi12,pencil,cup,compsvul,pencil,lamp,0.015151515151515157
+compsvi12,pencil,cup,compsvul,bowl,lamp,0.015151515151515157
+compsvi12,pencil,cup,compsva34,balloon,bin,0.02380952380952382
+compsvi12,pencil,cup,compsva34,table,bin,0.015151515151515157
+compsvi12,pencil,cup,compsvo79,box,table,0.01010101010101011
+compsvi12,pencil,cup,compsvo79,box (1),table,0.01010101010101011
+compsvi12,pencil,cup,compsvo19,box,table,0.03968253968253974
+compsvi12,pencil,cup,compsvo19,book,table,0.03968253968253974
+compsvi12,pencil,cup,compsvu56,box,balloon,0.02380952380952382
+compsvi12,pencil,cup,compsvu56,table,balloon,0.02380952380952382
+compsvi12,pencil,cup,compsvi14,pencil,bowl,0.006993006993007008
+compsvi12,pencil,cup,compsvi15,pencil,box,0.015151515151515157
+compsvi12,pencil,cup,compsvu53,box,book,0.01010101010101011
+compsvi12,pencil,cup,compsvu53,table,book,0.01010101010101011
+compsvi12,pencil,cup,compsvo67,box,table,0.03968253968253974
+compsvi12,pencil,cup,compsvo67,balloon,table,0.03968253968253974
+compsvi12,pencil,cup,compsvo24v,jar,board,0.03968253968253974
+compsvi12,pencil,cup,compsvo24v,clock,board,0.03968253968253974
+compsvi12,pencil,cup,compsva12,box,book,0.015151515151515157
+compsvi12,pencil,cup,compsva12,pear,book,0.015151515151515157
+compsvi12,pencil,cup,compsvo24,pear,table,0.02380952380952382
+compsvi12,pencil,cup,compsvo24,book,table,0.02380952380952382
+compsvi12,pencil,cup,compsva15,balloon,book,0.004995004995004992
+compsvi12,pencil,cup,compsva15,pear,book,0.004995004995004992
+compsvi12,pencil,cup,compsvi12,pencil,table,0.02380952380952382
+compsvi12,pencil,cup,compsvu63,box,book,0.02380952380952382
+compsvi12,pencil,cup,compsvi12,cube,table,0.02380952380952382
+compsvi12,pencil,cup,compsvu63,table,book,0.02380952380952382
+compsvi12,pencil,cup,compsvi12,cup,table,0.03968253968253974
+compsvi12,pencil,cup,compsvi26,cube,cup,0.015151515151515157
+compsvi12,pencil,cup,compsvi26,pencil,cup,0.015151515151515157
+compsvi12,pencil,cup,compsvi12,cube,cup,0.02380952380952382
+compsvi12,pencil,cup,compsvo14v,jar,board,0.03968253968253974
+compsvi12,pencil,cup,compsvo18,box,table,0.015151515151515157
+compsvi12,pencil,cup,compsvo18,book,table,0.015151515151515157
+compsvi12,pencil,cup,compsvo78,box,table,0.02380952380952382
+compsvi12,pencil,cup,compsvo14v,book,board,0.03968253968253974
+compsvi12,pencil,cup,compsvi3,pencil,mug,0.03968253968253974
+compsvi12,pencil,cup,compsvi3,pear,mug,0.03968253968253974
+compsvi12,pencil,cup,compsvu67,box,balloon,0.03968253968253974
+compsvi12,pencil,cup,compsvu67,table,balloon,0.03968253968253974
+compsvi12,pencil,cup,compsvu25a,box,balloon,0.015151515151515157
+compsvi12,pencil,cup,compsvu25a,table,balloon,0.015151515151515157
+compsvi12,pencil,cup,compsvo12v,book,board,0.03968253968253974
+compsvi12,pencil,cup,compsvo12v,clock,board,0.03968253968253974
+compsvi12,pencil,cup,compsvu17,box,table,0.03968253968253974
+compsvi12,pencil,cup,compsvu17,box (1),table,0.03968253968253974
+compsvi12,pencil,cup,compsvula,pencil,lamp,0.03968253968253974
+compsvi12,pencil,cup,compsvula,bowl,lamp,0.03968253968253974
+compsvi12,pencil,cup,compsva13,pear,book,0.03968253968253974
+compsvi12,pencil,cup,compsva13,balloon,book,0.03968253968253974
+compsvi12,pencil,cup,compsvo68,box,table,0.02380952380952382
+compsvi12,pencil,cup,compsvo68,balloon,table,0.02380952380952382
+compsvi12,pencil,cup,compsvo34v,jar,board,0.03968253968253974
+compsvi12,pencil,cup,compsvo34v,book,board,0.03968253968253974
+compsvi12,pencil,cup,compsvo28,box,table,0.03968253968253974
+compsvi12,pencil,cup,compsvo28,book,table,0.03968253968253974
+compsvi12,pencil,cup,compsvo26,balloon,table,0.02380952380952382
+compsvi12,pencil,cup,compsvo26,book,table,0.02380952380952382
+compsvi12,pencil,cup,compsvo27,box,table,0.02380952380952382
+compsvi12,pencil,cup,compsvo27,book,table,0.02380952380952382
+compsvi12,pencil,cup,compsvo14,book (1),table,0.02380952380952382
+compsvi12,pencil,cup,compsvo14,book,table,0.02380952380952382
+compsvi12,pencil,cup,compsvinew2,box,shelf,0.02380952380952382
+compsvi24a,pear,cup,compsvo29,box,table,0.011904761904761908
+compsvi24a,pear,cup,compsvo29,book,table,0.011904761904761908
+compsvi24a,pear,cup,compsvo23v,jar,board,0.011904761904761908
+compsvi24a,pear,cup,compsvo23v,clock,board,0.011904761904761908
+compsvi24a,pear,cup,compsvo14a,box,table,0.028571428571428602
+compsvi24a,pear,cup,compsvo14a,book,table,0.028571428571428602
+compsvi24a,pear,cup,compsvu15,book,balloon,0.01785714285714288
+compsvi24a,pear,cup,compsvu15,table,balloon,0.01785714285714288
+compsvi24a,pear,cup,compsvo16a,book,table,0.01785714285714288
+compsvi24a,pear,cup,compsvo16a,balloon,table,0.01785714285714288
+compsvi24a,pear,cup,compsvo13v,jar,board,0.008333333333333342
+compsvi24a,pear,cup,compsvo13v,book,board,0.008333333333333342
+compsvi24a,pear,cup,compsvu67a,box,balloon,0.01785714285714288
+compsvi24a,pear,cup,compsvu67a,table,balloon,0.01785714285714288
+compsvi24a,pear,cup,compsvi46,ball,bowl,0.008333333333333342
+compsvi24a,pear,cup,compsvi46,pencil,bowl,0.008333333333333342
+compsvi24a,pear,cup,compsvi26a,pencil,lamp,0.0027472527472527475
+compsvi24a,pear,cup,compsvi26a,bowl,lamp,0.0027472527472527475
+compsvi24a,pear,cup,compsvul,pencil,lamp,0.011904761904761908
+compsvi24a,pear,cup,compsvul,bowl,lamp,0.011904761904761908
+compsvi24a,pear,cup,compsva34,balloon,bin,0.01785714285714288
+compsvi24a,pear,cup,compsva34,table,bin,0.011904761904761908
+compsvi24a,pear,cup,compsvo79,box,table,0.008333333333333342
+compsvi24a,pear,cup,compsvo79,box (1),table,0.008333333333333342
+compsvi24a,pear,cup,compsvo19,box,table,0.028571428571428602
+compsvi24a,pear,cup,compsvo19,book,table,0.028571428571428602
+compsvi24a,pear,cup,compsvu56,box,balloon,0.01785714285714288
+compsvi24a,pear,cup,compsvu56,table,balloon,0.01785714285714288
+compsvi24a,pear,cup,compsvi14,pencil,bowl,0.0060606060606060675
+compsvi24a,pear,cup,compsvi15,pencil,box,0.011904761904761908
+compsvi24a,pear,cup,compsvu53,box,book,0.008333333333333342
+compsvi24a,pear,cup,compsvu53,table,book,0.008333333333333342
+compsvi24a,pear,cup,compsvo67,box,table,0.028571428571428602
+compsvi24a,pear,cup,compsvo67,balloon,table,0.028571428571428602
+compsvi24a,pear,cup,compsvo24v,jar,board,0.028571428571428602
+compsvi24a,pear,cup,compsvo24v,clock,board,0.028571428571428602
+compsvi24a,pear,cup,compsva12,box,book,0.011904761904761908
+compsvi24a,pear,cup,compsva12,pear,book,0.011904761904761908
+compsvi24a,pear,cup,compsvo24,pear,table,0.01785714285714288
+compsvi24a,pear,cup,compsvo24,book,table,0.01785714285714288
+compsvi24a,pear,cup,compsva15,balloon,book,0.004545454545454548
+compsvi24a,pear,cup,compsva15,pear,book,0.004545454545454548
+compsvi24a,pear,cup,compsvi12,pencil,table,0.01785714285714288
+compsvi24a,pear,cup,compsvu63,box,book,0.01785714285714288
+compsvi24a,pear,cup,compsvi12,cube,table,0.01785714285714288
+compsvi24a,pear,cup,compsvu63,table,book,0.01785714285714288
+compsvi24a,pear,cup,compsvi12,cup,table,0.028571428571428602
+compsvi24a,pear,cup,compsvi26,cube,cup,0.011904761904761908
+compsvi24a,pear,cup,compsvi26,pencil,cup,0.011904761904761908
+compsvi24a,pear,cup,compsvi12,cube,cup,0.01785714285714288
+compsvi24a,pear,cup,compsvo14v,jar,board,0.028571428571428602
+compsvi24a,pear,cup,compsvo18,box,table,0.011904761904761908
+compsvi24a,pear,cup,compsvo18,book,table,0.011904761904761908
+compsvi24a,pear,cup,compsvo78,box,table,0.01785714285714288
+compsvi24a,pear,cup,compsvo14v,book,board,0.028571428571428602
+compsvi24a,pear,cup,compsvi3,pencil,mug,0.028571428571428602
+compsvi24a,pear,cup,compsvi3,pear,mug,0.028571428571428602
+compsvi24a,pear,cup,compsvu67,box,balloon,0.028571428571428602
+compsvi24a,pear,cup,compsvu67,table,balloon,0.028571428571428602
+compsvi24a,pear,cup,compsvu25a,box,balloon,0.011904761904761908
+compsvi24a,pear,cup,compsvu25a,table,balloon,0.011904761904761908
+compsvi24a,pear,cup,compsvo12v,book,board,0.028571428571428602
+compsvi24a,pear,cup,compsvo12v,clock,board,0.028571428571428602
+compsvi24a,pear,cup,compsvu17,box,table,0.028571428571428602
+compsvi24a,pear,cup,compsvu17,box (1),table,0.028571428571428602
+compsvi24a,pear,cup,compsvula,pencil,lamp,0.028571428571428602
+compsvi24a,pear,cup,compsvula,bowl,lamp,0.028571428571428602
+compsvi24a,pear,cup,compsva13,pear,book,0.028571428571428602
+compsvi24a,pear,cup,compsva13,balloon,book,0.028571428571428602
+compsvi24a,pear,cup,compsvo68,box,table,0.01785714285714288
+compsvi24a,pear,cup,compsvo68,balloon,table,0.01785714285714288
+compsvi24a,pear,cup,compsvo34v,jar,board,0.028571428571428602
+compsvi24a,pear,cup,compsvo34v,book,board,0.028571428571428602
+compsvi24a,pear,cup,compsvo28,box,table,0.028571428571428602
+compsvi24a,pear,cup,compsvo28,book,table,0.028571428571428602
+compsvi24a,pear,cup,compsvo26,balloon,table,0.01785714285714288
+compsvi24a,pear,cup,compsvo26,book,table,0.01785714285714288
+compsvi24a,pear,cup,compsvo27,box,table,0.01785714285714288
+compsvi24a,pear,cup,compsvo27,book,table,0.01785714285714288
+compsvi24a,pear,cup,compsvo14,book (1),table,0.01785714285714288
+compsvi24a,pear,cup,compsvo14,book,table,0.01785714285714288
+compsvi24a,pear,cup,compsvinew2,box,shelf,0.01785714285714288
+compsvi14a,cube,bowl,compsvo12,book (1),table,0.033333333333333375
+compsvi14a,cube,bowl,compsvo12,book,table,0.033333333333333375
+compsvi14a,cube,bowl,compsvo29,box,table,0.0040792540792540825
+compsvi14a,cube,bowl,compsvo29,book,table,0.0040792540792540825
+compsvi14a,cube,bowl,compsvo23v,jar,board,0.0040792540792540825
+compsvi14a,cube,bowl,compsvo23v,clock,board,0.0040792540792540825
+compsvi14a,cube,bowl,compsvi13,pencil,mug,0.045454545454545484
+compsvi14a,cube,bowl,compsvo14a,box,table,0.015151515151515183
+compsvi14a,cube,bowl,compsvo14a,book,table,0.015151515151515183
+compsvi14a,cube,bowl,compsvu15,book,balloon,0.007575757575757578
+compsvi14a,cube,bowl,compsvu15,table,balloon,0.007575757575757578
+compsvi14a,cube,bowl,compsvo16a,book,table,0.007575757575757578
+compsvi14a,cube,bowl,compsvo16a,balloon,table,0.007575757575757578
+compsvi14a,cube,bowl,compsvo13v,jar,board,0.002331002331002337
+compsvi14a,cube,bowl,compsvo13v,book,board,0.002331002331002337
+compsvi14a,cube,bowl,compsvu67a,box,balloon,0.007575757575757578
+compsvi14a,cube,bowl,compsvu67a,table,balloon,0.007575757575757578
+compsvi14a,cube,bowl,compsvi46,ball,bowl,0.002331002331002337
+compsvi14a,cube,bowl,compsvi46,pencil,bowl,0.002331002331002337
+compsvi14a,cube,bowl,compsvi26a,pencil,lamp,0.00037707390648567115
+compsvi14a,cube,bowl,compsvi26a,bowl,lamp,0.00037707390648567115
+compsvi14a,cube,bowl,compsvul,pencil,lamp,0.0040792540792540825
+compsvi14a,cube,bowl,compsvul,bowl,lamp,0.0040792540792540825
+compsvi14a,cube,bowl,compsvi24,cube,cup,0.033333333333333375
+compsvi14a,cube,bowl,compsvi24,pencil,cup,0.033333333333333375
+compsvi14a,cube,bowl,compsvo16,book,table,0.033333333333333375
+compsvi14a,cube,bowl,compsvo16,balloon,table,0.033333333333333375
+compsvi14a,cube,bowl,compsva34,balloon,bin,0.007575757575757578
+compsvi14a,cube,bowl,compsva34,table,bin,0.0040792540792540825
+compsvi14a,cube,bowl,compsvo79,box,table,0.002331002331002337
+compsvi14a,cube,bowl,compsvo79,box (1),table,0.002331002331002337
+compsvi14a,cube,bowl,compsvo19,box,table,0.015151515151515183
+compsvi14a,cube,bowl,compsvo19,book,table,0.015151515151515183
+compsvi14a,cube,bowl,compsvu56,box,balloon,0.007575757575757578
+compsvi14a,cube,bowl,compsvu56,table,balloon,0.007575757575757578
+compsvi14a,cube,bowl,compsvi14,pencil,bowl,0.0013986013986014001
+compsvi14a,cube,bowl,compsvi15,pencil,box,0.0040792540792540825
+compsvi14a,cube,bowl,compsvu53,box,book,0.002331002331002337
+compsvi14a,cube,bowl,compsvu53,table,book,0.002331002331002337
+compsvi14a,cube,bowl,compsvu23,box,book,0.033333333333333375
+compsvi14a,cube,bowl,compsvu23,pear,book,0.033333333333333375
+compsvi14a,cube,bowl,compsvo67,box,table,0.015151515151515183
+compsvi14a,cube,bowl,compsvo67,balloon,table,0.015151515151515183
+compsvi14a,cube,bowl,compsva25,picture,bin,0.033333333333333375
+compsvi14a,cube,bowl,compsvu34,picture,book (1),0.033333333333333375
+compsvi14a,cube,bowl,compsva23,box,book,0.033333333333333375
+compsvi14a,cube,bowl,compsvo24v,jar,board,0.015151515151515183
+compsvi14a,cube,bowl,compsvo24v,clock,board,0.015151515151515183
+compsvi14a,cube,bowl,compsvu25,book (1),book,0.033333333333333375
+compsvi14a,cube,bowl,compsva25,table,bin,0.033333333333333375
+compsvi14a,cube,bowl,compsvu25,cube,book,0.033333333333333375
+compsvi14a,cube,bowl,compsvu25,table,book,0.033333333333333375
+compsvi14a,cube,bowl,compsva12,box,book,0.0040792540792540825
+compsvi14a,cube,bowl,compsva12,pear,book,0.0040792540792540825
+compsvi14a,cube,bowl,compsvi16,pear,bowl,0.033333333333333375
+compsvi14a,cube,bowl,compsvu16,book,balloon,0.033333333333333375
+compsvi14a,cube,bowl,compsvu34,table,book (1),0.033333333333333375
+compsvi14a,cube,bowl,compsvu16,table,balloon,0.033333333333333375
+compsvi14a,cube,bowl,compsva24,picture,bin,0.033333333333333375
+compsvi14a,cube,bowl,compsva24,table,bin,0.033333333333333375
+compsvi14a,cube,bowl,compsvo17,box,table,0.033333333333333375
+compsvi14a,cube,bowl,compsvi36,pencil,mug,0.033333333333333375
+compsvi14a,cube,bowl,compsvo17,book,table,0.033333333333333375
+compsvi14a,cube,bowl,compsvo24,pear,table,0.007575757575757578
+compsvi14a,cube,bowl,compsvi36,pear,mug,0.033333333333333375
+compsvi14a,cube,bowl,compsvo24,book,table,0.007575757575757578
+compsvi14a,cube,bowl,compsva15,balloon,book,0.0008741258741258734
+compsvi14a,cube,bowl,compsva15,pear,book,0.0008741258741258734
+compsvi14a,cube,bowl,compsvi25,pencil,box,0.033333333333333375
+compsvi14a,cube,bowl,compsvi25,pencil (1),box,0.033333333333333375
+compsvi14a,cube,bowl,compsvo69a,box,table,0.033333333333333375
+compsvi14a,cube,bowl,compsvo69a,balloon,table,0.033333333333333375
+compsvi14a,cube,bowl,compsvi12,pencil,table,0.007575757575757578
+compsvi14a,cube,bowl,compsvu63,box,book,0.007575757575757578
+compsvi14a,cube,bowl,compsvi12,cube,table,0.007575757575757578
+compsvi14a,cube,bowl,compsvu63,table,book,0.007575757575757578
+compsvi14a,cube,bowl,compsvi12,cup,table,0.015151515151515183
+compsvi14a,cube,bowl,compsvi26,cube,cup,0.0040792540792540825
+compsvi14a,cube,bowl,compsvi26,pencil,cup,0.0040792540792540825
+compsvi14a,cube,bowl,compsvi12,cube,cup,0.007575757575757578
+compsvi14a,cube,bowl,compsvo14v,jar,board,0.015151515151515183
+compsvi14a,cube,bowl,compsvo18,box,table,0.0040792540792540825
+compsvi14a,cube,bowl,compsvo18,book,table,0.0040792540792540825
+compsvi14a,cube,bowl,compsvo78,box,table,0.007575757575757578
+compsvi14a,cube,bowl,compsvo78,box (1),table,0.045454545454545484
+compsvi14a,cube,bowl,compsvo14v,book,board,0.015151515151515183
+compsvi14a,cube,bowl,compsvi3,pencil,mug,0.015151515151515183
+compsvi14a,cube,bowl,compsvi3,pear,mug,0.015151515151515183
+compsvi14a,cube,bowl,compsvu67,box,balloon,0.015151515151515183
+compsvi14a,cube,bowl,compsvu67,table,balloon,0.015151515151515183
+compsvi14a,cube,bowl,compsvu25a,box,balloon,0.0040792540792540825
+compsvi14a,cube,bowl,compsvu25a,table,balloon,0.0040792540792540825
+compsvi14a,cube,bowl,compsvi24a,cube,cup,0.033333333333333375
+compsvi14a,cube,bowl,compsvo12v,book,board,0.015151515151515183
+compsvi14a,cube,bowl,compsvo12v,clock,board,0.015151515151515183
+compsvi14a,cube,bowl,compsvi34,pencil (1),mug,0.033333333333333375
+compsvi14a,cube,bowl,compsvi34,pencil,mug,0.033333333333333375
+compsvi14a,cube,bowl,compsva14,book,box,0.033333333333333375
+compsvi14a,cube,bowl,compsva14,table,box,0.033333333333333375
+compsvi14a,cube,bowl,compsvi45,cup,mug,0.033333333333333375
+compsvi14a,cube,bowl,compsvu17,box,table,0.015151515151515183
+compsvi14a,cube,bowl,compsvu17,box (1),table,0.015151515151515183
+compsvi14a,cube,bowl,compsvula,pencil,lamp,0.015151515151515183
+compsvi14a,cube,bowl,compsvula,bowl,lamp,0.015151515151515183
+compsvi14a,cube,bowl,compsvo89,box,table,0.033333333333333375
+compsvi14a,cube,bowl,compsvo89,box (1),table,0.033333333333333375
+compsvi14a,cube,bowl,compsva13,pear,book,0.015151515151515183
+compsvi14a,cube,bowl,compsva13,balloon,book,0.015151515151515183
+compsvi14a,cube,bowl,compsvo68,box,table,0.007575757575757578
+compsvi14a,cube,bowl,compsvo68,balloon,table,0.007575757575757578
+compsvi14a,cube,bowl,compsvo34v,jar,board,0.015151515151515183
+compsvi14a,cube,bowl,compsvo34v,book,board,0.015151515151515183
+compsvi14a,cube,bowl,compsvo28,box,table,0.015151515151515183
+compsvi14a,cube,bowl,compsvo28,book,table,0.015151515151515183
+compsvi14a,cube,bowl,compsvo26,balloon,table,0.007575757575757578
+compsvi14a,cube,bowl,compsvo26,book,table,0.007575757575757578
+compsvi14a,cube,bowl,compsvo27,box,table,0.007575757575757578
+compsvi14a,cube,bowl,compsvo27,book,table,0.007575757575757578
+compsvi14a,cube,bowl,compsvo14,book (1),table,0.007575757575757578
+compsvi14a,cube,bowl,compsvo14,book,table,0.007575757575757578
+compsvi14a,cube,bowl,compsvi23,box (1),table,0.033333333333333375
+compsvi14a,cube,bowl,compsvinew2,mug,shelf,0.045454545454545484
+compsvi14a,cube,bowl,compsvinew2,box,shelf,0.007575757575757578
+compsvi14a,cube,bowl,compsvo68a,box,table,0.033333333333333375
+compsvi14a,cube,bowl,compsvo68a,balloon,table,0.033333333333333375
+compsvi14a,cube,bowl,compsvinew1,cube,plate,0.033333333333333375
+compsvi14a,cube,bowl,compsvinew1,pencil,plate,0.033333333333333375
+compsvi14a,pear,bowl,compsvi26a,pencil,lamp,0.04289215686274506
+compsvi14a,pear,bowl,compsvi26a,bowl,lamp,0.04289215686274506
