@@ -492,6 +492,7 @@ class SimpleConfiguration:
         """
         counter = 0
         for an in annotationlist:
+
             if self.configuration_match(an) and preposition in an.prepositions:
                 counter += 1
         return counter

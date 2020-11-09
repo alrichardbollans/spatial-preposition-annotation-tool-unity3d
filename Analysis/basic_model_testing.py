@@ -1319,6 +1319,14 @@ class GenerateBasicModels:
         self.train_scenes = train_scenes
         # Scenes used to test models
         self.test_scenes = test_scenes
+
+        # Make sure train and test scenes are distinct, if not using all scenes
+        if self.train_scenes != self.study_info.scene_name_list:
+            f1_set = set(self.train_scenes)
+            f2_set = set(self.test_scenes)
+            if f1_set & f2_set:
+                raise ValueError('Train and test scenes not distinct')
+
         # Features to remove from consideration (not used in training or testing)
         self.features_to_remove = Configuration.ground_property_features.copy()
 
@@ -1502,7 +1510,9 @@ class MultipleRuns:
                     feature] = self.scores_tables_folder + "/averagemodel scores " + self.file_tag + " " + feature + "removed.csv"
 
         self.prepare_comparison_dicts()
-
+        # folds_dict contains overall scores on each fold for each model
+        # our_model_feature_folds_dict contains scores for each preposition when feature is included
+        # our_model_without_feature_folds_dict contains scores for each preposition when feature is removed
         self.folds_dict, self.our_model_feature_folds_dict, self.our_model_without_feature_folds_dict = self.prepare_folds_dict()
 
         # following lists help confirm all scenes get used for both training and testing
@@ -1818,13 +1828,14 @@ class MultipleRuns:
                         else:
                             p_value = 0
                         kmeans_other_model_p_value[other_model] = p_value
-            # Create dataframes to output
-            km_p_value_df = pd.DataFrame(kmeans_other_model_p_value, ["p_value"])
-            cluster_model_win_count = pd.DataFrame(self.count_cluster_model_wins, ["Cluster model wins"])
-            km_other_model_win_count = pd.DataFrame(self.count_other_model_beats_cluster, ["Other model wins"])
-            # Append dataframes into one
-            km_new_df = km_p_value_df.append([cluster_model_win_count, km_other_model_win_count], sort=False)
-            self.km_comparison_df = km_new_df
+
+                # Create dataframes to output
+                km_p_value_df = pd.DataFrame(kmeans_other_model_p_value, ["p_value"])
+                cluster_model_win_count = pd.DataFrame(self.count_cluster_model_wins, ["Cluster model wins"])
+                km_other_model_win_count = pd.DataFrame(self.count_other_model_beats_cluster, ["Other model wins"])
+                # Append dataframes into one
+                km_new_df = km_p_value_df.append([cluster_model_win_count, km_other_model_win_count], sort=False)
+                self.km_comparison_df = km_new_df
 
         if self.features_to_test is not None:
             feature_p_value = dict()
@@ -1877,7 +1888,8 @@ class MultipleRuns:
         if self.compare is not None:
             # Output to csv
             self.comparison_df.to_csv(self.comparison_csv)
-            self.km_comparison_df.to_csv(self.km_comparison_csv)
+            if hasattr(self.Generate_Models_all_scenes, "cluster_model_name"):
+                self.km_comparison_df.to_csv(self.km_comparison_csv)
 
         if self.features_to_test is not None:
 
@@ -2139,15 +2151,16 @@ def main(study_info_):
     # output_regression_scores(study_info_)
     # plot_preposition_graphs(study_info_)
     # # Edit plot settings
-    # mpl.rcParams['font.size'] = 40
-    # mpl.rcParams['legend.fontsize'] = 37
-    # mpl.rcParams['axes.titlesize'] = 'medium'
-    # mpl.rcParams['axes.labelsize'] = 'medium'
-    # mpl.rcParams['ytick.labelsize'] = 'small'
+    mpl.rcParams['font.size'] = 40
+    mpl.rcParams['legend.fontsize'] = 37
+    mpl.rcParams['axes.titlesize'] = 'medium'
+    mpl.rcParams['axes.labelsize'] = 'medium'
+    mpl.rcParams['ytick.labelsize'] = 'small'
+    plot_kfold_csv(2, study_info_)
     # 
     # initial_test(study_info_)
-    test_models(study_info_)
-    test_features(study_info_)
+    # test_models(study_info_)
+    # test_features(study_info_)
 
 
 if __name__ == '__main__':

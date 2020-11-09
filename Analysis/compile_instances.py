@@ -378,7 +378,7 @@ class ComparativeCollection(InstanceCollection):
         InstanceCollection.__init__(self, study)
         self.append_annotations()
 
-    # self.constraints = self.get_constraints()
+    # self.constraints = self.get_and_write_constraints()
 
     ### Reads annotation file and appends to annotation and instance lists.
     def append_annotations(self):
@@ -405,7 +405,7 @@ class ComparativeCollection(InstanceCollection):
 
         self.append_values()
 
-    def get_constraints(self):
+    def get_and_write_constraints(self):
         """Summary
         For each scene, preposition and possible ground uses the Comparison class to generate constraints for models to satisfy.
         These are then written to a csv.
@@ -587,7 +587,7 @@ if __name__ == '__main__':
     compcollection = ComparativeCollection(study_info)
 
     compcollection.write_preposition_stats_csvs()
-    compcollection.get_constraints()
+    compcollection.get_and_write_constraints()
 
 ## Collect all possible configurations and attach values to them
 

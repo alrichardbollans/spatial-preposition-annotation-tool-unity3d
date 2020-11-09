@@ -477,10 +477,13 @@ def work_out_all_hry_clusters(study_info_):
     Args:
         study_info_ (TYPE): Description
     """
+    all_scenes = study_info_.scene_name_list
+    generated_polysemy_models = GeneratePolysemeModels(all_scenes, all_scenes, study_info_,
+                                                       preserve_empty_polysemes=True)
     print("Working out hry clusters")
     for preposition in polysemous_preposition_list:
         print(preposition)
-        c = Clustering(study_info_, preposition)
+        c = Clustering(study_info_, preposition, generated_polysemy_models=generated_polysemy_models)
         c.work_out_hierarchy_model()
 
 
@@ -499,7 +502,8 @@ def main(study_info_):
 
     mpl.rcParams['axes.titlesize'] = 'large'
     mpl.rcParams['axes.labelsize'] = 'large'
-    output_clustering_info(study_info_)
+    # output_clustering_info(study_info_)
+    work_out_all_hry_clusters(study_info_)
 
 
 if __name__ == '__main__':

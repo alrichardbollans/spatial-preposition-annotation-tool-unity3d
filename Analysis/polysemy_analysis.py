@@ -237,9 +237,13 @@ class Polyseme:
     #
     #     wf.to_csv(self.regression_weights_csv)
 
-    def output_definition(self):
+    def output_definition(self,filename = None):
         """Summary
         """
+        if filename is None:
+            output_file = self.study_info.polyseme_data_folder + self.model_name + '/definitions/' + self.preposition + "-" + self.polyseme_name + ".csv"
+        else:
+            output_file = filename
         out = dict()
         out["eq_feature_dict"] = []
         out["greater_feature_dict"] = []
@@ -275,8 +279,7 @@ class Polyseme:
 
         wf = pd.DataFrame(out, self.study_info.all_feature_keys)  # ["equality", "greater than", "less than"])
 
-        wf.to_csv(
-            self.study_info.polyseme_data_folder + self.model_name + '/definitions/' + self.preposition + "-" + self.polyseme_name + ".csv")
+        wf.to_csv(output_file)
 
 
 class PolysemyModel(Model):
@@ -838,6 +841,15 @@ class GeneratePolysemeModels:
         self.train_scenes = train_scenes
         # Scenes used to test models
         self.test_scenes = test_scenes
+
+        # Make sure train and test scenes are distinct, if not using all scenes
+        if self.train_scenes != self.study_info.scene_name_list:
+            f1_set = set(self.train_scenes)
+            f2_set = set(self.test_scenes)
+            if (f1_set & f2_set):
+                raise ValueError('Train and test scenes not distinct')
+
+
         self.features_to_remove = Configuration.ground_property_features.copy()
         self.test_prepositions = test_prepositions
         # When empty polysemes are preserved their values are generated as normal
@@ -918,8 +930,7 @@ class MultipleRunsPolysemyModels(MultipleRuns):
         self.study_info = study_info_
 
         MultipleRuns.__init__(self, GeneratePolysemeModels, self.study_info,
-                              test_prepositions=test_prepositions, number_runs=number_runs, test_size=None,
-                              k=k, compare=compare, features_to_test=None)
+                              test_prepositions=test_prepositions, number_runs=number_runs, k=k, compare=compare, features_to_test=None)
 
         self.scores_tables_folder = self.study_info.polysemy_score_folder + "tables"
         self.scores_plots_folder = self.study_info.polysemy_score_folder + "plots"
@@ -986,7 +997,8 @@ class MultipleRunsPolysemyModels(MultipleRuns):
             # Output to csv
             self.comparison_df.to_csv(self.comparison_csv)
 
-            self.km_comparison_df.to_csv(self.km_comparison_csv)
+            if self.km_comparison_df is not None:
+                self.km_comparison_df.to_csv(self.km_comparison_csv)
 
 
 def output_all_polyseme_info(study_info_):
@@ -1001,7 +1013,6 @@ def output_all_polyseme_info(study_info_):
     generated_polyseme_models = GeneratePolysemeModels(all_scenes, all_scenes, study_info_,
                                                        preserve_empty_polysemes=True)
     generated_polyseme_models.non_shared.output_polyseme_info()
-    # generated_polyseme_models.refined.output_polyseme_info()
 
 
 def test_on_all_scenes(study_info_):
@@ -1055,7 +1066,7 @@ def test_models(study_info_):
 
     test_on_all_scenes(study_info_)
     test_model(1, 2, study_info_)
-    # test_model(10, 10, study_info_)
+    test_model(10, 10, study_info_)
 
 
 def output_typicality(study_info_):
@@ -1086,13 +1097,13 @@ def main(study_info_):
     Deleted Parameters:
         constraint_dict (TYPE): Description
     """
-    output_all_polyseme_info(study_info_)
+    # output_all_polyseme_info(study_info_)
     # Clustering
 
     # Polysemes and performance
 
-    output_typicality(study_info_)
-    # test_models(study_info_)
+    # output_typicality(study_info_)
+    test_models(study_info_)
 
 
 if __name__ == '__main__':

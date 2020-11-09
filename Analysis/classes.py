@@ -191,7 +191,30 @@ class Constraint:
 
     # def read_constraints(self):
 
+    @staticmethod
+    def constraint_name_match(c1, c2):
+        if c1.scene == c2.scene and c1.preposition == c2.preposition and c1.ground == c2.ground and c1.f1 == c2.f1 and c1.f2 == c2.f2 and c1.weight == c2.weight:
+            return True
+        else:
+            return False
+    @staticmethod
+    def constraint_feature_value_match(c1,c2):
+        index = 0
+        for value in c1.rhs.values():
+            rounded1 = round(value,10)
+            rounded2 = round(list(c2.rhs.values())[index],10)
+            if rounded1 != rounded2:
+                return False
+            index += 1
 
+        index = 0
+        for value in c1.lhs.values():
+            rounded1 = round(value, 10)
+            rounded2 = round(list(c2.lhs.values())[index], 10)
+            if rounded1 != rounded2:
+                return False
+            index += 1
+        return True
 class Comparison:
     """Summary
     
