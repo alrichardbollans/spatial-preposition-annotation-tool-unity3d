@@ -1,0 +1,4 @@
+,Distinct Prototype,Baseline Model,KMeans Model
+p_value,0,0.5,1.0
+Our model wins,0,1.0,0.0
+Other model wins,0,1.0,2.0

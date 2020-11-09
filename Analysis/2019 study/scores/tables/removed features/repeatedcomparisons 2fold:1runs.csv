@@ -1,0 +1,4 @@
+,location_control:in,location_control:inside,location_control:against,location_control:on,location_control:on top of,location_control:under,location_control:below,location_control:over,location_control:above,location_control:Average,location_control:Overall,support:in,support:inside,support:against,support:on,support:on top of,support:under,support:below,support:over,support:above,support:Average,support:Overall
+p_value,0.25,0.5,0.5,0.15865525393145707,0,0.25,0.8413447460685429,0.15865525393145707,0.15865525393145707,0.25,0.25,0.15865525393145707,0.5,0,0.25,0.25,0.75,0,0.15865525393145707,0.25,0.25,0.25
+With feature wins,2.0,1.0,1.0,1.0,0,2.0,0.0,1.0,1.0,2.0,2.0,1.0,1.0,0,2.0,2.0,1.0,0,1.0,2.0,2.0,2.0
+Without feature wins,0.0,1.0,1.0,0.0,0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,1.0,0,0.0,0.0,1.0,0,0.0,0.0,0.0,0.0
