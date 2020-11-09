@@ -13,6 +13,8 @@ from data_import import Configuration, StudyInfo
 from polysemy_analysis import DistinctPrototypePolysemyModel, preposition_list, SalientFeature, \
     polysemous_preposition_list, GeneratePolysemeModels, KMeansPolysemyModel, MultipleRunsPolysemyModels
 
+extra_thesis_folder = "extra thesis results/"
+
 
 class DataPartitionPolysemyModel(DistinctPrototypePolysemyModel):
     # THis model helps to check if arbitrailiy partitioning the data improves the baseline prototpe model
@@ -230,9 +232,6 @@ class GeneratePartitionModels(GeneratePolysemeModels):
 
 
 class GenerateAdditionalModels(GeneratePolysemeModels):
-    # main model we are testing
-    # name of the model we want to compare with other models, and use to test particular features
-
     refined_distinct_model_name = "Refined Distinct Model"
     distinct_model_name = "Distinct Prototype"
     shared_model_name = "Shared Prototype"
@@ -246,6 +245,8 @@ class GenerateAdditionalModels(GeneratePolysemeModels):
     baseline_model_name = "Baseline Model"
     cluster_model_name = KMeansPolysemyModel.name
 
+    # main model we are testing
+    # name of the model we want to compare with other models, and use to test particular features
     our_model_name = refined_distinct_model_name
 
     def __init__(self, train_scenes, test_scenes, study_info_, test_prepositions=preposition_list,
@@ -307,7 +308,7 @@ class MultipleRunsGeneric(MultipleRuns):
         self.study_info = study_info_
 
         MultipleRuns.__init__(self, model_generator, self.study_info, test_prepositions=test_prepositions,
-                              number_runs=number_runs, test_size=None, k=k,
+                              number_runs=number_runs, k=k,
                               compare=compare, features_to_test=None)
 
         self.scores_tables_folder = scores_tables_folder
@@ -357,35 +358,30 @@ class MultipleRunsGeneric(MultipleRuns):
         return True
 
 
-def test_partitionmodel_on_all_scenes(study_info_):
-    """Summary
-    :param study_info_:
-
-    Args:
-        study_info_ (TYPE): Description
-    """
-    print("test on all scenes")
-
-    all_scenes = study_info_.scene_name_list
-    g_models = GeneratePartitionModels(all_scenes, all_scenes, study_info_)
+def test_partition_model(runs, k, study):
+    # First test on all scenes
+    all_scenes = study.scene_name_list
+    g_models = GeneratePartitionModels(all_scenes, all_scenes, study)
 
     models = g_models.models
 
     t = TestModels(models, "all")
     all_dataframe = t.score_dataframe.copy()
 
-    all_dataframe.to_csv(study_info_.polysemy_score_folder + "partition_test.csv")
+    all_dataframe.to_csv(extra_thesis_folder + "partition/partition_test.csv")
     print(all_dataframe)
 
     # Output definitions for reference
     d = g_models.partition_model.polyseme_dict
     for preposition in d:
         for polyseme in d[preposition]:
-            polyseme.output_definition()
+            filename = extra_thesis_folder + "partition/definitions/" + polyseme.preposition + "-" + polyseme.polyseme_name + ".csv"
+            polyseme.output_definition(filename=filename)
 
+    # Test kfold
 
-def test_partition_model(runs, k, study):
-    m = MultipleRunsGeneric(GeneratePartitionModels, "extra thesis results/partition", "extra thesis results/partition",
+    m = MultipleRunsGeneric(GeneratePartitionModels, extra_thesis_folder + "partition",
+                            extra_thesis_folder + "partition",
                             study, number_runs=runs, k=k, compare="y")
     print(("Test Model k = " + str(k)))
     m.validation()
@@ -402,8 +398,19 @@ def test_additional_models(runs, k, study_info_):
         study_info_ (TYPE): Description
         :param study_info_:
     """
-    m = MultipleRunsGeneric(GenerateAdditionalModels, "extra thesis results/refined models",
-                            "extra thesis results/refined models",
+    all_scenes = study_info_.scene_name_list
+    p_models = GenerateAdditionalModels(all_scenes, all_scenes, study_info_)
+
+    models = p_models.models
+
+    t = TestModels(models, "all")
+    all_dataframe = t.score_dataframe.copy()
+
+    all_dataframe.to_csv(extra_thesis_folder + "refined models/all_test.csv")
+    print(all_dataframe)
+
+    m = MultipleRunsGeneric(GenerateAdditionalModels, extra_thesis_folder + "refined models",
+                            extra_thesis_folder + "refined models",
                             study_info_, number_runs=runs, k=k, compare="y")
     print(("Test Model k = " + str(k)))
     m.validation()
@@ -420,7 +427,25 @@ def test_model_all_prepositions(runs, k, study_info_):
         study_info_ (TYPE): Description
         :param study_info_:
     """
-    m = MultipleRunsPolysemyModels(study_info_, test_prepositions=preposition_list, number_runs=runs, k=k, compare="y")
+    # First test on all scenes:
+
+    all_scenes = study_info_.scene_name_list
+    p_models = GeneratePolysemeModels(all_scenes, all_scenes, study_info_, test_prepositions=preposition_list)
+
+    models = p_models.models
+
+    t = TestModels(models, "all")
+    all_dataframe = t.score_dataframe.copy()
+
+    all_dataframe.to_csv(extra_thesis_folder + "all prepositions/all_test.csv")
+    print(all_dataframe)
+
+    # Then k-fold
+
+    m = MultipleRunsGeneric(GeneratePolysemeModels, extra_thesis_folder + "all prepositions",
+                            extra_thesis_folder + "all prepositions",
+                            study_info_, number_runs=runs, k=k, compare="y", test_prepositions=preposition_list)
+
     print(("Test Model k = " + str(k)))
     m.validation()
     m.output()
@@ -428,26 +453,28 @@ def test_model_all_prepositions(runs, k, study_info_):
 
 
 def output_unsatisfied_constraints():
-    study_info = StudyInfo("2019 study")
+    study_info_ = StudyInfo("2019 study")
 
-    scene_list = study_info.scene_name_list
+    scene_list = study_info_.scene_name_list
 
-    additional_models = GenerateAdditionalModels(scene_list, scene_list, study_info)
+    additional_models = GenerateAdditionalModels(scene_list, scene_list, study_info_)
 
     for model in additional_models.models:
         model.output_unsatisfied_constraints()
 
 
 if __name__ == '__main__':
-    output_unsatisfied_constraints()
+    # output_unsatisfied_constraints()
 
     # plot_sr_typicality()
 
     # # K-fold for all prepositions
-    # if polysemous_preposition_list != preposition_list:
-    #     # test_partitionmodel_on_all_scenes(study_info)
-    #     test_model_all_prepositions(10, 10, study_info)
-    #     test_partition_model(10, 10, study_info)
-    #     test_additional_models(10, 10, study_info)
-    # else:
-    #     print("Edit poly preposition list")
+    if polysemous_preposition_list != preposition_list:
+        study_info = StudyInfo("2019 study")
+
+        test_partition_model(10, 10, study_info)
+        test_model_all_prepositions(10, 10, study_info)
+
+        test_additional_models(10, 10, study_info)
+    else:
+        print("Edit poly preposition list")

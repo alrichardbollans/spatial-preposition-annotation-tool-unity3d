@@ -1,0 +1,4 @@
+,Distinct Prototype,Baseline Model,KMeans Model,Refined Distinct Model,Median Distinct Model
+p_value,0.0004666853,2.09888838043361E-05,0.0002079082,0,8.03046163586939E-11
+Our model wins,59,55,56,0,74
+Other model wins,30,29,31,0,19

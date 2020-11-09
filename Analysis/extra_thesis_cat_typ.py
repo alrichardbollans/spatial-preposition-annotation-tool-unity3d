@@ -1,3 +1,6 @@
+import csv
+from itertools import combinations
+
 import pandas as pd
 import numpy as np
 # Modules for plotting
@@ -10,6 +13,7 @@ from data_import import StudyInfo, Configuration
 from compile_instances import InstanceCollection, SemanticCollection
 from extra_thesis_polysemy import GenerateAdditionalModels
 from polysemy_analysis import sv_filetag
+from process_data import UserData, ModSemanticData, SemanticData, ComparativeData
 
 preposition_list = StudyInfo.preposition_list
 
@@ -102,12 +106,17 @@ class ConservativeSelectionRatioModel(SelectionRatioModel):
         print(len(test_constraints))
         return test_constraints
 
+
 def output_unsatisfied_constraints():
     study_info = StudyInfo("2019 study")
 
     scene_list = study_info.scene_name_list
 
-    sr_model = ConservativeSelectionRatioModel(scene_list, study_info)
+    # sr_model = ConservativeSelectionRatioModel(scene_list, study_info)
+    #
+    # sr_model.output_unsatisfied_constraints()
+
+    sr_model = SelectionRatioModel(scene_list, study_info)
 
     sr_model.output_unsatisfied_constraints()
 
@@ -162,7 +171,7 @@ def plot_sr_typicality():
 
         fig, ax = plt.subplots()
 
-        ax.set_xlabel("Typicality")
+        ax.set_xlabel("Typicality calculated by Refined Model")
 
         ax.set_ylabel("Selection Ratio")
 
@@ -173,7 +182,7 @@ def plot_sr_typicality():
 
         fig, ax = plt.subplots()
 
-        ax.set_xlabel("Typicality")
+        ax.set_xlabel("Typicality calculated by Polysemy Model")
 
         ax.set_ylabel("Selection Ratio")
 
@@ -208,5 +217,182 @@ def plot_sr_typicality():
     pvalue_df.to_csv(plot_folder + "pvalues.csv")
 
 
+def compare_2019_cat_typ():
+    results_folder = "extra thesis results/2019 study cat typ comparison"
+    # 2019 study data allows us to generate a model of typicality
+    model_study_info = StudyInfo("2019 study")
+    study_info = StudyInfo("2019 study")
+    # Begin by loading users
+    userdata = UserData(study_info)
+
+    # data
+    sv_data = SemanticData(userdata)
+    comparative_data = ComparativeData(userdata)
+
+    # Typicality model
+    scene_list = model_study_info.scene_name_list
+
+    # significance level to use
+    sig_level = 0.1
+    simple_config_list = sv_data.config_list
+    count_number_sign_pairs = 0  # NUmber of pairs where one of the configs is significantly better than the other
+
+    # Get config list of tested configurations
+    config_list = []
+    for simple_config in simple_config_list:
+        c = Configuration(simple_config.scene, simple_config.figure, simple_config.ground, study_info)
+        config_list.append(c)
+
+    config_pairs = list(combinations(config_list, 2))
+    with open(
+            results_folder + "/"
+            + "results.csv",
+            "w",
+    ) as results_csvfile, open(
+        results_folder + "/"
+        + "disagreements.csv",
+        "w",
+    ) as disagcsvfile, open(
+        results_folder + "/"
+        + "monotonicity-preserving-examples.csv",
+        "w",
+    ) as monocsvfile:
+        results_writer = csv.writer(results_csvfile)
+        disag_writer = csv.writer(disagcsvfile)  # Collect disagreements
+        mono_writer = csv.writer(monocsvfile)  # Monotone examples
+        heading = [
+            "Preposition", "Scene", "Ground",
+            "Figure 1",
+            "Figure 2",
+            "Better Category Member",
+            "More Typical Configuration"
+        ]
+        results_writer.writerow(heading)
+        disag_writer.writerow(heading)
+        mono_writer.writerow(
+            [
+                "Preposition",
+                "Configuration 1",
+                "Configuration 2",
+                "Configurations Labelled",
+                "More Typical Configuration"
+            ]
+        )
+
+        for preposition in StudyInfo.preposition_list:
+
+            print("Outputting results for:" + str(preposition))
+
+            for pair in config_pairs:
+                c1 = pair[0]
+                c2 = pair[1]
+
+                if not (c1.configuration_match(c2)):
+                    # If they are configrs being compared in comp task
+                    if c1.scene == c2.scene and c1.ground ==c2.ground:
+                        sv_stat = sv_data.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
+                        times_c1_labelled = sv_stat[0]
+                        times_c1_not_labelled = sv_stat[1]
+                        number_of_tests1 = times_c1_labelled + times_c1_not_labelled
+                        # If c1 tested at least once
+                        if number_of_tests1 != 0:
+
+                            c1_sr = times_c1_labelled / number_of_tests1
+
+                            number_of_tests2 = sv_stat[2] + sv_stat[3]
+
+                            # if c2 tested at least once
+                            if number_of_tests2 != 0:
+                                c2_sr = sv_stat[2] / number_of_tests2
+
+                                if preposition == "in" and c1.scene=="compsvo79" and c1.ground == "table":
+                                    print("####")
+                                    print(times_c1_labelled)
+                                    print(times_c1_not_labelled)
+                                    print(c1.figure)
+                                    print(c1_sr)
+                                    print(c2.figure)
+                                    print(c2_sr)
+
+                                # Work out if monotone example
+                                same_categorisation = False
+                                configs_labelled = ""
+                                if c1_sr == c2_sr:
+                                    if c1_sr == 1:
+                                        configs_labelled = "Always"
+                                        same_categorisation = True
+                                    if c1_sr == 0:
+                                        configs_labelled = "Never"
+                                        same_categorisation = True
+
+                                # Calculate better config and p value
+                                more_typical_config = False
+                                p_value = 1
+                                if c1_sr == c2_sr:
+                                    better_config = "None"
+
+                                elif c1_sr > c2_sr:
+                                    better_config = c1.string_for_cattyp_table()
+                                    p_value = sv_stat[4]
+                                else:
+                                    sv_stat = sv_data.calculate_pvalue_c1_better_than_c2(preposition, c2, c1)
+                                    p_value = sv_stat[4]
+                                    better_config = c2.string_for_cattyp_table()
+
+                                typ_stat = comparative_data.calculate_pvalue_c1_better_than_c2(preposition, c1, c2)
+                                typ_number_comparisons = typ_stat[0]
+
+                                # If at least one comparison test
+                                if typ_number_comparisons != 0:
+                                    c1_selected_over_c2 = typ_stat[1]
+                                    c2_selected_over_c1 = typ_stat[2]
+
+                                    typ_p_value = 1
+                                    if c1_selected_over_c2 == c2_selected_over_c1:
+                                        typ_config = "None"
+                                    elif c1_selected_over_c2 > c2_selected_over_c1:
+                                        typ_config = c1.string_for_cattyp_table()
+                                        typ_p_value = typ_stat[3]
+                                    else:
+                                        typ_config = c2.string_for_cattyp_table()
+                                        typ_stat = comparative_data.calculate_pvalue_c1_better_than_c2(preposition, c2, c1)
+                                        typ_p_value = typ_stat[3]
+
+                                    disagreement = False
+
+                                    if better_config != "None" and typ_config != "None" and better_config != typ_config:
+                                        disagreement = True
+
+                                    if p_value <= sig_level:
+                                        better_config += "*"
+                                    if typ_p_value <= sig_level:
+                                        typ_config += "*"
+                                        more_typical_config = True
+
+                                    if p_value <= sig_level or typ_p_value <= sig_level:
+                                        count_number_sign_pairs += 1
+
+                                    to_write = (
+                                        [preposition,c1.scene,c1.ground, c1.figure, c2.figure,
+                                         better_config,
+                                         typ_config]
+                                    )
+
+                                    results_writer.writerow(to_write)
+                                    if disagreement:
+                                        disag_writer.writerow(to_write)
+
+                                    if same_categorisation and more_typical_config:
+                                        mono_write = (
+                                            [preposition, c1.string_for_cattyp_table(), c2.string_for_cattyp_table(),
+                                             configs_labelled,
+                                             typ_config]
+                                        )
+                                        mono_writer.writerow(mono_write)
+
+        results_writer.writerow(["Number of significant pairs", str(count_number_sign_pairs)])
+
+
 if __name__ == '__main__':
-    output_unsatisfied_constraints()
+    compare_2019_cat_typ()
+    # output_unsatisfied_constraints()
