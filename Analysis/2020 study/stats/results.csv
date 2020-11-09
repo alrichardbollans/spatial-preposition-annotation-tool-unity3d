@@ -15,7 +15,7 @@ against,"[table,box]","[box,table]","[0.0528],[0.0636]","[],[Fixed ground. Mobil
 on,"[spoon,plate]","[clock,board]","[0.0604],[0.141]","[Ground is flat container],[Ground is larger than figure]","[spoon,plate]","[spoon,plate]"
 on,"[spoon,plate]","[mug,pencil]","[0.0604],[0.0401]","[Ground is flat container],[Ground is smaller than figure]","[spoon,plate]","[mug,pencil]"
 on,"[spoon,plate]","[pear,bowl]","[0.0604],[0.0409]","[Ground is flat container],[Ground is convex container]","[spoon,plate]*","[spoon,plate]*"
-on,"[clock,board]","[mug,pencil]","[0.141],[0.0401]","[Ground is larger than figure],[Ground is smaller than figure]","[mug,pencil]","[mug,pencil]"
+on,"[clock,board]","[mug,pencil]","[0.141],[0.0401]","[Ground is larger than figure],[Ground is smaller than figure]","[clock,board]","[mug,pencil]"
 on,"[clock,board]","[pear,bowl]","[0.141],[0.0409]","[Ground is larger than figure],[Ground is convex container]","[clock,board]*","[clock,board]*"
 on,"[mug,pencil]","[pear,bowl]","[0.0401],[0.0409]","[Ground is smaller than figure],[Ground is convex container]","[mug,pencil]*","[mug,pencil]*"
 on top of,"[spoon,plate]","[clock,board]","[0.0548],[0.0606]","[Ground is flat container],[Ground is larger than figure]","[spoon,plate]*","[spoon,plate]*"
