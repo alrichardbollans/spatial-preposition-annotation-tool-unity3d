@@ -14,7 +14,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-from basic_model_testing import GeneratePrepositionModelParameters, Features
+from basic_model_testing import GeneratePrepositionModelParameters, Features, preposition_list
 from data_import import Configuration, StudyInfo
 from polysemy_analysis import polysemous_preposition_list, GeneratePolysemeModels
 
@@ -122,10 +122,16 @@ class Clustering:
 
         self.all_scenes = self.study_info.scene_name_list
         self.preposition = preposition
+
         self.generated_polysemy_models = generated_polysemy_models
 
-        self.p_models_params = self.generated_polysemy_models.preposition_parameters_dict[preposition]
+        if generated_polysemy_models is not None:
+            
 
+            self.p_models_params = self.generated_polysemy_models.preposition_parameters_dict[preposition]
+        else:
+            self.p_models_params = GeneratePrepositionModelParameters(self.study_info, preposition, self.study_info.scene_name_list,
+                                                                    features_to_remove=Configuration.ground_property_features)
         # All selected instances
         self.possible_instances_all_features = self.p_models_params.affAllFeatures
         self.possible_instances_features = self.p_models_params.affFeatures
@@ -195,6 +201,8 @@ class Clustering:
             thresh = 0.7 * max(Z[:, 2])  # Default threshold
         dendrogram(Z, color_threshold=thresh)
 
+        plt.xlabel('Preposition Instances')
+        plt.ylabel('Distances between clusters')
         plt.savefig(self.dendrogram_pdf, bbox_inches='tight')
 
         # Form flat clusters based on threshold
@@ -477,13 +485,13 @@ def work_out_all_hry_clusters(study_info_):
     Args:
         study_info_ (TYPE): Description
     """
-    all_scenes = study_info_.scene_name_list
-    generated_polysemy_models = GeneratePolysemeModels(all_scenes, all_scenes, study_info_,
-                                                       preserve_empty_polysemes=True)
+    # all_scenes = study_info_.scene_name_list
+    # generated_polysemy_models = GeneratePolysemeModels(all_scenes, all_scenes, study_info_,
+                                                       # preserve_empty_polysemes=True)
     print("Working out hry clusters")
-    for preposition in polysemous_preposition_list:
+    for preposition in preposition_list:
         print(preposition)
-        c = Clustering(study_info_, preposition, generated_polysemy_models=generated_polysemy_models)
+        c = Clustering(study_info_, preposition)
         c.work_out_hierarchy_model()
 
 
