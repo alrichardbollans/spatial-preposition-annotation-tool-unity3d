@@ -119,7 +119,7 @@ class NewGeneratePrepositionModelParameters(GeneratePrepositionModelParameters):
                                                     given_dataset=new_dataset)
 
     def remove_nontrainingscenes(self, d):
-        print('new remove being called')
+
         return d
 
 
@@ -127,6 +127,10 @@ class NewGeneratePrepositionModelParameters(GeneratePrepositionModelParameters):
 class GenerateModelsSplitUsers:
 
     def __init__(self, train_users, test_users, study_info):
+        print(train_users)
+        print(len(train_users))
+        print(test_users)
+        print(len(test_users))
         # TO cover the case where full scene list is passed
         if train_users == study_info.scene_name_list:
             train_users = study_info.user_name_list
@@ -141,7 +145,9 @@ class GenerateModelsSplitUsers:
         self.create_new_test_dataset(test_users)
 
     def create_new_train_dataset(self, train_users):
-
+        print('writing new train set')
+        print(train_users)
+        print(len(train_users))
         # Need to call this every train/test split
         newsvcollection = SemanticCollection(self.study_info)
 
@@ -207,6 +213,9 @@ class GenerateModelsSplitUsers:
                         outputwriter.writerow(row)
 
     def create_new_test_dataset(self, test_users):
+        print('writing new test set')
+        print(test_users)
+        print(len(test_users))
         newcompcollection = ComparativeCollection(self.study_info)
 
         ### Reads annotations from clean files
@@ -340,6 +349,18 @@ class MultipleRunsGenericSplitParticipants(MultipleRunsGeneric):
                                      test_prepositions=test_prepositions, number_runs=number_runs,
                                      k=k, compare=compare)
 
+    def folds_check(self, folds):
+        """Summary
+
+        Args:
+            folds (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+
+        return True
+
     def get_validation_scene_split(self):
         """Summary
 
@@ -372,18 +393,18 @@ class MultipleRunsGenericSplitParticipants(MultipleRunsGeneric):
 def test_basic_models():
     study_info = StudyInfo("2019 study")
     all_scenes = study_info.scene_name_list
-    all_users = study_info.user_name_list
-    p_models = GenerateBasicModelsSplitUsers(all_users, all_users, study_info)
+    # all_users = study_info.user_name_list
+    # p_models = GenerateBasicModelsSplitUsers(all_users, all_users, study_info)
+    #
+    # models = p_models.models
+    #
+    # t = TestModels(models, "all")
+    # all_dataframe = t.score_dataframe.copy()
+    #
+    # all_dataframe.to_csv(extra_folder + "/scores/all_test.csv")
+    # print(all_dataframe)
 
-    models = p_models.models
-
-    t = TestModels(models, "all")
-    all_dataframe = t.score_dataframe.copy()
-
-    all_dataframe.to_csv(extra_folder + "/scores/all_test.csv")
-    print(all_dataframe)
-
-    runs =1
+    runs =100
     k=2
     m = MultipleRunsGenericSplitParticipants(GenerateBasicModelsSplitUsers, extra_folder + "/scores",
                             extra_folder + "/scores",
