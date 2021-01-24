@@ -1777,6 +1777,7 @@ class MultipleRuns:
                     return False
         return True
 
+
     def validation(self):
         """Summary
         """
@@ -1797,9 +1798,10 @@ class MultipleRuns:
                             print(("Fold Number:" + str(folds.index(f))))
                             test_scenes = f
                             train_scenes = []
-                            for s in self.scene_list:
-                                if s not in test_scenes:
-                                    train_scenes.append(s)
+                            for train_fold in folds:
+                                if train_fold != f:
+                                    for t in train_fold:
+                                        train_scenes.append(t)
                             self.single_validation_test(train_scenes, test_scenes)
                         break
                     else:
