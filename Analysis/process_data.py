@@ -129,7 +129,7 @@ class UserData:
         """
 
         with open(
-                self.study_info.data_folder + "/" + "clean_users.csv", "w"
+                self.study_info.clean_user_csv, "w"
         ) as csvfile:
             writer = csv.writer(csvfile)
 

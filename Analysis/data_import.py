@@ -305,6 +305,7 @@ class StudyInfo:
 
         self.data_folder = self.name + "/" + self.base_collected_data_folder_name
         self.raw_user_csv = self.data_folder + "/" + "userlist.csv"
+        self.clean_user_csv = self.data_folder + "/" + "clean_users.csv"
 
         self.raw_annotation_csv = self.data_folder + "/" + "annotationlist.csv"
 
@@ -325,6 +326,9 @@ class StudyInfo:
 
         # Useful lists
         self.scene_list, self.scene_name_list = self.get_scenes()
+        self.user_name_list = self.get_user_names()
+        print('user names')
+        print(self.user_name_list)
 
         self.all_feature_keys = []
 
@@ -379,6 +383,19 @@ class StudyInfo:
         """
         return self.config_ratio_folder + filetag + '-ratio-list' + preposition + ' .csv'
 
+    def get_user_names(self):
+        sem_annotations_csv = self.data_folder + "/" + self.sem_annotations_name
+        names_out = []
+        with open(sem_annotations_csv, "r") as file:
+            reader = csv.reader(file)
+            datalist = list(reader)
+
+            for ann in datalist[1:]:
+                user = ann[1]
+                if user not in names_out:
+                    names_out.append(user)
+
+        return names_out
     def get_scenes(self):
         """Summary
         

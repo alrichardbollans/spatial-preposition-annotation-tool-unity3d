@@ -32,7 +32,7 @@ class Constraint:
     # LHS is values of first config
     # RHS is values of second config
 
-    def __init__(self, scene, preposition, ground, f1, f2, weight, lhs, rhs):
+    def __init__(self, scene, preposition, ground, f1, f2, weight, lhs, rhs, tested_users=None):
         """Summary
         
         Args:
@@ -45,6 +45,7 @@ class Constraint:
             lhs (dict): Set of features for (f1,ground) configuration
             rhs (dict): Set of features for (f2,ground) configuration
         """
+
         self.scene = scene
         self.preposition = preposition
         self.ground = ground
@@ -61,6 +62,10 @@ class Constraint:
         self.rhs_values = np.array(list(self.rhs.values()))
         # Weight given to constraint
         self.weight = weight
+        # users who were tested on this instance
+        if tested_users is None:
+            tested_users = []
+        self.tested_users = tested_users
 
         # Modify the column headings so they are unique
         self.lhs_columns = []
@@ -197,12 +202,13 @@ class Constraint:
             return True
         else:
             return False
+
     @staticmethod
-    def constraint_feature_value_match(c1,c2):
+    def constraint_feature_value_match(c1, c2):
         index = 0
         for value in c1.rhs.values():
-            rounded1 = round(value,10)
-            rounded2 = round(list(c2.rhs.values())[index],10)
+            rounded1 = round(value, 10)
+            rounded2 = round(list(c2.rhs.values())[index], 10)
             if rounded1 != rounded2:
                 return False
             index += 1
@@ -215,6 +221,8 @@ class Constraint:
                 return False
             index += 1
         return True
+
+
 class Comparison:
     """Summary
     

@@ -188,7 +188,8 @@ class GeneratePrepositionModelParameters:
     # degree to use in polynomial regression
     polynomial_degree = 3
 
-    def __init__(self, study_info_, preposition, train_scenes, features_to_remove=None, polyseme=None):
+    def __init__(self, study_info_, preposition, train_scenes, features_to_remove=None, polyseme=None,
+                 given_dataset=None):
         """Summary
         
         Args:
@@ -225,7 +226,10 @@ class GeneratePrepositionModelParameters:
         # Set of values with selection information
         # Only includes configurations that were tested at least once
         config_ratio_csv = self.study_info.config_ratio_csv(sv_filetag, preposition)
-        self.dataset = pd.read_csv(config_ratio_csv)
+        if given_dataset is None:
+            self.dataset = pd.read_csv(config_ratio_csv)
+        else:
+            self.dataset = given_dataset
 
         if self.polyseme is not None:
 
@@ -868,7 +872,8 @@ class Model:
     """
 
     # Puts together preposition models and has various functions for testing
-    def __init__(self, name, test_scenes, study_info_, test_prepositions=preposition_list):
+    def __init__(self, name, test_scenes, study_info_, test_prepositions=preposition_list,
+                 constraint_csv_removed_users=None):
         """Summary
         
         Args:
@@ -890,7 +895,10 @@ class Model:
         self.test_prepositions = test_prepositions
 
         # Dictionary containing constraints to satisfy
-        self.constraint_dict = Constraint.read_from_csv(self.study_info.constraint_csv)
+        if constraint_csv_removed_users is None:
+            self.constraint_dict = Constraint.read_from_csv(self.study_info.constraint_csv)
+        else:
+            self.constraint_dict = Constraint.read_from_csv(constraint_csv_removed_users)
         # Csv to write unsatisfied constraints when testing/training on all scenes
         self.unsatisfied_constraints_csv = "extra thesis results/unsatisfied constraints/" + self.name + ".csv"
 
@@ -1104,10 +1112,12 @@ class Model:
 class PrototypeModel(Model):
     name = "Our Prototype"
 
-    def __init__(self, preposition_model_dict, test_scenes, study_info_, test_prepositions=preposition_list):
+    def __init__(self, preposition_model_dict, test_scenes, study_info_, test_prepositions=preposition_list,
+                 constraint_csv_removed_users=None):
         self.preposition_model_dict = preposition_model_dict
 
-        Model.__init__(self, PrototypeModel.name, test_scenes, study_info_, test_prepositions=test_prepositions)
+        Model.__init__(self, PrototypeModel.name, test_scenes, study_info_, test_prepositions=test_prepositions,
+                       constraint_csv_removed_users=constraint_csv_removed_users)
 
     def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
         p_model = self.preposition_model_dict[preposition]
@@ -1122,10 +1132,12 @@ class PrototypeModel(Model):
 class CSModel(Model):
     name = "Conceptual Space"
 
-    def __init__(self, preposition_model_dict, test_scenes, study_info_):
+    def __init__(self, preposition_model_dict, test_scenes, study_info_,
+                 constraint_csv_removed_users=None):
         self.preposition_model_dict = preposition_model_dict
 
-        Model.__init__(self, CSModel.name, test_scenes, study_info_)
+        Model.__init__(self, CSModel.name, test_scenes, study_info_,
+                       constraint_csv_removed_users=constraint_csv_removed_users)
 
     def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
         p_model = self.preposition_model_dict[preposition]
@@ -1139,10 +1151,12 @@ class CSModel(Model):
 class ExemplarModel(Model):
     name = "Exemplar"
 
-    def __init__(self, preposition_model_dict, test_scenes, study_info_):
+    def __init__(self, preposition_model_dict, test_scenes, study_info_,
+                 constraint_csv_removed_users=None):
         self.preposition_model_dict = preposition_model_dict
 
-        Model.__init__(self, ExemplarModel.name, test_scenes, study_info_)
+        Model.__init__(self, ExemplarModel.name, test_scenes, study_info_,
+                       constraint_csv_removed_users=constraint_csv_removed_users)
 
     def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
 
@@ -1179,9 +1193,11 @@ class ExemplarModel(Model):
 class ProximityModel(Model):
     name = "Proximity"
 
-    def __init__(self, test_scenes, study_info_):
+    def __init__(self, test_scenes, study_info_,
+                 constraint_csv_removed_users=None):
 
-        Model.__init__(self, ProximityModel.name, test_scenes, study_info_)
+        Model.__init__(self, ProximityModel.name, test_scenes, study_info_,
+                       constraint_csv_removed_users=constraint_csv_removed_users)
 
         prototype_array = []
         weight_array = []
@@ -1208,8 +1224,10 @@ class ProximityModel(Model):
 class SimpleModel(Model):
     name = "Simple"
 
-    def __init__(self, test_scenes, study_info_):
-        Model.__init__(self, SimpleModel.name, test_scenes, study_info_)
+    def __init__(self, test_scenes, study_info_,
+                 constraint_csv_removed_users=None):
+        Model.__init__(self, SimpleModel.name, test_scenes, study_info_,
+                       constraint_csv_removed_users=constraint_csv_removed_users)
 
         self.prototype_dictionary = dict()
         self.weight_dictionary = dict()
@@ -1246,8 +1264,10 @@ class SimpleModel(Model):
 class BestGuessModel(Model):
     name = "Best Guess"
 
-    def __init__(self, test_scenes, study_info_):
-        Model.__init__(self, BestGuessModel.name, test_scenes, study_info_)
+    def __init__(self, test_scenes, study_info_,
+                 constraint_csv_removed_users=None):
+        Model.__init__(self, BestGuessModel.name, test_scenes, study_info_,
+                       constraint_csv_removed_users=constraint_csv_removed_users)
 
         self.prototype_dictionary = dict()
         self.weight_dictionary = dict()
@@ -1503,12 +1523,6 @@ class MultipleRuns:
 
         self.get_file_strings()
 
-        if self.features_to_test is not None:
-            self.feature_removed_average_csv = dict()
-            for feature in self.features_to_test:
-                self.feature_removed_average_csv[
-                    feature] = self.scores_tables_folder + "/averagemodel scores " + self.file_tag + " " + feature + "removed.csv"
-
         self.prepare_comparison_dicts()
         # folds_dict contains overall scores on each fold for each model
         # our_model_feature_folds_dict contains scores for each preposition when feature is included
@@ -1540,6 +1554,13 @@ class MultipleRuns:
 
             # Df of results from each fold
             self.folds_csv = self.scores_tables_folder + "/folds " + self.file_tag + ".csv"
+
+        if self.features_to_test is not None:
+            self.feature_removed_average_csv = dict()
+            for feature in self.features_to_test:
+                self.feature_removed_average_csv[
+                    feature] = self.scores_tables_folder + "/averagemodel scores " + self.file_tag + " " + feature + "removed.csv"
+
 
     def prepare_comparison_dicts(self):
         """Summary
