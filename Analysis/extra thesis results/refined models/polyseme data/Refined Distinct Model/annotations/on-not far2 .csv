@@ -1,0 +1,2 @@
+,Scene,Figure,Ground,ground_lightsource,ground_container,support,ground_verticality,shortest_distance,contact_proportion,above_proportion,below_proportion,bbox_overlap_proportion,horizontal_distance,f_covers_g,g_covers_f,location_control,selection_ratio,selected_atleast_once
+38,compsvi25,pencil (1),box,-0.12166736738870315,1.672698320953217,1.6837178985981087,-0.3832424471159501,-0.5053391764540857,-0.4495031203312162,-0.9059561524155018,-0.7484621051199398,1.4162092088765017,-0.3124233888433996,-0.6159708775391596,-0.006365186033100055,1.843259548953181,1.0,1
