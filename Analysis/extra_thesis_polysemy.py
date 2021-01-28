@@ -115,47 +115,47 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
         :return:
         """
         new_salient_features = []
-        if preposition in polysemous_preposition_list:
-            # Each of the salient features are proportions so we use these values
-            # This makes generation non-deterministic for these models
-            train_scenes, validation_scenes = train_test_split(self.train_scenes, test_size=0.5)
-            g_values_to_try = [0.5, 0.6, 0.7, 0.8, 0.9]
-            l_values_to_try = [0.1, 0.2, 0.2, 0.4, 0.5]
 
-            for f in original_salient_features:
-                if f.name == "horizontal_distance":
-                    g_values_to_try = [0.05, 0.1, 0.15, 0.2]
-                    l_values_to_try = g_values_to_try
-                if f.name == "contact_proportion":
-                    g_values_to_try = [0.1, 0.2, 0.3, 0.4, 0.5]
-                    l_values_to_try = [0.1, 0.2, 0.3, 0.4, 0.5]
-                if f.gorl == "l":
-                    values_to_try = l_values_to_try.copy()
-                else:
-                    values_to_try = g_values_to_try.copy()
+        # Each of the salient features are proportions so we use these values
+        # This makes generation non-deterministic for these models
+        train_scenes, validation_scenes = train_test_split(self.train_scenes, test_size=0.5)
+        g_values_to_try = [0.5, 0.6, 0.7, 0.8, 0.9]
+        l_values_to_try = [0.1, 0.2, 0.2, 0.4, 0.5]
 
-                best_value = 0
-                best_score = 0
-                for v in values_to_try:
-                    # Convert to standardised values
-                    v = self.feature_processer.convert_normal_value_to_standardised(f.name, v)
+        for f in original_salient_features:
+            if f.name == "horizontal_distance":
+                g_values_to_try = [0.05, 0.1, 0.15, 0.2]
+                l_values_to_try = g_values_to_try
+            if f.name == "contact_proportion":
+                g_values_to_try = [0.1, 0.2, 0.3, 0.4, 0.5]
+                l_values_to_try = [0.1, 0.2, 0.3, 0.4, 0.5]
+            if f.gorl == "l":
+                values_to_try = l_values_to_try.copy()
+            else:
+                values_to_try = g_values_to_try.copy()
 
-                    score1 = self.test_ideal_feature_value(train_scenes, validation_scenes, preposition,
-                                                           original_salient_features, f.name, v)
-                    score2 = self.test_ideal_feature_value(validation_scenes, train_scenes, preposition,
-                                                           original_salient_features, f.name, v)
+            best_value = 0
+            best_score = 0
+            for v in values_to_try:
+                # Convert to standardised values
+                v = self.feature_processer.convert_normal_value_to_standardised(f.name, v)
 
-                    total = score1 + score2
-                    if total > best_score:
-                        best_score = total
-                        best_value = v
+                score1 = self.test_ideal_feature_value(train_scenes, validation_scenes, preposition,
+                                                       original_salient_features, f.name, v)
+                score2 = self.test_ideal_feature_value(validation_scenes, train_scenes, preposition,
+                                                       original_salient_features, f.name, v)
 
-                if best_value == 0:
-                    raise ValueError("best_value unassigned")
+                total = score1 + score2
+                if total > best_score:
+                    best_score = total
+                    best_value = v
 
-                # The original feature is updated, which is better for training the next feature
-                f.value = best_value
-                new_salient_features.append(f)
+            if best_value == 0:
+                raise ValueError("best_value unassigned")
+
+            # The original feature is updated, which is better for training the next feature
+            f.value = best_value
+            new_salient_features.append(f)
         new_polysemes = self.generate_polysemes(preposition, new_salient_features)
         return new_polysemes
 
@@ -249,8 +249,7 @@ class GenerateAdditionalModels(GeneratePolysemeModels):
     # name of the model we want to compare with other models, and use to test particular features
     our_model_name = refined_distinct_model_name
 
-    def __init__(self, train_scenes, test_scenes, study_info_, test_prepositions=preposition_list,
-                 preserve_empty_polysemes=False):
+    def __init__(self, train_scenes, test_scenes, study_info_, test_prepositions=preposition_list,preserve_empty_polysemes=False):
         """Summary
 
         Args:
@@ -264,7 +263,7 @@ class GenerateAdditionalModels(GeneratePolysemeModels):
             constraint_dict (None, optional): Description
         """
         GeneratePolysemeModels.__init__(self, train_scenes, test_scenes, study_info_,
-                                        test_prepositions=test_prepositions, preserve_empty_polysemes=False)
+                                        test_prepositions=test_prepositions, preserve_empty_polysemes=preserve_empty_polysemes)
 
         self.refined = DistinctPrototypeRefinedPolysemyModel(GenerateAdditionalModels.distinct_refined_model_name,
                                                              self.train_scenes,
@@ -463,18 +462,31 @@ def output_unsatisfied_constraints():
         model.output_unsatisfied_constraints()
 
 
+def output_all_polyseme_info(study_info_):
+    """Summary
+    :param study_info_:
+
+    Args:
+        study_info_ (TYPE): Description
+    """
+    print("outputting all polyseme info")
+    all_scenes = study_info_.scene_name_list
+    generated_polyseme_models = GenerateAdditionalModels(all_scenes, all_scenes, study_info_,
+                                                       preserve_empty_polysemes=True)
+    generated_polyseme_models.refined.output_polyseme_info()
+
 if __name__ == '__main__':
     # output_unsatisfied_constraints()
 
     # plot_sr_typicality()
 
-    # # K-fold for all prepositions
     if polysemous_preposition_list != preposition_list:
         study_info = StudyInfo("2019 study")
+        # output_all_polyseme_info(study_info)
 
-        test_partition_model(10, 10, study_info)
-        test_model_all_prepositions(10, 10, study_info)
-
+        # test_partition_model(10, 10, study_info)
+        # test_model_all_prepositions(10, 10, study_info)
+        #
         test_additional_models(10, 10, study_info)
     else:
         print("Edit poly preposition list")

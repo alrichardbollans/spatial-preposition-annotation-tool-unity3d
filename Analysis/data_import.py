@@ -1,7 +1,7 @@
 """Summary
 Methods and classes for loading the data, related to data format.
 """
-
+import inspect
 import os
 import csv
 import itertools
@@ -327,8 +327,6 @@ class StudyInfo:
         # Useful lists
         self.scene_list, self.scene_name_list = self.get_scenes()
         self.user_name_list = self.get_user_names()
-        print('user names')
-        print(self.user_name_list)
 
         self.all_feature_keys = []
 

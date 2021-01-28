@@ -2179,7 +2179,7 @@ def main(study_info_):
     mpl.rcParams['axes.titlesize'] = 'medium'
     mpl.rcParams['axes.labelsize'] = 'medium'
     mpl.rcParams['ytick.labelsize'] = 'small'
-    plot_kfold_csv(2, study_info_)
+    plot_all_csv(study_info_)
     # 
     # initial_test(study_info_)
     # test_models(study_info_)
