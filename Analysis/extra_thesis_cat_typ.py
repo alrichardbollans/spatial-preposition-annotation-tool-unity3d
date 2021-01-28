@@ -8,14 +8,12 @@ import matplotlib.pyplot as plt
 
 from scipy import stats
 
-from basic_model_testing import Model, GeneratePrepositionModelParameters
+from basic_model_testing import Model, GeneratePrepositionModelParameters, preposition_list,get_standard_preposition_parameters, PrototypeModel
 from data_import import StudyInfo, Configuration
 from compile_instances import InstanceCollection, SemanticCollection
-from extra_thesis_polysemy import GenerateAdditionalModels
-from polysemy_analysis import sv_filetag
-from process_data import UserData, ModSemanticData, SemanticData, ComparativeData
-
-preposition_list = StudyInfo.preposition_list
+from extra_thesis_polysemy import GenerateAdditionalModels, DistinctPrototypeRefinedPolysemyModel
+from polysemy_analysis import sv_filetag, GeneratePolysemeModels
+from process_data import UserData, ModSemanticData, SemanticData, ComparativeData, TypicalityData
 
 
 class SelectionRatioModel(Model):
@@ -394,5 +392,6 @@ def compare_2019_cat_typ():
 
 
 if __name__ == '__main__':
-    compare_2019_cat_typ()
+    plot_sr_typicality()
+    # compare_2019_cat_typ()
     # output_unsatisfied_constraints()

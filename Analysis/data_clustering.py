@@ -16,6 +16,7 @@ import matplotlib.ticker as ticker
 
 from basic_model_testing import GeneratePrepositionModelParameters, Features, preposition_list
 from data_import import Configuration, StudyInfo
+from extra_thesis_polysemy import GenerateAdditionalModels
 from polysemy_analysis import polysemous_preposition_list, GeneratePolysemeModels
 
 
@@ -466,7 +467,7 @@ def output_clustering_info(study_info_):
         study_info_ (TYPE): Description
     """
     all_scenes = study_info_.scene_name_list
-    generated_polysemy_models = GeneratePolysemeModels(all_scenes, all_scenes, study_info_,
+    generated_polysemy_models = GenerateAdditionalModels(all_scenes, all_scenes, study_info_,
                                                        preserve_empty_polysemes=True)
     mpl.rcParams['font.size'] = 15
     mpl.rcParams['legend.fontsize'] = 12
@@ -510,8 +511,8 @@ def main(study_info_):
 
     mpl.rcParams['axes.titlesize'] = 'large'
     mpl.rcParams['axes.labelsize'] = 'large'
-    # output_clustering_info(study_info_)
-    work_out_all_hry_clusters(study_info_)
+    output_clustering_info(study_info_)
+    # work_out_all_hry_clusters(study_info_)
 
 
 if __name__ == '__main__':
