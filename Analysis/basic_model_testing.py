@@ -1335,7 +1335,7 @@ class BestGuessModel(Model):
 
 
 class ModelGenerator:
-    def __init__(self, train_scenes, test_scenes, study_info_):
+    def __init__(self, train_scenes, test_scenes, study_info_,test_prepositions):
         """Summary
 
         Generic model generator. Init of model generators should return model self.models and self.model_names_list
@@ -1356,6 +1356,7 @@ class ModelGenerator:
 
         # Features to remove from consideration (not used in training or testing)
         self.features_to_remove = Configuration.ground_property_features.copy()
+        self.test_prepositions = test_prepositions
 
 
 class GenerateBasicModels(ModelGenerator):
@@ -1383,7 +1384,7 @@ class GenerateBasicModels(ModelGenerator):
         preposition_models_dict = dict()
 
         # Get parameters for each preposition
-        for p in test_prepositions:
+        for p in self.test_prepositions:
             M = GeneratePrepositionModelParameters(self.study_info, p, self.train_scenes,
                                                    features_to_remove=self.features_to_remove)
             M.work_out_models()
