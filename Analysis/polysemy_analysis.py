@@ -25,7 +25,7 @@ from sklearn.cluster import KMeans
 import matplotlib as mpl
 
 from basic_model_testing import TestModels, GeneratePrepositionModelParameters, Model, MultipleRuns, \
-    SemanticMethods, PrototypeModel
+    SemanticMethods, PrototypeModel, ModelGenerator
 from data_import import Configuration, StudyInfo
 from compile_instances import SemanticCollection, ComparativeCollection
 
@@ -788,7 +788,7 @@ class KMeansPolysemyModel(PolysemyModel):
         return out
 
 
-class GeneratePolysemeModels:
+class GeneratePolysemeModels(ModelGenerator):
     """Summary
     
     Attributes:
@@ -836,21 +836,7 @@ class GeneratePolysemeModels:
             constraint_dict (None, optional): Description
         """
 
-        self.study_info = study_info_
-        # Scenes used to train models
-        self.train_scenes = train_scenes
-        # Scenes used to test models
-        self.test_scenes = test_scenes
-
-        # Make sure train and test scenes are distinct, if not using all scenes
-        if self.train_scenes != self.study_info.scene_name_list:
-            f1_set = set(self.train_scenes)
-            f2_set = set(self.test_scenes)
-            if (f1_set & f2_set):
-                raise ValueError('Train and test scenes not distinct')
-
-
-        self.features_to_remove = Configuration.ground_property_features.copy()
+        ModelGenerator.__init__(self, train_scenes, test_scenes, study_info_)
         self.test_prepositions = test_prepositions
         # When empty polysemes are preserved their values are generated as normal
         # e.g. rank,numebr of instances  = 0. THis is useful for outputting data on the polysemes
