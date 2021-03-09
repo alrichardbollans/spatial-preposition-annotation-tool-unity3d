@@ -1688,11 +1688,12 @@ class MultipleRuns:
         else:
             self.dataframe_dict["all_features"] = dataset
 
-        # Get our score from dataframe
-        our_score = dataset.at["Overall", self.model_generator.our_model_name]
+
 
         # Compare Models
         if self.compare is not None:
+            # Get our score from dataframe
+            our_score = dataset.at["Overall", self.model_generator.our_model_name]
             for other_model in self.model_name_list:
 
                 # Get score
