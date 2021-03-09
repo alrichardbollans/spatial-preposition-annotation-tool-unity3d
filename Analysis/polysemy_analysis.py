@@ -237,7 +237,7 @@ class Polyseme:
     #
     #     wf.to_csv(self.regression_weights_csv)
 
-    def output_definition(self,filename = None):
+    def output_definition(self, filename=None):
         """Summary
         """
         if filename is None:
@@ -322,7 +322,7 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
         # e.g. rank,numebr of instances  = 0. THis is useful for outputting data on the polysemes
         # When empty polysemes are not preserved, empty polysemes are assigned values from the baseline model.
         # I.e. Assign True when generating polysemes to explore data
-        #Assign False when testing model.
+        # Assign False when testing model.
 
         self.preserve_empty_polysemes = preserve_empty_polysemes
         # Dictionary of polysemes for each preposition
@@ -898,7 +898,8 @@ class MultipleRunsPolysemyModels(MultipleRuns):
         study_info (TYPE): Description
     """
 
-    def __init__(self, study_info_, test_prepositions=polysemous_preposition_list, number_runs=None, k=None,
+    def __init__(self, model_generator, scores_tables_folder, scores_plots_folder, study_info_,
+                 test_prepositions=polysemous_preposition_list, number_runs=None, k=None,
                  compare=None):
         """Summary
         
@@ -915,11 +916,12 @@ class MultipleRunsPolysemyModels(MultipleRuns):
         """
         self.study_info = study_info_
 
-        MultipleRuns.__init__(self, GeneratePolysemeModels, self.study_info,
-                              test_prepositions=test_prepositions, number_runs=number_runs, k=k, compare=compare, features_to_test=None)
+        MultipleRuns.__init__(self, model_generator, self.study_info, test_prepositions=test_prepositions,
+                              number_runs=number_runs, k=k,
+                              compare=compare, features_to_test=None)
 
-        self.scores_tables_folder = self.study_info.polysemy_score_folder + "tables"
-        self.scores_plots_folder = self.study_info.polysemy_score_folder + "plots"
+        self.scores_tables_folder = scores_tables_folder
+        self.scores_plots_folder = scores_plots_folder
 
         self.get_file_strings()
 
@@ -1031,7 +1033,9 @@ def test_model(runs, k, study_info_):
         study_info_ (TYPE): Description
         :param study_info_:
     """
-    m = MultipleRunsPolysemyModels(study_info_, number_runs=runs, k=k, compare="y")
+    m = MultipleRunsPolysemyModels(GeneratePolysemeModels, study_info_.polysemy_score_folder + "tables",
+                                   study_info.polysemy_score_folder + "plots", study_info_, number_runs=runs, k=k,
+                                   compare="y")
     print(("Test Model k = " + str(k)))
     m.validation()
     m.output()
