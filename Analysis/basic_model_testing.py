@@ -27,7 +27,6 @@ from scipy.special import comb
 
 # Local module imports
 from Analysis.data_import import Configuration
-from Analysis.polysemy_analysis import preposition_list, KMeansPolysemyModel
 from preprocess_features import Features
 from compile_instances import InstanceCollection, SemanticCollection, ComparativeCollection
 from data_import import Configuration, StudyInfo
@@ -2254,20 +2253,5 @@ class MultipleRunsGeneric(MultipleRuns):
                         constraints.append(c)
                 if len(constraints) == 0:
                     return False
-
-            if KMeansPolysemyModel.name in self.Generate_Models_all_scenes.model_name_list:
-                # And also check that there are enough training samples for the K-Means model
-                # in scenes not in fold
-                # (samples must be greater than number of clusters..)
-                scenes_not_in_fold = []
-                for sc in self.study_info.scene_name_list:
-                    if sc not in f:
-                        scenes_not_in_fold.append(sc)
-                for preposition in self.test_prepositions:
-                    # Add some features to remove to ignore print out
-                    prep_model = GeneratePrepositionModelParameters(self.study_info, preposition, scenes_not_in_fold,
-                                                                    features_to_remove=Configuration.ground_property_features)
-                    if len(prep_model.affFeatures.index) < KMeansPolysemyModel.cluster_numbers[preposition]:
-                        return False
 
         return True
