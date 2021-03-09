@@ -836,8 +836,8 @@ class GeneratePolysemeModels(ModelGenerator):
             constraint_dict (None, optional): Description
         """
 
-        ModelGenerator.__init__(self, train_scenes, test_scenes, study_info_)
-        self.test_prepositions = test_prepositions
+        ModelGenerator.__init__(self, train_scenes, test_scenes, study_info_,test_prepositions)
+
         # When empty polysemes are preserved their values are generated as normal
         # e.g. rank,numebr of instances  = 0. THis is useful for outputting data on the polysemes
         # When empty polysemes are not preserved, empty polysemes are assigned values from the baseline model.
