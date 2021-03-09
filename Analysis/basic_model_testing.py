@@ -26,6 +26,8 @@ from sklearn.linear_model import LinearRegression, Ridge
 from scipy.special import comb
 
 # Local module imports
+from Analysis.data_import import Configuration
+from Analysis.polysemy_analysis import preposition_list, KMeansPolysemyModel
 from preprocess_features import Features
 from compile_instances import InstanceCollection, SemanticCollection, ComparativeCollection
 from data_import import Configuration, StudyInfo
@@ -36,6 +38,7 @@ sv_filetag = SemanticCollection.filetag  # Tag for sv task files
 comp_filetag = ComparativeCollection.filetag  # Tag for comp task files
 preposition_list = StudyInfo.preposition_list
 
+# TODO: Seperate functions for testing and functions for model training.
 
 def rename_feature(feature):
     # Rename some features
@@ -1108,6 +1111,20 @@ class Model:
         else:
             raise ValueError('Not testing on all scenes')
 
+    def remove_features_from_array(self, value_array, features_to_remove):
+        value_array = value_array
+        new_array = []
+        # TODO: Test this process
+        if features_to_remove is not None:
+            for feature in self.all_feature_keys:
+
+                if feature not in features_to_remove:
+                    new_array.append(
+                        value_array[self.all_feature_keys.index(feature)])
+            return new_array
+        else:
+            return value_array
+
 
 class PrototypeModel(Model):
     name = "Our Prototype"
@@ -1318,20 +1335,11 @@ class BestGuessModel(Model):
         return out
 
 
-class GenerateBasicModels:
-    """Summary
-    
-
-    """
-    # name of the model we want to compare with other models, and use to test particular features
-    our_model_name = PrototypeModel.name
-
-    # Generating models to test
-    def __init__(self, train_scenes, test_scenes, study_info_, extra_features_to_remove=None, only_test_our_model=None,
-                 test_prepositions=preposition_list):
+class ModelGenerator:
+    def __init__(self, train_scenes, test_scenes, study_info_):
         """Summary
-        
 
+        Generic model generator. Init of model generators should return model self.models and self.model_names_list
         """
         self.study_info = study_info_
 
@@ -1349,6 +1357,24 @@ class GenerateBasicModels:
 
         # Features to remove from consideration (not used in training or testing)
         self.features_to_remove = Configuration.ground_property_features.copy()
+
+
+class GenerateBasicModels(ModelGenerator):
+    """Summary
+    
+
+    """
+    # name of the model we want to compare with other models, and use to test particular features
+    our_model_name = PrototypeModel.name
+
+    # Generating models to test
+    def __init__(self, train_scenes, test_scenes, study_info_, extra_features_to_remove=None, only_test_our_model=None,
+                 test_prepositions=preposition_list):
+        """Summary
+        
+
+        """
+        ModelGenerator.__init__(self, train_scenes, test_scenes, study_info_)
 
         # Extra features may be removed in order to compare performance
         if extra_features_to_remove is not None:
@@ -1560,7 +1586,6 @@ class MultipleRuns:
             for feature in self.features_to_test:
                 self.feature_removed_average_csv[
                     feature] = self.scores_tables_folder + "/averagemodel scores " + self.file_tag + " " + feature + "removed.csv"
-
 
     def prepare_comparison_dicts(self):
         """Summary
@@ -1776,7 +1801,6 @@ class MultipleRuns:
                 if len(Constraints) == 0:
                     return False
         return True
-
 
     def validation(self):
         """Summary
@@ -2190,3 +2214,60 @@ if __name__ == '__main__':
     study_info = StudyInfo("2019 study")
 
     main(study_info)
+
+
+class MultipleRunsGeneric(MultipleRuns):
+    def __init__(self, model_generator, scores_tables_folder, scores_plots_folder, study_info_,
+                 test_prepositions=preposition_list, number_runs=None,
+                 k=None, compare=None):
+        self.study_info = study_info_
+
+        MultipleRuns.__init__(self, model_generator, self.study_info, test_prepositions=test_prepositions,
+                              number_runs=number_runs, k=k,
+                              compare=compare, features_to_test=None)
+
+        self.scores_tables_folder = scores_tables_folder
+        self.scores_plots_folder = scores_plots_folder
+        self.get_file_strings()
+
+    def folds_check(self, folds):
+        """Summary
+
+        Args:
+            folds (TYPE): Description
+
+        Returns:
+            TYPE: Description
+        """
+
+        for f in folds:
+
+            # Check all folds have some constraints to test
+            for preposition in self.test_prepositions:
+
+                all_constraints = self.constraint_dict[preposition]
+
+                constraints = []
+
+                for c in all_constraints:
+                    if c.scene in f:
+                        constraints.append(c)
+                if len(constraints) == 0:
+                    return False
+
+            if KMeansPolysemyModel.name in self.Generate_Models_all_scenes.model_name_list:
+                # And also check that there are enough training samples for the K-Means model
+                # in scenes not in fold
+                # (samples must be greater than number of clusters..)
+                scenes_not_in_fold = []
+                for sc in self.study_info.scene_name_list:
+                    if sc not in f:
+                        scenes_not_in_fold.append(sc)
+                for preposition in self.test_prepositions:
+                    # Add some features to remove to ignore print out
+                    prep_model = GeneratePrepositionModelParameters(self.study_info, preposition, scenes_not_in_fold,
+                                                                    features_to_remove=Configuration.ground_property_features)
+                    if len(prep_model.affFeatures.index) < KMeansPolysemyModel.cluster_numbers[preposition]:
+                        return False
+
+        return True
