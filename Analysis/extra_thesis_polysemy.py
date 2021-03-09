@@ -8,8 +8,9 @@ import random
 
 from sklearn.model_selection import train_test_split
 
-from basic_model_testing import MultipleRuns, GeneratePrepositionModelParameters, TestModels
-from data_import import Configuration, StudyInfo
+from Analysis.basic_model_testing import MultipleRunsGeneric
+from basic_model_testing import TestModels
+from data_import import StudyInfo
 from polysemy_analysis import DistinctPrototypePolysemyModel, preposition_list, SalientFeature, \
     polysemous_preposition_list, GeneratePolysemeModels, KMeansPolysemyModel, MultipleRunsPolysemyModels
 
@@ -249,7 +250,8 @@ class GenerateAdditionalModels(GeneratePolysemeModels):
     # name of the model we want to compare with other models, and use to test particular features
     our_model_name = refined_distinct_model_name
 
-    def __init__(self, train_scenes, test_scenes, study_info_, test_prepositions=preposition_list,preserve_empty_polysemes=False):
+    def __init__(self, train_scenes, test_scenes, study_info_, test_prepositions=preposition_list,
+                 preserve_empty_polysemes=False):
         """Summary
 
         Args:
@@ -263,7 +265,8 @@ class GenerateAdditionalModels(GeneratePolysemeModels):
             constraint_dict (None, optional): Description
         """
         GeneratePolysemeModels.__init__(self, train_scenes, test_scenes, study_info_,
-                                        test_prepositions=test_prepositions, preserve_empty_polysemes=preserve_empty_polysemes)
+                                        test_prepositions=test_prepositions,
+                                        preserve_empty_polysemes=preserve_empty_polysemes)
 
         self.refined = DistinctPrototypeRefinedPolysemyModel(GenerateAdditionalModels.distinct_refined_model_name,
                                                              self.train_scenes,
@@ -298,63 +301,6 @@ class GenerateAdditionalModels(GeneratePolysemeModels):
         self.model_name_list = []
         for m in self.models:
             self.model_name_list.append(m.name)
-
-
-class MultipleRunsGeneric(MultipleRuns):
-    def __init__(self, model_generator, scores_tables_folder, scores_plots_folder, study_info_,
-                 test_prepositions=preposition_list, number_runs=None,
-                 k=None, compare=None):
-        self.study_info = study_info_
-
-        MultipleRuns.__init__(self, model_generator, self.study_info, test_prepositions=test_prepositions,
-                              number_runs=number_runs, k=k,
-                              compare=compare, features_to_test=None)
-
-        self.scores_tables_folder = scores_tables_folder
-        self.scores_plots_folder = scores_plots_folder
-        self.get_file_strings()
-
-    def folds_check(self, folds):
-        """Summary
-
-        Args:
-            folds (TYPE): Description
-
-        Returns:
-            TYPE: Description
-        """
-
-        for f in folds:
-
-            # Check all folds have some constraints to test
-            for preposition in self.test_prepositions:
-
-                all_constraints = self.constraint_dict[preposition]
-
-                constraints = []
-
-                for c in all_constraints:
-                    if c.scene in f:
-                        constraints.append(c)
-                if len(constraints) == 0:
-                    return False
-
-            if KMeansPolysemyModel.name in self.Generate_Models_all_scenes.model_name_list:
-                # And also check that there are enough training samples for the K-Means model
-                # in scenes not in fold
-                # (samples must be greater than number of clusters..)
-                scenes_not_in_fold = []
-                for sc in self.study_info.scene_name_list:
-                    if sc not in f:
-                        scenes_not_in_fold.append(sc)
-                for preposition in self.test_prepositions:
-                    # Add some features to remove to ignore print out
-                    prep_model = GeneratePrepositionModelParameters(self.study_info, preposition, scenes_not_in_fold,
-                                                                    features_to_remove=Configuration.ground_property_features)
-                    if len(prep_model.affFeatures.index) < KMeansPolysemyModel.cluster_numbers[preposition]:
-                        return False
-
-        return True
 
 
 def test_partition_model(runs, k, study):
@@ -408,9 +354,9 @@ def test_additional_models(runs, k, study_info_):
     all_dataframe.to_csv(extra_thesis_folder + "refined models/all_test.csv")
     print(all_dataframe)
 
-    m = MultipleRunsGeneric(GenerateAdditionalModels, extra_thesis_folder + "refined models",
-                            extra_thesis_folder + "refined models",
-                            study_info_, number_runs=runs, k=k, compare="y")
+    m = MultipleRunsPolysemyModels(GenerateAdditionalModels, extra_thesis_folder + "refined models",
+                                   extra_thesis_folder + "refined models",
+                                   study_info_, number_runs=runs, k=k, compare="y")
     print(("Test Model k = " + str(k)))
     m.validation()
     m.output()
@@ -441,9 +387,9 @@ def test_model_all_prepositions(runs, k, study_info_):
 
     # Then k-fold
 
-    m = MultipleRunsGeneric(GeneratePolysemeModels, extra_thesis_folder + "all prepositions",
-                            extra_thesis_folder + "all prepositions",
-                            study_info_, number_runs=runs, k=k, compare="y", test_prepositions=preposition_list)
+    m = MultipleRunsPolysemyModels(GeneratePolysemeModels, extra_thesis_folder + "all prepositions",
+                                   extra_thesis_folder + "all prepositions",
+                                   study_info_, number_runs=runs, k=k, compare="y", test_prepositions=preposition_list)
 
     print(("Test Model k = " + str(k)))
     m.validation()
@@ -472,8 +418,9 @@ def output_all_polyseme_info(study_info_):
     print("outputting all polyseme info")
     all_scenes = study_info_.scene_name_list
     generated_polyseme_models = GenerateAdditionalModels(all_scenes, all_scenes, study_info_,
-                                                       preserve_empty_polysemes=True)
+                                                         preserve_empty_polysemes=True)
     generated_polyseme_models.refined.output_polyseme_info()
+
 
 if __name__ == '__main__':
     # output_unsatisfied_constraints()
