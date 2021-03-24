@@ -1,8 +1,10 @@
 import os
 import unittest
+import sys
+sys.path.append('../')
 
-from classes import Constraint
-from compile_instances import *
+from Analysis.classes import Constraint
+from Analysis.compile_instances import *
 from test_functions import *
 
 from pandas._testing import assert_frame_equal

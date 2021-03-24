@@ -1,8 +1,9 @@
-import os
 import unittest
+import sys
+sys.path.append('../')
 
-from preprocess_features import Features
-from process_data import *
+from Analysis.preprocess_features import Features
+from Analysis.process_data import *
 
 
 class Test(unittest.TestCase):

@@ -1,8 +1,10 @@
 import os
 import unittest
+import sys
+sys.path.append('../')
 
 from test_functions import *
-from process_data import *
+from Analysis.process_data import *
 import scipy.stats as stats
 from pandas._testing import assert_frame_equal
 
@@ -80,7 +82,7 @@ class Test(unittest.TestCase):
 
         new_clean_sem_csv = study_info.data_folder + "/" + StudyInfo.sem_annotations_name
         new_clean_comp_csv = study_info.data_folder + "/" + StudyInfo.comp_annotations_name
-        new_clean_user_csv = study_info.data_folder + "/" + "clean_users.csv"
+        new_clean_user_csv = study_info.clean_user_csv
 
         new_clean_sem_dataset, original_clean_sem_dataset = generate_dataframes_to_compare(new_clean_sem_csv)
         new_clean_user_dataset, original_clean_user_dataset = generate_dataframes_to_compare(

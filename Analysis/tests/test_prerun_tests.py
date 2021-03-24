@@ -1,9 +1,12 @@
 import os
 import unittest
+import sys
+sys.path.append('../')
 
-from basic_model_testing import preposition_list
-from classes import Constraint
-from compile_instances import *
+from Analysis.basic_model_testing import preposition_list
+from Analysis.classes import Constraint
+from Analysis.compile_instances import *
+
 from test_functions import *
 import pandas as pd
 from pandas._testing import assert_frame_equal
@@ -68,7 +71,7 @@ class MyTestCase(unittest.TestCase):
 
         new_clean_sem_csv = study_info.data_folder + "/" + StudyInfo.sem_annotations_name
         new_clean_comp_csv = study_info.data_folder + "/" + StudyInfo.comp_annotations_name
-        new_clean_user_csv = study_info.data_folder + "/" + "clean_users.csv"
+        new_clean_user_csv = study_info.clean_user_csv
 
         new_clean_sem_dataset, original_clean_sem_dataset = generate_dataframes_to_compare(new_clean_sem_csv)
         new_clean_user_dataset, original_clean_user_dataset = generate_dataframes_to_compare(

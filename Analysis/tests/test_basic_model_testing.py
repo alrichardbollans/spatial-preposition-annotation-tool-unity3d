@@ -1,5 +1,10 @@
+import sys
+
+sys.path.append('../')
+
+import os
 import unittest
-from basic_model_testing import *
+from Analysis.basic_model_testing import *
 from test_functions import *
 
 from pandas._testing import assert_frame_equal

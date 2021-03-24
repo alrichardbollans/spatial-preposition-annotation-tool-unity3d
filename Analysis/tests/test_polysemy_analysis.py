@@ -2,6 +2,8 @@ import os
 import unittest
 
 from polysemy_analysis import *
+
+from Analysis.data_import import StudyInfo
 from test_functions import *
 
 from pandas._testing import assert_frame_equal

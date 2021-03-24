@@ -1,11 +1,12 @@
 import os
 import unittest
+import sys
 
-import numpy as np
+sys.path.append('../')
 
-from cat_typicality_analysis import *
+from Analysis.cat_typicality_analysis import *
 from test_functions import *
-from process_data import *
+from Analysis.process_data import *
 from pandas._testing import assert_frame_equal
 
 os.chdir("..")
