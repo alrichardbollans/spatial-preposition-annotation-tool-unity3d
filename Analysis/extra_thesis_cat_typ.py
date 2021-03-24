@@ -19,13 +19,19 @@ from process_data import UserData, ModSemanticData, SemanticData, ComparativeDat
 class SelectionRatioModel(Model):
     name = "Selection Ratio Model"
 
+    # Assigns typicality in Comp task by reading selection ratio in SV task
+    # This is an unreliable test however as the model scores 0 when the selection ratios are equal
+    # We can remove such constraints, as in the ConservativeSelectionRatioModel, but this is again
+    # unreliable as we're removing the more ambiguous/difficult test cases.
+    # To overcome this we should generate a good model to predict the SR instead.
+
     def __init__(self, test_scenes, study_info):
 
         Model.__init__(self, self.name, test_scenes, study_info)
         # Note that if the sr is equal, the constraint will be unsatisfied.
 
     def check_sr_exists(self, scene, figure, ground):
-
+        "Check a selection ratio is provided for the given configuration"
         # SR csv
         sv_filetag = SemanticCollection.filetag
         config_ratio_csv = self.study_info.config_ratio_csv(sv_filetag, 'in')
@@ -78,6 +84,8 @@ class SelectionRatioModel(Model):
 
 class ConservativeSelectionRatioModel(SelectionRatioModel):
     # This class tests on more conservative set of constraints
+    # where constraints are removed if the selection ratio is equal for both configurations
+    # However, this is an unreliable test.
     name = "Conservative Selection Ratio Model"
 
     def __init__(self, test_scenes, study_info):

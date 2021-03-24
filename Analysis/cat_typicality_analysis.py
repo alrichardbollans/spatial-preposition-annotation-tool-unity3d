@@ -21,7 +21,9 @@ from process_data import ModSemanticData, TypicalityData, UserData
 sv_filetag = SemanticCollection.filetag  # Tag for sv task files
 
 
-def output_2020_study_results():
+def output_2020_study_results(base_folder = None):
+    if base_folder is None:
+        base_folder = ""
     # 2019 study data allows us to generate a model of typicality
     model_study_info = StudyInfo("2019 study")
     study_info = StudyInfo("2020 study")
@@ -80,15 +82,15 @@ def output_2020_study_results():
 
     config_pairs = list(combinations(config_list, 2))
     with open(
-            study_info.stats_folder + "/"
+            base_folder+ study_info.stats_folder + "/"
             + "results.csv",
             "w",
     ) as results_csvfile, open(
-        study_info.stats_folder + "/"
+        base_folder+ study_info.stats_folder + "/"
         + "disagreements.csv",
         "w",
     ) as disagcsvfile, open(
-        study_info.stats_folder + "/"
+        base_folder+ study_info.stats_folder + "/"
         + "monotonicity-preserving-examples.csv",
         "w",
     ) as monocsvfile:

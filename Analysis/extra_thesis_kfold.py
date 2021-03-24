@@ -5,11 +5,11 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from basic_model_testing import GeneratePrepositionModelParameters, preposition_list, PrototypeModel, ExemplarModel, \
-    CSModel, ProximityModel, SimpleModel, BestGuessModel, TestModels
+    CSModel, ProximityModel, SimpleModel, BestGuessModel
 from classes import Instance, CompInstance, Comparison
 from compile_instances import SemanticCollection, ComparativeCollection
 from data_import import SimpleConfiguration, StudyInfo, Configuration
-from extra_thesis_polysemy import MultipleRunsGeneric
+from basic_model_testing import MultipleRunsGeneric
 from process_data import SemanticAnnotation, ComparativeAnnotation
 
 extra_folder = 'extra thesis results/updated kfold'

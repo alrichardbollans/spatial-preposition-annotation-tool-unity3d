@@ -756,9 +756,11 @@ class GeneratePrepositionModelParameters:
             filename = self.study_info.model_info_folder + "/plots/" + self.preposition + x + ".pdf"
         return filename
 
-    def plot_models(self):
+    def plot_models(self, base_folder = None):
         """Summary
         """
+        if base_folder is None:
+            base_folder =""
         # Plots simple linear regressions used to find prototypes
         no_rows = 3
         no_columns = 2
@@ -777,7 +779,7 @@ class GeneratePrepositionModelParameters:
 
             self.plot_features_ratio(no_columns, axes, feature)
 
-            filename = self.get_plot_filename(file_no)
+            filename = base_folder + self.get_plot_filename(file_no)
 
             # When the figure is full of plots, save figure
             if r == 0:
@@ -790,7 +792,7 @@ class GeneratePrepositionModelParameters:
                 fig.tight_layout()
                 fig.canvas.set_window_title('Ratio vs. Feature')
         # Save remaining plots
-        filename = self.get_plot_filename(file_no)
+        filename = base_folder + self.get_plot_filename(file_no)
         plt.savefig(filename, bbox_inches='tight')
         plt.close(fig)
 

@@ -316,11 +316,13 @@ class SemanticCollection(InstanceCollection):
 
         self.append_values()
 
-    def write_config_ratios(self):
+    def write_config_ratios(self, base_folder = None):
         """Summary
 
         ## Write csvs for each preposition giving feature values and data on number of selections
         """
+        if base_folder is None:
+            base_folder = ""
         scene_list = self.study_info.scene_list
 
         config_list = self.study_info.config_list
@@ -328,7 +330,7 @@ class SemanticCollection(InstanceCollection):
         for preposition in self.get_used_prepositions():
 
             ## Write file of all instances
-            with open(self.study_info.config_ratio_csv(self.filetag, preposition), "w") as csvfile:
+            with open(base_folder+ self.study_info.config_ratio_csv(self.filetag, preposition), "w") as csvfile:
                 outputwriter = csv.writer(csvfile)
                 outputwriter.writerow(['Scene', 'Figure', 'Ground'] + self.feature_keys + [self.ratio_feature_name,
                                                                                            self.categorisation_feature_name])
@@ -405,13 +407,15 @@ class ComparativeCollection(InstanceCollection):
 
         self.append_values()
 
-    def get_and_write_constraints(self):
+    def get_and_write_constraints(self, output_path = None):
         """Summary
         For each scene, preposition and possible ground uses the Comparison class to generate constraints for models to satisfy.
         These are then written to a csv.
         Returns:
             TYPE: Description
         """
+        if output_path is None:
+            output_path = self.study_info.constraint_csv
 
         ## Creates a dictionary, prepositions are keys
         ### Values are lists of constraints for the preposition
@@ -433,7 +437,7 @@ class ComparativeCollection(InstanceCollection):
             out[preposition] = preposition_constraints
 
             for con in preposition_constraints:
-                con.write_to_csv(self.study_info.constraint_csv)
+                con.write_to_csv(output_path)
         self.constraints = out
         return out
 
