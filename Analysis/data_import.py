@@ -302,7 +302,6 @@ class StudyInfo:
 
         self.scene_info_csv_file = self.input_feature_data_folder + "/" + self.scene_info_filename
 
-
         self.data_folder = self.name + "/" + self.base_collected_data_folder_name
         self.raw_user_csv = self.data_folder + "/" + "userlist.csv"
         self.clean_user_csv = self.data_folder + "/" + "clean_users.csv"
@@ -353,7 +352,6 @@ class StudyInfo:
                 for title in geom_relations[0][3:]:
                     self.all_feature_keys.append(title)
 
-
                 geom_relations.pop(0)
                 config_list = []
 
@@ -366,8 +364,6 @@ class StudyInfo:
         except Exception as e:
 
             print(e)
-
-
 
     def config_ratio_csv(self, filetag, preposition):
         """Summary
@@ -382,18 +378,22 @@ class StudyInfo:
         return self.config_ratio_folder + filetag + '-ratio-list' + preposition + ' .csv'
 
     def get_user_names(self):
-        sem_annotations_csv = self.data_folder + "/" + self.sem_annotations_name
-        names_out = []
-        with open(sem_annotations_csv, "r") as file:
-            reader = csv.reader(file)
-            datalist = list(reader)
+        try:
+            sem_annotations_csv = self.data_folder + "/" + self.sem_annotations_name
+            names_out = []
+            with open(sem_annotations_csv, "r") as file:
+                reader = csv.reader(file)
+                datalist = list(reader)
 
-            for ann in datalist[1:]:
-                user = ann[1]
-                if user not in names_out:
-                    names_out.append(user)
+                for ann in datalist[1:]:
+                    user = ann[1]
+                    if user not in names_out:
+                        names_out.append(user)
 
-        return names_out
+            return names_out
+        except FileNotFoundError:
+            return None
+
     def get_scenes(self):
         """Summary
         
@@ -558,7 +558,7 @@ class SimpleConfiguration:
         print(("Ground = " + self.ground))
 
     def string_for_cattyp_table(self):
-        return "[" +self.figure + "," + self.ground +"]"
+        return "[" + self.figure + "," + self.ground + "]"
 
 
 class Configuration(SimpleConfiguration):
@@ -656,4 +656,3 @@ class Configuration(SimpleConfiguration):
                         setattr(self, key, value)
                         self.row.append(value)
                         self.full_row.append(value)
-
