@@ -1,6 +1,7 @@
 import os
 import unittest
 import sys
+
 sys.path.append('../')
 
 from Analysis.classes import Constraint
@@ -48,13 +49,16 @@ class Test(unittest.TestCase):
                 self.assertTrue(all(p in preposition_list + ['none'] for p in removed_empty))
 
         # test outputs
-        svcollection.write_config_ratios()
+        svcollection.write_config_ratios(base_folder=output_folder)
 
         for preposition in svcollection.get_used_prepositions():
             print(preposition)
 
-            new_df, original_df = generate_dataframes_to_compare(
-                svcollection.study_info.config_ratio_csv(svcollection.filetag, preposition))
+            new_df = pd.read_csv(
+                output_folder + svcollection.study_info.config_ratio_csv(svcollection.filetag, preposition))
+            original_df = pd.read_csv(
+                archive_folder + svcollection.study_info.config_ratio_csv(svcollection.filetag, preposition))
+
             # print(new_df)
             # print(original_df)
             assert_frame_equal(new_df, original_df)
@@ -69,10 +73,11 @@ class Test(unittest.TestCase):
             self.assertTrue(i.preposition in preposition_list or i.preposition == 'none')
             self.assertIsInstance(i.possible_figures, list)
 
-        compcollection.get_and_write_constraints()
-        constraints = Constraint.read_from_csv(study_info.constraint_csv)
-        new_constraint_df, original_df = generate_dataframes_to_compare(study_info.constraint_csv)
+        compcollection.get_and_write_constraints(output_path=output_folder + study_info.constraint_csv)
+        new_constraint_df = pd.read_csv(output_folder + study_info.constraint_csv)
 
+
+        constraints = Constraint.read_from_csv(output_folder +study_info.constraint_csv)
         # Check theres no repetitions
         for preposition in study_info.preposition_list:
             for con in constraints[preposition]:

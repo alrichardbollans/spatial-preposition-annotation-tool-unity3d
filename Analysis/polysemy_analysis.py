@@ -143,12 +143,10 @@ class Polyseme:
         # self.regression_weights_csv = self.study_info.polyseme_data_folder + self.model_name + '/regression weights/' + self.preposition + "-" + self.polyseme_name + ' .csv'
         self.plot_folder = self.study_info.polyseme_data_folder + self.model_name + '/plots/'
 
-
-
         self.preposition_models = GeneratePrepositionModelParameters(self.study_info, self.preposition,
                                                                      self.train_scenes,
                                                                      features_to_remove=self.features_to_remove,
-                                                                     polyseme=self, oversample= oversample)
+                                                                     polyseme=self, oversample=oversample)
         self.preposition_models.work_out_prototype_model()
 
         # Assign a rank/hierarchy to polysemes
@@ -223,10 +221,10 @@ class Polyseme:
 
         return self.rank
 
-    def plot(self):
+    def plot(self, base_folder=None):
         """Summary
         """
-        self.preposition_models.plot_models()
+        self.preposition_models.plot_models(base_folder)
 
     # def output_prototype_weight(self):
     #     """Summary
@@ -239,13 +237,12 @@ class Polyseme:
     #
     #     wf.to_csv(self.regression_weights_csv)
 
-    def output_definition(self, filename=None):
+    def output_definition(self, output_file=None):
         """Summary
         """
-        if filename is None:
+        if output_file is None:
             output_file = self.study_info.polyseme_data_folder + self.model_name + '/definitions/' + self.preposition + "-" + self.polyseme_name + ".csv"
-        else:
-            output_file = filename
+
         out = dict()
         out["eq_feature_dict"] = []
         out["greater_feature_dict"] = []
@@ -314,7 +311,8 @@ class PolysemyModel(Model):
 class DistinctPrototypePolysemyModel(PolysemyModel):
 
     def __init__(self, name, train_scenes, test_scenes, study_info_, test_prepositions=polysemous_preposition_list,
-                 preserve_empty_polysemes=False, baseline_model=None, features_to_remove=None, oversample: bool = False):
+                 preserve_empty_polysemes=False, baseline_model=None, features_to_remove=None,
+                 oversample: bool = False):
 
         PolysemyModel.__init__(self, name, test_scenes, study_info_, test_prepositions=test_prepositions)
         self.oversample = oversample
@@ -391,7 +389,8 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
             # Canon
 
             p1 = Polyseme(self.name, self.study_info, preposition, "canon", train_scenes, greater_feature_dict=g_dict,
-                          less_feature_dict=l_dict, features_to_remove=self.features_to_remove,oversample=self.oversample)
+                          less_feature_dict=l_dict, features_to_remove=self.features_to_remove,
+                          oversample=self.oversample)
             polysemes.append(p1)
 
             # Nearly canon
@@ -426,7 +425,7 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
                         p_name = "not far" + str(name_count)
                     ply = Polyseme(self.name, self.study_info, preposition, p_name, train_scenes,
                                    greater_feature_dict=g_feature_dict, less_feature_dict=l_feature_dict,
-                                   features_to_remove=self.features_to_remove,oversample=self.oversample)
+                                   features_to_remove=self.features_to_remove, oversample=self.oversample)
                     polysemes.append(ply)
                 x = x - 1
 
@@ -620,11 +619,13 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
 
         return self.study_info.polyseme_data_folder + self.name + '/' + data_folder + '/' + preposition + " -" + data_folder + ".csv"
 
-    def output_polyseme_info(self):
+    def output_polyseme_info(self, base_folder=None):
         """Summary
         Outputs polyseme info from model.
         """
         d = self.polyseme_dict
+        if base_folder is None:
+            base_folder = ""
 
         for preposition in d:
             rank_out = dict()
@@ -634,10 +635,12 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
             print(("Outputting:" + preposition))
             for polyseme in d[preposition]:
                 # polyseme.output_prototype_weight()
-                polyseme.output_definition()
-                polyseme.plot()
+                polyseme.output_definition(
+                    base_folder + self.study_info.polyseme_data_folder + self.name + '/definitions/' + preposition + "-" + polyseme.polyseme_name + ".csv"
+                )
+                polyseme.plot(base_folder=base_folder)
 
-                polyseme.preposition_models.aff_dataset.to_csv(polyseme.annotation_csv)
+                polyseme.preposition_models.aff_dataset.to_csv(base_folder + polyseme.annotation_csv)
 
                 rank_out[preposition + "-" + polyseme.polyseme_name] = [polyseme.get_number_of_instances(),
                                                                         polyseme.rank]
@@ -647,14 +650,14 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
                 mean_out[preposition + "-" + polyseme.polyseme_name] = polyseme.preposition_models.affFeatures.mean()
 
             number_df = pd.DataFrame(rank_out, ["Number", "Rank"])
-            number_df.to_csv(self.get_datafolder_csv(preposition, "ranks"))
+            number_df.to_csv(base_folder + self.get_datafolder_csv(preposition, "ranks"))
 
             prototype_df = pd.DataFrame(prototype_out, self.study_info.all_feature_keys)
-            prototype_df.to_csv(self.get_datafolder_csv(preposition, "prototypes"))
+            prototype_df.to_csv(base_folder + self.get_datafolder_csv(preposition, "prototypes"))
             weight_df = pd.DataFrame(weight_out, self.study_info.all_feature_keys)
-            weight_df.to_csv(self.get_datafolder_csv(preposition, "regression weights"))
+            weight_df.to_csv(base_folder + self.get_datafolder_csv(preposition, "regression weights"))
             mean_df = pd.DataFrame(mean_out, self.study_info.all_feature_keys)
-            mean_df.to_csv(self.get_datafolder_csv(preposition, "means"))
+            mean_df.to_csv(base_folder + self.get_datafolder_csv(preposition, "means"))
 
 
 class KMeansPolysemyModel(PolysemyModel):
@@ -839,7 +842,7 @@ class GeneratePolysemeModels(ModelGenerator):
             constraint_dict (None, optional): Description
         """
 
-        ModelGenerator.__init__(self, train_scenes, test_scenes, study_info_,test_prepositions)
+        ModelGenerator.__init__(self, train_scenes, test_scenes, study_info_, test_prepositions)
 
         # When empty polysemes are preserved their values are generated as normal
         # e.g. rank,numebr of instances  = 0. THis is useful for outputting data on the polysemes

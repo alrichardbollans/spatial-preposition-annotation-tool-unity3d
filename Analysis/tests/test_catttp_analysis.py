@@ -18,14 +18,16 @@ class Test(unittest.TestCase):
 
     # @unittest.skip
     def test_same_outputs(self):
-        output_2020_study_results()
+        output_2020_study_results(base_folder=output_folder)
         study_info = StudyInfo("2020 study")
 
-        results_csv = study_info.stats_folder + "/" + "results.csv"
-        new_results_df, original_results_df = generate_dataframes_to_compare(results_csv)
+        results_csv = output_folder + study_info.stats_folder + "/" + "results.csv"
+        new_results_df = pd.read_csv(results_csv)
+        original_results_df = pd.read_csv(get_original_csv(results_csv))
 
-        disag_csv = study_info.stats_folder + "/" + "disagreements.csv"
-        new_disag_df, original_disag_df = generate_dataframes_to_compare(disag_csv)
+        disag_csv = output_folder + study_info.stats_folder + "/" + "disagreements.csv"
+        new_disag_df = pd.read_csv(disag_csv)
+        original_disag_df = pd.read_csv(get_original_csv(disag_csv))
 
         assert_frame_equal(new_results_df, original_results_df)
         assert_frame_equal(new_disag_df, original_disag_df)

@@ -1,14 +1,17 @@
 import filecmp
 import pandas as pd
 
+output_folder = "tests/test outputs/"
+archive_folder = "tests/archive folder/"
+
 
 def compare_file_hashes(csv1, csv2):
     filecmp.cmp(csv1, csv2)
 
 
 def get_original_csv(new_csv_file):
-
-    return "tests/test folder/" + new_csv_file
+    archive_version = new_csv_file.replace(output_folder, archive_folder)
+    return archive_version
 
 
 def generate_dataframes_to_compare(new_csv_file, columns_to_use=None):
@@ -39,7 +42,7 @@ def dataframe_diff(df1, df2):
     return compare_df
 
 
-def dropcolumns_reindexlike(newdf,originaldf):
+def dropcolumns_reindexlike(newdf, originaldf):
     """Removes columns in newdf that aren't in orgininaldf and set index of new df to be same as originaldf
     :returns dataframe
     """

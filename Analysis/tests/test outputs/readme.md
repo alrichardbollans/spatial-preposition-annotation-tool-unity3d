@@ -1,0 +1,1 @@
+This folder stores outputs for when tests are ran.

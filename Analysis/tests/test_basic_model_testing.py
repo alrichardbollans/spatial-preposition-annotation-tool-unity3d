@@ -21,7 +21,7 @@ class Test(unittest.TestCase):
     def test_initial_model(self):
         study_info = StudyInfo("2019 study")
 
-        original_dataframe = pd.read_csv('tests/test folder/2019 study/scores/tables/all-model scores.csv', index_col=0)
+        original_dataframe = pd.read_csv(archive_folder+'2019 study/scores/tables/all-model scores.csv', index_col=0)
 
         m = MultipleRuns(GenerateBasicModels, study_info)
 
@@ -154,7 +154,7 @@ class Test(unittest.TestCase):
 
         for p in our_model.test_prepositions:
             # Check regression weights
-            original_regressions_csv = get_original_csv(our_model.preposition_model_dict[p].regression_weight_csv)
+            original_regressions_csv = archive_folder + our_model.preposition_model_dict[p].regression_weight_csv
             original_weight_df = pd.read_csv(original_regressions_csv, index_col=0)
 
             for feature in our_model.preposition_model_dict[p].feature_keys:
@@ -162,7 +162,7 @@ class Test(unittest.TestCase):
                 self.assertAlmostEqual(value, self.get_feature_weight(our_model, p, feature), places=7)
 
             # Check prototypes
-            original_prototype_csv = get_original_csv(our_model.preposition_model_dict[p].prototype_csv)
+            original_prototype_csv = archive_folder + our_model.preposition_model_dict[p].prototype_csv
             original_prototype_df = pd.read_csv(original_prototype_csv, index_col=0)
 
             for feature in our_model.preposition_model_dict[p].feature_keys:

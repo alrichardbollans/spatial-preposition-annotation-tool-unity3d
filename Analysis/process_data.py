@@ -124,12 +124,14 @@ class UserData:
 
         return out
 
-    def output_clean_user_list(self):
+    def output_clean_user_list(self, path=None):
         """Summary
         """
+        if path is None:
+            path = self.study_info.clean_user_csv
 
         with open(
-                self.study_info.clean_user_csv, "w"
+                path, "w"
         ) as csvfile:
             writer = csv.writer(csvfile)
 
@@ -868,11 +870,13 @@ class Data:
         """
         return len(self.user_list)
 
-    def output_clean_annotation_list(self):
+    def output_clean_annotation_list(self, path=None):
         """Summary
         """
+        if path is None:
+            path = self.study_info.data_folder + "/" + self.clean_csv_name
         with open(
-                self.study_info.data_folder + "/" + self.clean_csv_name, "w"
+                path, "w"
         ) as csvfile:
             writer = csv.writer(csvfile)
             heading = self.clean_data_list[0].list_headings
@@ -952,12 +956,14 @@ class Data:
         else:
             return False
 
-    def write_user_agreements(self):
+    def write_user_agreements(self, path=None):
         """Summary
         Works out user agreements and writes to file.
         """
+        if path is None:
+            path = self.study_info.stats_folder + "/" + self.agreements_csv_name
         with open(
-                self.study_info.stats_folder + "/" + self.agreements_csv_name, "w"
+                path, "w"
         ) as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(
@@ -1479,11 +1485,13 @@ class SemanticData(Data):
 
     # This is a very basic list of information about the task
     # compile_instances gives a better overview
-    def output_statistics(self):
+    def output_statistics(self, path=None):
         """Summary
         """
+        if path is None:
+            path = self.study_info.stats_folder + "/" + self.stats_csv_name
         with open(
-                self.study_info.stats_folder + "/" + self.stats_csv_name, "w"
+                path, "w"
         ) as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(
@@ -1692,13 +1700,15 @@ class TypicalityData(Data):
                                 )
                                 writer.writerow(to_write)
 
-    def output_statistics(self):
+    def output_statistics(self, path=None):
         """Summary
         # This is a very basic list of information about the task
         # compile_instances gives a better overview
         """
+        if path is None:
+            path = self.study_info.stats_folder + "/" + self.stats_csv_name
         with open(
-                self.study_info.stats_folder + "/" + self.stats_csv_name, "w"
+                path, "w"
         ) as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(
