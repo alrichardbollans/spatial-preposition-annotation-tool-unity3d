@@ -110,7 +110,7 @@ class Polyseme:
     """
 
     def __init__(self, model_name, study_info_, preposition, polyseme_name, train_scenes, eq_feature_dict=None,
-                 greater_feature_dict=None, less_feature_dict=None, features_to_remove=None):
+                 greater_feature_dict=None, less_feature_dict=None, features_to_remove=None, oversample: bool = False):
         """Summary
         
         Args:
@@ -143,10 +143,12 @@ class Polyseme:
         # self.regression_weights_csv = self.study_info.polyseme_data_folder + self.model_name + '/regression weights/' + self.preposition + "-" + self.polyseme_name + ' .csv'
         self.plot_folder = self.study_info.polyseme_data_folder + self.model_name + '/plots/'
 
+
+
         self.preposition_models = GeneratePrepositionModelParameters(self.study_info, self.preposition,
                                                                      self.train_scenes,
                                                                      features_to_remove=self.features_to_remove,
-                                                                     polyseme=self)
+                                                                     polyseme=self, oversample= oversample)
         self.preposition_models.work_out_prototype_model()
 
         # Assign a rank/hierarchy to polysemes
@@ -312,9 +314,10 @@ class PolysemyModel(Model):
 class DistinctPrototypePolysemyModel(PolysemyModel):
 
     def __init__(self, name, train_scenes, test_scenes, study_info_, test_prepositions=polysemous_preposition_list,
-                 preserve_empty_polysemes=False, baseline_model=None, features_to_remove=None):
+                 preserve_empty_polysemes=False, baseline_model=None, features_to_remove=None, oversample: bool = False):
 
         PolysemyModel.__init__(self, name, test_scenes, study_info_, test_prepositions=test_prepositions)
+        self.oversample = oversample
         self.baseline_model = baseline_model
         self.train_scenes = train_scenes
         self.features_to_remove = features_to_remove
@@ -388,7 +391,7 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
             # Canon
 
             p1 = Polyseme(self.name, self.study_info, preposition, "canon", train_scenes, greater_feature_dict=g_dict,
-                          less_feature_dict=l_dict, features_to_remove=self.features_to_remove)
+                          less_feature_dict=l_dict, features_to_remove=self.features_to_remove,oversample=self.oversample)
             polysemes.append(p1)
 
             # Nearly canon
@@ -423,7 +426,7 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
                         p_name = "not far" + str(name_count)
                     ply = Polyseme(self.name, self.study_info, preposition, p_name, train_scenes,
                                    greater_feature_dict=g_feature_dict, less_feature_dict=l_feature_dict,
-                                   features_to_remove=self.features_to_remove)
+                                   features_to_remove=self.features_to_remove,oversample=self.oversample)
                     polysemes.append(ply)
                 x = x - 1
 

@@ -26,7 +26,6 @@ from sklearn.linear_model import LinearRegression, Ridge
 from scipy.special import comb
 
 # Local module imports
-from Analysis.data_import import Configuration
 from preprocess_features import Features
 from compile_instances import InstanceCollection, SemanticCollection, ComparativeCollection
 from data_import import Configuration, StudyInfo
@@ -36,6 +35,7 @@ from classes import Constraint
 sv_filetag = SemanticCollection.filetag  # Tag for sv task files
 comp_filetag = ComparativeCollection.filetag  # Tag for comp task files
 preposition_list = StudyInfo.preposition_list
+
 
 # TODO: Seperate functions for testing and functions for model training.
 
@@ -191,7 +191,7 @@ class GeneratePrepositionModelParameters:
     polynomial_degree = 3
 
     def __init__(self, study_info_, preposition, train_scenes, features_to_remove=None, polyseme=None,
-                 given_dataset=None):
+                 given_dataset=None, oversample: bool = False):
         """Summary
         
         Args:
@@ -232,6 +232,14 @@ class GeneratePrepositionModelParameters:
             self.dataset = pd.read_csv(config_ratio_csv)
         else:
             self.dataset = given_dataset
+
+        if oversample:
+            # Oversampling
+            # The data is first oversampled to improve categorisation of (rare) positive instances.
+            copy_df = self.dataset.copy()
+            positive_examples = copy_df[(copy_df.iloc[:, self.category_index] == 1)]
+            oversampled_df = pd.concat([copy_df, positive_examples], ignore_index=True)
+            self.dataset = oversampled_df
 
         if self.polyseme is not None:
 
@@ -1335,7 +1343,7 @@ class BestGuessModel(Model):
 
 
 class ModelGenerator:
-    def __init__(self, train_scenes, test_scenes, study_info_,test_prepositions):
+    def __init__(self, train_scenes, test_scenes, study_info_, test_prepositions):
         """Summary
 
         Generic model generator. Init of model generators should return model self.models and self.model_names_list
@@ -1374,7 +1382,7 @@ class GenerateBasicModels(ModelGenerator):
         
 
         """
-        ModelGenerator.__init__(self, train_scenes, test_scenes, study_info_)
+        ModelGenerator.__init__(self, train_scenes, test_scenes, study_info_,test_prepositions)
 
         # Extra features may be removed in order to compare performance
         if extra_features_to_remove is not None:
@@ -1687,8 +1695,6 @@ class MultipleRuns:
 
         else:
             self.dataframe_dict["all_features"] = dataset
-
-
 
         # Compare Models
         if self.compare is not None:
@@ -2199,22 +2205,20 @@ def main(study_info_):
     # output_regression_scores(study_info_)
     # plot_preposition_graphs(study_info_)
     # # Edit plot settings
-    mpl.rcParams['font.size'] = 40
-    mpl.rcParams['legend.fontsize'] = 37
-    mpl.rcParams['axes.titlesize'] = 'medium'
-    mpl.rcParams['axes.labelsize'] = 'medium'
-    mpl.rcParams['ytick.labelsize'] = 'small'
-    plot_all_csv(study_info_)
+    # mpl.rcParams['font.size'] = 40
+    # mpl.rcParams['legend.fontsize'] = 37
+    # mpl.rcParams['axes.titlesize'] = 'medium'
+    # mpl.rcParams['axes.labelsize'] = 'medium'
+    # mpl.rcParams['ytick.labelsize'] = 'small'
+    # plot_all_csv(study_info_)
     # 
     # initial_test(study_info_)
     # test_models(study_info_)
     # test_features(study_info_)
+    pass
 
 
-if __name__ == '__main__':
-    study_info = StudyInfo("2019 study")
 
-    main(study_info)
 
 
 class MultipleRunsGeneric(MultipleRuns):
@@ -2257,3 +2261,9 @@ class MultipleRunsGeneric(MultipleRuns):
                     return False
 
         return True
+
+
+if __name__ == '__main__':
+    study_info = StudyInfo("2019 study")
+
+    main(study_info)
