@@ -177,8 +177,6 @@ class Polyseme:
 
         r = Configuration(scene, figure, ground, study)
 
-        # This is unneccesary
-        r.load_from_csv()
         if self.eq_feature_dict is not None:
             for feature in self.eq_feature_dict:
                 value = round(r.set_of_features[feature], 6)
