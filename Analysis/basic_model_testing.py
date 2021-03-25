@@ -248,15 +248,15 @@ class GeneratePrepositionModelParameters:
             indexes_to_drop = []
             indexes_to_drop_pid = []
             for index, row in self.dataset.iterrows():
-                if polyseme.potential_instance(row[self.scene_feature_name], row[self.fig_feature_name],
-                                               row[self.ground_feature_name]):
-                    pass
-                elif row[self.categorisation_feature_name] == 0:
-                    indexes_to_drop_pid.append(index)
+                # remove non feature values from row
+                value_row = row.values[3:-2]
 
-                else:
-                    indexes_to_drop.append(index)
+                potential_instance = polyseme.potential_instance(value_row)
+
+                if not (potential_instance):
                     indexes_to_drop_pid.append(index)
+                if not (potential_instance) and row[self.categorisation_feature_name] != 0:
+                    indexes_to_drop.append(index)
 
             self.possible_instances_dataset = self.dataset.copy()
             # Dataset to train polyseme on (configurations not yet removed for training)
@@ -897,7 +897,6 @@ class Model:
         self.test_scenes = test_scenes
         self.name = name
 
-
         self.feature_processer = self.study_info.feature_processor
 
         self.all_feature_keys = self.study_info.all_feature_keys
@@ -912,8 +911,6 @@ class Model:
             self.constraint_dict = Constraint.read_from_csv(constraint_csv_removed_users)
         # Csv to write unsatisfied constraints when testing/training on all scenes
         self.unsatisfied_constraints_csv = "extra thesis results/unsatisfied constraints/" + self.name + ".csv"
-
-
 
     def generate_arrays(self, salient_features):
         """
@@ -1142,13 +1139,10 @@ class PrototypeModel(Model):
 
     def __init__(self, preposition_model_dict, test_scenes, study_info_, test_prepositions=preposition_list,
                  constraint_csv_removed_users=None):
-
         self.preposition_model_dict = preposition_model_dict
 
         Model.__init__(self, PrototypeModel.name, test_scenes, study_info_, test_prepositions=test_prepositions,
                        constraint_csv_removed_users=constraint_csv_removed_users)
-
-
 
     def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
         p_model = self.preposition_model_dict[preposition]
@@ -1429,8 +1423,6 @@ class GenerateBasicModels(ModelGenerator):
         self.model_name_list = []
         for m in self.models:
             self.model_name_list.append(m.name)
-
-
 
 
 class TestModels:

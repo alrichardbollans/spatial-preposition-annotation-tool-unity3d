@@ -13,6 +13,7 @@ Attributes:
 
 # Standard imports
 import copy
+import time
 import pandas as pd
 import numpy as np
 import itertools
@@ -125,6 +126,7 @@ class Polyseme:
             :param model_name:
             :param study_info_:
         """
+        starttime = time.time()
         self.model_name = model_name
         self.study_info = study_info_
         self.polyseme_name = polyseme_name
@@ -143,22 +145,29 @@ class Polyseme:
         # self.regression_weights_csv = self.study_info.polyseme_data_folder + self.model_name + '/regression weights/' + self.preposition + "-" + self.polyseme_name + ' .csv'
         self.plot_folder = self.study_info.polyseme_data_folder + self.model_name + '/plots/'
 
+
         self.preposition_models = GeneratePrepositionModelParameters(self.study_info, self.preposition,
                                                                      self.train_scenes,
                                                                      features_to_remove=self.features_to_remove,
                                                                      polyseme=self, oversample=oversample)
+
+
+
         self.preposition_models.work_out_prototype_model()
+
 
         # Assign a rank/hierarchy to polysemes
 
         self.rank = self.get_rank()
+
         # Number of configurations fitting polysemes which were labelled as preposition by any participant
-        self.number_of_instances = self.get_number_of_instances()
+        self.number_of_instances = len(self.preposition_models.aff_dataset.index)
 
         self.weights = self.preposition_models.regression_weights
         self.prototype = self.preposition_models.prototype
+        print('Generating polyseme took {} seconds'.format(time.time() - starttime))
 
-    def potential_instance(self, scene, figure, ground, study=None):
+    def potential_instance(self, value_array: np.ndarray):
         """Summary
         Checks if configuration could be a possible polyseme instance.
         Args:
@@ -171,37 +180,31 @@ class Polyseme:
         """
         # boolean checks whether the configuration could be an instance
 
-        # Allow for configurations to be from other studies.
-        if study is None:
-            study = self.study_info
-
-        r = Configuration(scene, figure, ground, study)
+        if len(value_array) != len(self.study_info.all_feature_keys):
+            print(value_array)
+            print(len(value_array))
+            print(self.study_info.all_feature_keys)
+            print(len(self.study_info.all_feature_keys))
+            raise ValueError
 
         if self.eq_feature_dict is not None:
             for feature in self.eq_feature_dict:
-                value = round(r.set_of_features[feature], 6)
+                value = round(value_array[self.study_info.all_feature_keys.index(feature)], 6)
                 condition = round(self.eq_feature_dict[feature], 6)
+
                 if value != condition:
                     return False
 
         if self.greater_feature_dict is not None:
             for feature in self.greater_feature_dict:
 
-                if r.set_of_features[feature] < self.greater_feature_dict[feature]:
+                if value_array[self.study_info.all_feature_keys.index(feature)] < self.greater_feature_dict[feature]:
                     return False
         if self.less_feature_dict is not None:
             for feature in self.less_feature_dict:
-                if r.set_of_features[feature] > self.less_feature_dict[feature]:
+                if value_array[self.study_info.all_feature_keys.index(feature)] > self.less_feature_dict[feature]:
                     return False
         return True
-
-    def get_number_of_instances(self):
-        """Summary
-        
-        Returns:
-            TYPE: Description
-        """
-        return len(self.preposition_models.aff_dataset.index)
 
     def get_rank(self):
         """Summary
@@ -554,7 +557,7 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
 
         return out
 
-    def get_possible_polysemes(self, preposition, scene, figure, ground, study=None):
+    def get_possible_polysemes(self, preposition, value_array):
         """Summary
         Returns a list of possible polysemes for the given configuration.
         Args:
@@ -569,7 +572,7 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
         out = []
 
         for polyseme in self.polyseme_dict[preposition]:
-            if polyseme.potential_instance(scene, figure, ground, study):
+            if polyseme.potential_instance(value_array):
                 out.append(polyseme)
         return out
 
@@ -587,7 +590,7 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
         :return:
         '''
         out = 0
-        pps = self.get_possible_polysemes(preposition, scene, figure, ground, study)
+        pps = self.get_possible_polysemes(preposition, value_array)
         if len(pps) == 0:
             print(preposition)
             print(scene)
@@ -640,7 +643,7 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
 
                 polyseme.preposition_models.aff_dataset.to_csv(base_folder + polyseme.annotation_csv)
 
-                rank_out[preposition + "-" + polyseme.polyseme_name] = [polyseme.get_number_of_instances(),
+                rank_out[preposition + "-" + polyseme.polyseme_name] = [len(polyseme.preposition_models.aff_dataset.index),
                                                                         polyseme.rank]
 
                 prototype_out[preposition + "-" + polyseme.polyseme_name] = polyseme.prototype
