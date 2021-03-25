@@ -56,7 +56,7 @@ class Cluster:
         self.means = self.means.set_index(self.mean_series.index)
         self.means = self.means.transpose()
 
-        feature_processer = Features(self.study_info.name)
+        feature_processer = self.study_info.feature_processor
         self.hr_means = feature_processer.convert_standard_df_to_normal(self.means)
 
         if alg_typ == "kmeans":

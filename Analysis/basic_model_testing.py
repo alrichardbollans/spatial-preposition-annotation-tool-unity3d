@@ -10,6 +10,7 @@ Attributes:
 
 # Standard imports
 import csv, os
+
 import pandas as pd
 import numpy as np
 import math
@@ -559,7 +560,6 @@ class GeneratePrepositionModelParameters:
         # This step gives prototypes for later steps, which are saved to prototypes folder
 
         prototype = []
-
         for feature in self.all_feature_keys:
             # First predict feature value given selection ratio of 1
             pro_value = self.work_out_feature_prototype(feature)
@@ -666,7 +666,7 @@ class GeneratePrepositionModelParameters:
         # Get prediction of all points on interval
         y_pred = self.interval_predictions[feature]
 
-        feature_processer = Features(self.study_info.name)
+        feature_processer = self.study_info.feature_processor
         # Convert values back to human readable
         for i in range(len(Y)):
             y = Y[i]
@@ -756,11 +756,11 @@ class GeneratePrepositionModelParameters:
             filename = self.study_info.model_info_folder + "/plots/" + self.preposition + x + ".pdf"
         return filename
 
-    def plot_models(self, base_folder = None):
+    def plot_models(self, base_folder=None):
         """Summary
         """
         if base_folder is None:
-            base_folder =""
+            base_folder = ""
         # Plots simple linear regressions used to find prototypes
         no_rows = 3
         no_columns = 2
@@ -806,7 +806,7 @@ class GeneratePrepositionModelParameters:
         plt.close(fig)
 
     def plot_feature_space(self, feature1, feature2):
-        feature_processer = Features(self.study_info.name)
+        feature_processer = self.study_info.feature_processor
 
         X = self.train_dataset[feature1].values.copy()
         Y = self.train_dataset[feature2].values.copy()
@@ -892,14 +892,13 @@ class Model:
         :param test_prepositions:
 
         """
-        # if features_to_remove is None:
-        #     features_to_remove = []
 
         self.study_info = study_info_
         self.test_scenes = test_scenes
         self.name = name
 
-        self.feature_processer = Features(self.study_info.name)
+
+        self.feature_processer = self.study_info.feature_processor
 
         self.all_feature_keys = self.study_info.all_feature_keys
 
@@ -913,6 +912,8 @@ class Model:
             self.constraint_dict = Constraint.read_from_csv(constraint_csv_removed_users)
         # Csv to write unsatisfied constraints when testing/training on all scenes
         self.unsatisfied_constraints_csv = "extra thesis results/unsatisfied constraints/" + self.name + ".csv"
+
+
 
     def generate_arrays(self, salient_features):
         """
@@ -1026,9 +1027,10 @@ class Model:
         Returns:
             TYPE: Description
         """
-        # Calculates how well W and P satisfy the constraints, accounting for constraint weight
-        counter = 0
 
+        # # Calculates how well W and P satisfy the constraints, accounting for constraint weight
+        counter = 0
+        #
         for c in Constraints:
             lhs = self.get_typicality_lhs(c)
             rhs = self.get_typicality_rhs(c)
@@ -1140,10 +1142,13 @@ class PrototypeModel(Model):
 
     def __init__(self, preposition_model_dict, test_scenes, study_info_, test_prepositions=preposition_list,
                  constraint_csv_removed_users=None):
+
         self.preposition_model_dict = preposition_model_dict
 
         Model.__init__(self, PrototypeModel.name, test_scenes, study_info_, test_prepositions=test_prepositions,
                        constraint_csv_removed_users=constraint_csv_removed_users)
+
+
 
     def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
         p_model = self.preposition_model_dict[preposition]
@@ -1179,6 +1184,7 @@ class ExemplarModel(Model):
 
     def __init__(self, preposition_model_dict, test_scenes, study_info_,
                  constraint_csv_removed_users=None):
+
         self.preposition_model_dict = preposition_model_dict
 
         Model.__init__(self, ExemplarModel.name, test_scenes, study_info_,
@@ -1384,7 +1390,8 @@ class GenerateBasicModels(ModelGenerator):
         
 
         """
-        ModelGenerator.__init__(self, train_scenes, test_scenes, study_info_,test_prepositions)
+
+        ModelGenerator.__init__(self, train_scenes, test_scenes, study_info_, test_prepositions)
 
         # Extra features may be removed in order to compare performance
         if extra_features_to_remove is not None:
@@ -1401,6 +1408,7 @@ class GenerateBasicModels(ModelGenerator):
             preposition_models_dict[p] = M
 
         self.preposition_parameters_dict = preposition_models_dict
+
         our_model = PrototypeModel(preposition_models_dict, self.test_scenes, self.study_info)
 
         if only_test_our_model is None:
@@ -1421,6 +1429,8 @@ class GenerateBasicModels(ModelGenerator):
         self.model_name_list = []
         for m in self.models:
             self.model_name_list.append(m.name)
+
+
 
 
 class TestModels:
@@ -2218,9 +2228,6 @@ def main(study_info_):
     # test_models(study_info_)
     # test_features(study_info_)
     pass
-
-
-
 
 
 class MultipleRunsGeneric(MultipleRuns):

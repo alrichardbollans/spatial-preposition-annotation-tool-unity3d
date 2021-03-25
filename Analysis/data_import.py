@@ -6,6 +6,8 @@ import os
 import csv
 import itertools
 
+from Analysis.preprocess_features import Features
+
 
 def get_git_project_directory():
     """
@@ -330,6 +332,11 @@ class StudyInfo:
         self.all_feature_keys = []
 
         self.config_list = self.load_all_configs()
+
+        self.means_output_path = self.feature_output_folder + "/feature_means.csv"
+        self.std_output_path = self.feature_output_folder + "/feature_stds.csv"
+        self.feature_processor = Features(self.input_feature_csv, self.feature_output_csv, self.means_output_path,
+                                          self.std_output_path, self.human_readable_feature_output_csv)
 
     def load_all_configs(self):
         """Summary
@@ -656,3 +663,18 @@ class Configuration(SimpleConfiguration):
                         setattr(self, key, value)
                         self.row.append(value)
                         self.full_row.append(value)
+
+def process_all_features(study):
+    """Summary
+    """
+
+    f = study.feature_processor
+    nd = f.standardise_values()
+    f.write_new(nd)
+    f.write_mean_std()
+
+
+if __name__ == '__main__':
+    # TODO: change readme to do this by data_import
+    process_all_features(StudyInfo("2019 study"))
+    # process_all_features(StudyInfo("2020 study"))

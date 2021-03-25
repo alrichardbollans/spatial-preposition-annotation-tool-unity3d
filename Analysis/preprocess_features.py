@@ -5,8 +5,6 @@ gets average location control, standardises values and outputs
 
 import pandas as pd
 
-from classes import StudyInfo
-
 
 class Features:
     """Summary
@@ -29,19 +27,19 @@ class Features:
     # Number of columns at start of each row which do not contain numeric values.
     number_of_non_value_columns = 3
 
-    def __init__(self, study):
+    def __init__(self, input_feature_csv,output_feature_csv,output_mean_csv,output_std_csv,output_human_readable_feature_csv):
         """Summary
         
         Args:
             study (TYPE): Description
         """
-        basic_info = StudyInfo(study)
+
         # Get path for calculated features
-        self.input_feature_csv = basic_info.input_feature_csv
-        self.output_path = basic_info.feature_output_csv
-        self.means_output_path = basic_info.feature_output_folder + "/feature_means.csv"
-        self.std_output_path = basic_info.feature_output_folder + "/feature_stds.csv"
-        self.human_readable_path = basic_info.human_readable_feature_output_csv
+        self.input_feature_csv = input_feature_csv
+        self.output_path = output_feature_csv
+        self.means_output_path = output_mean_csv
+        self.std_output_path = output_std_csv
+        self.human_readable_path = output_human_readable_feature_csv
 
         self.dataset = pd.read_csv(self.input_feature_csv)
         # Remove values where fig=ground
@@ -172,18 +170,3 @@ class Features:
             new_dataframe[column] = (new_dataframe[column] * std) + mean
 
         return new_dataframe
-
-
-def process_all_features(study):
-    """Summary
-    """
-
-    f = Features(study)
-    nd = f.standardise_values()
-    f.write_new(nd)
-    f.write_mean_std()
-
-
-if __name__ == '__main__':
-    # process_all_features("2019 study")
-    process_all_features("2020 study")
