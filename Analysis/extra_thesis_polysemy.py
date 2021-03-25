@@ -109,12 +109,13 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
 
     def refine_ideal_meaning(self, preposition, original_salient_features):
         """
-        Refines the ideal meaning by testing a validation test.
+        Refines the ideal meaning by testing a validation set.
         Outputs new list of polysemes for the model
         :param preposition:
         :param original_salient_features:
         :return:
         """
+
         new_salient_features = []
 
         # Each of the salient features are proportions so we use these values
@@ -124,6 +125,8 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
         l_values_to_try = [0.1, 0.2, 0.2, 0.4, 0.5]
 
         for f in original_salient_features:
+
+
             if f.name == "horizontal_distance":
                 g_values_to_try = [0.05, 0.1, 0.15, 0.2]
                 l_values_to_try = g_values_to_try
@@ -138,6 +141,7 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
             best_value = 0
             best_score = 0
             for v in values_to_try:
+
                 # Convert to standardised values
                 v = self.feature_processer.convert_normal_value_to_standardised(f.name, v)
 
@@ -157,7 +161,12 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
             # The original feature is updated, which is better for training the next feature
             f.value = best_value
             new_salient_features.append(f)
+
+
         new_polysemes = self.generate_polysemes(preposition, new_salient_features)
+
+
+
         return new_polysemes
 
     def test_ideal_feature_value(self, train_scenes, validation_scenes, preposition, original_salient_features, feature,

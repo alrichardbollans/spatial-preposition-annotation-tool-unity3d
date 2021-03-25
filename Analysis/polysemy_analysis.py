@@ -13,7 +13,6 @@ Attributes:
 
 # Standard imports
 import copy
-import time
 import pandas as pd
 import numpy as np
 import itertools
@@ -126,7 +125,7 @@ class Polyseme:
             :param model_name:
             :param study_info_:
         """
-        starttime = time.time()
+
         self.model_name = model_name
         self.study_info = study_info_
         self.polyseme_name = polyseme_name
@@ -165,7 +164,7 @@ class Polyseme:
 
         self.weights = self.preposition_models.regression_weights
         self.prototype = self.preposition_models.prototype
-        print('Generating polyseme took {} seconds'.format(time.time() - starttime))
+
 
     def potential_instance(self, value_array: np.ndarray):
         """Summary
