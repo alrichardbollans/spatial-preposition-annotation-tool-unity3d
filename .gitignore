@@ -74,5 +74,5 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
 # Custom
-/Analysis/tests/test outputs/2019 study/
-/Analysis/tests/test outputs/2020 study/
+/Analysis/tests/test outputs/2019 study/**
+/Analysis/tests/test outputs/2020 study/**
