@@ -40,7 +40,7 @@ class Test(unittest.TestCase):
 
     def test_preprocess_data(self):
         study_info = StudyInfo("test study")
-        f = Features("test study")
+        f = study_info.feature_processor
         print(f.means)
         self.assertAlmostEqual(f.means['support'], 0.2717375845)
         self.assertAlmostEqual(f.means['contact_proportion'], 0.06424559126607)
