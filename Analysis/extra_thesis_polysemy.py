@@ -38,28 +38,31 @@ class DataPartitionPolysemyModel(DistinctPrototypePolysemyModel):
         :param original_salient_features:
         :return:
         """
-        # Find value of feature such that half of preposition instances are greater and half are less than value
-        number_of_features = len(original_salient_features)
+        if preposition in self.test_prepositions:
+            # Find value of feature such that half of preposition instances are greater and half are less than value
+            number_of_features = len(original_salient_features)
 
-        candidate_features = []
+            candidate_features = []
 
-        # Get new salient features
-        for feature in self.study_info.all_feature_keys:
-            if feature not in self.features_to_remove:
-                if not any(x.name == feature for x in original_salient_features):
-                    candidate_features.append(feature)
+            # Get new salient features
+            for feature in self.study_info.all_feature_keys:
+                if feature not in self.features_to_remove:
+                    if not any(x.name == feature for x in original_salient_features):
+                        candidate_features.append(feature)
 
-        new_features = random.choices(candidate_features, k=number_of_features)
+            new_features = random.choices(candidate_features, k=number_of_features)
 
-        new_salient_features = []
-        for f in new_features:
-            median = self.baseline_model.preposition_model_dict[preposition].goodAllFeatures[f].median()
+            new_salient_features = []
+            for f in new_features:
+                median = self.baseline_model.preposition_model_dict[preposition].goodAllFeatures[f].median()
 
-            new_f = SalientFeature(f, median, "g")
-            new_salient_features.append(new_f)
+                new_f = SalientFeature(f, median, "g")
+                new_salient_features.append(new_f)
 
-        new_polysemes = self.generate_polysemes(preposition, new_salient_features)
-        return new_polysemes
+            new_polysemes = self.generate_polysemes(preposition, new_salient_features)
+            return new_polysemes
+        else:
+            return None
 
 
 class DistinctPrototypeMedianPolysemyModel(DistinctPrototypePolysemyModel):
@@ -81,19 +84,22 @@ class DistinctPrototypeMedianPolysemyModel(DistinctPrototypePolysemyModel):
         :param original_salient_features:
         :return:
         """
+
         # Find value of feature such that half of preposition instances are greater and half are less than value
+        if preposition in self.test_prepositions:
+            new_salient_features = []
+            for f in original_salient_features:
+                new_f = copy.deepcopy(f)
 
-        new_salient_features = []
-        for f in original_salient_features:
-            new_f = copy.deepcopy(f)
+                median = self.baseline_model.preposition_model_dict[preposition].goodAllFeatures[new_f.name].median()
+                new_f.value = median
 
-            median = self.baseline_model.preposition_model_dict[preposition].goodAllFeatures[new_f.name].median()
-            new_f.value = median
+                new_salient_features.append(new_f)
 
-            new_salient_features.append(new_f)
-
-        new_polysemes = self.generate_polysemes(preposition, new_salient_features)
-        return new_polysemes
+            new_polysemes = self.generate_polysemes(preposition, new_salient_features)
+            return new_polysemes
+        else:
+            return None
 
 
 class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
@@ -115,59 +121,61 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
         :param original_salient_features:
         :return:
         """
+        if preposition in self.test_prepositions:
+            new_salient_features = []
 
-        new_salient_features = []
+            # Each of the salient features are proportions so we use these values
+            # This makes generation non-deterministic for these models
+            train_scenes, validation_scenes = train_test_split(self.train_scenes, test_size=0.5)
+            g_values_to_try = [0.5, 0.6, 0.7, 0.8, 0.9]
+            l_values_to_try = [0.1, 0.2, 0.2, 0.4, 0.5]
 
-        # Each of the salient features are proportions so we use these values
-        # This makes generation non-deterministic for these models
-        train_scenes, validation_scenes = train_test_split(self.train_scenes, test_size=0.5)
-        g_values_to_try = [0.5, 0.6, 0.7, 0.8, 0.9]
-        l_values_to_try = [0.1, 0.2, 0.2, 0.4, 0.5]
-
-        for f in original_salient_features:
-
-
-            if f.name == "horizontal_distance":
-                g_values_to_try = [0.05, 0.1, 0.15, 0.2]
-                l_values_to_try = g_values_to_try
-            if f.name == "contact_proportion":
-                g_values_to_try = [0.1, 0.2, 0.3, 0.4, 0.5]
-                l_values_to_try = [0.1, 0.2, 0.3, 0.4, 0.5]
-            if f.gorl == "l":
-                values_to_try = l_values_to_try.copy()
-            else:
-                values_to_try = g_values_to_try.copy()
-
-            best_value = 0
-            best_score = 0
-            for v in values_to_try:
-
-                # Convert to standardised values
-                v = self.feature_processer.convert_normal_value_to_standardised(f.name, v)
-
-                score1 = self.test_ideal_feature_value(train_scenes, validation_scenes, preposition,
-                                                       original_salient_features, f.name, v)
-                score2 = self.test_ideal_feature_value(validation_scenes, train_scenes, preposition,
-                                                       original_salient_features, f.name, v)
-
-                total = score1 + score2
-                if total > best_score:
-                    best_score = total
-                    best_value = v
-
-            if best_value == 0:
-                raise ValueError("best_value unassigned")
-
-            # The original feature is updated, which is better for training the next feature
-            f.value = best_value
-            new_salient_features.append(f)
+            for f in original_salient_features:
 
 
-        new_polysemes = self.generate_polysemes(preposition, new_salient_features)
+                if f.name == "horizontal_distance":
+                    g_values_to_try = [0.05, 0.1, 0.15, 0.2]
+                    l_values_to_try = g_values_to_try
+                if f.name == "contact_proportion":
+                    g_values_to_try = [0.1, 0.2, 0.3, 0.4, 0.5]
+                    l_values_to_try = [0.1, 0.2, 0.3, 0.4, 0.5]
+                if f.gorl == "l":
+                    values_to_try = l_values_to_try.copy()
+                else:
+                    values_to_try = g_values_to_try.copy()
+
+                best_value = 0
+                best_score = 0
+                for v in values_to_try:
+
+                    # Convert to standardised values
+                    v = self.feature_processer.convert_normal_value_to_standardised(f.name, v)
+
+                    score1 = self.test_ideal_feature_value(train_scenes, validation_scenes, preposition,
+                                                           original_salient_features, f.name, v)
+                    score2 = self.test_ideal_feature_value(validation_scenes, train_scenes, preposition,
+                                                           original_salient_features, f.name, v)
+
+                    total = score1 + score2
+                    if total > best_score:
+                        best_score = total
+                        best_value = v
+
+                if best_value == 0:
+                    raise ValueError("best_value unassigned")
+
+                # The original feature is updated, which is better for training the next feature
+                f.value = best_value
+                new_salient_features.append(f)
+
+
+            new_polysemes = self.generate_polysemes(preposition, new_salient_features)
 
 
 
-        return new_polysemes
+            return new_polysemes
+        else:
+            return None
 
     def test_ideal_feature_value(self, train_scenes, validation_scenes, preposition, original_salient_features, feature,
                                  value):
