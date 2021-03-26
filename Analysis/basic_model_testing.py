@@ -27,7 +27,7 @@ from sklearn.linear_model import LinearRegression, Ridge
 from scipy.special import comb
 
 # Local module imports
-from preprocess_features import Features
+from Analysis.data_import import Features
 from compile_instances import InstanceCollection, SemanticCollection, ComparativeCollection
 from data_import import Configuration, StudyInfo
 from classes import Constraint
@@ -131,47 +131,7 @@ class GeneratePrepositionModelParameters:
     Class with methods to generate model parameters for particular preposition
     
     Attributes:
-        aff_dataset (TYPE): Description
-        affAllFeatures (TYPE): Description
-        affRelations (TYPE): Description
-        all_features_regression_weight_csv (TYPE): Description
-        allFeatures (TYPE): Description
-        barycentre_csv (TYPE): Description
-        barycentre_prototype (TYPE): Description
-        categorisation_feature_name (TYPE): Description
-        category_index (int): Description
-        dataset (TYPE): Description
-        exemplar_csv (TYPE): Description
-        exemplar_mean (TYPE): Description
-        all_feature_keys (TYPE): Description
-        features_to_remove (TYPE): Description
-        fig_feature_name (TYPE): Description
-        ground_feature_name (TYPE): Description
-        interval (TYPE): Description
-        interval_predictions (TYPE): Description
-        linear_regression_model (TYPE): Description
-        neg_dataset (TYPE): Description
-        neg_features (TYPE): Description
-        poly_regression_model (TYPE): Description
-        polyseme (TYPE): Description
-        possible_instances_dataset (TYPE): Description
-        preposition (TYPE): Description
-        prototype (list): Description
-        prototype_csv (TYPE): Description
-        ratio_feature_name (TYPE): Description
-        ratio_index (int): Description
-        regression_weight_csv (TYPE): Description
-        regression_weights (list): Description
-        feature_dataframe (TYPE): Description
-        feature_keys (TYPE): Description
-        scene_feature_name (TYPE): Description
-        scene_index (int): Description
-        study_info (TYPE): Description
-        train_dataset (TYPE): Description
-        train_possible_intances_dataset (TYPE): Description
-        train_scenes (TYPE): Description
-        typical_dataset (TYPE): Description
-        typical_features (TYPE): Description
+
     """
 
     # Given training scenes, works out models for individual preposition
@@ -577,7 +537,7 @@ class GeneratePrepositionModelParameters:
         """Summary
 
         Args:
-            n (TYPE): Description
+
 
         Returns:
             TYPE: Description
@@ -641,21 +601,6 @@ class GeneratePrepositionModelParameters:
         wf = pd.read_csv(self.regression_weight_csv, index_col=0)
 
         return wf
-
-    def read_calculations(self, classifier):
-        """Summary
-
-        Args:
-            classifier (TYPE): Description
-        """
-        with open("figures/csv_tables" + self.name + classifier + ":" + self.preposition + ".csv") as csvfile:
-            read = csv.reader(csvfile)  # .readlines())
-            reader = list(read)
-
-            for line in reader:
-                if line[0] in self.feature_keys:
-                    value = line[1]
-                    setattr(self, classifier + ":" + line[0], value)
 
     def plot_features_ratio_to_axis(self, feature, axis):
         # Reshape data first
@@ -721,12 +666,7 @@ class GeneratePrepositionModelParameters:
         """Summary
 
         Args:
-            no_columns (TYPE): Description
-            axes (TYPE): Description
-            feature (TYPE): Description
-            X (TYPE): Description
-            y_pred (TYPE): Description
-            Y (TYPE): Description
+
         """
 
         index = self.feature_keys.index(feature)
@@ -979,11 +919,15 @@ class Model:
         for preposition in self.test_prepositions:
 
             testConstraints = self.get_test_constraints(preposition)
-
+            if len(testConstraints) == 0:
+                print(preposition)
+                raise ValueError
             # Constraint info
             weight_counter = 0
             counter = 0
             for c in testConstraints:
+                if c.weight == 0:
+                    raise ValueError
                 weight_counter += c.weight
                 counter += 1
             total_weight_counter += weight_counter
@@ -1470,45 +1414,7 @@ class TestModels:
 
 class MultipleRuns:
     """Summary
-    
-    Attributes:
-        all_csv (TYPE): Description
-        all_dataframe (TYPE): Description
-        all_plot (TYPE): Description
-        average_csv (TYPE): Description
-        average_dataframe (TYPE): Description
-        average_plot_pdf (TYPE): Description
-        average_plot_title (str): Description
-        compare (TYPE): Description
-        comparison_csv (TYPE): Description
-        comparison_df (TYPE): Description
-        constraint_dict (TYPE): Description
-        count_cluster_model_wins (TYPE): Description
-        count_other_model_beats_cluster (TYPE): Description
-        count_other_model_wins (TYPE): Description
-        count_our_model_wins (TYPE): Description
-        count_with_feature_better (TYPE): Description
-        count_without_feature_better (TYPE): Description
-        dataframe_dict (TYPE): Description
-        feature_comparison_df (TYPE): Description
-        feature_removed_average_csv (TYPE): Description
-        features_to_test (TYPE): Description
-        file_tag (TYPE): Description
-        Generate_Models_all_scenes (TYPE): Description
-        k (TYPE): Description
-        km_comparison_df (TYPE): Description
-        model_generator (TYPE): Description
-        number_runs (TYPE): Description
-        run_count (int): Description
-        scene_list (TYPE): Description
-        scenes_used_for_testing (list): Description
-        scenes_used_for_training (list): Description
-        scores_plots_folder (TYPE): Description
-        scores_tables_folder (TYPE): Description
-        study_info (TYPE): Description
-        test_prepositions (TYPE): Description
-        test_size (TYPE): Description
-        total_number_runs (TYPE): Description
+
     """
 
     # This class carries out multiple runs of model tests and outputs the results
@@ -1518,18 +1424,12 @@ class MultipleRuns:
         """Summary
         
         Args:
-            model_generator (TYPE): Description
-            study_info_ (TYPE): Description
-            number_runs (None, optional): Description
 
-            k (None, optional): Description
-            compare (None, optional): Description
-            features_to_test (None, optional): Description
-            :param test_prepositions:
         """
 
         self.study_info = study_info_
         self.test_prepositions = test_prepositions
+
         self.model_generator = model_generator
 
         self.number_runs = number_runs
@@ -1653,6 +1553,7 @@ class MultipleRuns:
         Generates a list of models to test from given train and test scenes.
 
         """
+
         if self.features_to_test is not None:
             # Only test our model
             generate_models = self.model_generator(train_scenes, test_scenes, self.study_info,
@@ -1973,17 +1874,6 @@ class MultipleRuns:
             y_label = "Score"
             plot_title = "Average Scores With Removed Features. K = " + str(self.k) + " N = " + str(self.number_runs)
             self.plot_dataframe_bar_chart(df, output_file, x_label, y_label, plot_title)
-        # ax = df.plot(kind='bar', title ="Average Scores With Removed Features. K = "+str(self.k) + " N = " + str(self.number_runs),figsize=(15, 10), legend=True)
-
-        # ax.set_xlabel("Preposition")
-        # ax.set_ylabel("Score")
-        # ax.set_yticks(np.arange(0, 1.05, 0.05))
-        # ax.grid(True)
-        # ax.set_axisbelow(True)
-
-        # plt.legend(loc='upper center', bbox_to_anchor=(0.44, -0.35), ncol=3)
-
-        # plt.savefig(self.scores_plots_folder+"/ScoresWithRemovedFeatures.pdf", bbox_inches='tight')
 
     def plot_dataframe_bar_chart(self, dataset, file_to_save, x_label, y_label, plot_title):
         """Summary
