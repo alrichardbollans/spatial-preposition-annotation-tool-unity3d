@@ -127,11 +127,11 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
             # Each of the salient features are proportions so we use these values
             # This makes generation non-deterministic for these models
             train_scenes, validation_scenes = train_test_split(self.train_scenes, test_size=0.5)
-            g_values_to_try = [0.5, 0.6, 0.7, 0.8, 0.9]
-            l_values_to_try = [0.1, 0.2, 0.2, 0.4, 0.5]
+
 
             for f in original_salient_features:
-
+                g_values_to_try = [0.5, 0.6, 0.7, 0.8, 0.9]
+                l_values_to_try = [0.1, 0.2, 0.3, 0.4, 0.5]
 
                 if f.name == "horizontal_distance":
                     g_values_to_try = [0.05, 0.1, 0.15, 0.2]
@@ -144,7 +144,7 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
                 else:
                     values_to_try = g_values_to_try.copy()
 
-                best_value = 0
+                best_value = None
                 best_score = 0
                 for v in values_to_try:
 
@@ -161,7 +161,7 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
                         best_score = total
                         best_value = v
 
-                if best_value == 0:
+                if best_value is None:
                     raise ValueError("best_value unassigned")
 
                 # The original feature is updated, which is better for training the next feature
