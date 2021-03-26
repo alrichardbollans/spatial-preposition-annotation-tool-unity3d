@@ -14,7 +14,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-from basic_model_testing import GeneratePrepositionModelParameters, Features, preposition_list
+from basic_model_testing import GeneratePrepositionModelParameters, preposition_list
+from Analysis.data_import import Features
 from data_import import Configuration, StudyInfo
 from extra_thesis_polysemy import GenerateAdditionalModels
 from polysemy_analysis import polysemous_preposition_list, GeneratePolysemeModels
