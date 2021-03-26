@@ -489,6 +489,7 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
         f3 = SalientFeature("contact_proportion", contact03, "g")
         on_salient_features = [f1, f2, f3]
 
+
         out["on"] = self.refine_ideal_meaning("on", on_salient_features)
 
         # In
@@ -591,6 +592,7 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
         out = 0
         pps = self.get_possible_polysemes(preposition, value_array)
         if len(pps) == 0:
+            print(self.name)
             print(preposition)
             print(scene)
             print(figure)
@@ -905,7 +907,7 @@ class MultipleRunsPolysemyModels(MultipleRuns):
     """
 
     def __init__(self, model_generator, scores_tables_folder, scores_plots_folder, study_info_,
-                 test_prepositions=polysemous_preposition_list, number_runs=None, k=None,
+                 test_prepositions=None, number_runs=None, k=None,
                  compare=None):
         """Summary
         
@@ -920,6 +922,10 @@ class MultipleRunsPolysemyModels(MultipleRuns):
             constraint_dict (TYPE): Description
             features_to_test (None, optional): Description
         """
+
+        if test_prepositions is None:
+            test_prepositions = polysemous_preposition_list
+
         self.study_info = study_info_
 
         MultipleRuns.__init__(self, model_generator, self.study_info, test_prepositions=test_prepositions,
@@ -941,6 +947,7 @@ class MultipleRunsPolysemyModels(MultipleRuns):
             TYPE: Description
         """
 
+
         for f in folds:
 
             # Check all folds have some constraints to test
@@ -948,12 +955,13 @@ class MultipleRunsPolysemyModels(MultipleRuns):
 
                 allConstraints = self.constraint_dict[preposition]
 
-                Constraints = []
+                constraints_for_fold = []
 
                 for c in allConstraints:
                     if c.scene in f:
-                        Constraints.append(c)
-                if len(Constraints) == 0:
+                        constraints_for_fold.append(c)
+                if len(constraints_for_fold) == 0:
+
                     return False
 
             if KMeansPolysemyModel.name in self.Generate_Models_all_scenes.model_name_list:
@@ -972,27 +980,6 @@ class MultipleRunsPolysemyModels(MultipleRuns):
                         return False
 
         return True
-
-    # Overides inherited method
-    def output(self):
-        """Summary
-        """
-        # Handle outputting here so we're not always outputting
-        self.average_dataframe = self.dataframe_dict["all_features"]
-        # Reorder columns for output
-
-        new_column_order = self.Generate_Models_all_scenes.model_name_list
-        reordered_df = self.average_dataframe[new_column_order]
-        reordered_df.to_csv(self.average_csv)
-
-        self.plot_dataframe_bar_chart(self.average_dataframe, self.average_plot_pdf, "Preposition", "Score",
-                                      self.average_plot_title)
-        if self.compare is not None:
-            # Output to csv
-            self.comparison_df.to_csv(self.comparison_csv)
-
-            if self.km_comparison_df is not None:
-                self.km_comparison_df.to_csv(self.km_comparison_csv)
 
 
 def output_all_polyseme_info(study_info_):
