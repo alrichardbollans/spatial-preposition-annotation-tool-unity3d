@@ -2,7 +2,7 @@ import unittest
 import sys
 sys.path.append('../')
 
-from Analysis.preprocess_features import Features
+from Analysis.data_import import Features
 from Analysis.process_data import *
 
 
