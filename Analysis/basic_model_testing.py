@@ -10,6 +10,7 @@ Attributes:
 
 # Standard imports
 import csv, os
+import operator
 
 import pandas as pd
 import numpy as np
@@ -1487,13 +1488,14 @@ class MultipleRuns:
 
             self.average_plot_pdf = self.scores_plots_folder + "/average" + self.file_tag + ".pdf"
             self.average_csv = self.scores_tables_folder + "/averagemodel scores " + self.file_tag + ".csv"
-            self.comparison_csv = self.scores_tables_folder + "/repeatedcomparisons " + self.file_tag + ".csv"
-            self.km_comparison_csv = self.scores_tables_folder + "/km_repeatedcomparisons " + self.file_tag + ".csv"
+            self.p_value_csv = self.scores_tables_folder + "/pvalues " + self.file_tag + ".csv"
+            self.number_of_wins_csv = self.scores_tables_folder + "/numberofwins " + self.file_tag + ".csv"
 
             # Df of results from each fold
             self.folds_csv = self.scores_tables_folder + "/folds " + self.file_tag + ".csv"
 
         if self.features_to_test is not None:
+            self.comparison_csv = self.scores_tables_folder + "/repeatedcomparisons " + self.file_tag + ".csv"
             self.feature_removed_average_csv = dict()
             for feature in self.features_to_test:
                 self.feature_removed_average_csv[
@@ -1503,26 +1505,10 @@ class MultipleRuns:
         """Summary
         """
         # Dealing with these values could be improved..
-        # Counts to compare models
-        self.count_cluster_model_wins = dict()
-        self.count_other_model_beats_cluster = dict()
-        # Counts to compare models
-        self.count_our_model_wins = dict()
-        self.count_other_model_wins = dict()
         # Counts to compare features
         self.count_without_feature_better = dict()
         self.count_with_feature_better = dict()
 
-        # Prepare dicts
-        for other_model in self.model_name_list:
-            self.count_our_model_wins[other_model] = 0
-            self.count_other_model_wins[other_model] = 0
-        # To compare kmeans cluster model
-        if hasattr(self.Generate_Models_all_scenes, "cluster_model_name"):
-            for other_model in self.model_name_list:
-                if other_model != self.Generate_Models_all_scenes.cluster_model_name:
-                    self.count_cluster_model_wins[other_model] = 0
-                    self.count_other_model_beats_cluster[other_model] = 0
 
         if self.features_to_test is not None:
             for feature in self.features_to_test:
@@ -1611,25 +1597,6 @@ class MultipleRuns:
                 other_score = dataset.at["Overall", other_model]
 
                 self.folds_dict[other_model].append(other_score)
-
-                # Update counts
-                if our_score > other_score:
-                    self.count_our_model_wins[other_model] += 1
-
-                if other_score > our_score:
-                    self.count_other_model_wins[other_model] += 1
-            if hasattr(generate_models, "cluster_model_name"):
-                k_means_score = dataset.at["Overall", generate_models.cluster_model_name]
-                for other_model in self.model_name_list:
-                    if other_model != self.Generate_Models_all_scenes.cluster_model_name:
-                        # Get score
-                        other_score = dataset.at["Overall", other_model]
-                        # Update counts
-                        if k_means_score > other_score:
-                            self.count_cluster_model_wins[other_model] += 1
-
-                        if other_score > k_means_score:
-                            self.count_other_model_beats_cluster[other_model] += 1
 
         # Add scores to dataframe
         if self.features_to_test is not None:
@@ -1755,46 +1722,41 @@ class MultipleRuns:
             folds_df = pd.DataFrame(self.folds_dict)
             folds_df.to_csv(self.folds_csv)
 
-            other_model_p_value = dict()
+            # Calculate all p values
+            # Read --- model1 in column x model2 in row is pvalue model1 is better than model2
+            p_value_dfs = []
+            for model1 in self.model_name_list:
+                model1_dict = dict()
+                for model2 in self.model_name_list:
+                    if model1 == model2:
+                        p_value = 0
+                    else:
+                        model1_folds = self.folds_dict[model1]
+                        model2_folds = self.folds_dict[model2]
+                        T, p_value = wilcoxon(model1_folds, model2_folds, alternative='greater')
+                    model1_dict[model2] = p_value
+                model1_p_value_df = pd.DataFrame(model1_dict,[model1])
+                p_value_dfs.append(model1_p_value_df)
+            self.p_value_df = p_value_dfs[0].append(p_value_dfs[1:], sort=False)
 
-            for other_model in self.model_name_list:
-                our_model_folds = self.folds_dict[self.model_generator.our_model_name]
-                other_model_folds = self.folds_dict[other_model]
-                if our_model_folds != other_model_folds:
-                    T, p_value = wilcoxon(our_model_folds, other_model_folds, alternative='greater')
-                else:
-                    p_value = 0
+            # get number of wins
+            # Read --- model1 in column x model2 in row is number of times model1 is better than model2
+            win_dfs = []
+            for model1 in self.model_name_list:
+                model1_dict = dict()
+                for model2 in self.model_name_list:
+                    model1_folds = self.folds_dict[model1]
+                    model2_folds = self.folds_dict[model2]
+                    subtracted_folds = list(map(operator.sub, model1_folds, model2_folds))
+                    model1_wins = 0
+                    for f in subtracted_folds:
+                        if f >0:
+                            model1_wins +=1
 
-                other_model_p_value[other_model] = p_value
-
-            # Create dataframes to output
-            p_value_df = pd.DataFrame(other_model_p_value, ["p_value"])
-            our_model_win_count = pd.DataFrame(self.count_our_model_wins, ["Our model wins"])
-            other_model_win_count = pd.DataFrame(self.count_other_model_wins, ["Other model wins"])
-            # Append dataframes into one
-            new_df = p_value_df.append([our_model_win_count, other_model_win_count], sort=False)
-            self.comparison_df = new_df
-
-            kmeans_other_model_p_value = dict()
-            if hasattr(self.Generate_Models_all_scenes, "cluster_model_name"):
-
-                for other_model in self.model_name_list:
-                    cluster_model_folds = self.folds_dict[self.Generate_Models_all_scenes.cluster_model_name]
-                    other_model_folds = self.folds_dict[other_model]
-                    if other_model != self.Generate_Models_all_scenes.cluster_model_name:
-                        if cluster_model_folds != other_model_folds:
-                            T, p_value = wilcoxon(cluster_model_folds, other_model_folds, alternative='greater')
-                        else:
-                            p_value = 0
-                        kmeans_other_model_p_value[other_model] = p_value
-
-                # Create dataframes to output
-                km_p_value_df = pd.DataFrame(kmeans_other_model_p_value, ["p_value"])
-                cluster_model_win_count = pd.DataFrame(self.count_cluster_model_wins, ["Cluster model wins"])
-                km_other_model_win_count = pd.DataFrame(self.count_other_model_beats_cluster, ["Other model wins"])
-                # Append dataframes into one
-                km_new_df = km_p_value_df.append([cluster_model_win_count, km_other_model_win_count], sort=False)
-                self.km_comparison_df = km_new_df
+                    model1_dict[model2] = model1_wins
+                model1_win_df = pd.DataFrame(model1_dict,[model1])
+                win_dfs.append(model1_win_df)
+            self.number_of_wins_df = win_dfs[0].append(win_dfs[1:], sort=False)
 
         if self.features_to_test is not None:
             feature_p_value = dict()
@@ -1846,9 +1808,8 @@ class MultipleRuns:
                                       self.average_plot_title)
         if self.compare is not None:
             # Output to csv
-            self.comparison_df.to_csv(self.comparison_csv)
-            if hasattr(self.Generate_Models_all_scenes, "cluster_model_name"):
-                self.km_comparison_df.to_csv(self.km_comparison_csv)
+            self.p_value_df.to_csv(self.p_value_csv)
+            self.number_of_wins_df.to_csv(self.number_of_wins_csv)
 
         if self.features_to_test is not None:
 
