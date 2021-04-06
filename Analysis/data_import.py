@@ -592,7 +592,7 @@ class Configuration(SimpleConfiguration):
 
     # Lots of this could be done with pandas. Doh :/
 
-    ground_property_features = ["ground_lightsource", "ground_container", "ground_verticality"]
+    object_specific_features = ["ground_lightsource", "ground_container", "ground_verticality"]
 
     def __init__(self, scene, figure, ground, study):
         """Summary
