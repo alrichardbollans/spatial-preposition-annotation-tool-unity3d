@@ -592,7 +592,8 @@ class Configuration(SimpleConfiguration):
 
     # Lots of this could be done with pandas. Doh :/
 
-    object_specific_features = ["ground_lightsource", "ground_container", "ground_verticality"]
+    object_specific_features = ["ground_lightsource", "ground_container", "ground_verticality", "figure_lightsource",
+                                "figure_container"]
 
     def __init__(self, scene, figure, ground, study):
         """Summary
@@ -686,7 +687,8 @@ class Features:
     # Number of columns at start of each row which do not contain numeric values.
     number_of_non_value_columns = 3
 
-    def __init__(self, input_feature_csv,output_feature_csv,output_mean_csv,output_std_csv,output_human_readable_feature_csv):
+    def __init__(self, input_feature_csv, output_feature_csv, output_mean_csv, output_std_csv,
+                 output_human_readable_feature_csv):
         """Summary
 
         Args:
