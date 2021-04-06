@@ -4,6 +4,8 @@ import os
 import unittest
 import sys
 
+from Analysis.add_additional_features import additional_features, clean_name
+
 sys.path.append('../')
 
 from Analysis.basic_model_testing import preposition_list
@@ -104,12 +106,16 @@ class MyTestCase(unittest.TestCase):
         human_readable_path = study_info.human_readable_feature_output_csv
 
         new_df = pd.read_csv(input_feature_csv)
+        new_df_dropped = new_df.drop(additional_features, axis=1)
         original_df = pd.read_csv(archive_folder + input_feature_csv)
-        assert_frame_equal(new_df, original_df)
+        assert_frame_equal(new_df_dropped, original_df)
 
         new_df = pd.read_csv(output_path)
+        print(new_df)
+        new_df_dropped = new_df.drop(additional_features, axis=1)
+        print(new_df_dropped)
         original_df = pd.read_csv(archive_folder + output_path)
-        assert_frame_equal(new_df, original_df)
+        assert_frame_equal(new_df_dropped, original_df)
         # new_df, original_df = generate_dataframes_to_compare(means_output_path)
         #
         # assert_frame_equal(new_df, original_df)
@@ -117,10 +123,59 @@ class MyTestCase(unittest.TestCase):
         #
         # assert_frame_equal(new_df, original_df)
         new_df = pd.read_csv(human_readable_path)
+        new_df_dropped = new_df.drop(additional_features, axis=1)
         original_df = pd.read_csv(archive_folder + human_readable_path)
-        print(new_df)
-        print(original_df)
-        assert_frame_equal(new_df, original_df)
+        assert_frame_equal(new_df_dropped, original_df)
+
+    @staticmethod
+    def get_object_properties(property_df, obj):
+        class_name = clean_name(obj)
+        # print(property_df)
+        index = property_df.index[property_df.Object == class_name]
+
+        cont = property_df.iloc[index]["CN_ISA_CONTAINER"].values[0]
+        light = property_df.iloc[index]["CN_UsedFor_Light"].values[0]
+
+        # print(f"name: {class_name}. cont: {cont}. light: {light}")
+
+        return cont, light
+
+    def test_os_agreement(self):
+        study_info = StudyInfo("2019 study")
+
+        input_feature_csv = study_info.input_feature_csv
+        object_property_csv = study_info.input_feature_data_folder + "/object properties.csv"
+        human_readable_path = study_info.human_readable_feature_output_csv
+
+        new_df = pd.read_csv(input_feature_csv)
+        property_df = pd.read_csv(object_property_csv)
+        for index, row in new_df.iterrows():
+
+            fig_cont, fig_light = self.get_object_properties(property_df, row.Figure)
+            grd_cont, grd_light = self.get_object_properties(property_df, row.Ground)
+
+            self.assertEqual(fig_cont,row.figure_container)
+            self.assertEqual(fig_light,row.figure_lightsource)
+
+            self.assertEqual(grd_cont,row.ground_container)
+            self.assertEqual(grd_light,row.ground_lightsource)
+
+            # print(f"{fig_cont}:{row.figure_container}")
+            # print(f"{fig_light}:{row.figure_lightsource}")
+            # print(f"{grd_cont}:{row.ground_container}")
+            # print(f"{grd_light}:{row.ground_lightsource}")
+        new_df = pd.read_csv(human_readable_path)
+        for index, row in new_df.iterrows():
+
+            fig_cont, fig_light = self.get_object_properties(property_df, row.Figure)
+            grd_cont, grd_light = self.get_object_properties(property_df, row.Ground)
+
+            self.assertEqual(fig_cont,row.figure_container)
+            self.assertEqual(fig_light,row.figure_lightsource)
+
+            self.assertEqual(grd_cont,row.ground_container)
+            self.assertEqual(grd_light,row.ground_lightsource)
+
 
     def test_specs(self):
 
