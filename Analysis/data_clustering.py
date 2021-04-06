@@ -133,7 +133,7 @@ class Clustering:
             self.p_models_params = self.generated_polysemy_models.preposition_parameters_dict[preposition]
         else:
             self.p_models_params = GeneratePrepositionModelParameters(self.study_info, preposition, self.study_info.scene_name_list,
-                                                                    features_to_remove=Configuration.ground_property_features)
+                                                                      features_to_remove=Configuration.object_specific_features)
         # All selected instances
         self.possible_instances_all_features = self.p_models_params.affAllFeatures
         self.possible_instances_features = self.p_models_params.affFeatures

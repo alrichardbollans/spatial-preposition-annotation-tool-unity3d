@@ -4,7 +4,7 @@ import os
 import unittest
 import sys
 
-from Analysis.add_additional_features import additional_features, clean_name
+from Analysis.add_additional_features import clean_name
 
 sys.path.append('../')
 
@@ -43,7 +43,11 @@ class MyTestCase(unittest.TestCase):
         ## Compare constraints in csv with generated constraints
         original_constraint_df = pd.read_csv(archive_folder + study_info.constraint_csv)
         new_constraint_df = pd.read_csv(study_info.constraint_csv)
-        to_drop = ["figure_lightsource_1", "figure_container_1", "figure_lightsource_2", "figure_container_2"]
+        to_drop = []
+        for f in new_features_not_in_archive:
+            to_drop.append(f+"_1")
+            to_drop.append(f+"_2")
+
         new_df_dropped = new_constraint_df.drop(to_drop, axis=1)
 
         assert_frame_equal(original_constraint_df, new_df_dropped)
@@ -58,8 +62,8 @@ class MyTestCase(unittest.TestCase):
 
             self.assertAlmostEqual(fig_cont_standard, row.figure_container_1)
             self.assertAlmostEqual(fig_light_standard, row.figure_lightsource_1)
-            
-            
+
+
             fig_cont, fig_light = self.get_object_properties(property_df, row.f2)
             fig_cont_standard = study_info.feature_processor.convert_normal_value_to_standardised("figure_container",
                                                                                                   fig_cont)
@@ -107,12 +111,14 @@ class MyTestCase(unittest.TestCase):
 
         new_df = pd.read_csv(input_feature_csv)
         new_df_dropped = new_df.drop(additional_features, axis=1)
+
         original_df = pd.read_csv(archive_folder + input_feature_csv)
+
         assert_frame_equal(new_df_dropped, original_df)
 
         new_df = pd.read_csv(output_path)
         print(new_df)
-        new_df_dropped = new_df.drop(additional_features, axis=1)
+        new_df_dropped = new_df.drop(new_features_not_in_archive, axis=1)
         print(new_df_dropped)
         original_df = pd.read_csv(archive_folder + output_path)
         assert_frame_equal(new_df_dropped, original_df)
@@ -123,7 +129,7 @@ class MyTestCase(unittest.TestCase):
         #
         # assert_frame_equal(new_df, original_df)
         new_df = pd.read_csv(human_readable_path)
-        new_df_dropped = new_df.drop(additional_features, axis=1)
+        new_df_dropped = new_df.drop(new_features_not_in_archive, axis=1)
         original_df = pd.read_csv(archive_folder + human_readable_path)
         assert_frame_equal(new_df_dropped, original_df)
 

@@ -2,6 +2,8 @@ import os
 import unittest
 import sys
 
+from Analysis.add_additional_features import additional_features
+
 sys.path.append('../')
 
 from Analysis.classes import Constraint
@@ -59,13 +61,14 @@ class Test(unittest.TestCase):
             original_df = pd.read_csv(
                 archive_folder + svcollection.study_info.config_ratio_csv(svcollection.filetag, preposition))
 
-            # print(new_df)
-            # print(original_df)
-            assert_frame_equal(new_df, original_df)
+            new_df_dropped = new_df.drop(new_features_not_in_archive, axis=1)
+            assert_frame_equal(new_df_dropped, original_df)
 
     # @unittest.skip
     def test_comp_collection(self):
         study_info = StudyInfo("2019 study")
+        # c1 = Configuration("compsvi12", "pencil", "cup", study_info)
+        # print(c1.set_of_features)
         compcollection = ComparativeCollection(study_info)
 
         for i in compcollection.instance_list:

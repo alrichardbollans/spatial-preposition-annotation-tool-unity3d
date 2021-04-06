@@ -293,7 +293,7 @@ class GenerateBasicModelsSplitUsers(GenerateModelsSplitUsers):
                 raise ValueError('Train and test scenes not distinct')
 
         # Features to remove from consideration (not used in training or testing)
-        self.features_to_remove = Configuration.ground_property_features.copy()
+        self.features_to_remove = Configuration.object_specific_features.copy()
 
         # Extra features may be removed in order to compare performance
         if extra_features_to_remove is not None:

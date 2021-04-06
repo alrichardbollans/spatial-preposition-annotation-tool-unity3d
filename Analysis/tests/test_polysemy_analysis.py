@@ -76,7 +76,7 @@ class Test(unittest.TestCase):
 
         # first check basic parametres
         for model in p_models:
-            self.assertEqual(len(model.all_feature_keys), 13)
+            self.assertEqual(len(model.all_feature_keys), 16)
             if hasattr(model, "preposition_model_dict"):
                 for p in model.test_prepositions:
                     self.assertEqual(len(model.preposition_model_dict[p].feature_keys), 10)
@@ -119,7 +119,7 @@ class Test(unittest.TestCase):
 
         self.assertIsInstance(m.Generate_Models_all_scenes, GeneratePolysemeModels)
         self.assertIsInstance(m.Generate_Models_all_scenes.features_to_remove, list)
-        self.assertEqual(m.Generate_Models_all_scenes.features_to_remove, Configuration.ground_property_features.copy())
+        self.assertEqual(m.Generate_Models_all_scenes.features_to_remove, Configuration.object_specific_features.copy())
 
         self.assertIsInstance(m.model_name_list, list)
 

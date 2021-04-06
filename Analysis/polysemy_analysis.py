@@ -310,11 +310,13 @@ class PolysemyModel(Model):
 
 class DistinctPrototypePolysemyModel(PolysemyModel):
 
-    def __init__(self, name, train_scenes, test_scenes, study_info_, test_prepositions=polysemous_preposition_list,
+    def __init__(self, name, train_scenes, test_scenes, study_info_, test_prepositions=None,
                  preserve_empty_polysemes=False, baseline_model=None, features_to_remove=None,
                  oversample: bool = False):
-
+        if test_prepositions is None:
+            test_prepositions = polysemous_preposition_list
         PolysemyModel.__init__(self, name, test_scenes, study_info_, test_prepositions=test_prepositions)
+
         self.oversample = oversample
         self.baseline_model = baseline_model
         self.train_scenes = train_scenes
@@ -975,7 +977,7 @@ class MultipleRunsPolysemyModels(MultipleRuns):
                 for preposition in self.test_prepositions:
                     # Add some features to remove to ignore print out
                     prep_model = GeneratePrepositionModelParameters(self.study_info, preposition, scenes_not_in_fold,
-                                                                    features_to_remove=Configuration.ground_property_features)
+                                                                    features_to_remove=Configuration.object_specific_features)
                     if len(prep_model.affFeatures.index) < KMeansPolysemyModel.cluster_numbers[preposition]:
                         return False
 

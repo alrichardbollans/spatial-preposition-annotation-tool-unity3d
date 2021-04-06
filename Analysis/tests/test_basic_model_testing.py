@@ -30,7 +30,7 @@ class Test(unittest.TestCase):
 
         # Check models are using 10 features
         first_model = models[0]
-        self.assertEqual(len(first_model.all_feature_keys), 13)
+        self.assertEqual(len(first_model.all_feature_keys), 16)
         for p in first_model.test_prepositions:
             self.assertEqual(len(first_model.preposition_model_dict[p].feature_keys), 10)
 
@@ -52,7 +52,7 @@ class Test(unittest.TestCase):
 
         self.assertIsInstance(m.Generate_Models_all_scenes, GenerateBasicModels)
         self.assertIsInstance(m.Generate_Models_all_scenes.features_to_remove, list)
-        self.assertEqual(m.Generate_Models_all_scenes.features_to_remove, Configuration.ground_property_features.copy())
+        self.assertEqual(m.Generate_Models_all_scenes.features_to_remove, Configuration.object_specific_features.copy())
 
         self.assertIsInstance(m.model_name_list, list)
 
@@ -78,7 +78,7 @@ class Test(unittest.TestCase):
         m = MultipleRuns(GenerateBasicModels, study_info, number_runs=20, k=2, features_to_test=functional_features)
         self.assertIsInstance(m.Generate_Models_all_scenes, GenerateBasicModels)
         self.assertIsInstance(m.Generate_Models_all_scenes.features_to_remove, list)
-        self.assertEqual(m.Generate_Models_all_scenes.features_to_remove, Configuration.ground_property_features.copy())
+        self.assertEqual(m.Generate_Models_all_scenes.features_to_remove, Configuration.object_specific_features.copy())
 
         self.assertIsInstance(m.model_name_list, list)
         self.assertIsInstance(m.features_to_test, list)
@@ -103,12 +103,12 @@ class Test(unittest.TestCase):
 
         for p in preposition_list:
             for feature in all_feature_keys:
-                if feature == "location_control" or feature in Configuration.ground_property_features.copy():
+                if feature == "location_control" or feature in Configuration.object_specific_features.copy():
                     self.assertEqual(
                         without_lc_model.preposition_model_dict[p].regression_weights[all_feature_keys.index(feature)],
                         0)
 
-                if feature == "support" or feature in Configuration.ground_property_features.copy():
+                if feature == "support" or feature in Configuration.object_specific_features.copy():
                     self.assertEqual(
                         without_sup_model.preposition_model_dict[p].regression_weights[all_feature_keys.index(feature)],
                         0)

@@ -593,7 +593,7 @@ class Configuration(SimpleConfiguration):
     # Lots of this could be done with pandas. Doh :/
 
     object_specific_features = ["ground_lightsource", "ground_container", "ground_verticality", "figure_lightsource",
-                                "figure_container"]
+                                "figure_container","size_ratio"]
 
     def __init__(self, scene, figure, ground, study):
         """Summary
@@ -680,7 +680,7 @@ class Features:
     """
 
     # Features given in relation.csv that aren't needed for analysis
-    features_to_remove = ["size_ratio", "horizontal_distance_normalized", "shortest_distance_normalized",
+    features_to_remove = ["horizontal_distance_normalized", "shortest_distance_normalized",
                           "location_control_-x", "location_control_-z", "location_control_x",
                           "location_control_z", "figure_volume", "ground_volume",
                           "horizontal_projection_overlap_proportion"]

@@ -119,6 +119,7 @@ class Constraint:
 
         else:
             # If the constraint is already there then edit the row.
+            # If the rows are different sizes just delete the file and start again.
             original_df.loc[row_check, :] = self.csv_row
 
             new_df = original_df.copy()

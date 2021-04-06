@@ -11,6 +11,7 @@ Attributes:
 # Standard imports
 import csv, os
 import operator
+import time
 
 import pandas as pd
 import numpy as np
@@ -1310,7 +1311,7 @@ class ModelGenerator:
                 raise ValueError('Train and test scenes not distinct')
 
         # Features to remove from consideration (not used in training or testing)
-        self.features_to_remove = Configuration.ground_property_features.copy()
+        self.features_to_remove = Configuration.object_specific_features.copy()
         self.test_prepositions = test_prepositions
 
 
@@ -1690,6 +1691,7 @@ class MultipleRuns:
             self.run_count = i
 
             print(("Run Number:" + str(i + 1)))
+            run_start_time = time.time()
 
             if self.k is not None:
                 # This handles the case where test_scenes do not produce any constraints
@@ -1699,6 +1701,7 @@ class MultipleRuns:
                     if self.folds_check(folds):
                         for f in folds:
                             print(("Fold Number:" + str(folds.index(f))))
+                            fold_start_time = time.time()
                             test_scenes = f
                             train_scenes = []
                             for train_fold in folds:
@@ -1706,10 +1709,12 @@ class MultipleRuns:
                                     for t in train_fold:
                                         train_scenes.append(t)
                             self.single_validation_test(train_scenes, test_scenes)
+                            print("Fold took {} seconds".format(time.time()-fold_start_time))
                         break
                     else:
                         pass
                     # print("Fold with no constraints to test. Retrying...")
+            print("Run took {} seconds".format(time.time()-run_start_time))
 
         # First update value of number of runs to account for folds
         if self.k is not None:
@@ -1889,7 +1894,7 @@ def get_standard_preposition_parameters():
     scene_list = model_study_info.scene_name_list
     preposition_models_dict = dict()
 
-    features_to_remove = Configuration.ground_property_features.copy()
+    features_to_remove = Configuration.object_specific_features.copy()
     # Get parameters for each preposition
     for p in preposition_list:
         M = GeneratePrepositionModelParameters(model_study_info, p, scene_list,

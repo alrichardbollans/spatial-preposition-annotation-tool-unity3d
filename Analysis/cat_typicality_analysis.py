@@ -37,7 +37,7 @@ def output_2020_study_results(base_folder = None):
     # Typicality model
     scene_list = model_study_info.scene_name_list
     # First generate baseline model
-    features_to_remove = Configuration.ground_property_features.copy()
+    features_to_remove = Configuration.object_specific_features.copy()
     preposition_models_dict = get_standard_preposition_parameters()
 
     baseline_model = PrototypeModel(preposition_models_dict, scene_list, model_study_info,

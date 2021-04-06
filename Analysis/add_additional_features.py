@@ -115,3 +115,6 @@ def add_properties_to_relation_file(study_info):
 if __name__ == '__main__':
     s_info = StudyInfo("2019 study")
     add_properties_to_relation_file(s_info)
+
+    s_info = StudyInfo("2020 study")
+    add_properties_to_relation_file(s_info)
