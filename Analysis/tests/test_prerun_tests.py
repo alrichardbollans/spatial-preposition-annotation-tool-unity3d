@@ -41,33 +41,33 @@ class MyTestCase(unittest.TestCase):
         compcollection = ComparativeCollection(study_info)
 
         ## Compare constraints in csv with generated constraints
-        constraints = Constraint.read_from_csv(study_info.constraint_csv)
+        original_constraint_df = pd.read_csv(archive_folder + study_info.constraint_csv)
+        new_constraint_df = pd.read_csv(study_info.constraint_csv)
+        to_drop = ["figure_lightsource_1", "figure_container_1", "figure_lightsource_2", "figure_container_2"]
+        new_df_dropped = new_constraint_df.drop(to_drop, axis=1)
 
-        out = dict()
-        for preposition in StudyInfo.preposition_list:
-            # print(preposition)
-            preposition_constraints = []
-            for my_scene in study_info.scene_list:
+        assert_frame_equal(original_constraint_df, new_df_dropped)
+        object_property_csv = study_info.input_feature_data_folder + "/object properties.csv"
+        property_df = pd.read_csv(object_property_csv)
+        for index, row in new_constraint_df.iterrows():
+            fig_cont, fig_light = self.get_object_properties(property_df, row.f1)
+            fig_cont_standard = study_info.feature_processor.convert_normal_value_to_standardised("figure_container",
+                                                                                                  fig_cont)
+            fig_light_standard = study_info.feature_processor.convert_normal_value_to_standardised("figure_lightsource",
+                                                                                                   fig_light)
 
-                grounds = my_scene.selectable_objects
+            self.assertAlmostEqual(fig_cont_standard, row.figure_container_1)
+            self.assertAlmostEqual(fig_light_standard, row.figure_lightsource_1)
+            
+            
+            fig_cont, fig_light = self.get_object_properties(property_df, row.f2)
+            fig_cont_standard = study_info.feature_processor.convert_normal_value_to_standardised("figure_container",
+                                                                                                  fig_cont)
+            fig_light_standard = study_info.feature_processor.convert_normal_value_to_standardised("figure_lightsource",
+                                                                                                   fig_light)
 
-                for grd in grounds:
-
-                    c = Comparison(my_scene.name, preposition, grd, study_info)
-                    Cons = c.generate_constraints(compcollection.instance_list)
-                    for con in Cons:
-                        preposition_constraints.append(con)
-            out[preposition] = preposition_constraints
-        for p in preposition_list:
-            self.assertEqual(len(out[p]), len(constraints[p]))
-            index = 0
-            for c1 in out[p]:
-                c2 = constraints[p][index]
-                print(c1)
-                print(c2)
-                self.assertTrue(Constraint.constraint_name_match(c1, c2))
-                self.assertTrue(Constraint.constraint_feature_value_match(c1, c2))
-                index += 1
+            self.assertAlmostEqual(fig_cont_standard, row.figure_container_2)
+            self.assertAlmostEqual(fig_light_standard, row.figure_lightsource_2)
 
     # @unittest.skip
     def test_clean_outputs_process_data(self):
@@ -150,15 +150,14 @@ class MyTestCase(unittest.TestCase):
         new_df = pd.read_csv(input_feature_csv)
         property_df = pd.read_csv(object_property_csv)
         for index, row in new_df.iterrows():
-
             fig_cont, fig_light = self.get_object_properties(property_df, row.Figure)
             grd_cont, grd_light = self.get_object_properties(property_df, row.Ground)
 
-            self.assertEqual(fig_cont,row.figure_container)
-            self.assertEqual(fig_light,row.figure_lightsource)
+            self.assertEqual(fig_cont, row.figure_container)
+            self.assertEqual(fig_light, row.figure_lightsource)
 
-            self.assertEqual(grd_cont,row.ground_container)
-            self.assertEqual(grd_light,row.ground_lightsource)
+            self.assertEqual(grd_cont, row.ground_container)
+            self.assertEqual(grd_light, row.ground_lightsource)
 
             # print(f"{fig_cont}:{row.figure_container}")
             # print(f"{fig_light}:{row.figure_lightsource}")
@@ -166,16 +165,14 @@ class MyTestCase(unittest.TestCase):
             # print(f"{grd_light}:{row.ground_lightsource}")
         new_df = pd.read_csv(human_readable_path)
         for index, row in new_df.iterrows():
-
             fig_cont, fig_light = self.get_object_properties(property_df, row.Figure)
             grd_cont, grd_light = self.get_object_properties(property_df, row.Ground)
 
-            self.assertEqual(fig_cont,row.figure_container)
-            self.assertEqual(fig_light,row.figure_lightsource)
+            self.assertEqual(fig_cont, row.figure_container)
+            self.assertEqual(fig_light, row.figure_lightsource)
 
-            self.assertEqual(grd_cont,row.ground_container)
-            self.assertEqual(grd_light,row.ground_lightsource)
-
+            self.assertEqual(grd_cont, row.ground_container)
+            self.assertEqual(grd_light, row.ground_lightsource)
 
     def test_specs(self):
 
