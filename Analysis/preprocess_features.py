@@ -16,6 +16,5 @@ def process_all_features(study):
 
 
 if __name__ == '__main__':
-
     process_all_features(StudyInfo("2019 study"))
     process_all_features(StudyInfo("2020 study"))
