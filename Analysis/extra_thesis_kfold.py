@@ -9,7 +9,7 @@ from basic_model_testing import GeneratePrepositionModelParameters, preposition_
 from classes import Instance, CompInstance, Comparison
 from compile_instances import SemanticCollection, ComparativeCollection
 from data_import import SimpleConfiguration, StudyInfo, Configuration
-from basic_model_testing import MultipleRunsGeneric
+from Analysis.performance_test_functions import MultipleRunsGeneric
 from process_data import SemanticAnnotation, ComparativeAnnotation
 
 extra_folder = 'extra thesis results/updated kfold'

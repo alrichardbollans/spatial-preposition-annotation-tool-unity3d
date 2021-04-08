@@ -24,8 +24,8 @@ from sklearn.cluster import KMeans
 # Modules for plotting
 import matplotlib as mpl
 
-from basic_model_testing import TestModels, GeneratePrepositionModelParameters, Model, MultipleRuns, \
-    SemanticMethods, PrototypeModel, ModelGenerator
+from basic_model_testing import GeneratePrepositionModelParameters, SemanticMethods, PrototypeModel
+from Analysis.performance_test_functions import ModelGenerator, TestModels, MultipleRuns, Model
 from data_import import Configuration, StudyInfo
 from compile_instances import SemanticCollection, ComparativeCollection
 
@@ -322,7 +322,7 @@ class DistinctPrototypePolysemyModel(PolysemyModel):
         self.train_scenes = train_scenes
         self.features_to_remove = features_to_remove
         # When empty polysemes are preserved their values are generated as normal
-        # e.g. rank,numebr of instances  = 0. THis is useful for outputting data on the polysemes
+        # e.g. rank,number of instances  = 0. THis is useful for outputting data on the polysemes
         # When empty polysemes are not preserved, empty polysemes are assigned values from the baseline model.
         # I.e. Assign True when generating polysemes to explore data
         # Assign False when testing model.
@@ -797,6 +797,21 @@ class KMeansPolysemyModel(PolysemyModel):
 
         return out
 
+    def folds_check(self, folds):
+        for f in folds:
+            # And also check that there are enough training samples for the K-Means model
+            # in scenes not in fold
+            # (samples must be greater than number of clusters..)
+            scenes_not_in_fold = []
+            for sc in self.study_info.scene_name_list:
+                if sc not in f:
+                    scenes_not_in_fold.append(sc)
+            for preposition in self.test_prepositions:
+                # Add some features to remove to ignore print out
+                prep_model = GeneratePrepositionModelParameters(self.study_info, preposition, scenes_not_in_fold,
+                                                                features_to_remove=Configuration.object_specific_features)
+                if len(prep_model.affFeatures.index) < KMeansPolysemyModel.cluster_numbers[preposition]:
+                    return False
 
 class GeneratePolysemeModels(ModelGenerator):
     """Summary
@@ -1091,7 +1106,10 @@ def main(study_info_):
     test_models(study_info_)
 
 
+
+
 if __name__ == '__main__':
     study_info = StudyInfo("2019 study")
 
     main(study_info)
+

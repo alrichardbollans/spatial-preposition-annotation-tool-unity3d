@@ -8,8 +8,7 @@ import random
 
 from sklearn.model_selection import train_test_split
 
-from Analysis.basic_model_testing import MultipleRunsGeneric
-from basic_model_testing import TestModels
+from Analysis.performance_test_functions import MultipleRunsGeneric, TestModels
 from data_import import StudyInfo
 from polysemy_analysis import DistinctPrototypePolysemyModel, preposition_list, SalientFeature, \
     polysemous_preposition_list, GeneratePolysemeModels, KMeansPolysemyModel, MultipleRunsPolysemyModels

@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 
 from scipy import stats
 
-from basic_model_testing import Model, GeneratePrepositionModelParameters, preposition_list,get_standard_preposition_parameters, PrototypeModel
+from basic_model_testing import GeneratePrepositionModelParameters, preposition_list,get_standard_preposition_parameters, PrototypeModel
+from Analysis.performance_test_functions import Model
 from data_import import StudyInfo, Configuration
 from compile_instances import InstanceCollection, SemanticCollection
 from extra_thesis_polysemy import GenerateAdditionalModels, DistinctPrototypeRefinedPolysemyModel
