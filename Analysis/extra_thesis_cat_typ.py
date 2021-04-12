@@ -13,7 +13,7 @@ from Analysis.performance_test_functions import Model
 from data_import import StudyInfo, Configuration
 from compile_instances import InstanceCollection, SemanticCollection
 from extra_thesis_polysemy import GenerateAdditionalModels, DistinctPrototypeRefinedPolysemyModel
-from polysemy_analysis import sv_filetag, GeneratePolysemeModels
+from polysemy_analysis import sv_filetag, GeneratePolysemeModels, DistinctPrototypePolysemyModel
 from process_data import UserData, ModSemanticData, SemanticData, ComparativeData, TypicalityData
 
 
@@ -398,6 +398,90 @@ def compare_2019_cat_typ():
                                         mono_writer.writerow(mono_write)
 
         results_writer.writerow(["Number of significant pairs", str(count_number_sign_pairs)])
+
+def sr_model_test():
+    """Summary
+
+    Args:
+        study_info_ (TYPE): Description
+    """
+    # Compare srmodel 'performance' against poly model
+    # Don't use refined poly model as this is an unfair test when tested on training scenes
+    study_info = StudyInfo("2019 study")
+    scene_list = study_info.scene_name_list
+    features_to_remove = Configuration.object_specific_features.copy()
+
+    sr_model = SelectionRatioModel(scene_list, study_info)
+
+    sr_model.get_score()
+
+    revised_constraint_dict = dict()
+    print('revised constraints')
+    num_revised_constraints = 0
+    for p in preposition_list:
+        revised_constraint_dict[p] = sr_model.get_test_constraints(p)
+        num_revised_constraints += len(revised_constraint_dict[p])
+        print(p)
+        print(len(revised_constraint_dict[p]))
+
+    preposition_models_dict = dict()
+
+    # Get parameters for each preposition
+    for p in preposition_list:
+        M = GeneratePrepositionModelParameters(study_info, p, scene_list,
+                                               features_to_remove=features_to_remove)
+        M.work_out_prototype_model()
+        preposition_models_dict[p] = M
+
+    baseline_model = PrototypeModel(preposition_models_dict, scene_list, study_info,
+                                    test_prepositions=preposition_list)
+
+    poly_model = DistinctPrototypePolysemyModel(GeneratePolysemeModels.distinct_model_name, scene_list,
+                                                scene_list, study_info,
+                                                test_prepositions=preposition_list,
+                                                baseline_model=baseline_model, features_to_remove=features_to_remove
+                                                )
+    poly_model.constraint_dict = revised_constraint_dict
+    poly_model.get_score()
+
+    print(poly_model.scores)
+
+    print(sr_model.scores)
+
+    scores = {poly_model.name: poly_model.scores, sr_model.name: sr_model.scores}
+
+    scores_df = pd.DataFrame(scores, index=preposition_list + ['Average', 'Overall'])
+
+    scores_df.to_csv('extra thesis results/sr_model/scores.csv')
+    ####
+    conservative_sr_model = ConservativeSelectionRatioModel(scene_list, study_info)
+    conservative_sr_model.get_score()
+    conservative_constraint_dict = dict()
+    print('conservative constraints')
+    num_con_constraints = 0
+    for p in preposition_list:
+        conservative_constraint_dict[p] = conservative_sr_model.get_test_constraints(p)
+        num_con_constraints += len(conservative_constraint_dict[p])
+        print(p)
+        print(len(conservative_constraint_dict[p]))
+
+    poly_model.constraint_dict = conservative_constraint_dict
+    poly_model.get_score()
+
+    print(poly_model.scores)
+
+    print(conservative_sr_model.scores)
+
+    scores = {poly_model.name: poly_model.scores, conservative_sr_model.name: conservative_sr_model.scores}
+
+    scores_df = pd.DataFrame(scores, index=preposition_list + ['Average', 'Overall'])
+
+    scores_df.to_csv('extra thesis results/sr_model/conservative_scores.csv')
+
+    f = open('extra thesis results/sr_model/number_of_constraints.txt', "w+")
+    f.writelines(['Revised Constraints: ' + str(num_revised_constraints),
+                  'Conservative Constraints: ' + str(num_con_constraints)])
+    f.close()
 
 
 if __name__ == '__main__':
