@@ -8,7 +8,7 @@ import random
 
 from sklearn.model_selection import train_test_split
 
-from Analysis.performance_test_functions import MultipleRunsGeneric, TestModels
+from Analysis.performance_test_functions import MultipleRunsGeneric, TestModels, compare_models
 from data_import import StudyInfo
 from polysemy_analysis import DistinctPrototypePolysemyModel, preposition_list, SalientFeature, \
     polysemous_preposition_list, GeneratePolysemeModels, KMeansPolysemyModel, MultipleRunsPolysemyModels
@@ -350,33 +350,10 @@ def test_partition_model(runs, k, study):
     print(m.average_dataframe)
 
 
-def test_additional_models(runs, k, study_info_):
-    """Summary
+def test_additional_models(runs, k):
 
-    Args:
-        runs (TYPE): Description
-        k (TYPE): Description
-        study_info_ (TYPE): Description
-        :param study_info_:
-    """
-    all_scenes = study_info_.scene_name_list
-    p_models = GenerateAdditionalModels(all_scenes, all_scenes, study_info_)
 
-    models = p_models.models
-
-    t = TestModels(models, "all")
-    all_dataframe = t.score_dataframe.copy()
-
-    all_dataframe.to_csv(extra_thesis_folder + "refined models/all_test.csv")
-    print(all_dataframe)
-
-    m = MultipleRunsPolysemyModels(GenerateAdditionalModels, extra_thesis_folder + "refined models",
-                                   extra_thesis_folder + "refined models",
-                                   study_info_, number_runs=runs, k=k, compare="y")
-    print(("Test Model k = " + str(k)))
-    m.validation()
-    m.output()
-    print(m.average_dataframe)
+    compare_models(runs, k, GenerateAdditionalModels, extra_thesis_folder + "refined models")
 
 
 def test_model_all_prepositions(runs, k, study_info_):
@@ -424,16 +401,12 @@ def output_unsatisfied_constraints():
         model.output_unsatisfied_constraints()
 
 
-def output_all_polyseme_info(study_info_):
-    """Summary
-    :param study_info_:
+def output_all_polyseme_info():
 
-    Args:
-        study_info_ (TYPE): Description
-    """
     print("outputting all polyseme info")
-    all_scenes = study_info_.scene_name_list
-    generated_polyseme_models = GenerateAdditionalModels(all_scenes, all_scenes, study_info_,
+    study_info = StudyInfo("2019 study")
+    all_scenes = study_info.scene_name_list
+    generated_polyseme_models = GenerateAdditionalModels(all_scenes, all_scenes, study_info,
                                                          preserve_empty_polysemes=True)
     generated_polyseme_models.refined.output_polyseme_info()
 
@@ -444,12 +417,14 @@ if __name__ == '__main__':
     # plot_sr_typicality()
 
     if polysemous_preposition_list != preposition_list:
-        study_info = StudyInfo("2019 study")
-        # output_all_polyseme_info(study_info)
+
+        # output_all_polyseme_info()
 
         # test_partition_model(10, 10, study_info)
         # test_model_all_prepositions(10, 10, study_info)
-        #
-        test_additional_models(10, 10, study_info)
+
+        test_additional_models(10, 10)
+
+
     else:
         print("Edit poly preposition list")
