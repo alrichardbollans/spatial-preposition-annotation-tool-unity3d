@@ -19,6 +19,23 @@ os.chdir("..")
 class Test(unittest.TestCase):
     """Summary
     """
+    def t_multiple_runs(self, m_runs):
+        i = 0
+        while i < 10:
+            i += 1
+            folds = m_runs.get_validation_scene_split()
+
+            if m_runs.folds_check(folds):
+                for f in folds:
+                    print(("Fold Number:" + str(folds.index(f))))
+                    test_scenes = f
+                    train_scenes = []
+                    for train_fold in folds:
+                        if train_fold != f:
+                            for t in train_fold:
+                                train_scenes.append(t)
+                    train_set = set(train_scenes)
+                    self.assertFalse(any(x in train_set for x in test_scenes))
 
     # @unittest.skip
     def test_initial_model(self):
@@ -26,7 +43,8 @@ class Test(unittest.TestCase):
 
         original_dataframe = pd.read_csv(archive_folder+'2019 study/scores/tables/all-model scores.csv', index_col=0)
 
-        m = MultipleRuns(GenerateBasicModels, study_info)
+        m = MultipleRuns(GenerateBasicModels, study_info,number_runs=1,k=10)
+        self.t_multiple_runs(m)
 
         generate_models = m.Generate_Models_all_scenes
         models = generate_models.models
