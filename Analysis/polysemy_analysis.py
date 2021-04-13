@@ -13,6 +13,8 @@ Attributes:
 
 # Standard imports
 import copy
+import os
+
 import pandas as pd
 import numpy as np
 import itertools
@@ -132,6 +134,7 @@ class Polyseme:
         self.preposition = preposition
         self.train_scenes = train_scenes
         self.features_to_remove = features_to_remove
+        self.oversample = oversample
 
         # Dictionary containing distinguishing features and their values
         self.eq_feature_dict = eq_feature_dict
@@ -148,7 +151,7 @@ class Polyseme:
         self.preposition_models = GeneratePrepositionModelParameters(self.study_info, self.preposition,
                                                                      self.train_scenes,
                                                                      features_to_remove=self.features_to_remove,
-                                                                     polyseme=self, oversample=oversample)
+                                                                     polyseme=self, oversample=self.oversample)
 
 
 
@@ -300,8 +303,7 @@ class PolysemyModel(Model):
 
 
         """
-        print("generating model:" + name)
-        print("Number of test scenes:" + str(len(test_scenes)))
+
         Model.__init__(self, name, test_scenes, study_info_, test_prepositions=test_prepositions)
 
     def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
@@ -944,6 +946,11 @@ class MultipleRunsPolysemyModels(MultipleRuns):
             test_prepositions = polysemous_preposition_list
 
         self.study_info = study_info_
+
+        if not os.path.isdir(scores_tables_folder):
+            raise Exception("Not a valid path! 1")
+        if not os.path.isdir(scores_plots_folder):
+            raise Exception("Not a valid path! 2")
 
         MultipleRuns.__init__(self, model_generator, self.study_info, test_prepositions=test_prepositions,
                               number_runs=number_runs, k=k,
