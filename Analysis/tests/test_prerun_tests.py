@@ -4,11 +4,13 @@ import os
 import unittest
 import sys
 
-from Analysis.add_additional_features import clean_name
+
 
 sys.path.append('../')
 
-from Analysis.basic_model_testing import preposition_list
+from Analysis.add_additional_features import clean_name
+from Analysis.performance_test_functions import Model
+from Analysis.basic_model_testing import preposition_list, GeneratePrepositionModelParameters
 from Analysis.classes import Constraint
 from Analysis.compile_instances import *
 
@@ -184,6 +186,36 @@ class MyTestCase(unittest.TestCase):
 
         self.assertEqual(pd.__version__, '1.0.3')
 
+    def test_remove_features(self):
+        study_info = StudyInfo("2019 study")
+        scene_list = study_info.scene_name_list
+        features_to_remove = Configuration.object_specific_features.copy()
+        features = []
+        [features.append(f) for f in study_info.all_feature_keys if f not in features_to_remove]
+        generic_model = Model('generic', scene_list,study_info)
+
+        preposition_models_dict = dict()
+
+        # Get parameters for each preposition
+        for p in preposition_list:
+            M = GeneratePrepositionModelParameters(study_info, p, scene_list,
+                                                   features_to_remove=features_to_remove)
+            preposition_models_dict[p] = M
+
+        for p in preposition_list:
+
+
+            for idx, row in preposition_models_dict[p].allFeatures.iterrows():
+                row_with_features = row
+                for idx2, row2 in preposition_models_dict[p].feature_dataframe.iterrows():
+                    if idx == idx2:
+
+                        row_without_features = row2
+                        break
+
+                removed_features_array = generic_model.remove_features_from_array(row_with_features,features_to_remove)
+
+                self.assertEqual(list(row_without_features),removed_features_array)
 
 if __name__ == '__main__':
     unittest.main()
