@@ -24,6 +24,8 @@ from sklearn.linear_model import LinearRegression, Ridge
 from scipy.special import comb
 
 # Local module imports
+from typing import Dict
+
 from Analysis.performance_test_functions import ModelGenerator, MultipleRuns, Model
 from compile_instances import InstanceCollection, SemanticCollection, ComparativeCollection
 from data_import import Configuration, StudyInfo
@@ -33,8 +35,6 @@ sv_filetag = SemanticCollection.filetag  # Tag for sv task files
 comp_filetag = ComparativeCollection.filetag  # Tag for comp task files
 preposition_list = StudyInfo.preposition_list
 
-
-# TODO: Seperate functions for testing and functions for model training.
 
 def rename_feature(feature):
     # Rename some features
@@ -167,6 +167,7 @@ class GeneratePrepositionModelParameters:
 
         self.all_feature_keys = self.study_info.all_feature_keys
         self.features_to_remove = features_to_remove
+        self.oversample = oversample
 
         self.feature_keys = []
         for f in self.all_feature_keys:
@@ -190,7 +191,7 @@ class GeneratePrepositionModelParameters:
         else:
             self.dataset = given_dataset
 
-        if oversample:
+        if self.oversample:
             # Oversampling
             # The data is first oversampled to improve categorisation of (rare) positive instances.
             copy_df = self.dataset.copy()
@@ -817,12 +818,19 @@ class GeneratePrepositionModelParameters:
 class PrototypeModel(Model):
     name = "Our Prototype"
 
-    def __init__(self, preposition_model_dict, test_scenes, study_info_, test_prepositions=preposition_list,
+    def __init__(self, preposition_model_dict: Dict[str, GeneratePrepositionModelParameters], test_scenes, study_info_: StudyInfo, test_prepositions=preposition_list,
                  constraint_csv_removed_users=None):
         self.preposition_model_dict = preposition_model_dict
 
+        if len(test_scenes) < len(study_info_.scene_name_list):
+            for p in preposition_list:
+                train_scenes = set(self.preposition_model_dict[p].train_scenes)
+                if (any(x in train_scenes for x in test_scenes)):
+                    raise ValueError("Train and test scene overlap.")
+
         Model.__init__(self, PrototypeModel.name, test_scenes, study_info_, test_prepositions=test_prepositions,
                        constraint_csv_removed_users=constraint_csv_removed_users)
+
 
     def get_typicality(self, preposition, value_array, scene=None, figure=None, ground=None, study=None):
         p_model = self.preposition_model_dict[preposition]
