@@ -8,12 +8,12 @@ from matplotlib import pyplot as plt
 from scipy.stats import wilcoxon
 from sklearn.model_selection import train_test_split
 
-
 from Analysis.classes import Constraint
 
 from Analysis.data_import import Configuration, StudyInfo
 
 preposition_list = StudyInfo.preposition_list
+
 
 class Model:
     """Summary
@@ -30,7 +30,8 @@ class Model:
         :param test_prepositions:
 
         """
-
+        print("generating model:" + name)
+        print("Number of test scenes:" + str(len(test_scenes)))
         self.study_info = study_info_
         self.test_scenes = test_scenes
         self.name = name
@@ -159,7 +160,7 @@ class Model:
 
         return scores
 
-    def weighted_score(self, Constraints):
+    def weighted_score(self, constraints):
         """Summary
 
         Args:
@@ -173,7 +174,7 @@ class Model:
         # # Calculates how well W and P satisfy the constraints, accounting for constraint weight
         counter = 0
         #
-        for c in Constraints:
+        for c in constraints:
             lhs = self.get_typicality_lhs(c)
             rhs = self.get_typicality_rhs(c)
             if c.is_satisfied(lhs, rhs):
@@ -267,7 +268,6 @@ class Model:
     def remove_features_from_array(self, value_array, features_to_remove):
         value_array = value_array
         new_array = []
-        # TODO: Test this process
         if features_to_remove is not None:
             for feature in self.all_feature_keys:
 
@@ -277,6 +277,7 @@ class Model:
             return new_array
         else:
             return value_array
+
 
 class MultipleRuns:
     """Summary
@@ -312,10 +313,6 @@ class MultipleRuns:
 
         self.scene_list = self.study_info.scene_name_list
 
-        self.Generate_Models_all_scenes = self.generate_models(self.scene_list, self.scene_list)
-        ## Model names being tested. Gets from GenerateModels instance as models being tested depends on instance.
-        self.model_name_list = self.Generate_Models_all_scenes.model_name_list
-        self.constraint_dict = self.Generate_Models_all_scenes.models[0].constraint_dict
 
         if self.features_to_test is None:
 
@@ -326,6 +323,12 @@ class MultipleRuns:
             self.scores_plots_folder = self.study_info.name + "/scores/plots/removed features"
 
         self.get_file_strings()
+
+        self.Generate_Models_all_scenes = self.generate_models(self.scene_list, self.scene_list)
+        ## Model names being tested. Gets from GenerateModels instance as models being tested depends on instance.
+        self.model_name_list = self.Generate_Models_all_scenes.model_name_list
+        self.constraint_dict = self.Generate_Models_all_scenes.models[0].constraint_dict
+
 
         self.prepare_comparison_dicts()
         # folds_dict contains overall scores on each fold for each model
@@ -757,6 +760,11 @@ class MultipleRunsGeneric(MultipleRuns):
                  k=None, compare=None):
         self.study_info = study_info_
 
+        if not os.path.isdir(scores_tables_folder):
+            raise Exception("Not a valid path! 1")
+        if not os.path.isdir(scores_plots_folder):
+            raise Exception("Not a valid path! 2")
+
         MultipleRuns.__init__(self, model_generator, self.study_info, test_prepositions=test_prepositions,
                               number_runs=number_runs, k=k,
                               compare=compare, features_to_test=None)
@@ -889,5 +897,3 @@ class TestModels:
         reordered_df = df[new_column_order]
 
         self.score_dataframe = reordered_df
-
-
