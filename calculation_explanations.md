@@ -86,7 +86,7 @@ In both tasks observed agreement is the number of agreements divided by the numb
 ## Preposition Selection Task
 A shared annotation in this task is where the users are shown the same figure and ground in the same scene.
 
-As usual with Cohens Kappa expected agreement between users u1,u2 (for a given preposition) is the number of times in shared annotations that u1 says yes times the number of times that u2 says yes, plus number of times u1 says no times u2 says no divided by the number of shared annotations squared: `(y1*y2 + n1*n2))/(shared_annotations)^2`
+As usual with Cohens Kappa expected agreement between users u1,u2 (for a given preposition) is the number of times in shared annotations that u1 says yes times the number of times that u2 says yes, plus number of times u1 says no times u2 says no divided by the number of shared annotations squared: `(y1*y2 + n1*n2))/(shared_annotations^2)`
 
 
 
