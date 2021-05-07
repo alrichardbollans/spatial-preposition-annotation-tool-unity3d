@@ -475,7 +475,7 @@ def output_clustering_info(study_info_):
                                                          preserve_empty_polysemes=True)
     mpl.rcParams['font.size'] = 15
     mpl.rcParams['legend.fontsize'] = 12
-    for preposition in polysemous_preposition_list:
+    for preposition in preposition_list:
         c = Clustering(study_info_, preposition, generated_polysemy_models=generated_polysemy_models)
 
         c.plot_elbow_polyseme_inertia()
