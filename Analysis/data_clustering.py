@@ -128,11 +128,11 @@ class Clustering:
         self.generated_polysemy_models = generated_polysemy_models
 
         if generated_polysemy_models is not None:
-            
 
             self.p_models_params = self.generated_polysemy_models.preposition_parameters_dict[preposition]
         else:
-            self.p_models_params = GeneratePrepositionModelParameters(self.study_info, preposition, self.study_info.scene_name_list,
+            self.p_models_params = GeneratePrepositionModelParameters(self.study_info, preposition,
+                                                                      self.study_info.scene_name_list,
                                                                       features_to_remove=Configuration.object_specific_features)
         # All selected instances
         self.possible_instances_all_features = self.p_models_params.affAllFeatures
@@ -166,7 +166,10 @@ class Clustering:
         self.good_instance_csv = self.study_info.cluster_data_folder + "good preposition instances/good instances - " + self.preposition + ".csv"
         self.good_instances_to_cluster.to_csv(self.good_instance_csv)
 
-        self.feature_processer = Features(self.study_info.name)
+        self.feature_processer = Features(self.study_info.input_feature_csv, self.study_info.feature_output_csv,
+                                          self.study_info.means_output_path,
+                                          self.study_info.std_output_path,
+                                          self.study_info.human_readable_feature_output_csv)
         self.hr_good_instance_csv = self.study_info.cluster_data_folder + "good preposition instances/human readable/good instances - " + self.preposition + ".csv"
 
         self.hr_good_instances = self.feature_processer.convert_standard_df_to_normal(self.good_instances_to_cluster)
@@ -469,7 +472,7 @@ def output_clustering_info(study_info_):
     """
     all_scenes = study_info_.scene_name_list
     generated_polysemy_models = GenerateAdditionalModels(all_scenes, all_scenes, study_info_,
-                                                       preserve_empty_polysemes=True)
+                                                         preserve_empty_polysemes=True)
     mpl.rcParams['font.size'] = 15
     mpl.rcParams['legend.fontsize'] = 12
     for preposition in polysemous_preposition_list:
@@ -489,7 +492,7 @@ def work_out_all_hry_clusters(study_info_):
     """
     # all_scenes = study_info_.scene_name_list
     # generated_polysemy_models = GeneratePolysemeModels(all_scenes, all_scenes, study_info_,
-                                                       # preserve_empty_polysemes=True)
+    # preserve_empty_polysemes=True)
     print("Working out hry clusters")
     for preposition in preposition_list:
         print(preposition)
