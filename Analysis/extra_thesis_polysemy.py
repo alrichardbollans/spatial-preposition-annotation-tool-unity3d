@@ -127,7 +127,6 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
             # This makes generation non-deterministic for these models
             train_scenes, validation_scenes = train_test_split(self.train_scenes, test_size=0.5)
 
-
             for f in original_salient_features:
                 g_values_to_try = [0.5, 0.6, 0.7, 0.8, 0.9]
                 l_values_to_try = [0.1, 0.2, 0.3, 0.4, 0.5]
@@ -167,10 +166,7 @@ class DistinctPrototypeRefinedPolysemyModel(DistinctPrototypePolysemyModel):
                 f.value = best_value
                 new_salient_features.append(f)
 
-
             new_polysemes = self.generate_polysemes(preposition, new_salient_features)
-
-
 
             return new_polysemes
         else:
@@ -351,8 +347,6 @@ def test_partition_model(runs, k, study):
 
 
 def test_additional_models(runs, k):
-
-
     compare_models(runs, k, GenerateAdditionalModels, extra_thesis_folder + "refined models")
 
 
@@ -401,29 +395,32 @@ def output_unsatisfied_constraints():
         model.output_unsatisfied_constraints()
 
 
-def output_all_polyseme_info():
 
-    print("outputting all polyseme info")
+def output_config_typicalities_all_polyseme_info():
     study_info = StudyInfo("2019 study")
     all_scenes = study_info.scene_name_list
     generated_polyseme_models = GenerateAdditionalModels(all_scenes, all_scenes, study_info,
                                                          preserve_empty_polysemes=True)
     generated_polyseme_models.refined.output_polyseme_info()
+    for model in generated_polyseme_models.models:
+
+        for preposition in preposition_list:
+            prep_csv = extra_thesis_folder + "refined models/config typicalities/typicality-" + preposition + ".csv"
+            model.output_typicalities(preposition, input_csv=prep_csv)
 
 
 if __name__ == '__main__':
-    # output_unsatisfied_constraints()
 
-    # plot_sr_typicality()
+
 
     if polysemous_preposition_list != preposition_list:
 
-        # output_all_polyseme_info()
+        output_config_typicalities_all_polyseme_info()
 
         # test_partition_model(10, 10, study_info)
         # test_model_all_prepositions(10, 10, study_info)
 
-        test_additional_models(10, 10)
+        # test_additional_models(10, 10)
 
 
     else:
