@@ -338,20 +338,21 @@ class Clustering:
         for index, row in self.km_instances_to_cluster.iterrows():
 
             sample = row.values
-            distance = -1
+            closest_distance = -1
             closest_centre = 0
             for centre in centres:
-                d = self.distance_to_centre_squared(sample, centre)
-                if distance == -1:
-                    distance = d
-                    closest_centre = centre
-                elif d < distance:
-                    distance = d
-                    closest_centre = centre
+                if not np.isnan(centre[0]):
+                    d = self.distance_to_centre_squared(sample, centre)
+                    if closest_distance == -1:
+                        closest_distance = d
+                        closest_centre = centre
+                    elif d < closest_distance:
+                        closest_distance = d
+                        closest_centre = centre
 
             weight = self.sample_weights[index]
             normalised_weight = weight * weight_scaling_factor
-            weighted_distance = distance * normalised_weight
+            weighted_distance = closest_distance * normalised_weight
             total_sum += weighted_distance
 
         return total_sum
@@ -479,7 +480,7 @@ def output_clustering_info(study_info_):
         c = Clustering(study_info_, preposition, generated_polysemy_models=generated_polysemy_models)
 
         c.plot_elbow_polyseme_inertia()
-        # c.output_initial_inertia()
+        c.output_initial_inertia()
         # c.output_expected_kmeans_model()
 
 
