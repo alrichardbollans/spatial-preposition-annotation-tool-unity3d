@@ -163,6 +163,8 @@ class Clustering:
         self.sample_weights = self.p_models_params.aff_dataset[
             self.p_models_params.ratio_feature_name]  # self.good_dataset[self.p_models_params.ratio_feature_name]
 
+        self.km_instances_to_cluster.to_csv("tests/test outputs/clustering tests/" + preposition + "km.csv")
+
     def custom_metric(self, u, v):
         """Summary
 
@@ -182,9 +184,9 @@ class Clustering:
         self.good_instances_to_cluster.to_csv(good_instance_csv)
 
         feature_processer = Features(self.study_info.input_feature_csv, self.study_info.feature_output_csv,
-                                          self.study_info.means_output_path,
-                                          self.study_info.std_output_path,
-                                          self.study_info.human_readable_feature_output_csv)
+                                     self.study_info.means_output_path,
+                                     self.study_info.std_output_path,
+                                     self.study_info.human_readable_feature_output_csv)
         hr_good_instance_csv = self.study_info.cluster_data_folder + "good preposition instances/human readable/good instances - " + self.preposition + ".csv"
 
         hr_good_instances = feature_processer.convert_standard_df_to_normal(self.good_instances_to_cluster)
@@ -237,6 +239,39 @@ class Clustering:
     # 	print(instances.iloc[12,:])
     # 	plt.show()
 
+    def test_kmean(self):
+        number_clusters = 1
+
+        # set random state to make randomness deterministic
+        km = KMeans(
+            n_clusters=number_clusters, random_state=0
+
+        )
+        print("Fitting 0")
+        km.fit(self.km_instances_to_cluster, sample_weight=self.sample_weights)
+
+        inertia0 = km.inertia_
+
+        km1 = KMeans(
+            n_clusters=number_clusters, random_state=1
+
+        )
+        print("Fitting 1")
+        km1.fit(self.km_instances_to_cluster, sample_weight=self.sample_weights)
+
+        inertia1 = km1.inertia_
+        print(self.sample_weights.values)
+        print(km1.labels_)
+        print(km.labels_)
+
+        if inertia0 == inertia1:
+            print("same inertias")
+            print(inertia0)
+
+        else:
+            print("different inertias")
+            raise ValueError
+
     def work_out_kmeans_model(self, k):
         """Summary
 
@@ -248,8 +283,7 @@ class Clustering:
         """
         number_clusters = k
 
-        # nparray = nparray.reshape(-1,1)
-        # set random state to make randomness deterministic
+        # set random state for repeatability
         km = KMeans(
             n_clusters=number_clusters, random_state=0
 
@@ -314,7 +348,7 @@ class Clustering:
         point = np.subtract(point, centre)
         # Square pointwise
         point = np.square(point)
-        # Dot product pointwise by weights
+        # Sum
         summ = np.sum(point)
 
         # Square root to get distance
@@ -414,16 +448,6 @@ class Clustering:
         # Plot the elbow
         axes.plot(K, inertias, 'bx-', label="K-Means")
 
-        # plt.annotate('This is awesome!',
-        #              xy=(len(polysemes), polysemes_inertia),
-        #              xycoords='data',
-        #              textcoords='offset points',
-        #              arrowprops=dict(arrowstyle="->"))
-        # axes.annotate('Polysemy Inertia', xy=(len(polysemes), polysemes_inertia),  xycoords='data',
-        #             xytext=(len(polysemes)-3, polysemes_inertia+15),
-
-        #             horizontalalignment='left', verticalalignment='bottom',
-        #             )
         axes.set_xlabel('Number of Clusters')
         axes.set_ylabel('Inertia')
         axes.xaxis.set_major_locator(ticker.MultipleLocator(1))
@@ -440,6 +464,7 @@ class Clustering:
         """
         kmeanModel = self.work_out_kmeans_model(1)
         inertia = kmeanModel.inertia_
+
         normalised_inertia = inertia / len(self.km_instances_to_cluster.index)
         new_csv = False
         try:
@@ -483,7 +508,12 @@ def output_clustering_info(study_info_):
 
         c.plot_elbow_polyseme_inertia()
         c.output_initial_inertia()
-        # c.output_expected_kmeans_model()
+
+    # for preposition in polysemous_preposition_list:
+    #     c = Clustering(study_info_, preposition)
+    #     c.plot_elbow_polyseme_inertia()
+    #     c.output_initial_inertia()
+    #     c.output_expected_kmeans_model()
 
 
 def work_out_all_hry_clusters(study_info_):
