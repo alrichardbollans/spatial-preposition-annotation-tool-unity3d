@@ -162,19 +162,6 @@ class Clustering:
         # Samples are weighted by selection ratio
         self.sample_weights = self.p_models_params.aff_dataset[
             self.p_models_params.ratio_feature_name]  # self.good_dataset[self.p_models_params.ratio_feature_name]
-        # Output good instances to read
-        self.good_instance_csv = self.study_info.cluster_data_folder + "good preposition instances/good instances - " + self.preposition + ".csv"
-        self.good_instances_to_cluster.to_csv(self.good_instance_csv)
-
-        self.feature_processer = Features(self.study_info.input_feature_csv, self.study_info.feature_output_csv,
-                                          self.study_info.means_output_path,
-                                          self.study_info.std_output_path,
-                                          self.study_info.human_readable_feature_output_csv)
-        self.hr_good_instance_csv = self.study_info.cluster_data_folder + "good preposition instances/human readable/good instances - " + self.preposition + ".csv"
-
-        self.hr_good_instances = self.feature_processer.convert_standard_df_to_normal(self.good_instances_to_cluster)
-
-        self.hr_good_instances.to_csv(self.hr_good_instance_csv)
 
     def custom_metric(self, u, v):
         """Summary
@@ -188,6 +175,21 @@ class Clustering:
         """
         # weighted euclidean distance. Also weight by instances somehow?
         return minkowski(u, v, p=2, w=self.relation_weights.values)
+
+    def output_good_instances(self):
+        # Output good instances to read
+        self.good_instance_csv = self.study_info.cluster_data_folder + "good preposition instances/good instances - " + self.preposition + ".csv"
+        self.good_instances_to_cluster.to_csv(self.good_instance_csv)
+
+        self.feature_processer = Features(self.study_info.input_feature_csv, self.study_info.feature_output_csv,
+                                          self.study_info.means_output_path,
+                                          self.study_info.std_output_path,
+                                          self.study_info.human_readable_feature_output_csv)
+        self.hr_good_instance_csv = self.study_info.cluster_data_folder + "good preposition instances/human readable/good instances - " + self.preposition + ".csv"
+
+        self.hr_good_instances = self.feature_processer.convert_standard_df_to_normal(self.good_instances_to_cluster)
+
+        self.hr_good_instances.to_csv(self.hr_good_instance_csv)
 
     def work_out_hierarchy_model(self):
         """Summary
@@ -499,6 +501,7 @@ def work_out_all_hry_clusters(study_info_):
         print(preposition)
         c = Clustering(study_info_, preposition)
         c.work_out_hierarchy_model()
+        c.output_good_instances()
 
 
 def main(study_info_):
