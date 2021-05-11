@@ -230,48 +230,6 @@ class Clustering:
                 cluster.output()
         print(("Number of clusters: " + str(len(done_clusters))))
 
-    # if self.preposition == "on":
-    # 	print(instances.iloc[25,:])
-    # 	print(instances.iloc[26,:])
-    # 	print("#")
-    # 	print(instances.iloc[20,:])
-    # 	print(instances.iloc[21,:])
-    # 	print(instances.iloc[12,:])
-    # 	plt.show()
-
-    def test_kmean(self):
-        number_clusters = 1
-
-        # set random state to make randomness deterministic
-        km = KMeans(
-            n_clusters=number_clusters, random_state=0
-
-        )
-        print("Fitting 0")
-        km.fit(self.km_instances_to_cluster, sample_weight=self.sample_weights)
-
-        inertia0 = km.inertia_
-
-        km1 = KMeans(
-            n_clusters=number_clusters, random_state=1
-
-        )
-        print("Fitting 1")
-        km1.fit(self.km_instances_to_cluster, sample_weight=self.sample_weights)
-
-        inertia1 = km1.inertia_
-        print(self.sample_weights.values)
-        print(km1.labels_)
-        print(km.labels_)
-
-        if inertia0 == inertia1:
-            print("same inertias")
-            print(inertia0)
-
-        else:
-            print("different inertias")
-            raise ValueError
-
     def work_out_kmeans_model(self, k):
         """Summary
 
