@@ -4,7 +4,7 @@ Code for feature extraction appears in Feature Extraction folder of Unity3D Asse
 
 For geometric features geometric_feature_extraction.cs provides a button in Unity editor and handles iterating over all scenes. For functional features the corresponding script is functional_feature_extraction.cs. write_scene_info.cs also provides a button 'Write Scene Info' in the editor --- this should be ran before any feature extraction.
 
-
+Diagrams and descriptions of the features are provided in `feature extraction.pdf`.
 
 
 
